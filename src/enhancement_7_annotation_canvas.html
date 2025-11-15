@@ -1,0 +1,1580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLUES™ Enhancement #7: Collaborative Annotation Canvas</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --sapphire-blue: #0066CC;
+            --sunshine-orange: #FF6B35;
+            --light-gold: #FFD700;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(90deg, var(--sapphire-blue), var(--sunshine-orange));
+            padding: 25px 30px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+
+        .btn-primary {
+            background: var(--sapphire-blue);
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--light-gold);
+            color: #333;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .toolbar {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            border-bottom: 3px solid var(--sapphire-blue);
+            align-items: center;
+        }
+
+        .tool-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 10px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(5px);
+            border-radius: 10px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .tool-group label {
+            font-weight: 600;
+            color: #333;
+            margin-right: 5px;
+        }
+
+        .tool-btn {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .tool-btn:hover {
+            transform: scale(1.1);
+            border-color: var(--sapphire-blue);
+        }
+
+        .tool-btn.active {
+            background: var(--sapphire-blue);
+            color: white;
+            border-color: var(--sapphire-blue);
+            box-shadow: 0 0 15px rgba(0, 102, 204, 0.5);
+        }
+
+        .color-picker-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .color-option:hover {
+            transform: scale(1.2);
+        }
+
+        .color-option.active {
+            border-color: #333;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .width-selector {
+            display: flex;
+            gap: 8px;
+        }
+
+        .width-option {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .width-option:hover {
+            border-color: var(--sapphire-blue);
+        }
+
+        .width-option.active {
+            background: var(--sapphire-blue);
+            border-color: var(--sapphire-blue);
+        }
+
+        .width-line {
+            background: #333;
+            border-radius: 2px;
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            height: 700px;
+            background: white;
+            overflow: hidden;
+        }
+
+        #propertyReport {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            padding: 30px;
+            overflow-y: auto;
+            background: linear-gradient(to bottom, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        .property-content {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .property-header {
+            border-bottom: 3px solid var(--sapphire-blue);
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .property-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-left: 4px solid var(--sunshine-orange);
+            border-radius: 8px;
+        }
+
+        #annotationCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: crosshair;
+            z-index: 10;
+        }
+
+        .sticky-note {
+            position: absolute;
+            min-width: 200px;
+            min-height: 150px;
+            padding: 15px;
+            background: #feff9c;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            cursor: move;
+            z-index: 100;
+            resize: both;
+            overflow: auto;
+        }
+
+        .sticky-note.critical {
+            background: #ffcccb;
+        }
+
+        .sticky-note.question {
+            background: #feff9c;
+        }
+
+        .sticky-note.positive {
+            background: #90EE90;
+        }
+
+        .sticky-note.general {
+            background: #ADD8E6;
+        }
+
+        .sticky-note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid rgba(0,0,0,0.2);
+        }
+
+        .sticky-note-type {
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .sticky-note-close {
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sticky-note-content {
+            min-height: 80px;
+            width: 100%;
+            border: none;
+            background: transparent;
+            resize: none;
+            font-family: 'Comic Sans MS', cursive;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .voice-memo {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: var(--sapphire-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            z-index: 90;
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+
+        .voice-memo:hover {
+            transform: scale(1.2);
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            }
+            50% {
+                box-shadow: 0 4px 16px rgba(0, 102, 204, 0.6);
+            }
+        }
+
+        .voice-memo-controls {
+            position: absolute;
+            top: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: none;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 200px;
+        }
+
+        .voice-memo:hover .voice-memo-controls,
+        .voice-memo-controls:hover {
+            display: flex;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--sapphire-blue);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: #dc3545;
+        }
+
+        .recording-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .record-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: none;
+            font-size: 32px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .record-btn.recording {
+            background: #dc3545;
+            color: white;
+            animation: recording-pulse 1s infinite;
+        }
+
+        @keyframes recording-pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .timer {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            color: #dc3545;
+            margin: 15px 0;
+        }
+
+        .version-history {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .version-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid var(--sapphire-blue);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .version-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .version-time {
+            font-weight: 700;
+            color: var(--sapphire-blue);
+            margin-bottom: 5px;
+        }
+
+        .version-details {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--sapphire-blue);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 2000;
+            animation: slideIn 0.3s ease;
+            display: none;
+        }
+
+        .toast.show {
+            display: block;
+        }
+
+        .toast.success {
+            background: #28a745;
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toggle-overlay {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .toolbar {
+                gap: 15px;
+            }
+
+            .tool-group {
+                flex-wrap: wrap;
+            }
+
+            .header h1 {
+                font-size: 20px;
+            }
+
+            .canvas-container {
+                height: 500px;
+            }
+        }
+
+        .audio-visualizer {
+            width: 100%;
+            height: 60px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+
+        .note-category-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .category-btn {
+            flex: 1;
+            min-width: 100px;
+            padding: 10px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .category-btn.critical {
+            background: #ffcccb;
+            border-color: #ff0000;
+        }
+
+        .category-btn.question {
+            background: #feff9c;
+            border-color: #ffd700;
+        }
+
+        .category-btn.positive {
+            background: #90EE90;
+            border-color: #00ff00;
+        }
+
+        .category-btn.general {
+            background: #ADD8E6;
+            border-color: #0000ff;
+        }
+
+        .category-btn:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>CLUES™ Collaborative Annotation Canvas</h1>
+            <div class="header-controls">
+                <button class="btn btn-success" id="saveBtn">💾 Save</button>
+                <button class="btn btn-warning" id="snapshotBtn">📸 Snapshot</button>
+                <button class="btn btn-info" id="historyBtn">⏰ History</button>
+                <button class="btn btn-primary" id="exportPdfBtn">📄 Export PDF</button>
+                <button class="btn btn-danger" id="clearBtn">🗑️ Clear All</button>
+            </div>
+        </div>
+
+        <div class="toolbar">
+            <div class="tool-group">
+                <label>Drawing Tools:</label>
+                <button class="tool-btn" id="freehandTool" data-tool="freehand" title="Freehand">✏️</button>
+                <button class="tool-btn" id="highlighterTool" data-tool="highlighter" title="Highlighter">🖍️</button>
+                <button class="tool-btn" id="circleTool" data-tool="circle" title="Circle">⭕</button>
+                <button class="tool-btn" id="rectangleTool" data-tool="rectangle" title="Rectangle">▭</button>
+                <button class="tool-btn" id="arrowTool" data-tool="arrow" title="Arrow">➡️</button>
+                <button class="tool-btn" id="eraserTool" data-tool="eraser" title="Eraser">🧹</button>
+            </div>
+
+            <div class="tool-group">
+                <label>Colors:</label>
+                <div class="color-picker-group">
+                    <div class="color-option active" data-color="#0066CC" style="background: #0066CC" title="Sapphire Blue"></div>
+                    <div class="color-option" data-color="#FF6B35" style="background: #FF6B35" title="Sunshine Orange"></div>
+                    <div class="color-option" data-color="#FFD700" style="background: #FFD700" title="Light Gold"></div>
+                    <div class="color-option" data-color="#dc3545" style="background: #dc3545" title="Red"></div>
+                    <div class="color-option" data-color="#28a745" style="background: #28a745" title="Green"></div>
+                    <div class="color-option" data-color="#000000" style="background: #000000" title="Black"></div>
+                </div>
+            </div>
+
+            <div class="tool-group">
+                <label>Line Width:</label>
+                <div class="width-selector">
+                    <button class="width-option" data-width="2" title="Thin">
+                        <div class="width-line" style="width: 30px; height: 2px;"></div>
+                    </button>
+                    <button class="width-option active" data-width="5" title="Medium">
+                        <div class="width-line" style="width: 30px; height: 5px;"></div>
+                    </button>
+                    <button class="width-option" data-width="10" title="Thick">
+                        <div class="width-line" style="width: 30px; height: 10px;"></div>
+                    </button>
+                </div>
+            </div>
+
+            <div class="tool-group">
+                <button class="btn btn-warning" id="addStickyNote">📝 Add Note</button>
+                <button class="btn btn-danger" id="recordVoiceBtn">🎤 Voice Memo</button>
+            </div>
+        </div>
+
+        <div class="canvas-container">
+            <div id="propertyReport">
+                <div class="property-content">
+                    <div class="property-header">
+                        <h1 style="color: var(--sapphire-blue); margin-bottom: 10px;">Property Inspection Report</h1>
+                        <p style="color: #666; font-size: 16px;">123 Main Street, Anytown, USA 12345</p>
+                    </div>
+
+                    <div class="property-section">
+                        <h2 style="color: var(--sunshine-orange); margin-bottom: 15px;">Executive Summary</h2>
+                        <p>This comprehensive property inspection was conducted on November 15, 2025. The property is a single-family residence built in 1985, featuring 3 bedrooms, 2 bathrooms, and approximately 2,400 square feet of living space.</p>
+                    </div>
+
+                    <div class="property-section">
+                        <h2 style="color: var(--sunshine-orange); margin-bottom: 15px;">Structural Assessment</h2>
+                        <p><strong>Foundation:</strong> The foundation appears to be in good condition with minor settling cracks noted in the basement. No major structural concerns identified.</p>
+                        <p><strong>Roof:</strong> Asphalt shingle roof installed in 2015. Estimated remaining life: 10-15 years. Some minor granule loss observed.</p>
+                        <p><strong>Walls & Ceiling:</strong> Generally in good condition. Minor cosmetic repairs needed in master bedroom.</p>
+                    </div>
+
+                    <div class="property-section">
+                        <h2 style="color: var(--sunshine-orange); margin-bottom: 15px;">Electrical System</h2>
+                        <p>The electrical system has been updated to meet current code requirements. 200-amp service panel with circuit breakers. GFCI outlets installed in kitchen and bathrooms as required.</p>
+                    </div>
+
+                    <div class="property-section">
+                        <h2 style="color: var(--sunshine-orange); margin-bottom: 15px;">Plumbing System</h2>
+                        <p>Copper supply lines and PVC drain lines throughout. Water heater is 8 years old and functioning properly. Minor leak detected under kitchen sink - recommend repair.</p>
+                    </div>
+
+                    <div class="property-section">
+                        <h2 style="color: var(--sunshine-orange); margin-bottom: 15px;">HVAC System</h2>
+                        <p>Central air conditioning and forced air heating. System is 12 years old and nearing end of typical lifespan. Recommend budgeting for replacement within 3-5 years.</p>
+                    </div>
+
+                    <div class="property-section">
+                        <h2 style="color: var(--sunshine-orange); margin-bottom: 15px;">Recommendations</h2>
+                        <ul style="margin-left: 20px; line-height: 1.8;">
+                            <li>Repair kitchen sink leak immediately</li>
+                            <li>Monitor HVAC system performance</li>
+                            <li>Consider basement waterproofing</li>
+                            <li>Replace weatherstripping on exterior doors</li>
+                            <li>Clean and repair gutters</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <canvas id="annotationCanvas"></canvas>
+        </div>
+
+        <div class="toggle-overlay">
+            <button class="btn btn-primary" id="toggleCanvasBtn">👁️ Toggle Annotations</button>
+        </div>
+    </div>
+
+    <!-- Sticky Note Modal -->
+    <div class="modal" id="stickyNoteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Sticky Note</h2>
+                <button class="modal-close" id="closeStickyModal">&times;</button>
+            </div>
+            <div class="note-category-selector">
+                <button class="category-btn critical" data-category="critical">🔴 Critical</button>
+                <button class="category-btn question" data-category="question">❓ Question</button>
+                <button class="category-btn positive" data-category="positive">✅ Positive</button>
+                <button class="category-btn general" data-category="general">💬 General</button>
+            </div>
+            <textarea id="noteText" placeholder="Enter your note here..." style="width: 100%; height: 150px; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; resize: vertical;"></textarea>
+            <button class="btn btn-success" id="createNoteBtn" style="margin-top: 15px; width: 100%;">Create Note</button>
+        </div>
+    </div>
+
+    <!-- Voice Recording Modal -->
+    <div class="modal" id="voiceRecordModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Record Voice Memo</h2>
+                <button class="modal-close" id="closeVoiceModal">&times;</button>
+            </div>
+            <div class="recording-controls">
+                <button class="record-btn" id="startRecordBtn">🎤</button>
+                <button class="btn btn-danger" id="stopRecordBtn" style="display: none;">⏹️ Stop</button>
+            </div>
+            <div class="timer" id="recordTimer">00:00</div>
+            <canvas class="audio-visualizer" id="audioVisualizer"></canvas>
+            <div id="recordingStatus" style="text-align: center; margin: 15px 0; font-weight: 600; color: #666;">Click microphone to start recording</div>
+            <div id="playbackControls" style="display: none; margin-top: 20px;">
+                <audio id="audioPlayback" controls style="width: 100%;"></audio>
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button class="btn btn-success" id="saveVoiceMemoBtn" style="flex: 1;">💾 Save Memo</button>
+                    <button class="btn btn-warning" id="downloadAudioBtn" style="flex: 1;">⬇️ Download</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Version History Modal -->
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Version History</h2>
+                <button class="modal-close" id="closeHistoryModal">&times;</button>
+            </div>
+            <div class="version-history" id="versionList">
+                <p style="text-align: center; color: #666; padding: 20px;">No versions saved yet. Make some annotations and save to create history.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // Application State
+        const state = {
+            currentTool: 'freehand',
+            currentColor: '#0066CC',
+            currentWidth: 5,
+            isDrawing: false,
+            startX: 0,
+            startY: 0,
+            canvasVisible: true,
+            recording: false,
+            mediaRecorder: null,
+            audioChunks: [],
+            recordingStartTime: 0,
+            timerInterval: null,
+            audioBlob: null,
+            noteCategory: 'general',
+            draggedElement: null,
+            offsetX: 0,
+            offsetY: 0
+        };
+
+        // Canvas Setup
+        const canvas = document.getElementById('annotationCanvas');
+        const ctx = canvas.getContext('2d');
+        const canvasContainer = document.querySelector('.canvas-container');
+
+        function resizeCanvas() {
+            const rect = canvasContainer.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+            loadCanvasState();
+        }
+
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // Tool Selection
+        document.querySelectorAll('.tool-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.currentTool = btn.dataset.tool;
+            });
+        });
+
+        // Color Selection
+        document.querySelectorAll('.color-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.color-option').forEach(o => o.classList.remove('active'));
+                option.classList.add('active');
+                state.currentColor = option.dataset.color;
+            });
+        });
+
+        // Width Selection
+        document.querySelectorAll('.width-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.width-option').forEach(o => o.classList.remove('active'));
+                option.classList.add('active');
+                state.currentWidth = parseInt(option.dataset.width);
+            });
+        });
+
+        // Drawing Functions
+        function getMousePos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+
+            return {
+                x: (e.clientX - rect.left) * scaleX,
+                y: (e.clientY - rect.top) * scaleY
+            };
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            const pos = getMousePos(e);
+            state.isDrawing = true;
+            state.startX = pos.x;
+            state.startY = pos.y;
+
+            if (state.currentTool === 'freehand' || state.currentTool === 'highlighter' || state.currentTool === 'eraser') {
+                ctx.beginPath();
+                ctx.moveTo(pos.x, pos.y);
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!state.isDrawing) return;
+
+            const pos = getMousePos(e);
+
+            if (state.currentTool === 'freehand') {
+                ctx.strokeStyle = state.currentColor;
+                ctx.lineWidth = state.currentWidth;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.globalAlpha = 1;
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+            } else if (state.currentTool === 'highlighter') {
+                ctx.strokeStyle = state.currentColor;
+                ctx.lineWidth = state.currentWidth * 3;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.globalAlpha = 0.3;
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+            } else if (state.currentTool === 'eraser') {
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.lineWidth = state.currentWidth * 4;
+                ctx.lineCap = 'round';
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+                ctx.globalCompositeOperation = 'source-over';
+            }
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (!state.isDrawing) return;
+
+            const pos = getMousePos(e);
+            state.isDrawing = false;
+
+            ctx.globalAlpha = 1;
+
+            if (state.currentTool === 'circle') {
+                const radius = Math.sqrt(Math.pow(pos.x - state.startX, 2) + Math.pow(pos.y - state.startY, 2));
+                ctx.beginPath();
+                ctx.arc(state.startX, state.startY, radius, 0, 2 * Math.PI);
+                ctx.strokeStyle = state.currentColor;
+                ctx.lineWidth = state.currentWidth;
+                ctx.stroke();
+            } else if (state.currentTool === 'rectangle') {
+                const width = pos.x - state.startX;
+                const height = pos.y - state.startY;
+                ctx.beginPath();
+                ctx.rect(state.startX, state.startY, width, height);
+                ctx.strokeStyle = state.currentColor;
+                ctx.lineWidth = state.currentWidth;
+                ctx.stroke();
+            } else if (state.currentTool === 'arrow') {
+                drawArrow(state.startX, state.startY, pos.x, pos.y);
+            }
+
+            autoSave();
+        });
+
+        function drawArrow(fromX, fromY, toX, toY) {
+            const headLength = 20;
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.strokeStyle = state.currentColor;
+            ctx.lineWidth = state.currentWidth;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - headLength * Math.cos(angle - Math.PI / 6), toY - headLength * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(toX - headLength * Math.cos(angle + Math.PI / 6), toY - headLength * Math.sin(angle + Math.PI / 6));
+            ctx.lineTo(toX, toY);
+            ctx.fillStyle = state.currentColor;
+            ctx.fill();
+        }
+
+        // Sticky Notes
+        document.getElementById('addStickyNote').addEventListener('click', () => {
+            document.getElementById('stickyNoteModal').classList.add('active');
+            document.getElementById('noteText').value = '';
+        });
+
+        document.getElementById('closeStickyModal').addEventListener('click', () => {
+            document.getElementById('stickyNoteModal').classList.remove('active');
+        });
+
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                state.noteCategory = btn.dataset.category;
+            });
+        });
+
+        document.getElementById('createNoteBtn').addEventListener('click', () => {
+            const text = document.getElementById('noteText').value.trim();
+            if (!text) {
+                showToast('Please enter note text', 'error');
+                return;
+            }
+
+            createStickyNote(text, state.noteCategory);
+            document.getElementById('stickyNoteModal').classList.remove('active');
+            showToast('Sticky note created!', 'success');
+        });
+
+        function createStickyNote(text, category) {
+            const note = document.createElement('div');
+            note.className = `sticky-note ${category}`;
+            note.style.left = `${Math.random() * (canvasContainer.offsetWidth - 250) + 50}px`;
+            note.style.top = `${Math.random() * (canvasContainer.offsetHeight - 200) + 50}px`;
+
+            const categoryLabels = {
+                critical: 'Critical Concern',
+                question: 'Question',
+                positive: 'Positive Note',
+                general: 'General Comment'
+            };
+
+            note.innerHTML = `
+                <div class="sticky-note-header">
+                    <span class="sticky-note-type">${categoryLabels[category]}</span>
+                    <button class="sticky-note-close">×</button>
+                </div>
+                <textarea class="sticky-note-content">${text}</textarea>
+            `;
+
+            canvasContainer.appendChild(note);
+
+            note.querySelector('.sticky-note-close').addEventListener('click', () => {
+                note.remove();
+                autoSave();
+            });
+
+            note.addEventListener('mousedown', startDrag);
+            note.querySelector('.sticky-note-content').addEventListener('input', autoSave);
+
+            autoSave();
+        }
+
+        function startDrag(e) {
+            if (e.target.classList.contains('sticky-note-content') || e.target.classList.contains('sticky-note-close')) {
+                return;
+            }
+
+            state.draggedElement = this;
+            const rect = this.getBoundingClientRect();
+            state.offsetX = e.clientX - rect.left;
+            state.offsetY = e.clientY - rect.top;
+
+            document.addEventListener('mousemove', drag);
+            document.addEventListener('mouseup', stopDrag);
+        }
+
+        function drag(e) {
+            if (!state.draggedElement) return;
+
+            const containerRect = canvasContainer.getBoundingClientRect();
+            let x = e.clientX - containerRect.left - state.offsetX;
+            let y = e.clientY - containerRect.top - state.offsetY;
+
+            x = Math.max(0, Math.min(x, containerRect.width - state.draggedElement.offsetWidth));
+            y = Math.max(0, Math.min(y, containerRect.height - state.draggedElement.offsetHeight));
+
+            state.draggedElement.style.left = `${x}px`;
+            state.draggedElement.style.top = `${y}px`;
+        }
+
+        function stopDrag() {
+            document.removeEventListener('mousemove', drag);
+            document.removeEventListener('mouseup', stopDrag);
+            state.draggedElement = null;
+            autoSave();
+        }
+
+        // Voice Recording
+        document.getElementById('recordVoiceBtn').addEventListener('click', () => {
+            document.getElementById('voiceRecordModal').classList.add('active');
+            document.getElementById('playbackControls').style.display = 'none';
+            document.getElementById('recordingStatus').textContent = 'Click microphone to start recording';
+        });
+
+        document.getElementById('closeVoiceModal').addEventListener('click', () => {
+            stopRecording();
+            document.getElementById('voiceRecordModal').classList.remove('active');
+        });
+
+        document.getElementById('startRecordBtn').addEventListener('click', startRecording);
+        document.getElementById('stopRecordBtn').addEventListener('click', stopRecording);
+
+        async function startRecording() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                state.mediaRecorder = new MediaRecorder(stream);
+                state.audioChunks = [];
+
+                state.mediaRecorder.ondataavailable = (event) => {
+                    state.audioChunks.push(event.data);
+                };
+
+                state.mediaRecorder.onstop = () => {
+                    state.audioBlob = new Blob(state.audioChunks, { type: 'audio/webm' });
+                    const audioUrl = URL.createObjectURL(state.audioBlob);
+                    document.getElementById('audioPlayback').src = audioUrl;
+                    document.getElementById('playbackControls').style.display = 'block';
+                    document.getElementById('recordingStatus').textContent = 'Recording completed! You can now save or download.';
+                };
+
+                state.mediaRecorder.start();
+                state.recording = true;
+                state.recordingStartTime = Date.now();
+
+                document.getElementById('startRecordBtn').classList.add('recording');
+                document.getElementById('stopRecordBtn').style.display = 'block';
+                document.getElementById('recordingStatus').textContent = 'Recording in progress...';
+
+                startTimer();
+                startVisualizer(stream);
+
+                showToast('Recording started!', 'success');
+            } catch (error) {
+                console.error('Error accessing microphone:', error);
+                showToast('Microphone access denied. Please enable microphone permissions.', 'error');
+            }
+        }
+
+        function stopRecording() {
+            if (state.mediaRecorder && state.recording) {
+                state.mediaRecorder.stop();
+                state.mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                state.recording = false;
+
+                document.getElementById('startRecordBtn').classList.remove('recording');
+                document.getElementById('stopRecordBtn').style.display = 'none';
+
+                stopTimer();
+                showToast('Recording stopped!', 'success');
+            }
+        }
+
+        function startTimer() {
+            state.timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - state.recordingStartTime) / 1000);
+                const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const seconds = (elapsed % 60).toString().padStart(2, '0');
+                document.getElementById('recordTimer').textContent = `${minutes}:${seconds}`;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(state.timerInterval);
+            document.getElementById('recordTimer').textContent = '00:00';
+        }
+
+        function startVisualizer(stream) {
+            const visualizerCanvas = document.getElementById('audioVisualizer');
+            const visualizerCtx = visualizerCanvas.getContext('2d');
+            const audioContext = new AudioContext();
+            const analyser = audioContext.createAnalyser();
+            const source = audioContext.createMediaStreamSource(stream);
+
+            source.connect(analyser);
+            analyser.fftSize = 256;
+
+            const bufferLength = analyser.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+
+            visualizerCanvas.width = visualizerCanvas.offsetWidth;
+            visualizerCanvas.height = visualizerCanvas.offsetHeight;
+
+            function draw() {
+                if (!state.recording) return;
+
+                requestAnimationFrame(draw);
+                analyser.getByteFrequencyData(dataArray);
+
+                visualizerCtx.fillStyle = '#f8f9fa';
+                visualizerCtx.fillRect(0, 0, visualizerCanvas.width, visualizerCanvas.height);
+
+                const barWidth = (visualizerCanvas.width / bufferLength) * 2.5;
+                let barHeight;
+                let x = 0;
+
+                for (let i = 0; i < bufferLength; i++) {
+                    barHeight = (dataArray[i] / 255) * visualizerCanvas.height;
+
+                    const gradient = visualizerCtx.createLinearGradient(0, 0, 0, visualizerCanvas.height);
+                    gradient.addColorStop(0, '#0066CC');
+                    gradient.addColorStop(1, '#FF6B35');
+
+                    visualizerCtx.fillStyle = gradient;
+                    visualizerCtx.fillRect(x, visualizerCanvas.height - barHeight, barWidth, barHeight);
+
+                    x += barWidth + 1;
+                }
+            }
+
+            draw();
+        }
+
+        document.getElementById('saveVoiceMemoBtn').addEventListener('click', () => {
+            if (!state.audioBlob) {
+                showToast('No recording to save', 'error');
+                return;
+            }
+
+            const memo = document.createElement('div');
+            memo.className = 'voice-memo';
+            memo.style.left = `${Math.random() * (canvasContainer.offsetWidth - 100) + 50}px`;
+            memo.style.top = `${Math.random() * (canvasContainer.offsetHeight - 100) + 50}px`;
+            memo.innerHTML = '🔊';
+
+            const audioUrl = URL.createObjectURL(state.audioBlob);
+            const controls = document.createElement('div');
+            controls.className = 'voice-memo-controls';
+            controls.innerHTML = `
+                <audio controls style="width: 100%;">
+                    <source src="${audioUrl}" type="audio/webm">
+                </audio>
+                <button class="btn btn-danger" style="width: 100%;">Delete</button>
+            `;
+
+            memo.appendChild(controls);
+            canvasContainer.appendChild(memo);
+
+            controls.querySelector('.btn-danger').addEventListener('click', () => {
+                memo.remove();
+                autoSave();
+            });
+
+            memo.addEventListener('mousedown', function(e) {
+                if (e.target.tagName === 'AUDIO' || e.target.tagName === 'BUTTON') return;
+                startDrag.call(this, e);
+            });
+
+            document.getElementById('voiceRecordModal').classList.remove('active');
+            showToast('Voice memo saved!', 'success');
+            autoSave();
+        });
+
+        document.getElementById('downloadAudioBtn').addEventListener('click', () => {
+            if (!state.audioBlob) {
+                showToast('No recording to download', 'error');
+                return;
+            }
+
+            const url = URL.createObjectURL(state.audioBlob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `voice-memo-${Date.now()}.webm`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            showToast('Audio downloaded!', 'success');
+        });
+
+        // Toggle Canvas Visibility
+        document.getElementById('toggleCanvasBtn').addEventListener('click', () => {
+            state.canvasVisible = !state.canvasVisible;
+            canvas.style.display = state.canvasVisible ? 'block' : 'none';
+
+            document.querySelectorAll('.sticky-note, .voice-memo').forEach(el => {
+                el.style.display = state.canvasVisible ? 'block' : 'none';
+            });
+
+            showToast(state.canvasVisible ? 'Annotations visible' : 'Annotations hidden', 'success');
+        });
+
+        // Save & Load
+        function saveCanvasState() {
+            const canvasData = canvas.toDataURL();
+            const stickyNotes = [];
+            const voiceMemos = [];
+
+            document.querySelectorAll('.sticky-note').forEach(note => {
+                stickyNotes.push({
+                    left: note.style.left,
+                    top: note.style.top,
+                    width: note.style.width,
+                    height: note.style.height,
+                    category: note.className.split(' ')[1],
+                    text: note.querySelector('.sticky-note-content').value
+                });
+            });
+
+            document.querySelectorAll('.voice-memo').forEach(memo => {
+                const audio = memo.querySelector('audio');
+                if (audio) {
+                    voiceMemos.push({
+                        left: memo.style.left,
+                        top: memo.style.top,
+                        audioUrl: audio.querySelector('source').src
+                    });
+                }
+            });
+
+            const stateData = {
+                canvas: canvasData,
+                stickyNotes,
+                voiceMemos,
+                timestamp: new Date().toISOString()
+            };
+
+            localStorage.setItem('clues_annotation_current', JSON.stringify(stateData));
+
+            const history = JSON.parse(localStorage.getItem('clues_annotation_history') || '[]');
+            history.push(stateData);
+            if (history.length > 20) history.shift();
+            localStorage.setItem('clues_annotation_history', JSON.stringify(history));
+
+            return stateData;
+        }
+
+        function loadCanvasState(stateData = null) {
+            const data = stateData || JSON.parse(localStorage.getItem('clues_annotation_current') || 'null');
+            if (!data) return;
+
+            const img = new Image();
+            img.onload = () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.drawImage(img, 0, 0);
+            };
+            img.src = data.canvas;
+
+            document.querySelectorAll('.sticky-note').forEach(note => note.remove());
+            document.querySelectorAll('.voice-memo').forEach(memo => memo.remove());
+
+            if (data.stickyNotes) {
+                data.stickyNotes.forEach(noteData => {
+                    createStickyNote(noteData.text, noteData.category);
+                    const note = canvasContainer.querySelector('.sticky-note:last-child');
+                    note.style.left = noteData.left;
+                    note.style.top = noteData.top;
+                    if (noteData.width) note.style.width = noteData.width;
+                    if (noteData.height) note.style.height = noteData.height;
+                });
+            }
+
+            if (data.voiceMemos) {
+                data.voiceMemos.forEach(memoData => {
+                    const memo = document.createElement('div');
+                    memo.className = 'voice-memo';
+                    memo.style.left = memoData.left;
+                    memo.style.top = memoData.top;
+                    memo.innerHTML = '🔊';
+
+                    const controls = document.createElement('div');
+                    controls.className = 'voice-memo-controls';
+                    controls.innerHTML = `
+                        <audio controls style="width: 100%;">
+                            <source src="${memoData.audioUrl}" type="audio/webm">
+                        </audio>
+                        <button class="btn btn-danger" style="width: 100%;">Delete</button>
+                    `;
+
+                    memo.appendChild(controls);
+                    canvasContainer.appendChild(memo);
+
+                    controls.querySelector('.btn-danger').addEventListener('click', () => {
+                        memo.remove();
+                        autoSave();
+                    });
+
+                    memo.addEventListener('mousedown', function(e) {
+                        if (e.target.tagName === 'AUDIO' || e.target.tagName === 'BUTTON') return;
+                        startDrag.call(this, e);
+                    });
+                });
+            }
+        }
+
+        let autoSaveTimeout;
+        function autoSave() {
+            clearTimeout(autoSaveTimeout);
+            autoSaveTimeout = setTimeout(() => {
+                saveCanvasState();
+            }, 1000);
+        }
+
+        document.getElementById('saveBtn').addEventListener('click', () => {
+            saveCanvasState();
+            showToast('Canvas saved successfully!', 'success');
+        });
+
+        // Clear All
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            if (confirm('Are you sure you want to clear all annotations? This cannot be undone.')) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                document.querySelectorAll('.sticky-note').forEach(note => note.remove());
+                document.querySelectorAll('.voice-memo').forEach(memo => memo.remove());
+                localStorage.removeItem('clues_annotation_current');
+                showToast('All annotations cleared!', 'success');
+            }
+        });
+
+        // Snapshot
+        document.getElementById('snapshotBtn').addEventListener('click', async () => {
+            try {
+                const wasVisible = state.canvasVisible;
+                if (!wasVisible) {
+                    canvas.style.display = 'block';
+                    document.querySelectorAll('.sticky-note, .voice-memo').forEach(el => {
+                        el.style.display = 'block';
+                    });
+                }
+
+                const dataUrl = await html2canvas(canvasContainer, {
+                    backgroundColor: '#ffffff',
+                    scale: 2,
+                    logging: false
+                });
+
+                if (!wasVisible) {
+                    canvas.style.display = 'none';
+                    document.querySelectorAll('.sticky-note, .voice-memo').forEach(el => {
+                        el.style.display = 'none';
+                    });
+                }
+
+                const link = document.createElement('a');
+                link.download = `clues-annotation-${Date.now()}.png`;
+                link.href = dataUrl.toDataURL('image/png');
+                link.click();
+
+                showToast('Snapshot saved!', 'success');
+            } catch (error) {
+                console.error('Error creating snapshot:', error);
+                showToast('Error creating snapshot', 'error');
+            }
+        });
+
+        // Export PDF
+        document.getElementById('exportPdfBtn').addEventListener('click', async () => {
+            try {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+
+                const wasVisible = state.canvasVisible;
+                if (!wasVisible) {
+                    canvas.style.display = 'block';
+                    document.querySelectorAll('.sticky-note, .voice-memo').forEach(el => {
+                        el.style.display = 'block';
+                    });
+                }
+
+                const canvasImage = await html2canvas(canvasContainer, {
+                    backgroundColor: '#ffffff',
+                    scale: 2,
+                    logging: false
+                });
+
+                if (!wasVisible) {
+                    canvas.style.display = 'none';
+                    document.querySelectorAll('.sticky-note, .voice-memo').forEach(el => {
+                        el.style.display = 'none';
+                    });
+                }
+
+                const imgData = canvasImage.toDataURL('image/png');
+                const imgWidth = 210;
+                const imgHeight = (canvasImage.height * imgWidth) / canvasImage.width;
+
+                let heightLeft = imgHeight;
+                let position = 0;
+
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= 297;
+
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= 297;
+                }
+
+                pdf.addPage();
+                pdf.setFontSize(16);
+                pdf.text('Annotation Summary', 105, 20, { align: 'center' });
+
+                pdf.setFontSize(12);
+                let yPos = 40;
+
+                const stickyNotes = document.querySelectorAll('.sticky-note');
+                if (stickyNotes.length > 0) {
+                    pdf.setFontSize(14);
+                    pdf.text('Sticky Notes:', 20, yPos);
+                    yPos += 10;
+                    pdf.setFontSize(11);
+
+                    stickyNotes.forEach((note, index) => {
+                        const type = note.querySelector('.sticky-note-type').textContent;
+                        const text = note.querySelector('.sticky-note-content').value;
+                        const lines = pdf.splitTextToSize(`${index + 1}. [${type}] ${text}`, 170);
+
+                        if (yPos + (lines.length * 7) > 280) {
+                            pdf.addPage();
+                            yPos = 20;
+                        }
+
+                        pdf.text(lines, 20, yPos);
+                        yPos += lines.length * 7 + 5;
+                    });
+                }
+
+                const voiceMemos = document.querySelectorAll('.voice-memo');
+                if (voiceMemos.length > 0) {
+                    yPos += 10;
+                    if (yPos > 250) {
+                        pdf.addPage();
+                        yPos = 20;
+                    }
+
+                    pdf.setFontSize(14);
+                    pdf.text('Voice Memos:', 20, yPos);
+                    yPos += 10;
+                    pdf.setFontSize(11);
+
+                    voiceMemos.forEach((memo, index) => {
+                        const text = `${index + 1}. Voice memo at position (${memo.style.left}, ${memo.style.top})`;
+                        pdf.text(text, 20, yPos);
+                        yPos += 7;
+                    });
+                }
+
+                pdf.save(`clues-annotation-report-${Date.now()}.pdf`);
+                showToast('PDF exported successfully!', 'success');
+            } catch (error) {
+                console.error('Error exporting PDF:', error);
+                showToast('Error exporting PDF', 'error');
+            }
+        });
+
+        // Version History
+        document.getElementById('historyBtn').addEventListener('click', () => {
+            const history = JSON.parse(localStorage.getItem('clues_annotation_history') || '[]');
+            const versionList = document.getElementById('versionList');
+
+            if (history.length === 0) {
+                versionList.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">No versions saved yet. Make some annotations and save to create history.</p>';
+            } else {
+                versionList.innerHTML = history.map((version, index) => {
+                    const date = new Date(version.timestamp);
+                    const timeStr = date.toLocaleString();
+                    const noteCount = version.stickyNotes ? version.stickyNotes.length : 0;
+                    const memoCount = version.voiceMemos ? version.voiceMemos.length : 0;
+
+                    return `
+                        <div class="version-item" data-index="${index}">
+                            <div class="version-time">${timeStr}</div>
+                            <div class="version-details">${noteCount} notes, ${memoCount} voice memos</div>
+                        </div>
+                    `;
+                }).reverse().join('');
+
+                versionList.querySelectorAll('.version-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const index = parseInt(item.dataset.index);
+                        loadCanvasState(history[index]);
+                        document.getElementById('historyModal').classList.remove('active');
+                        showToast('Version restored!', 'success');
+                    });
+                });
+            }
+
+            document.getElementById('historyModal').classList.add('active');
+        });
+
+        document.getElementById('closeHistoryModal').addEventListener('click', () => {
+            document.getElementById('historyModal').classList.remove('active');
+        });
+
+        // Toast Notifications
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast show ${type}`;
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Load saved state on startup
+        loadCanvasState();
+
+        // Set default tool
+        document.getElementById('freehandTool').classList.add('active');
+
+        console.log('CLUES™ Collaborative Annotation Canvas - Production Ready v1.0');
+        console.log('All features initialized successfully!');
+    </script>
+</body>
+</html>
