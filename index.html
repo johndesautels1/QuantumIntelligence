@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="CLUES™ Quantum Property Intelligence System - Advanced real estate analytics with 90+ variable weighted scoring">
+    <meta name="theme-color" content="#00d4ff">
+
+    <title>CLUES™ Quantum Property Intelligence</title>
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/src/assets/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="/src/assets/icons/icon-192x192.png">
+
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/src/core/data-manager.js" as="script">
+    <link rel="preload" href="/src/core/scoring-engine.js" as="script">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+            padding: 20px 40px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            max-width: 1800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 2em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf, #ff006e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn.secondary {
+            background: linear-gradient(135deg, #7b2cbf, #5a1e8f);
+        }
+
+        .btn.danger {
+            background: linear-gradient(135deg, #ff006e, #cc0055);
+        }
+
+        .main-container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(0, 212, 255, 0.5);
+            transform: translateY(-5px);
+        }
+
+        .stat-value {
+            font-size: 3em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            color: #a0a0a0;
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #00d4ff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .enhancement-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .enhancement-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .enhancement-card:hover {
+            border-color: rgba(0, 212, 255, 0.5);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0, 212, 255, 0.2);
+        }
+
+        .enhancement-card.locked {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .enhancement-number {
+            font-size: 0.9em;
+            color: #7b2cbf;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .enhancement-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #00d4ff;
+        }
+
+        .enhancement-description {
+            color: #c0c0c0;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        .enhancement-status {
+            margin-top: 15px;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.8em;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .enhancement-status.complete {
+            background: rgba(0, 255, 136, 0.2);
+            color: #00ff88;
+        }
+
+        .enhancement-status.pending {
+            background: rgba(255, 158, 0, 0.2);
+            color: #ff9e00;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .modal-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            color: #00d4ff;
+        }
+
+        .import-area {
+            border: 2px dashed rgba(0, 212, 255, 0.3);
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .import-area:hover {
+            border-color: #00d4ff;
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .import-area.dragover {
+            border-color: #00ff88;
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .progress-bar.active {
+            display: block;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .install-prompt {
+            background: rgba(0, 212, 255, 0.1);
+            border: 2px solid #00d4ff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .install-prompt.active {
+            display: block;
+        }
+
+        .install-prompt h3 {
+            margin-bottom: 10px;
+            color: #00d4ff;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 15px 20px;
+            }
+
+            .logo {
+                font-size: 1.5em;
+            }
+
+            .main-container {
+                padding: 20px;
+            }
+
+            .enhancement-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">CLUES™ Quantum</div>
+            <div class="header-actions">
+                <button class="btn secondary" onclick="openImportModal()">📥 Import Properties</button>
+                <button class="btn" onclick="exportData()">📤 Export Data</button>
+                <button class="btn" id="installBtn" style="display: none;">📱 Install App</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <!-- Install Prompt -->
+        <div class="install-prompt" id="installPrompt">
+            <h3>📱 Install CLUES™ Quantum</h3>
+            <p>Install this app on your device for offline access and a better experience!</p>
+            <button class="btn" onclick="installApp()">Install Now</button>
+            <button class="btn secondary" onclick="dismissInstallPrompt()">Maybe Later</button>
+        </div>
+
+        <!-- Stats Dashboard -->
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalProperties">0</div>
+                <div class="stat-label">Total Properties</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalClients">0</div>
+                <div class="stat-label">Active Clients</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalPortfolios">0</div>
+                <div class="stat-label">Portfolios</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="unreadAlerts">0</div>
+                <div class="stat-label">Unread Alerts</div>
+            </div>
+        </div>
+
+        <!-- Available Enhancements -->
+        <div class="section">
+            <div class="section-title">
+                🚀 Available Intelligence Modules
+            </div>
+            <div class="enhancement-grid" id="enhancementGrid"></div>
+        </div>
+
+        <!-- Coming Soon -->
+        <div class="section">
+            <div class="section-title">
+                🔮 Coming Soon (Phase 2)
+            </div>
+            <div class="enhancement-grid" id="comingSoonGrid"></div>
+        </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div class="modal" id="importModal">
+        <div class="modal-content">
+            <div class="modal-title">Import Properties</div>
+            <p style="color: #a0a0a0; margin-bottom: 20px;">
+                Upload a CSV or JSON file containing property data. Supported formats: CSV, JSON
+            </p>
+
+            <div class="import-area" id="dropZone">
+                <div style="font-size: 3em; margin-bottom: 10px;">📁</div>
+                <div>Drag & drop file here</div>
+                <div style="margin: 10px 0;">or</div>
+                <button class="btn" onclick="document.getElementById('fileInput').click()">Browse Files</button>
+                <input type="file" id="fileInput" accept=".csv,.json" onchange="handleFileSelect(event)">
+            </div>
+
+            <div class="progress-bar" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div id="importResults" style="margin-top: 20px;"></div>
+
+            <div style="margin-top: 20px; text-align: right;">
+                <button class="btn secondary" onclick="closeImportModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="/src/core/data-manager.js"></script>
+    <script src="/src/core/scoring-engine.js"></script>
+    <script src="/src/core/import-export.js"></script>
+
+    <script>
+        // Global instances
+        let deferredPrompt;
+        let importExporter;
+
+        // Enhancement definitions
+        const ENHANCEMENTS = [
+            { id: 1, title: "5D Quantum Property Explorer", file: "enhancement_1_5d_explorer.html", status: "complete", description: "3D property visualization with quantum data layers" },
+            { id: 3, title: "Holographic Comparison Sphere", file: "enhancement_3_holographic_sphere.html", status: "complete", description: "360° comparative property analysis" },
+            { id: 5, title: "4D Weather-Impact Simulator", file: "enhancement_5_weather_simulator.html", status: "complete", description: "Weather pattern analysis and property impact" },
+            { id: 9, title: "Schedule & Showing Coordinator", file: "enhancement_9_schedule_coordinator.html", status: "complete", description: "AI-powered tour route optimization" },
+            { id: 15, title: "AI-Powered Property Matchmaker", file: "enhancement_15_ai_matchmaker.html", status: "complete", description: "Collaborative filtering recommendation engine" },
+            { id: 19, title: "Competitive Intelligence Dashboard", file: "enhancement_19_competitive_intelligence.html", status: "complete", description: "Market positioning and bidding strategy" },
+            { id: 21, title: "Hawk Alert™ Real-Time Threat Detection", file: "enhancement_21_hawk_alert.html", status: "complete", description: "5-minute response time market monitoring" },
+            { id: 23, title: "Smart Notification Prioritization", file: "enhancement_23_smart_notifications.html", status: "complete", description: "ML-based notification management" }
+        ];
+
+        const COMING_SOON = [
+            { id: 2, title: "Google Earth Neural Network", description: "Advanced mapping with time-lapse analysis" },
+            { id: 4, title: "AR Property Portal", description: "Augmented reality property visualization" },
+            { id: 6, title: "Mirror Dashboard", description: "Real-time agent/client synchronized view" },
+            { id: 10, title: "Agent Recommendation Engine", description: "AI agent matching system" },
+            { id: 17, title: "Variable Interaction Visualizer", description: "90+ variable relationship mapping" },
+            { id: 18, title: "Predictive Time Machine", description: "Future market trend forecasting" },
+            { id: 22, title: "AI Anomaly Detector", description: "Isolation Forest fraud detection" },
+            { id: 25, title: "Success Probability Tracker", description: "Bayesian offer acceptance prediction" }
+        ];
+
+        // Initialize app
+        async function initializeApp() {
+            console.log('🚀 Initializing CLUES™ Quantum...');
+
+            // Initialize data manager
+            try {
+                await dataManager.init();
+                console.log('✅ Data manager initialized');
+
+                // Initialize import/export handler
+                importExporter = new ImportExportHandler(dataManager);
+                console.log('✅ Import/Export handler initialized');
+
+                // Load dashboard stats
+                await updateStats();
+
+                // Render enhancement grid
+                renderEnhancements();
+
+                console.log('✅ CLUES™ Quantum ready!');
+            } catch (error) {
+                console.error('❌ Initialization failed:', error);
+                alert('Failed to initialize application. Please refresh the page.');
+            }
+        }
+
+        // Update dashboard stats
+        async function updateStats() {
+            try {
+                const stats = await dataManager.getStats();
+
+                document.getElementById('totalProperties').textContent = stats.properties || 0;
+                document.getElementById('totalClients').textContent = stats.clients || 0;
+                document.getElementById('totalPortfolios').textContent = stats.portfolios || 0;
+
+                const unreadAlerts = await dataManager.getUnreadAlerts();
+                document.getElementById('unreadAlerts').textContent = unreadAlerts.length || 0;
+            } catch (error) {
+                console.error('Error updating stats:', error);
+            }
+        }
+
+        // Render enhancement cards
+        function renderEnhancements() {
+            const grid = document.getElementById('enhancementGrid');
+
+            grid.innerHTML = ENHANCEMENTS.map(enh => `
+                <a href="/src/${enh.file}" class="enhancement-card">
+                    <div class="enhancement-number">Enhancement #${enh.id}</div>
+                    <div class="enhancement-title">${enh.title}</div>
+                    <div class="enhancement-description">${enh.description}</div>
+                    <span class="enhancement-status ${enh.status}">${enh.status === 'complete' ? '✓ Available' : 'Coming Soon'}</span>
+                </a>
+            `).join('');
+
+            // Render coming soon
+            const comingSoonGrid = document.getElementById('comingSoonGrid');
+
+            comingSoonGrid.innerHTML = COMING_SOON.map(enh => `
+                <div class="enhancement-card locked">
+                    <div class="enhancement-number">Enhancement #${enh.id}</div>
+                    <div class="enhancement-title">${enh.title}</div>
+                    <div class="enhancement-description">${enh.description}</div>
+                    <span class="enhancement-status pending">🔒 Phase 2</span>
+                </div>
+            `).join('');
+        }
+
+        // Import modal
+        function openImportModal() {
+            document.getElementById('importModal').classList.add('active');
+        }
+
+        function closeImportModal() {
+            document.getElementById('importModal').classList.remove('active');
+            document.getElementById('importResults').innerHTML = '';
+            document.getElementById('progressBar').classList.remove('active');
+        }
+
+        // Handle file selection
+        async function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const extension = file.name.split('.').pop().toLowerCase();
+
+            document.getElementById('progressBar').classList.add('active');
+            document.getElementById('progressFill').style.width = '50%';
+
+            try {
+                let results;
+
+                if (extension === 'csv') {
+                    results = await importExporter.importCSV(file);
+                } else if (extension === 'json') {
+                    results = await importExporter.importJSON(file);
+                } else {
+                    throw new Error('Unsupported file format. Please use CSV or JSON.');
+                }
+
+                document.getElementById('progressFill').style.width = '100%';
+
+                // Show results
+                document.getElementById('importResults').innerHTML = `
+                    <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid #00ff88; border-radius: 8px; padding: 15px; color: #00ff88;">
+                        <strong>✓ Import Successful</strong><br>
+                        Total: ${results.total} | Succeeded: ${results.succeeded} | Failed: ${results.failed}
+                    </div>
+                `;
+
+                // Update stats
+                await updateStats();
+
+                setTimeout(() => {
+                    document.getElementById('progressBar').classList.remove('active');
+                }, 1000);
+
+            } catch (error) {
+                document.getElementById('importResults').innerHTML = `
+                    <div style="background: rgba(255, 0, 110, 0.1); border: 1px solid #ff006e; border-radius: 8px; padding: 15px; color: #ff006e;">
+                        <strong>✗ Import Failed</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+                document.getElementById('progressBar').classList.remove('active');
+            }
+        }
+
+        // Drag & drop
+        const dropZone = document.getElementById('dropZone');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                document.getElementById('fileInput').files = files;
+                handleFileSelect({ target: { files: files } });
+            }
+        });
+
+        // Export data
+        async function exportData() {
+            if (confirm('Export all data as JSON backup?')) {
+                await importExporter.downloadJSON();
+            }
+        }
+
+        // PWA Install
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installPrompt').classList.add('active');
+            document.getElementById('installBtn').style.display = 'block';
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted install');
+                    }
+                    deferredPrompt = null;
+                    dismissInstallPrompt();
+                });
+            }
+        }
+
+        function dismissInstallPrompt() {
+            document.getElementById('installPrompt').classList.remove('active');
+        }
+
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registered:', registration);
+                    })
+                    .catch(error => {
+                        console.log('❌ Service Worker registration failed:', error);
+                    });
+            });
+        }
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', initializeApp);
+    </script>
+</body>
+</html>
