@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CLUES™ Enhancement #7: Collaborative Annotation Canvas</title>
+
+    <!-- Core CLUES™ System -->
+    <script src="/src/core/data-manager.js"></script>
+    <script src="/src/core/scoring-engine.js"></script>
+    <script src="/src/shared-data-adapter.js"></script>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -1567,11 +1573,24 @@
             }, 3000);
         }
 
+        // Initialize connection to CLUES™ data system
+        async function initializeDataConnection() {
+            try {
+                await sharedDataAdapter.init();
+                console.log('✅ Connected to CLUES™ data system - annotations can be linked to properties');
+            } catch (error) {
+                console.warn('⚠️ Running in standalone mode - annotations saved locally only');
+            }
+        }
+
         // Load saved state on startup
         loadCanvasState();
 
         // Set default tool
         document.getElementById('freehandTool').classList.add('active');
+
+        // Connect to data system
+        initializeDataConnection();
 
         console.log('CLUES™ Collaborative Annotation Canvas - Production Ready v1.0');
         console.log('All features initialized successfully!');
