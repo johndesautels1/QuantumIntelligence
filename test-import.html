@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CLUES Database Test</title>
+    <script src="src/core/data-manager.js"></script>
+    <script src="src/core/scoring-engine.js"></script>
+    <script src="src/core/import-export.js"></script>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #00ff88;
+        }
+        .test { margin: 10px 0; padding: 10px; background: #0f3460; border-radius: 5px; }
+        .pass { border-left: 4px solid #00ff88; }
+        .fail { border-left: 4px solid #ff006e; }
+        button { padding: 10px 20px; margin: 10px 0; background: #00d4ff; border: none; color: white; cursor: pointer; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 CLUES Database Diagnostic Tool</h1>
+    <div id="results"></div>
+
+    <script>
+        async function runTests() {
+            const results = document.getElementById('results');
+            results.innerHTML = '';
+
+            function log(message, pass = true) {
+                const div = document.createElement('div');
+                div.className = `test ${pass ? 'pass' : 'fail'}`;
+                div.textContent = message;
+                results.appendChild(div);
+            }
+
+            try {
+                // Test 1: Initialize database
+                log('Test 1: Initializing database...');
+                await dataManager.init();
+                log('✅ Database initialized successfully', true);
+
+                // Test 2: Count properties
+                log('Test 2: Counting properties in database...');
+                const properties = await dataManager.getAllProperties();
+                log(`✅ Found ${properties.length} properties in database`, true);
+
+                // Test 3: Show property details
+                if (properties.length > 0) {
+                    log('Test 3: Sample property data:');
+                    const sample = properties[0];
+                    log(`  Address: ${sample.address?.full_address || 'N/A'}`, true);
+                    log(`  Price: $${sample.price?.current || 'N/A'}`, true);
+                    log(`  Bedrooms: ${sample.bedrooms || 'N/A'}`, true);
+                    log(`  Property ID: ${sample.property_id}`, true);
+                } else {
+                    log('❌ No properties to display', false);
+                    log('ℹ️ Import sample_properties.csv from the dashboard', true);
+                }
+
+                // Test 4: Test scoring engine
+                log('Test 4: Testing scoring engine...');
+                if (properties.length > 0) {
+                    const scores = scoringEngine.calculatePropertyScore(properties[0], 'balanced');
+                    log(`✅ Scoring engine works! Overall score: ${scores.overall}`, true);
+                } else {
+                    log('⚠️  Cannot test scoring without properties', false);
+                }
+
+                // Test 5: Get stats
+                log('Test 5: Database statistics...');
+                const stats = await dataManager.getStats();
+                log(`  Properties: ${stats.properties || 0}`, true);
+                log(`  Clients: ${stats.clients || 0}`, true);
+                log(`  Portfolios: ${stats.portfolios || 0}`, true);
+
+            } catch (error) {
+                log(`❌ ERROR: ${error.message}`, false);
+                console.error(error);
+            }
+        }
+
+        // Auto-run on load
+        window.addEventListener('load', runTests);
+    </script>
+</body>
+</html>

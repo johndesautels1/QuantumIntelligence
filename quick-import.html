@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Quick Import - CLUES™</title>
+    <script src="src/core/data-manager.js"></script>
+    <script src="src/core/scoring-engine.js"></script>
+    <script src="src/core/import-export.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #2d3748;
+            margin-bottom: 20px;
+        }
+        .drop-zone {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 60px 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 20px 0;
+        }
+        .drop-zone:hover {
+            border-color: #764ba2;
+            background: #f7f7ff;
+        }
+        .drop-zone.active {
+            border-color: #48bb78;
+            background: #f0fff4;
+        }
+        .icon {
+            font-size: 4em;
+            margin-bottom: 10px;
+        }
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1.1em;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+        .status.success {
+            background: #f0fff4;
+            border: 2px solid #48bb78;
+            color: #22543d;
+            display: block;
+        }
+        .status.error {
+            background: #fff5f5;
+            border: 2px solid #fc8181;
+            color: #742a2a;
+            display: block;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .file-info {
+            margin: 10px 0;
+            color: #4a5568;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📥 Quick Import Properties</h1>
+        <p style="color: #718096; margin-bottom: 20px;">
+            Upload the <strong>sample_properties.csv</strong> file to import 20 test properties
+        </p>
+
+        <div class="drop-zone" id="dropZone">
+            <div class="icon">📁</div>
+            <div style="font-size: 1.2em; margin-bottom: 10px;">Drop CSV file here</div>
+            <div style="color: #718096;">or</div>
+            <button class="btn" onclick="document.getElementById('fileInput').click()">
+                Browse Files
+            </button>
+            <input type="file" id="fileInput" accept=".csv" onchange="handleFile(event)">
+            <div class="file-info" id="fileInfo"></div>
+        </div>
+
+        <div class="status" id="status"></div>
+
+        <div style="margin-top: 20px; text-align: center;">
+            <button class="btn" onclick="window.location.href='index.html'" style="background: linear-gradient(135deg, #48bb78, #38a169);">
+                ← Back to Dashboard
+            </button>
+            <button class="btn" onclick="window.location.href='src/enhancement_1_quantum_explorer.html'" style="background: linear-gradient(135deg, #00d4ff, #0099cc);">
+                Open 5D Explorer →
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let importExporter;
+
+        // Initialize
+        window.addEventListener('load', async () => {
+            await dataManager.init();
+            importExporter = new ImportExportHandler(dataManager);
+            console.log('Quick Import ready!');
+        });
+
+        // Handle file selection
+        async function handleFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            document.getElementById('fileInfo').textContent = `Selected: ${file.name}`;
+            document.getElementById('status').className = 'status';
+            document.getElementById('status').innerHTML = 'Importing...';
+
+            try {
+                const results = await importExporter.importCSV(file);
+
+                document.getElementById('status').className = 'status success';
+                document.getElementById('status').innerHTML = `
+                    <div style="font-size: 1.3em; margin-bottom: 10px;">✓ Import Successful!</div>
+                    <div><strong>Total:</strong> ${results.total}</div>
+                    <div><strong>Succeeded:</strong> ${results.succeeded}</div>
+                    <div><strong>Failed:</strong> ${results.failed}</div>
+                    <div style="margin-top: 15px;">
+                        <button class="btn" onclick="window.location.href='src/enhancement_1_quantum_explorer.html'"
+                                style="background: linear-gradient(135deg, #00d4ff, #0099cc);">
+                            Open 5D Explorer Now →
+                        </button>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('status').className = 'status error';
+                document.getElementById('status').innerHTML = `
+                    <div style="font-size: 1.3em; margin-bottom: 10px;">✗ Import Failed</div>
+                    <div>${error.message}</div>
+                `;
+                console.error(error);
+            }
+        }
+
+        // Drag & drop
+        const dropZone = document.getElementById('dropZone');
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('active');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('active');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('active');
+
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                document.getElementById('fileInput').files = files;
+                handleFile({ target: { files: files } });
+            }
+        });
+    </script>
+</body>
+</html>
