@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLUES™ - Market Pulse Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0066CC 0%, #00D4FF 50%, #9D4EDD 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header-left .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2em;
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px 25px;
+            border-radius: 50px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .pulse-dot {
+            width: 16px;
+            height: 16px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 15px #10b981;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+        }
+
+        .live-text {
+            color: white;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .last-update {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .metric-card.trending-up::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: #10b981;
+        }
+
+        .metric-card.trending-down::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: #ef4444;
+        }
+
+        .metric-card.trending-stable::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: #FFD700;
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .metric-title {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1em;
+            font-weight: 600;
+        }
+
+        .metric-icon {
+            font-size: 1.5em;
+        }
+
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 10px;
+        }
+
+        .metric-change {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 1em;
+            font-weight: 600;
+        }
+
+        .metric-change.positive {
+            color: #10b981;
+        }
+
+        .metric-change.negative {
+            color: #ef4444;
+        }
+
+        .metric-change.neutral {
+            color: #FFD700;
+        }
+
+        .metric-subtext {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85em;
+            margin-top: 8px;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .panel h2 {
+            color: white;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .alerts-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .alert {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border-left: 5px solid;
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .alert:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .alert.critical {
+            border-left-color: #ef4444;
+        }
+
+        .alert.warning {
+            border-left-color: #f59e0b;
+        }
+
+        .alert.info {
+            border-left-color: #00D4FF;
+        }
+
+        .alert.success {
+            border-left-color: #10b981;
+        }
+
+        .alert-icon {
+            font-size: 2em;
+            flex-shrink: 0;
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            color: white;
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .alert-message {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .alert-time {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85em;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, #0066CC, #00D4FF);
+            border-color: #00D4FF;
+        }
+
+        .neighborhood-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .neighborhood-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .neighborhood-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-3px);
+        }
+
+        .neighborhood-name {
+            color: white;
+            font-weight: 600;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+
+        .neighborhood-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .neighborhood-stat {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9em;
+        }
+
+        .stat-value {
+            color: white;
+            font-weight: 600;
+        }
+
+        .trend-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .trend-indicator.hot {
+            background: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+        .trend-indicator.warm {
+            background: rgba(245, 158, 11, 0.3);
+            color: #f59e0b;
+            border: 1px solid #f59e0b;
+        }
+
+        .trend-indicator.cool {
+            background: rgba(0, 212, 255, 0.3);
+            color: #00D4FF;
+            border: 1px solid #00D4FF;
+        }
+
+        .inventory-gauge {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .gauge-value {
+            font-size: 3em;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .gauge-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.1em;
+            margin-top: 10px;
+        }
+
+        .gauge-bar {
+            width: 100%;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            margin-top: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .gauge-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #FFD700, #ef4444);
+            border-radius: 15px;
+            transition: width 1s ease;
+        }
+
+        .filter-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .filter-tag {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .filter-tag.active {
+            background: linear-gradient(135deg, #0066CC, #00D4FF);
+            border-color: #00D4FF;
+        }
+
+        .filter-tag:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .insights-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .insight-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid #FFD700;
+        }
+
+        .insight-title {
+            color: white;
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+
+        .insight-text {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .comparison-table th {
+            color: white;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .comparison-table td {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .comparison-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <h1>📊 Market Pulse Dashboard</h1>
+                <p class="subtitle">Real-Time Market Intelligence & Trends</p>
+            </div>
+            <div class="live-indicator">
+                <div>
+                    <div class="pulse-dot"></div>
+                </div>
+                <div>
+                    <div class="live-text">LIVE DATA</div>
+                    <div class="last-update" id="lastUpdate">Updated just now</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Metrics -->
+        <div class="metrics-grid">
+            <div class="metric-card trending-up">
+                <div class="metric-header">
+                    <span class="metric-title">Median Home Price</span>
+                    <span class="metric-icon">🏠</span>
+                </div>
+                <div class="metric-value" id="medianPrice">$475,000</div>
+                <div class="metric-change positive">
+                    <span>↗️</span>
+                    <span id="priceChange">+5.2%</span>
+                    <span style="color: rgba(255,255,255,0.7); font-size: 0.9em;">vs last month</span>
+                </div>
+                <div class="metric-subtext">Up from $451,000 last month</div>
+            </div>
+
+            <div class="metric-card trending-down">
+                <div class="metric-header">
+                    <span class="metric-title">Days on Market</span>
+                    <span class="metric-icon">⏱️</span>
+                </div>
+                <div class="metric-value" id="daysOnMarket">18</div>
+                <div class="metric-change positive">
+                    <span>↘️</span>
+                    <span id="domChange">-22%</span>
+                    <span style="color: rgba(255,255,255,0.7); font-size: 0.9em;">vs last month</span>
+                </div>
+                <div class="metric-subtext">Homes selling faster (was 23 days)</div>
+            </div>
+
+            <div class="metric-card trending-up">
+                <div class="metric-header">
+                    <span class="metric-title">Active Listings</span>
+                    <span class="metric-icon">📋</span>
+                </div>
+                <div class="metric-value" id="activeListings">347</div>
+                <div class="metric-change positive">
+                    <span>↗️</span>
+                    <span id="listingsChange">+12.6%</span>
+                    <span style="color: rgba(255,255,255,0.7); font-size: 0.9em;">vs last month</span>
+                </div>
+                <div class="metric-subtext">More inventory available</div>
+            </div>
+
+            <div class="metric-card trending-stable">
+                <div class="metric-header">
+                    <span class="metric-title">Sale-to-List Ratio</span>
+                    <span class="metric-icon">💰</span>
+                </div>
+                <div class="metric-value" id="saleToList">98.5%</div>
+                <div class="metric-change neutral">
+                    <span>➡️</span>
+                    <span id="ratioChange">+0.3%</span>
+                    <span style="color: rgba(255,255,255,0.7); font-size: 0.9em;">vs last month</span>
+                </div>
+                <div class="metric-subtext">Properties selling near ask</div>
+            </div>
+
+            <div class="metric-card trending-up">
+                <div class="metric-header">
+                    <span class="metric-title">Buyer Demand</span>
+                    <span class="metric-icon">🔥</span>
+                </div>
+                <div class="metric-value" id="buyerDemand">Hot</div>
+                <div class="metric-change positive">
+                    <span>↗️</span>
+                    <span id="demandChange">+18%</span>
+                    <span style="color: rgba(255,255,255,0.7); font-size: 0.9em;">inquiries</span>
+                </div>
+                <div class="metric-subtext">High competition for properties</div>
+            </div>
+
+            <div class="metric-card trending-down">
+                <div class="metric-header">
+                    <span class="metric-title">Inventory Level</span>
+                    <span class="metric-icon">📦</span>
+                </div>
+                <div class="metric-value" id="inventoryLevel">1.8</div>
+                <div class="metric-change neutral">
+                    <span>📊</span>
+                    <span id="inventoryChange">months</span>
+                </div>
+                <div class="metric-subtext">Seller's market (< 3 months)</div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="panel">
+            <h2>⚙️ Market Filters</h2>
+            <div class="filter-tags">
+                <div class="filter-tag active" onclick="toggleFilter(this, 'all')">All Markets</div>
+                <div class="filter-tag" onclick="toggleFilter(this, 'residential')">Residential</div>
+                <div class="filter-tag" onclick="toggleFilter(this, 'condo')">Condos</div>
+                <div class="filter-tag" onclick="toggleFilter(this, 'luxury')">Luxury ($1M+)</div>
+                <div class="filter-tag" onclick="toggleFilter(this, 'starter')">Starter Homes</div>
+            </div>
+            <div class="controls">
+                <button class="btn primary" onclick="refreshData()">🔄 Refresh Data</button>
+                <button class="btn" onclick="exportReport()">📥 Export Report</button>
+                <button class="btn" onclick="viewHistorical()">📈 View Historical</button>
+                <button class="btn" onclick="setAlerts()">🔔 Configure Alerts</button>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="panel">
+                <h2>📈 Price Trends (Last 12 Months)</h2>
+                <div class="chart-container">
+                    <canvas id="priceChart"></canvas>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>📊 Inventory vs Demand</h2>
+                <div class="chart-container">
+                    <canvas id="supplyDemandChart"></canvas>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>🏘️ Price by Home Type</h2>
+                <div class="chart-container">
+                    <canvas id="homeTypeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>⏱️ Days on Market Distribution</h2>
+                <div class="chart-container">
+                    <canvas id="domChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hot Neighborhoods -->
+        <div class="panel">
+            <h2>🔥 Trending Neighborhoods</h2>
+            <div class="neighborhood-grid" id="neighborhoodsContainer">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Market Alerts -->
+        <div class="panel">
+            <h2>🚨 Market Alerts & Signals</h2>
+            <div class="alerts-container" id="alertsContainer">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Market Insights -->
+        <div class="panel">
+            <h2>💡 AI-Powered Market Insights</h2>
+            <div class="insights-list" id="insightsContainer">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Comparative Analysis -->
+        <div class="panel">
+            <h2>📊 Regional Comparison</h2>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Region</th>
+                        <th>Median Price</th>
+                        <th>Change (YoY)</th>
+                        <th>Days on Market</th>
+                        <th>Active Listings</th>
+                        <th>Market Status</th>
+                    </tr>
+                </thead>
+                <tbody id="comparisonTableBody">
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Market Data
+        let marketData = {
+            medianPrice: 475000,
+            priceChange: 5.2,
+            daysOnMarket: 18,
+            domChange: -22,
+            activeListings: 347,
+            listingsChange: 12.6,
+            saleToList: 98.5,
+            ratioChange: 0.3,
+            buyerDemand: 'Hot',
+            demandChange: 18,
+            inventoryLevel: 1.8,
+            lastUpdate: new Date()
+        };
+
+        const neighborhoods = [
+            { name: 'Downtown District', medianPrice: '$625,000', change: '+8.2%', dom: 12, trend: 'hot', listings: 45 },
+            { name: 'Riverside Heights', medianPrice: '$550,000', change: '+6.5%', dom: 15, trend: 'hot', listings: 38 },
+            { name: 'Oakwood Estates', medianPrice: '$485,000', change: '+4.1%', dom: 20, trend: 'warm', listings: 52 },
+            { name: 'Sunset Valley', medianPrice: '$420,000', change: '+3.8%', dom: 22, trend: 'warm', listings: 67 },
+            { name: 'Pine Grove', medianPrice: '$395,000', change: '+2.5%', dom: 25, trend: 'cool', listings: 41 },
+            { name: 'Maple Ridge', medianPrice: '$510,000', change: '+5.7%', dom: 18, trend: 'hot', listings: 29 }
+        ];
+
+        const alerts = [
+            { type: 'critical', icon: '🚨', title: 'Rapid Price Increase Alert', message: 'Downtown District prices up 8.2% this month - highest rate in 3 years!', time: '15 minutes ago' },
+            { type: 'warning', icon: '⚠️', title: 'Low Inventory Warning', message: 'Only 1.8 months of inventory - expect bidding wars on desirable properties.', time: '1 hour ago' },
+            { type: 'success', icon: '✅', title: 'New Listings Surge', message: '47 new properties listed today - 35% above weekly average.', time: '2 hours ago' },
+            { type: 'info', icon: 'ℹ️', title: 'Market Trend Shift', message: 'Days on market dropping - buyers acting faster. Average down to 18 days.', time: '4 hours ago' },
+            { type: 'success', icon: '📈', title: 'Buyer Interest Peak', message: 'Showing requests up 18% week-over-week. High demand detected.', time: '6 hours ago' }
+        ];
+
+        const insights = [
+            { title: 'Best Time to List', text: 'Current market conditions favor sellers. Properties are selling 22% faster than last month with multiple offers common on well-priced homes.' },
+            { title: 'Price Point Sweet Spot', text: 'Homes priced between $400K-$550K are seeing the most activity, with 87% receiving offers within 2 weeks.' },
+            { title: 'Seasonal Forecast', text: 'Spring market is heating up early. Expect inventory to increase 15-20% over next 6 weeks as more sellers list.' },
+            { title: 'Investment Opportunity', text: 'Pine Grove showing strong value potential - prices still below market average but demand increasing steadily.' },
+            { title: 'Competition Analysis', text: 'Average 5.2 offers per property in hot neighborhoods. Pre-approval and quick decision-making critical for buyers.' }
+        ];
+
+        const regionalData = [
+            { region: 'Metro Core', price: '$625,000', change: '+8.2%', dom: 12, listings: 156, status: 'Hot 🔥' },
+            { region: 'North Suburbs', price: '$485,000', change: '+5.1%', dom: 18, listings: 243, status: 'Warm 🌡️' },
+            { region: 'South County', price: '$420,000', change: '+3.8%', dom: 22, listings: 198, status: 'Balanced ⚖️' },
+            { region: 'East Valley', price: '$510,000', change: '+6.3%', dom: 15, listings: 167, status: 'Hot 🔥' },
+            { region: 'West Hills', price: '$750,000', change: '+4.5%', dom: 28, listings: 89, status: 'Cooling ❄️' }
+        ];
+
+        let priceChart, supplyDemandChart, homeTypeChart, domChart;
+
+        // Initialize
+        function init() {
+            updateMetrics();
+            renderNeighborhoods();
+            renderAlerts();
+            renderInsights();
+            renderComparison();
+            initCharts();
+            startLiveUpdates();
+        }
+
+        // Update Metrics Display
+        function updateMetrics() {
+            document.getElementById('medianPrice').textContent = formatCurrency(marketData.medianPrice);
+            document.getElementById('priceChange').textContent = formatPercent(marketData.priceChange);
+            document.getElementById('daysOnMarket').textContent = marketData.daysOnMarket;
+            document.getElementById('domChange').textContent = formatPercent(marketData.domChange);
+            document.getElementById('activeListings').textContent = marketData.activeListings;
+            document.getElementById('listingsChange').textContent = formatPercent(marketData.listingsChange);
+            document.getElementById('saleToList').textContent = marketData.saleToList + '%';
+            document.getElementById('ratioChange').textContent = formatPercent(marketData.ratioChange);
+            document.getElementById('buyerDemand').textContent = marketData.buyerDemand;
+            document.getElementById('demandChange').textContent = formatPercent(marketData.demandChange);
+            document.getElementById('inventoryLevel').textContent = marketData.inventoryLevel;
+
+            updateLastUpdateTime();
+        }
+
+        // Render Neighborhoods
+        function renderNeighborhoods() {
+            const container = document.getElementById('neighborhoodsContainer');
+            container.innerHTML = neighborhoods.map(n => `
+                <div class="neighborhood-card">
+                    <div class="neighborhood-name">${n.name}</div>
+                    <div class="neighborhood-stats">
+                        <div class="neighborhood-stat">
+                            <span class="stat-label">Median Price</span>
+                            <span class="stat-value">${n.medianPrice}</span>
+                        </div>
+                        <div class="neighborhood-stat">
+                            <span class="stat-label">Change</span>
+                            <span class="stat-value" style="color: #10b981;">${n.change}</span>
+                        </div>
+                        <div class="neighborhood-stat">
+                            <span class="stat-label">Days on Market</span>
+                            <span class="stat-value">${n.dom} days</span>
+                        </div>
+                        <div class="neighborhood-stat">
+                            <span class="stat-label">Active Listings</span>
+                            <span class="stat-value">${n.listings}</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <span class="trend-indicator ${n.trend}">
+                            ${n.trend === 'hot' ? '🔥 Hot Market' : n.trend === 'warm' ? '🌡️ Warm' : '❄️ Cool'}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Alerts
+        function renderAlerts() {
+            const container = document.getElementById('alertsContainer');
+            container.innerHTML = alerts.map(a => `
+                <div class="alert ${a.type}">
+                    <div class="alert-icon">${a.icon}</div>
+                    <div class="alert-content">
+                        <div class="alert-title">${a.title}</div>
+                        <div class="alert-message">${a.message}</div>
+                        <div class="alert-time">${a.time}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Insights
+        function renderInsights() {
+            const container = document.getElementById('insightsContainer');
+            container.innerHTML = insights.map(i => `
+                <div class="insight-card">
+                    <div class="insight-title">💡 ${i.title}</div>
+                    <div class="insight-text">${i.text}</div>
+                </div>
+            `).join('');
+        }
+
+        // Render Comparison Table
+        function renderComparison() {
+            const tbody = document.getElementById('comparisonTableBody');
+            tbody.innerHTML = regionalData.map(r => `
+                <tr>
+                    <td><strong>${r.region}</strong></td>
+                    <td>${r.price}</td>
+                    <td style="color: #10b981;">${r.change}</td>
+                    <td>${r.dom} days</td>
+                    <td>${r.listings}</td>
+                    <td>${r.status}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Initialize Charts
+        function initCharts() {
+            // Price Trends Chart
+            const priceCtx = document.getElementById('priceChart').getContext('2d');
+            priceChart = new Chart(priceCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [{
+                        label: 'Median Home Price',
+                        data: [425000, 430000, 435000, 442000, 448000, 455000, 460000, 465000, 468000, 470000, 473000, 475000],
+                        borderColor: '#FFD700',
+                        backgroundColor: 'rgba(255, 215, 0, 0.2)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: getChartOptions('Price ($)')
+            });
+
+            // Supply vs Demand Chart
+            const supplyCtx = document.getElementById('supplyDemandChart').getContext('2d');
+            supplyDemandChart = new Chart(supplyCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                    datasets: [
+                        {
+                            label: 'New Listings',
+                            data: [280, 295, 310, 325, 340, 355, 370, 360, 350, 345, 340, 347],
+                            backgroundColor: '#00D4FF',
+                            borderWidth: 0
+                        },
+                        {
+                            label: 'Buyer Inquiries',
+                            data: [520, 540, 560, 590, 620, 650, 680, 670, 660, 655, 650, 680],
+                            backgroundColor: '#FF6B35',
+                            borderWidth: 0
+                        }
+                    ]
+                },
+                options: getChartOptions('Count')
+            });
+
+            // Home Type Chart
+            const typeCtx = document.getElementById('homeTypeChart').getContext('2d');
+            homeTypeChart = new Chart(typeCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Single Family', 'Condo', 'Townhouse', 'Multi-Family'],
+                    datasets: [{
+                        data: [52, 28, 15, 5],
+                        backgroundColor: ['#0066CC', '#00D4FF', '#FFD700', '#FF6B35'],
+                        borderColor: 'white',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: 'white', font: { size: 14, weight: 'bold' } } }
+                    }
+                }
+            });
+
+            // Days on Market Chart
+            const domCtx = document.getElementById('domChart').getContext('2d');
+            domChart = new Chart(domCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['0-7 days', '8-14 days', '15-21 days', '22-30 days', '31+ days'],
+                    datasets: [{
+                        label: 'Number of Properties',
+                        data: [85, 142, 78, 32, 10],
+                        backgroundColor: ['#10b981', '#FFD700', '#00D4FF', '#f59e0b', '#ef4444'],
+                        borderWidth: 0
+                    }]
+                },
+                options: getChartOptions('Properties')
+            });
+        }
+
+        // Chart Options Helper
+        function getChartOptions(yLabel) {
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: 'white', font: { size: 14, weight: 'bold' } }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: 'white' },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                        title: { display: true, text: yLabel, color: 'white', font: { weight: 'bold' } }
+                    },
+                    x: {
+                        ticks: { color: 'white' },
+                        grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                    }
+                }
+            };
+        }
+
+        // Live Updates
+        function startLiveUpdates() {
+            setInterval(() => {
+                // Simulate real-time data changes
+                marketData.medianPrice += Math.floor(Math.random() * 2000) - 1000;
+                marketData.activeListings += Math.floor(Math.random() * 6) - 3;
+                marketData.daysOnMarket = Math.max(10, marketData.daysOnMarket + Math.floor(Math.random() * 3) - 1);
+                marketData.lastUpdate = new Date();
+
+                updateMetrics();
+            }, 30000); // Update every 30 seconds
+
+            // Update time display every minute
+            setInterval(updateLastUpdateTime, 60000);
+        }
+
+        function updateLastUpdateTime() {
+            const now = new Date();
+            const diff = Math.floor((now - marketData.lastUpdate) / 1000 / 60);
+            const text = diff === 0 ? 'Updated just now' : `Updated ${diff} min${diff > 1 ? 's' : ''} ago`;
+            document.getElementById('lastUpdate').textContent = text;
+        }
+
+        // Utilities
+        function formatCurrency(value) {
+            return '$' + value.toLocaleString();
+        }
+
+        function formatPercent(value) {
+            return (value > 0 ? '+' : '') + value + '%';
+        }
+
+        // User Actions
+        function toggleFilter(element, filter) {
+            document.querySelectorAll('.filter-tag').forEach(tag => tag.classList.remove('active'));
+            element.classList.add('active');
+            // In production, this would filter the data
+            console.log('Filter applied:', filter);
+        }
+
+        function refreshData() {
+            marketData.lastUpdate = new Date();
+            updateMetrics();
+
+            // Animate refresh
+            document.querySelector('.pulse-dot').style.animation = 'none';
+            setTimeout(() => {
+                document.querySelector('.pulse-dot').style.animation = 'pulse 2s infinite';
+            }, 10);
+        }
+
+        function exportReport() {
+            const report = {
+                marketData,
+                neighborhoods,
+                alerts,
+                insights,
+                regionalData,
+                exportDate: new Date().toISOString()
+            };
+
+            const dataStr = JSON.stringify(report, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `market-pulse-report-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function viewHistorical() {
+            alert('📊 Historical data viewer would open here with 5-year market trends and predictive analytics.');
+        }
+
+        function setAlerts() {
+            alert('🔔 Alert configuration panel would open here to set price alerts, inventory thresholds, and custom notifications.');
+        }
+
+        // Initialize on load
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
