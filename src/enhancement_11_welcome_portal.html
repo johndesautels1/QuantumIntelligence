@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLUES™ Enhancement #11: Dynamic Welcome Portal</title>
+
+    <!-- Chart.js for mini charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- Premium Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --sapphire-blue: #0066CC;
+            --sunshine-orange: #FF6B35;
+            --light-gold: #FFD700;
+            --quantum-blue: #00D4FF;
+            --quantum-purple: #9D4EDD;
+            --deep-space: #0A0E27;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --success-green: #00FF88;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0A0E27 0%, #1a1f3a 50%, #0F172A 100%);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background Grid */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+            animation: grid-move 20s linear infinite;
+        }
+
+        @keyframes grid-move {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(0, 212, 255, 0.6); }
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        /* Hero Welcome Section */
+        .hero-welcome {
+            background: linear-gradient(135deg, rgba(0, 102, 204, 0.1), rgba(255, 107, 53, 0.1));
+            border: 2px solid var(--sapphire-blue);
+            border-radius: 30px;
+            padding: 60px 40px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .hero-welcome::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+            animation: pulse-glow 4s ease-in-out infinite;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .welcome-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--sapphire-blue), var(--sunshine-orange));
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .hero-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.5em;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--sapphire-blue), var(--sunshine-orange), var(--light-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            line-height: 1.2;
+        }
+
+        .hero-subtitle {
+            font-size: 1.5em;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 30px;
+        }
+
+        .hero-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .hero-stat {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid var(--glass-border);
+            text-align: center;
+        }
+
+        .hero-stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5em;
+            font-weight: 700;
+            color: var(--light-gold);
+            margin-bottom: 5px;
+        }
+
+        .hero-stat-label {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Progress Tracking */
+        .progress-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--quantum-blue);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            animation: fadeInUp 0.8s ease 0.2s both;
+        }
+
+        .progress-section h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--quantum-blue);
+            font-size: 2em;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .progress-bars {
+            display: grid;
+            gap: 20px;
+        }
+
+        .progress-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .progress-title {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .progress-percentage {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3em;
+            font-weight: 700;
+            color: var(--light-gold);
+        }
+
+        .progress-bar-container {
+            height: 20px;
+            background: rgba(0, 102, 204, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--sapphire-blue), var(--sunshine-orange), var(--light-gold));
+            border-radius: 10px;
+            transition: width 1s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-substeps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .substep {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.85em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .substep.completed {
+            color: var(--success-green);
+        }
+
+        .substep.in-progress {
+            color: var(--sunshine-orange);
+        }
+
+        .substep.pending {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Quick Access Tiles */
+        .quick-access {
+            margin-bottom: 30px;
+            animation: fadeInUp 0.8s ease 0.4s both;
+        }
+
+        .quick-access h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--quantum-purple);
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .tiles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .access-tile {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .access-tile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--sapphire-blue), var(--sunshine-orange));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.3s;
+        }
+
+        .access-tile:hover::before {
+            transform: scaleX(1);
+        }
+
+        .access-tile:hover {
+            transform: translateY(-5px);
+            border-color: var(--sapphire-blue);
+            box-shadow: 0 10px 30px rgba(0, 102, 204, 0.3);
+        }
+
+        .tile-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 10px currentColor);
+        }
+
+        .tile-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3em;
+            font-weight: 700;
+            color: var(--quantum-blue);
+            margin-bottom: 10px;
+        }
+
+        .tile-description {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+
+        .tile-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--sunshine-orange);
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 700;
+        }
+
+        /* Recent Activity Feed */
+        .activity-feed {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--success-green);
+            border-radius: 20px;
+            padding: 30px;
+            animation: fadeInUp 0.8s ease 0.6s both;
+        }
+
+        .activity-feed h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--success-green);
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .activity-timeline {
+            position: relative;
+            padding-left: 40px;
+        }
+
+        .activity-timeline::before {
+            content: '';
+            position: absolute;
+            left: 10px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, var(--sapphire-blue), var(--sunshine-orange), var(--light-gold));
+        }
+
+        .activity-item {
+            position: relative;
+            margin-bottom: 25px;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 1px solid var(--glass-border);
+            animation: slideInRight 0.5s ease;
+        }
+
+        .activity-item::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 20px;
+            width: 12px;
+            height: 12px;
+            background: var(--light-gold);
+            border: 3px solid var(--deep-space);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--light-gold);
+        }
+
+        .activity-time {
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 5px;
+        }
+
+        .activity-content {
+            color: #fff;
+            font-size: 1em;
+        }
+
+        .activity-action {
+            color: var(--sapphire-blue);
+            font-weight: 600;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: 2px solid;
+            border-radius: 12px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--sapphire-blue), var(--sunshine-orange));
+            border-color: var(--light-gold);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border-color: var(--quantum-blue);
+            color: var(--quantum-blue);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 212, 255, 0.1);
+            transform: translateY(-3px);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .hero-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5em;
+            }
+
+            .hero-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .tiles-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Hero Welcome Section -->
+        <div class="hero-welcome">
+            <div class="hero-content">
+                <div class="welcome-badge">🏠 CLUES™ Buyer Intelligence Portal</div>
+                <h1 class="hero-title">Welcome Back, <span id="clientName">Michael Johnson</span>!</h1>
+                <p class="hero-subtitle">Your personalized property intelligence dashboard is ready</p>
+
+                <div class="hero-stats">
+                    <div class="hero-stat">
+                        <div class="hero-stat-value" id="propertiesViewed">23</div>
+                        <div class="hero-stat-label">Properties Viewed</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-value" id="savedProperties">8</div>
+                        <div class="hero-stat-label">Saved Favorites</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-value" id="scheduledTours">3</div>
+                        <div class="hero-stat-label">Tours Scheduled</div>
+                    </div>
+                    <div class="hero-stat">
+                        <div class="hero-stat-value" id="daysActive">12</div>
+                        <div class="hero-stat-label">Days Active</div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="viewProperties()">
+                        🔍 View All Properties
+                    </button>
+                    <button class="btn btn-secondary" onclick="scheduleTour()">
+                        📅 Schedule Tour
+                    </button>
+                    <button class="btn btn-secondary" onclick="updatePreferences()">
+                        ⚙️ Update Preferences
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Tracking Dashboard -->
+        <div class="progress-section">
+            <h2>📈 Your Home Search Journey</h2>
+
+            <div class="progress-bars">
+                <!-- Profile Completion -->
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <div class="progress-title">👤 Profile Completion</div>
+                        <div class="progress-percentage" id="profileProgress">85%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" id="profileBar" style="width: 85%"></div>
+                    </div>
+                    <div class="progress-substeps">
+                        <div class="substep completed">✓ Basic Info</div>
+                        <div class="substep completed">✓ Budget Set</div>
+                        <div class="substep completed">✓ Preferences</div>
+                        <div class="substep in-progress">⏳ Personality Quiz</div>
+                    </div>
+                </div>
+
+                <!-- Property Search -->
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <div class="progress-title">🏡 Property Search</div>
+                        <div class="progress-percentage" id="searchProgress">60%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" id="searchBar" style="width: 60%"></div>
+                    </div>
+                    <div class="progress-substeps">
+                        <div class="substep completed">✓ Area Selected</div>
+                        <div class="substep completed">✓ Viewing Properties</div>
+                        <div class="substep in-progress">⏳ Narrowing Down</div>
+                        <div class="substep pending">○ Final Selection</div>
+                    </div>
+                </div>
+
+                <!-- Pre-Approval -->
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <div class="progress-title">💰 Financing</div>
+                        <div class="progress-percentage" id="financingProgress">40%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" id="financingBar" style="width: 40%"></div>
+                    </div>
+                    <div class="progress-substeps">
+                        <div class="substep completed">✓ Budget Analysis</div>
+                        <div class="substep in-progress">⏳ Pre-Approval</div>
+                        <div class="substep pending">○ Final Approval</div>
+                        <div class="substep pending">○ Closing</div>
+                    </div>
+                </div>
+
+                <!-- Decision Making -->
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <div class="progress-title">🎯 Decision Making</div>
+                        <div class="progress-percentage" id="decisionProgress">70%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar-fill" id="decisionBar" style="width: 70%"></div>
+                    </div>
+                    <div class="progress-substeps">
+                        <div class="substep completed">✓ Needs Identified</div>
+                        <div class="substep completed">✓ Wants Listed</div>
+                        <div class="substep completed">✓ Priorities Set</div>
+                        <div class="substep in-progress">⏳ Final Comparison</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Access Tiles -->
+        <div class="quick-access">
+            <h2>⚡ Quick Access</h2>
+            <div class="tiles-grid">
+                <div class="access-tile" onclick="goToWeightSlider()">
+                    <div class="tile-icon">🎚️</div>
+                    <div class="tile-title">Priority Weight Slider</div>
+                    <div class="tile-description">Adjust what matters most to you and see rankings update in real-time</div>
+                    <div class="tile-badge">POPULAR</div>
+                </div>
+
+                <div class="access-tile" onclick="goToComparison()">
+                    <div class="tile-icon">⚖️</div>
+                    <div class="tile-title">Property Comparison</div>
+                    <div class="tile-description">Compare up to 4 properties side-by-side with detailed analytics</div>
+                </div>
+
+                <div class="access-tile" onclick="goToNeighborhood()">
+                    <div class="tile-icon">🗺️</div>
+                    <div class="tile-title">Neighborhood Intel</div>
+                    <div class="tile-description">Explore crime rates, schools, amenities, and local insights</div>
+                    <div class="tile-badge">NEW</div>
+                </div>
+
+                <div class="access-tile" onclick="goToFinancial()">
+                    <div class="tile-icon">💵</div>
+                    <div class="tile-title">Financial Calculator</div>
+                    <div class="tile-description">Mortgage calculator, ROI projections, and affordability analysis</div>
+                </div>
+
+                <div class="access-tile" onclick="goToTours()">
+                    <div class="tile-icon">📅</div>
+                    <div class="tile-title">Scheduled Tours</div>
+                    <div class="tile-description">Manage your property tour calendar and appointments</div>
+                </div>
+
+                <div class="access-tile" onclick="goToReports()">
+                    <div class="tile-icon">📊</div>
+                    <div class="tile-title">CLUES™ Reports</div>
+                    <div class="tile-description">Download detailed intelligence reports for your top properties</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Feed -->
+        <div class="activity-feed">
+            <h2>🕐 Recent Activity</h2>
+            <div class="activity-timeline" id="activityTimeline"></div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // CLIENT DATA
+        // ==========================================
+
+        const CLIENT_DATA = {
+            name: 'Michael Johnson',
+            stats: {
+                propertiesViewed: 23,
+                savedProperties: 8,
+                scheduledTours: 3,
+                daysActive: 12
+            },
+            progress: {
+                profile: 85,
+                search: 60,
+                financing: 40,
+                decision: 70
+            },
+            recentActivity: [
+                {
+                    time: '2 hours ago',
+                    action: 'Saved property',
+                    details: '123 Sunset Boulevard to favorites',
+                    icon: '❤️'
+                },
+                {
+                    time: '5 hours ago',
+                    action: 'Scheduled tour',
+                    details: '456 Ocean Drive for Saturday 2PM',
+                    icon: '📅'
+                },
+                {
+                    time: '1 day ago',
+                    action: 'Updated weights',
+                    details: 'Changed School Rating priority to 30%',
+                    icon: '🎚️'
+                },
+                {
+                    time: '1 day ago',
+                    action: 'Compared properties',
+                    details: '4 properties in Pinellas County area',
+                    icon: '⚖️'
+                },
+                {
+                    time: '2 days ago',
+                    action: 'Downloaded report',
+                    details: 'CLUES™ Intelligence Report for 789 Maple St',
+                    icon: '📊'
+                },
+                {
+                    time: '3 days ago',
+                    action: 'Completed assessment',
+                    details: 'Psychographic Personality Profile',
+                    icon: '🧠'
+                },
+                {
+                    time: '3 days ago',
+                    action: 'Viewed property',
+                    details: '321 Palm Avenue - CLUES™ Score: 88',
+                    icon: '🏠'
+                },
+                {
+                    time: '4 days ago',
+                    action: 'Set budget',
+                    details: 'Updated max budget to $550,000',
+                    icon: '💰'
+                }
+            ]
+        };
+
+        // ==========================================
+        // INITIALIZATION
+        // ==========================================
+
+        function init() {
+            loadClientData();
+            renderActivityFeed();
+            animateProgressBars();
+        }
+
+        function loadClientData() {
+            // Load client name
+            document.getElementById('clientName').textContent = CLIENT_DATA.name;
+
+            // Load stats
+            document.getElementById('propertiesViewed').textContent = CLIENT_DATA.stats.propertiesViewed;
+            document.getElementById('savedProperties').textContent = CLIENT_DATA.stats.savedProperties;
+            document.getElementById('scheduledTours').textContent = CLIENT_DATA.stats.scheduledTours;
+            document.getElementById('daysActive').textContent = CLIENT_DATA.stats.daysActive;
+
+            // Load progress
+            document.getElementById('profileProgress').textContent = CLIENT_DATA.progress.profile + '%';
+            document.getElementById('searchProgress').textContent = CLIENT_DATA.progress.search + '%';
+            document.getElementById('financingProgress').textContent = CLIENT_DATA.progress.financing + '%';
+            document.getElementById('decisionProgress').textContent = CLIENT_DATA.progress.decision + '%';
+        }
+
+        function animateProgressBars() {
+            // Animate progress bars on load
+            setTimeout(() => {
+                document.getElementById('profileBar').style.width = CLIENT_DATA.progress.profile + '%';
+                document.getElementById('searchBar').style.width = CLIENT_DATA.progress.search + '%';
+                document.getElementById('financingBar').style.width = CLIENT_DATA.progress.financing + '%';
+                document.getElementById('decisionBar').style.width = CLIENT_DATA.progress.decision + '%';
+            }, 500);
+        }
+
+        function renderActivityFeed() {
+            const container = document.getElementById('activityTimeline');
+
+            CLIENT_DATA.recentActivity.forEach((activity, index) => {
+                const item = document.createElement('div');
+                item.className = 'activity-item';
+                item.style.animationDelay = (index * 0.1) + 's';
+
+                item.innerHTML = `
+                    <div class="activity-time">${activity.time}</div>
+                    <div class="activity-content">
+                        ${activity.icon} <span class="activity-action">${activity.action}</span>: ${activity.details}
+                    </div>
+                `;
+
+                container.appendChild(item);
+            });
+        }
+
+        // ==========================================
+        // NAVIGATION FUNCTIONS
+        // ==========================================
+
+        function viewProperties() {
+            alert('🏠 Navigating to Property Listings...\n\nThis will show all available properties with CLUES™ scoring.');
+            console.log('Navigate to: Property Listings');
+        }
+
+        function scheduleTour() {
+            alert('📅 Opening Tour Scheduler...\n\nThis will connect to your calendar (Google Calendar/Calendly) for appointment booking.');
+            console.log('Navigate to: Tour Scheduler');
+        }
+
+        function updatePreferences() {
+            alert('⚙️ Opening Preference Settings...\n\nUpdate your search criteria, budget, location preferences, and priorities.');
+            console.log('Navigate to: Preferences');
+        }
+
+        function goToWeightSlider() {
+            // Navigate to Enhancement #16
+            window.location.href = 'enhancement_16_weight_slider.html';
+        }
+
+        function goToComparison() {
+            alert('⚖️ Opening Property Comparison Tool...\n\nCompare up to 4 properties side-by-side with detailed metrics.');
+            console.log('Navigate to: Property Comparison');
+        }
+
+        function goToNeighborhood() {
+            alert('🗺️ Opening Neighborhood Intelligence...\n\nExplore crime data, school ratings, amenities, and local insights.');
+            console.log('Navigate to: Neighborhood Intel');
+        }
+
+        function goToFinancial() {
+            alert('💵 Opening Financial Calculator...\n\nMortgage calculator, ROI analysis, and affordability projections.');
+            console.log('Navigate to: Financial Tools');
+        }
+
+        function goToTours() {
+            alert('📅 Opening Tour Management...\n\nView and manage your scheduled property tours.');
+            console.log('Navigate to: Scheduled Tours');
+        }
+
+        function goToReports() {
+            alert('📊 Opening CLUES™ Reports...\n\nDownload comprehensive intelligence reports for your properties.');
+            console.log('Navigate to: Reports');
+        }
+
+        // ==========================================
+        // START APPLICATION
+        // ==========================================
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
