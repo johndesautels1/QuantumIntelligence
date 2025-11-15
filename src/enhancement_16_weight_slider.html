@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLUES™ Enhancement #16: Multivariant Weight Scale System</title>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- Premium Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* CLUES™ Brand Colors */
+            --sapphire-blue: #0066CC;
+            --sunshine-orange: #FF6B35;
+            --light-gold: #FFD700;
+            --quantum-blue: #00D4FF;
+            --quantum-purple: #9D4EDD;
+            --deep-space: #0A0E27;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --success-green: #00FF88;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0A0E27 0%, #1a1f3a 50%, #0F172A 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+        }
+
+        .header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3em;
+            background: linear-gradient(135deg, var(--sapphire-blue), var(--sunshine-orange), var(--light-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.2em;
+        }
+
+        /* Main Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        /* Weight Controls Panel */
+        .weight-controls {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--sapphire-blue);
+            border-radius: 20px;
+            padding: 30px;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .weight-controls h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--sapphire-blue);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        /* Preset Profiles */
+        .preset-profiles {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .preset-btn {
+            padding: 12px;
+            background: linear-gradient(135deg, rgba(0, 102, 204, 0.2), rgba(255, 107, 53, 0.2));
+            border: 1px solid var(--sapphire-blue);
+            border-radius: 10px;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .preset-btn:hover {
+            background: linear-gradient(135deg, rgba(0, 102, 204, 0.4), rgba(255, 107, 53, 0.4));
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 102, 204, 0.4);
+        }
+
+        .preset-btn.active {
+            background: linear-gradient(135deg, var(--sapphire-blue), var(--sunshine-orange));
+            border-color: var(--light-gold);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        /* Weight Sliders */
+        .weight-slider-group {
+            margin-bottom: 25px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .slider-name {
+            font-weight: 600;
+            font-size: 1.1em;
+            color: var(--quantum-blue);
+        }
+
+        .slider-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2em;
+            font-weight: 700;
+            color: var(--light-gold);
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .slider-container {
+            position: relative;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            background: linear-gradient(90deg, rgba(0, 102, 204, 0.3), rgba(255, 107, 53, 0.3));
+            border-radius: 10px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--sapphire-blue), var(--sunshine-orange));
+            border: 2px solid var(--light-gold);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+            transition: all 0.3s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, var(--sapphire-blue), var(--sunshine-orange));
+            border: 2px solid var(--light-gold);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            padding: 12px;
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            background: rgba(0, 102, 204, 0.2);
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: rgba(0, 102, 204, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* Property Results Panel */
+        .property-results {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--quantum-blue);
+            border-radius: 20px;
+            padding: 30px;
+        }
+
+        .property-results h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--quantum-blue);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        /* Property Cards */
+        .property-card {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .property-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--sapphire-blue), var(--sunshine-orange), var(--light-gold));
+        }
+
+        .property-card:hover {
+            transform: translateX(10px);
+            border-color: var(--sapphire-blue);
+            box-shadow: 0 10px 30px rgba(0, 102, 204, 0.3);
+        }
+
+        .property-rank {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--sapphire-blue), var(--sunshine-orange));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8em;
+            font-weight: 900;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .property-name {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--quantum-blue);
+            margin-bottom: 10px;
+        }
+
+        .property-score {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3em;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--sapphire-blue), var(--sunshine-orange), var(--light-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+
+        .property-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .detail-item {
+            background: rgba(0, 102, 204, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 102, 204, 0.3);
+        }
+
+        .detail-label {
+            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 3px;
+        }
+
+        .detail-value {
+            font-weight: 700;
+            color: var(--light-gold);
+            font-size: 1.1em;
+        }
+
+        .category-breakdown {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .category-score {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+
+        .category-score .name {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .category-score .value {
+            font-weight: 700;
+            color: var(--success-green);
+        }
+
+        /* Score Breakdown Chart */
+        .score-breakdown-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--quantum-purple);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .score-breakdown-panel h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--quantum-purple);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+        }
+
+        /* Sensitivity Analysis */
+        .sensitivity-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--success-green);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .sensitivity-panel h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--success-green);
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .sensitivity-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .sensitivity-item {
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .sensitivity-category {
+            font-weight: 600;
+            color: var(--success-green);
+            margin-bottom: 8px;
+        }
+
+        .sensitivity-impact {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--light-gold);
+        }
+
+        .sensitivity-description {
+            font-size: 0.85em;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 5px;
+        }
+
+        /* Animation for score changes */
+        @keyframes scoreChange {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .score-updating {
+            animation: scoreChange 0.5s ease;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .weight-controls {
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🎚️ Multivariant Weight Scale System</h1>
+            <p>CLUES™ Enhancement #16 | Real-Time Property Intelligence Optimization</p>
+        </div>
+
+        <!-- Main Dashboard -->
+        <div class="dashboard-grid">
+            <!-- Property Results Column -->
+            <div class="property-results">
+                <h2>📊 Ranked Properties</h2>
+                <div id="propertyList"></div>
+            </div>
+
+            <!-- Weight Controls Column -->
+            <div class="weight-controls">
+                <h2>⚙️ Weight Controls</h2>
+
+                <!-- Preset Profiles -->
+                <div class="preset-profiles">
+                    <button class="preset-btn" onclick="applyPreset('familyFirst')">👨‍👩‍👧‍👦 Family First</button>
+                    <button class="preset-btn" onclick="applyPreset('investment')">💰 Investment Focus</button>
+                    <button class="preset-btn" onclick="applyPreset('luxury')">✨ Luxury Lifestyle</button>
+                    <button class="preset-btn" onclick="applyPreset('balanced')">⚖️ Balanced</button>
+                </div>
+
+                <!-- Weight Sliders -->
+                <div id="weightSliders"></div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button class="action-btn" onclick="resetWeights()">🔄 Reset</button>
+                    <button class="action-btn" onclick="saveScenario()">💾 Save Scenario</button>
+                    <button class="action-btn" onclick="exportWeights()">📥 Export</button>
+                    <button class="action-btn" onclick="compareScenarios()">🔀 Compare</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Score Breakdown Chart -->
+        <div class="score-breakdown-panel">
+            <h2>📈 Score Impact Analysis</h2>
+            <div class="chart-container">
+                <canvas id="scoreBreakdownChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Sensitivity Analysis -->
+        <div class="sensitivity-panel">
+            <h2>🔬 Sensitivity Analysis</h2>
+            <div class="sensitivity-grid" id="sensitivityGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // DATA STRUCTURES
+        // ==========================================
+
+        // Weight Categories
+        const WEIGHT_CATEGORIES = [
+            { id: 'location', name: '📍 Location Quality', default: 20 },
+            { id: 'price', name: '💰 Price Value', default: 15 },
+            { id: 'schools', name: '🏫 School Ratings', default: 15 },
+            { id: 'size', name: '📏 Property Size', default: 10 },
+            { id: 'condition', name: '🏠 Condition/Age', default: 10 },
+            { id: 'amenities', name: '🎯 Amenities', default: 10 },
+            { id: 'safety', name: '🚔 Safety/Crime', default: 10 },
+            { id: 'investment', name: '📈 Investment Potential', default: 5 },
+            { id: 'commute', name: '🚗 Commute Distance', default: 3 },
+            { id: 'lifestyle', name: '🌴 Lifestyle Fit', default: 2 }
+        ];
+
+        // Sample Property Data
+        const PROPERTIES = [
+            {
+                id: 1,
+                name: '123 Sunset Boulevard',
+                price: 450000,
+                sqft: 2400,
+                beds: 4,
+                baths: 3,
+                scores: {
+                    location: 85,
+                    price: 92,
+                    schools: 95,
+                    size: 88,
+                    condition: 75,
+                    amenities: 82,
+                    safety: 90,
+                    investment: 88,
+                    commute: 70,
+                    lifestyle: 85
+                }
+            },
+            {
+                id: 2,
+                name: '456 Ocean Drive',
+                price: 625000,
+                sqft: 3200,
+                beds: 5,
+                baths: 4,
+                scores: {
+                    location: 95,
+                    price: 75,
+                    schools: 88,
+                    size: 95,
+                    condition: 92,
+                    amenities: 95,
+                    safety: 85,
+                    investment: 90,
+                    commute: 60,
+                    lifestyle: 95
+                }
+            },
+            {
+                id: 3,
+                name: '789 Maple Street',
+                price: 325000,
+                sqft: 1800,
+                beds: 3,
+                baths: 2,
+                scores: {
+                    location: 75,
+                    price: 98,
+                    schools: 92,
+                    size: 70,
+                    condition: 65,
+                    amenities: 70,
+                    safety: 95,
+                    investment: 82,
+                    commute: 85,
+                    lifestyle: 75
+                }
+            },
+            {
+                id: 4,
+                name: '321 Palm Avenue',
+                price: 550000,
+                sqft: 2800,
+                beds: 4,
+                baths: 3.5,
+                scores: {
+                    location: 90,
+                    price: 82,
+                    schools: 85,
+                    size: 85,
+                    condition: 88,
+                    amenities: 90,
+                    safety: 88,
+                    investment: 92,
+                    commute: 75,
+                    lifestyle: 90
+                }
+            },
+            {
+                id: 5,
+                name: '654 Harbor Lane',
+                price: 475000,
+                sqft: 2600,
+                beds: 4,
+                baths: 3,
+                scores: {
+                    location: 88,
+                    price: 88,
+                    schools: 78,
+                    size: 82,
+                    condition: 80,
+                    amenities: 85,
+                    safety: 82,
+                    investment: 85,
+                    commute: 80,
+                    lifestyle: 82
+                }
+            }
+        ];
+
+        // Preset Weight Configurations
+        const PRESETS = {
+            familyFirst: {
+                location: 15,
+                price: 10,
+                schools: 30,
+                size: 15,
+                condition: 10,
+                amenities: 5,
+                safety: 10,
+                investment: 2,
+                commute: 2,
+                lifestyle: 1
+            },
+            investment: {
+                location: 20,
+                price: 25,
+                schools: 5,
+                size: 5,
+                condition: 10,
+                amenities: 5,
+                safety: 10,
+                investment: 15,
+                commute: 3,
+                lifestyle: 2
+            },
+            luxury: {
+                location: 25,
+                price: 5,
+                schools: 10,
+                size: 15,
+                condition: 15,
+                amenities: 20,
+                safety: 5,
+                investment: 2,
+                commute: 2,
+                lifestyle: 1
+            },
+            balanced: {
+                location: 20,
+                price: 15,
+                schools: 15,
+                size: 10,
+                condition: 10,
+                amenities: 10,
+                safety: 10,
+                investment: 5,
+                commute: 3,
+                lifestyle: 2
+            }
+        };
+
+        // Current weights state
+        let currentWeights = {};
+
+        // Saved scenarios
+        let savedScenarios = [];
+
+        // Chart instance
+        let scoreBreakdownChart = null;
+
+        // ==========================================
+        // INITIALIZATION
+        // ==========================================
+
+        function init() {
+            // Set default weights
+            WEIGHT_CATEGORIES.forEach(cat => {
+                currentWeights[cat.id] = cat.default;
+            });
+
+            // Create weight sliders
+            createWeightSliders();
+
+            // Calculate and display initial rankings
+            updatePropertyRankings();
+
+            // Create score breakdown chart
+            createScoreBreakdownChart();
+
+            // Create sensitivity analysis
+            createSensitivityAnalysis();
+        }
+
+        // ==========================================
+        // WEIGHT SLIDERS
+        // ==========================================
+
+        function createWeightSliders() {
+            const container = document.getElementById('weightSliders');
+
+            WEIGHT_CATEGORIES.forEach(category => {
+                const sliderGroup = document.createElement('div');
+                sliderGroup.className = 'weight-slider-group';
+
+                sliderGroup.innerHTML = `
+                    <div class="slider-label">
+                        <span class="slider-name">${category.name}</span>
+                        <span class="slider-value" id="value-${category.id}">${category.default}%</span>
+                    </div>
+                    <div class="slider-container">
+                        <input
+                            type="range"
+                            id="slider-${category.id}"
+                            min="0"
+                            max="100"
+                            value="${category.default}"
+                            oninput="updateWeight('${category.id}', this.value)"
+                        >
+                    </div>
+                `;
+
+                container.appendChild(sliderGroup);
+            });
+        }
+
+        function updateWeight(categoryId, value) {
+            // Update weight value
+            currentWeights[categoryId] = parseInt(value);
+
+            // Update display
+            document.getElementById(`value-${categoryId}`).textContent = value + '%';
+
+            // Recalculate rankings with animation
+            updatePropertyRankings();
+
+            // Update chart
+            updateScoreBreakdownChart();
+
+            // Update sensitivity analysis
+            updateSensitivityAnalysis();
+        }
+
+        // ==========================================
+        // SCORE CALCULATION
+        // ==========================================
+
+        function calculatePropertyScore(property) {
+            let totalScore = 0;
+            let totalWeight = 0;
+
+            Object.keys(currentWeights).forEach(categoryId => {
+                const weight = currentWeights[categoryId];
+                const score = property.scores[categoryId];
+
+                totalScore += (score * weight);
+                totalWeight += weight;
+            });
+
+            // Normalize to 0-100 scale
+            return totalWeight > 0 ? Math.round(totalScore / totalWeight) : 0;
+        }
+
+        function getRankedProperties() {
+            return PROPERTIES.map(property => ({
+                ...property,
+                cluesScore: calculatePropertyScore(property)
+            })).sort((a, b) => b.cluesScore - a.cluesScore);
+        }
+
+        // ==========================================
+        // PROPERTY DISPLAY
+        // ==========================================
+
+        function updatePropertyRankings() {
+            const container = document.getElementById('propertyList');
+            const rankedProperties = getRankedProperties();
+
+            container.innerHTML = '';
+
+            rankedProperties.forEach((property, index) => {
+                const card = document.createElement('div');
+                card.className = 'property-card';
+
+                card.innerHTML = `
+                    <div class="property-rank">#${index + 1}</div>
+                    <div class="property-name">${property.name}</div>
+                    <div class="property-score score-updating">${property.cluesScore}</div>
+
+                    <div class="property-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Price</div>
+                            <div class="detail-value">$${property.price.toLocaleString()}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Size</div>
+                            <div class="detail-value">${property.sqft.toLocaleString()} sqft</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Beds/Baths</div>
+                            <div class="detail-value">${property.beds}/${property.baths}</div>
+                        </div>
+                    </div>
+
+                    <div class="category-breakdown">
+                        ${Object.keys(property.scores).map(cat => {
+                            const category = WEIGHT_CATEGORIES.find(c => c.id === cat);
+                            return `
+                                <div class="category-score">
+                                    <span class="name">${category ? category.name : cat}</span>
+                                    <span class="value">${property.scores[cat]}</span>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // ==========================================
+        // SCORE BREAKDOWN CHART
+        // ==========================================
+
+        function createScoreBreakdownChart() {
+            const ctx = document.getElementById('scoreBreakdownChart').getContext('2d');
+
+            const topProperty = getRankedProperties()[0];
+
+            scoreBreakdownChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: WEIGHT_CATEGORIES.map(cat => cat.name),
+                    datasets: [{
+                        label: `Top Property: ${topProperty.name}`,
+                        data: WEIGHT_CATEGORIES.map(cat => topProperty.scores[cat.id]),
+                        backgroundColor: 'rgba(0, 102, 204, 0.2)',
+                        borderColor: '#0066CC',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#FF6B35',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#FF6B35'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                color: '#fff',
+                                backdropColor: 'transparent'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            pointLabels: {
+                                color: '#00D4FF',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#fff',
+                                font: {
+                                    size: 14,
+                                    family: 'Rajdhani'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateScoreBreakdownChart() {
+            if (!scoreBreakdownChart) return;
+
+            const topProperty = getRankedProperties()[0];
+
+            scoreBreakdownChart.data.datasets[0].label = `Top Property: ${topProperty.name}`;
+            scoreBreakdownChart.data.datasets[0].data = WEIGHT_CATEGORIES.map(cat => topProperty.scores[cat.id]);
+            scoreBreakdownChart.update();
+        }
+
+        // ==========================================
+        // SENSITIVITY ANALYSIS
+        // ==========================================
+
+        function createSensitivityAnalysis() {
+            const container = document.getElementById('sensitivityGrid');
+
+            WEIGHT_CATEGORIES.forEach(category => {
+                const impact = calculateSensitivity(category.id);
+
+                const item = document.createElement('div');
+                item.className = 'sensitivity-item';
+                item.innerHTML = `
+                    <div class="sensitivity-category">${category.name}</div>
+                    <div class="sensitivity-impact">${impact > 0 ? '+' : ''}${impact}</div>
+                    <div class="sensitivity-description">Score change if +10% weight</div>
+                `;
+
+                container.appendChild(item);
+            });
+        }
+
+        function calculateSensitivity(categoryId) {
+            // Get current top property score
+            const currentTopScore = getRankedProperties()[0].cluesScore;
+
+            // Temporarily increase weight by 10
+            const originalWeight = currentWeights[categoryId];
+            currentWeights[categoryId] += 10;
+
+            // Recalculate top score
+            const newTopScore = getRankedProperties()[0].cluesScore;
+
+            // Restore original weight
+            currentWeights[categoryId] = originalWeight;
+
+            // Return difference
+            return newTopScore - currentTopScore;
+        }
+
+        function updateSensitivityAnalysis() {
+            const container = document.getElementById('sensitivityGrid');
+            container.innerHTML = '';
+            createSensitivityAnalysis();
+        }
+
+        // ==========================================
+        // PRESET PROFILES
+        // ==========================================
+
+        function applyPreset(presetName) {
+            // Remove active class from all buttons
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Add active class to clicked button
+            event.target.classList.add('active');
+
+            // Get preset weights
+            const preset = PRESETS[presetName];
+
+            // Apply weights
+            Object.keys(preset).forEach(categoryId => {
+                currentWeights[categoryId] = preset[categoryId];
+
+                // Update slider
+                const slider = document.getElementById(`slider-${categoryId}`);
+                if (slider) {
+                    slider.value = preset[categoryId];
+                    document.getElementById(`value-${categoryId}`).textContent = preset[categoryId] + '%';
+                }
+            });
+
+            // Update displays
+            updatePropertyRankings();
+            updateScoreBreakdownChart();
+            updateSensitivityAnalysis();
+        }
+
+        // ==========================================
+        // ACTION BUTTONS
+        // ==========================================
+
+        function resetWeights() {
+            // Reset to defaults
+            WEIGHT_CATEGORIES.forEach(cat => {
+                currentWeights[cat.id] = cat.default;
+
+                const slider = document.getElementById(`slider-${cat.id}`);
+                if (slider) {
+                    slider.value = cat.default;
+                    document.getElementById(`value-${cat.id}`).textContent = cat.default + '%';
+                }
+            });
+
+            // Remove active from presets
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Update displays
+            updatePropertyRankings();
+            updateScoreBreakdownChart();
+            updateSensitivityAnalysis();
+        }
+
+        function saveScenario() {
+            const scenarioName = prompt('Enter scenario name:');
+            if (!scenarioName) return;
+
+            savedScenarios.push({
+                name: scenarioName,
+                weights: { ...currentWeights },
+                timestamp: new Date().toISOString()
+            });
+
+            alert(`Scenario "${scenarioName}" saved! Total scenarios: ${savedScenarios.length}`);
+            console.log('Saved scenarios:', savedScenarios);
+        }
+
+        function exportWeights() {
+            const exportData = {
+                weights: currentWeights,
+                rankings: getRankedProperties(),
+                timestamp: new Date().toISOString()
+            };
+
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `clues-weights-${Date.now()}.json`;
+            link.click();
+        }
+
+        function compareScenarios() {
+            if (savedScenarios.length === 0) {
+                alert('No saved scenarios to compare. Save a scenario first!');
+                return;
+            }
+
+            alert(`You have ${savedScenarios.length} saved scenario(s). Comparison view coming soon!`);
+            console.log('Saved scenarios for comparison:', savedScenarios);
+        }
+
+        // ==========================================
+        // START APPLICATION
+        // ==========================================
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
