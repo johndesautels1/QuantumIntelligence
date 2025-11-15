@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLUES™ - Competitive Intelligence Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0066CC 0%, #00D4FF 50%, #9D4EDD 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2em;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .panel h2 {
+            color: white;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .property-selector {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .property-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .property-card:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .property-card.active {
+            background: linear-gradient(135deg, #0066CC, #00D4FF);
+            border-color: #FFD700;
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.4);
+        }
+
+        .property-name {
+            color: white;
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+
+        .property-price {
+            color: #FFD700;
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+
+        .alerts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .alert-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border-left: 5px solid;
+            transition: all 0.3s ease;
+        }
+
+        .alert-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .alert-card.critical {
+            border-left-color: #ef4444;
+        }
+
+        .alert-card.warning {
+            border-left-color: #f59e0b;
+        }
+
+        .alert-card.info {
+            border-left-color: #00D4FF;
+        }
+
+        .alert-title {
+            color: white;
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .alert-description {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+        }
+
+        .opportunity-cost {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .cost-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .cost-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+        }
+
+        .cost-value {
+            color: #FFD700;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .cost-value.negative {
+            color: #ef4444;
+        }
+
+        .cost-value.positive {
+            color: #10b981;
+        }
+
+        .market-position {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .quadrant {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .quadrant:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.02);
+        }
+
+        .quadrant.active {
+            border-color: #FFD700;
+            background: rgba(255, 215, 0, 0.2);
+        }
+
+        .quadrant-label {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .quadrant-value {
+            color: #FFD700;
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .bidding-strategy {
+            background: linear-gradient(135deg, rgba(0, 102, 204, 0.3), rgba(0, 212, 255, 0.3));
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid rgba(0, 212, 255, 0.5);
+        }
+
+        .strategy-title {
+            color: #00D4FF;
+            font-weight: 600;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+        }
+
+        .strategy-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .strategy-label {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .strategy-value {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .dom-tracker {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .dom-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .dom-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-3px);
+        }
+
+        .dom-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .dom-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.95em;
+            margin-top: 5px;
+        }
+
+        .dom-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .dom-hot {
+            background: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+        .dom-warm {
+            background: rgba(245, 158, 11, 0.3);
+            color: #f59e0b;
+            border: 1px solid #f59e0b;
+        }
+
+        .dom-cold {
+            background: rgba(0, 212, 255, 0.3);
+            color: #00D4FF;
+            border: 1px solid #00D4FF;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, #0066CC, #00D4FF);
+            border-color: #00D4FF;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .comparison-table th {
+            color: white;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .comparison-table td {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .comparison-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge.best {
+            background: rgba(16, 185, 129, 0.3);
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+
+        .badge.good {
+            background: rgba(255, 215, 0, 0.3);
+            color: #FFD700;
+            border: 1px solid #FFD700;
+        }
+
+        .badge.poor {
+            background: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Competitive Intelligence Dashboard</h1>
+            <p class="subtitle">Market Analysis & Strategic Bidding Insights</p>
+        </div>
+
+        <!-- Property Selector -->
+        <div class="panel">
+            <h2>🏠 Select Target Property</h2>
+            <div class="property-selector" id="propertySelector">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- You're Missing These Alerts -->
+        <div class="panel">
+            <h2>🚨 You're Missing These</h2>
+            <div class="alerts-grid" id="missingAlertsContainer">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Opportunity Cost Calculator -->
+        <div class="panel">
+            <h2>💰 Opportunity Cost Calculator</h2>
+            <div class="opportunity-cost" id="opportunityCostContainer">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Market Position Mapper -->
+        <div class="panel">
+            <h2>📍 Market Position Mapper</h2>
+            <p style="color: rgba(255,255,255,0.9); margin-bottom: 20px;">Where this property stands in the current market</p>
+            <div class="market-position">
+                <div class="quadrant">
+                    <div class="quadrant-label">🔥 High Demand</div>
+                    <div class="quadrant-value" id="highDemand">0</div>
+                </div>
+                <div class="quadrant">
+                    <div class="quadrant-label">💎 Undervalued</div>
+                    <div class="quadrant-value" id="undervalued">0</div>
+                </div>
+                <div class="quadrant">
+                    <div class="quadrant-label">⏱️ Quick Move</div>
+                    <div class="quadrant-value" id="quickMove">0</div>
+                </div>
+                <div class="quadrant">
+                    <div class="quadrant-label">📊 Market Average</div>
+                    <div class="quadrant-value" id="marketAverage">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bidding Strategy Advisor -->
+        <div class="panel">
+            <h2>🎲 Bidding Strategy Advisor</h2>
+            <div class="bidding-strategy" id="biddingStrategyContainer">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Days on Market Tracker -->
+        <div class="panel">
+            <h2>⏰ Days on Market Tracker</h2>
+            <div class="dom-tracker" id="domTrackerContainer">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Price vs Value Scatter Plot -->
+        <div class="panel">
+            <h2>📊 Price vs. Value Scatter Plot</h2>
+            <div class="controls">
+                <button class="btn primary" onclick="refreshAnalysis()">🔄 Refresh Analysis</button>
+                <button class="btn" onclick="exportReport()">📥 Export Report</button>
+            </div>
+            <div class="chart-container">
+                <canvas id="scatterChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Competitive Comparison -->
+        <div class="panel">
+            <h2>⚔️ Competitive Comparison</h2>
+            <table class="comparison-table" id="comparisonTable">
+                <!-- Populated by JS -->
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Market Data
+        const PROPERTIES = [
+            { id: 1, name: '123 Sunset Boulevard', price: 475000, value: 510000, dom: 12, beds: 4, baths: 3, sqft: 2200 },
+            { id: 2, name: '456 Oak Avenue', price: 525000, value: 495000, dom: 28, beds: 4, baths: 2.5, sqft: 2500 },
+            { id: 3, name: '789 Maple Drive', price: 395000, value: 445000, dom: 8, beds: 3, baths: 2, sqft: 1800 },
+            { id: 4, name: '321 Pine Street', price: 615000, value: 580000, dom: 45, beds: 5, baths: 4, sqft: 3000 },
+            { id: 5, name: '654 Birch Lane', price: 445000, value: 460000, dom: 15, beds: 3, baths: 2.5, sqft: 2100 },
+            { id: 6, name: '987 Cedar Court', price: 505000, value: 520000, dom: 10, beds: 4, baths: 3.5, sqft: 2400 }
+        ];
+
+        let currentProperty = PROPERTIES[0];
+        let scatterChart;
+
+        // Initialize
+        function init() {
+            renderPropertySelector();
+            updateDashboard();
+            initScatterChart();
+        }
+
+        // Render Property Selector
+        function renderPropertySelector() {
+            const container = document.getElementById('propertySelector');
+            container.innerHTML = PROPERTIES.map(p => `
+                <div class="property-card ${currentProperty.id === p.id ? 'active' : ''}" onclick="selectProperty(${p.id})">
+                    <div class="property-name">${p.name}</div>
+                    <div class="property-price">$${p.price.toLocaleString()}</div>
+                </div>
+            `).join('');
+        }
+
+        // Select Property
+        function selectProperty(id) {
+            currentProperty = PROPERTIES.find(p => p.id === id);
+            renderPropertySelector();
+            updateDashboard();
+        }
+
+        // Update Dashboard
+        function updateDashboard() {
+            renderMissingAlerts();
+            renderOpportunityCost();
+            renderMarketPosition();
+            renderBiddingStrategy();
+            renderDOMTracker();
+            renderComparison();
+            updateScatterChart();
+        }
+
+        // Render Missing Alerts
+        function renderMissingAlerts() {
+            const container = document.getElementById('missingAlertsContainer');
+
+            const alerts = [];
+
+            // Check for better value opportunities
+            const betterValue = PROPERTIES.filter(p =>
+                p.id !== currentProperty.id &&
+                (p.value - p.price) > (currentProperty.value - currentProperty.price) &&
+                p.price <= currentProperty.price * 1.1
+            );
+
+            if (betterValue.length > 0) {
+                alerts.push({
+                    type: 'critical',
+                    icon: '🔥',
+                    title: `${betterValue.length} Better Value Properties Available`,
+                    description: `${betterValue[0].name} offers $${((betterValue[0].value - betterValue[0].price)/1000).toFixed(0)}K more value for similar price.`
+                });
+            }
+
+            // Check for faster-moving properties
+            const fasterMoving = PROPERTIES.filter(p =>
+                p.id !== currentProperty.id &&
+                p.dom < currentProperty.dom &&
+                Math.abs(p.price - currentProperty.price) < 50000
+            );
+
+            if (fasterMoving.length > 0) {
+                alerts.push({
+                    type: 'warning',
+                    icon: '⚡',
+                    title: 'Faster-Moving Alternatives Exist',
+                    description: `${fasterMoving[0].name} is moving ${currentProperty.dom - fasterMoving[0].dom} days faster - act quickly!`
+                });
+            }
+
+            // Check for pricing concerns
+            if (currentProperty.price > currentProperty.value) {
+                alerts.push({
+                    type: 'critical',
+                    icon: '⚠️',
+                    title: 'Overpriced Alert',
+                    description: `This property is priced $${((currentProperty.price - currentProperty.value)/1000).toFixed(0)}K above estimated market value. Consider negotiating.`
+                });
+            }
+
+            // Check DOM concerns
+            if (currentProperty.dom > 30) {
+                alerts.push({
+                    type: 'info',
+                    icon: 'ℹ️',
+                    title: 'Extended Days on Market',
+                    description: `${currentProperty.dom} days on market suggests seller may be motivated. Strong negotiating position.`
+                });
+            }
+
+            if (alerts.length === 0) {
+                alerts.push({
+                    type: 'info',
+                    icon: '✅',
+                    title: 'No Critical Alerts',
+                    description: 'This property is competitively positioned in the current market.'
+                });
+            }
+
+            container.innerHTML = alerts.map(a => `
+                <div class="alert-card ${a.type}">
+                    <div class="alert-title">${a.icon} ${a.title}</div>
+                    <div class="alert-description">${a.description}</div>
+                </div>
+            `).join('');
+        }
+
+        // Render Opportunity Cost
+        function renderOpportunityCost() {
+            const container = document.getElementById('opportunityCostContainer');
+
+            const priceDiff = currentProperty.price - currentProperty.value;
+            const avgPrice = PROPERTIES.reduce((sum, p) => sum + p.price, 0) / PROPERTIES.length;
+            const avgDOM = PROPERTIES.reduce((sum, p) => sum + p.dom, 0) / PROPERTIES.length;
+
+            // Calculate opportunity costs
+            const costs = [
+                {
+                    label: 'Price vs. Value Differential',
+                    value: priceDiff,
+                    type: priceDiff > 0 ? 'negative' : 'positive'
+                },
+                {
+                    label: 'Compared to Market Average',
+                    value: currentProperty.price - avgPrice,
+                    type: currentProperty.price > avgPrice ? 'negative' : 'positive'
+                },
+                {
+                    label: 'Days on Market Premium/Discount',
+                    value: (currentProperty.dom - avgDOM) * 500,
+                    type: currentProperty.dom > avgDOM ? 'negative' : 'positive'
+                },
+                {
+                    label: 'Estimated Negotiation Room',
+                    value: Math.abs(priceDiff) + (currentProperty.dom > 30 ? 15000 : 5000),
+                    type: 'positive'
+                }
+            ];
+
+            container.innerHTML = costs.map(cost => `
+                <div class="cost-item">
+                    <span class="cost-label">${cost.label}</span>
+                    <span class="cost-value ${cost.type}">
+                        ${cost.value >= 0 ? '+' : ''}$${(cost.value/1000).toFixed(1)}K
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        // Render Market Position
+        function renderMarketPosition() {
+            // High Demand: Low DOM + Above value
+            const highDemand = PROPERTIES.filter(p => p.dom < 15 && p.value > p.price).length;
+
+            // Undervalued: Price below value
+            const undervalued = PROPERTIES.filter(p => p.value > p.price * 1.05).length;
+
+            // Quick Move: DOM < 15
+            const quickMove = PROPERTIES.filter(p => p.dom < 15).length;
+
+            // Market Average: Everything else
+            const marketAverage = PROPERTIES.length - highDemand - undervalued - quickMove;
+
+            document.getElementById('highDemand').textContent = highDemand;
+            document.getElementById('undervalued').textContent = undervalued;
+            document.getElementById('quickMove').textContent = quickMove;
+            document.getElementById('marketAverage').textContent = Math.max(0, marketAverage);
+
+            // Highlight current property's quadrant
+            document.querySelectorAll('.quadrant').forEach(q => q.classList.remove('active'));
+
+            if (currentProperty.dom < 15 && currentProperty.value > currentProperty.price) {
+                document.querySelector('.quadrant:nth-child(1)').classList.add('active');
+            } else if (currentProperty.value > currentProperty.price * 1.05) {
+                document.querySelector('.quadrant:nth-child(2)').classList.add('active');
+            } else if (currentProperty.dom < 15) {
+                document.querySelector('.quadrant:nth-child(3)').classList.add('active');
+            } else {
+                document.querySelector('.quadrant:nth-child(4)').classList.add('active');
+            }
+        }
+
+        // Render Bidding Strategy
+        function renderBiddingStrategy() {
+            const container = document.getElementById('biddingStrategyContainer');
+
+            const priceDiff = currentProperty.value - currentProperty.price;
+            const priceRatio = (currentProperty.price / currentProperty.value * 100).toFixed(1);
+
+            let recommendedOffer, strategy, reasoning;
+
+            if (currentProperty.dom > 30) {
+                recommendedOffer = currentProperty.price * 0.92;
+                strategy = 'Aggressive Negotiation';
+                reasoning = `Extended DOM (${currentProperty.dom} days) indicates seller motivation. Start at 8% below asking to leave room for negotiation.`;
+            } else if (priceDiff > 30000) {
+                recommendedOffer = currentProperty.price * 0.98;
+                strategy = 'Competitive Offer';
+                reasoning = `Strong value opportunity. Offer 2% below asking to stay competitive while capturing value.`;
+            } else if (currentProperty.dom < 10) {
+                recommendedOffer = currentProperty.price * 1.00;
+                strategy = 'Full Price + Escalation Clause';
+                reasoning = `Hot property moving fast (${currentProperty.dom} DOM). Offer full price with escalation clause to stay competitive.`;
+            } else {
+                recommendedOffer = currentProperty.price * 0.96;
+                strategy = 'Standard Negotiation';
+                reasoning = `Market-rate property. Standard 4% below asking is reasonable starting point.`;
+            }
+
+            container.innerHTML = `
+                <div class="strategy-title">${strategy}</div>
+                <div class="strategy-item">
+                    <div class="strategy-label">Recommended Opening Offer</div>
+                    <div class="strategy-value" style="color: #FFD700; font-size: 1.3em; font-weight: bold;">
+                        $${recommendedOffer.toLocaleString(undefined, {maximumFractionDigits: 0})}
+                    </div>
+                </div>
+                <div class="strategy-item">
+                    <div class="strategy-label">Reasoning</div>
+                    <div class="strategy-value">${reasoning}</div>
+                </div>
+                <div class="strategy-item">
+                    <div class="strategy-label">Price-to-Value Ratio</div>
+                    <div class="strategy-value">${priceRatio}% (100% = at value, <100% = below value)</div>
+                </div>
+                <div class="strategy-item">
+                    <div class="strategy-label">Negotiation Leverage</div>
+                    <div class="strategy-value">
+                        ${currentProperty.dom > 30 ? 'High - Extended DOM' :
+                          currentProperty.dom < 10 ? 'Low - Hot Market' : 'Medium - Standard Conditions'}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Render DOM Tracker
+        function renderDOMTracker() {
+            const container = document.getElementById('domTrackerContainer');
+
+            const trackedProperties = PROPERTIES.slice(0, 4);
+
+            container.innerHTML = trackedProperties.map(p => {
+                const status = p.dom < 15 ? 'hot' : p.dom < 30 ? 'warm' : 'cold';
+                const statusText = p.dom < 15 ? 'Hot' : p.dom < 30 ? 'Warm' : 'Cold';
+
+                return `
+                    <div class="dom-card">
+                        <div class="dom-number">${p.dom}</div>
+                        <div class="dom-label">${p.name.split(' ')[0]}</div>
+                        <div class="dom-status dom-${status}">${statusText}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render Comparison
+        function renderComparison() {
+            const table = document.getElementById('comparisonTable');
+
+            let html = `
+                <thead>
+                    <tr>
+                        <th>Property</th>
+                        <th>Price</th>
+                        <th>Est. Value</th>
+                        <th>Value Gap</th>
+                        <th>DOM</th>
+                        <th>Competitiveness</th>
+                    </tr>
+                </thead>
+                <tbody>
+            `;
+
+            PROPERTIES.forEach(p => {
+                const valueGap = p.value - p.price;
+                const gapClass = valueGap > 30000 ? 'best' : valueGap > 0 ? 'good' : 'poor';
+                const domClass = p.dom < 15 ? 'best' : p.dom < 30 ? 'good' : 'poor';
+
+                html += `
+                    <tr style="${p.id === currentProperty.id ? 'background: rgba(255, 215, 0, 0.1);' : ''}">
+                        <td><strong>${p.name}</strong></td>
+                        <td>$${p.price.toLocaleString()}</td>
+                        <td>$${p.value.toLocaleString()}</td>
+                        <td><span class="badge ${gapClass}">${valueGap >= 0 ? '+' : ''}$${(valueGap/1000).toFixed(0)}K</span></td>
+                        <td><span class="badge ${domClass}">${p.dom} days</span></td>
+                        <td>${valueGap > 30000 && p.dom < 20 ? '🔥 High' : valueGap > 0 ? '✓ Good' : '⚠️ Low'}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody>';
+            table.innerHTML = html;
+        }
+
+        // Initialize Scatter Chart
+        function initScatterChart() {
+            const ctx = document.getElementById('scatterChart').getContext('2d');
+
+            const datasets = PROPERTIES.map(p => ({
+                label: p.name.split(' ').slice(0, 2).join(' '),
+                data: [{ x: p.price / 1000, y: p.value / 1000 }],
+                backgroundColor: p.id === currentProperty.id ? '#FFD700' : 'rgba(0, 212, 255, 0.7)',
+                borderColor: p.id === currentProperty.id ? '#FFA500' : '#00D4FF',
+                borderWidth: 2,
+                pointRadius: p.id === currentProperty.id ? 12 : 8,
+                pointHoverRadius: p.id === currentProperty.id ? 15 : 10
+            }));
+
+            scatterChart = new Chart(ctx, {
+                type: 'scatter',
+                data: { datasets: datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: 'white', font: { size: 12 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': $' +
+                                           (context.parsed.x * 1000).toLocaleString() + ' / $' +
+                                           (context.parsed.y * 1000).toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'List Price ($K)', color: 'white', font: { weight: 'bold' } },
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Estimated Value ($K)', color: 'white', font: { weight: 'bold' } },
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    }
+                }
+            });
+
+            // Add diagonal reference line
+            const minVal = Math.min(...PROPERTIES.map(p => Math.min(p.price, p.value))) / 1000;
+            const maxVal = Math.max(...PROPERTIES.map(p => Math.max(p.price, p.value))) / 1000;
+
+            scatterChart.data.datasets.push({
+                label: 'Fair Value Line',
+                data: [{ x: minVal, y: minVal }, { x: maxVal, y: maxVal }],
+                type: 'line',
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                pointRadius: 0,
+                fill: false
+            });
+
+            scatterChart.update();
+        }
+
+        // Update Scatter Chart
+        function updateScatterChart() {
+            PROPERTIES.forEach((p, index) => {
+                scatterChart.data.datasets[index].backgroundColor =
+                    p.id === currentProperty.id ? '#FFD700' : 'rgba(0, 212, 255, 0.7)';
+                scatterChart.data.datasets[index].borderColor =
+                    p.id === currentProperty.id ? '#FFA500' : '#00D4FF';
+                scatterChart.data.datasets[index].pointRadius =
+                    p.id === currentProperty.id ? 12 : 8;
+            });
+            scatterChart.update();
+        }
+
+        // Refresh Analysis
+        function refreshAnalysis() {
+            updateDashboard();
+        }
+
+        // Export Report
+        function exportReport() {
+            const report = {
+                property: currentProperty,
+                analysis: {
+                    priceVsValue: currentProperty.value - currentProperty.price,
+                    daysOnMarket: currentProperty.dom,
+                    recommendedOffer: currentProperty.price * 0.96
+                },
+                exportDate: new Date().toISOString()
+            };
+
+            const dataStr = JSON.stringify(report, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `competitive-analysis-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Initialize
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
