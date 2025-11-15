@@ -1,0 +1,48 @@
+================================================================================
+EXACT CSV FORMAT FOR CLUES PROPERTY IMPORT
+================================================================================
+
+COPY THIS HEADER ROW EXACTLY:
+--------------------------------------------------------------------------------
+street,city,state,zip,price,bedrooms,bathrooms,sqft_living,sqft_lot,year_built,property_type,mls_number
+
+EXAMPLE DATA ROWS:
+--------------------------------------------------------------------------------
+280 41st Ave,Saint Pete Beach,FL,33706,750000,4,3,1729,7841,1965,single_family,TB8441001
+8485 Blind Pass Dr,Treasure Island,FL,33706,1990000,3,2,2076,10890,1980,single_family,TB8441002
+
+COLUMN RULES:
+--------------------------------------------------------------------------------
+1. street          = Street address (text)
+2. city            = City name (text)
+3. state           = 2-letter state code (FL, CA, WA, etc.)
+4. zip             = Zip code (numbers only, no dashes)
+5. price           = Price (numbers only, NO $ or commas)
+6. bedrooms        = Number of bedrooms (whole number)
+7. bathrooms       = Number of bathrooms (can be decimal like 2.5)
+8. sqft_living     = House square footage (whole number)
+9. sqft_lot        = Lot size in SQUARE FEET (whole number, NOT acres)
+10. year_built     = Year built (4-digit year)
+11. property_type  = single_family, condo, townhouse, etc.
+12. mls_number     = MLS listing number (text/numbers)
+
+IMPORTANT NOTES:
+--------------------------------------------------------------------------------
+- First row MUST be the header row shown above
+- NO dollar signs ($)
+- NO commas in numbers
+- Lot size MUST be in square feet (multiply acres × 43,560)
+- Use single_family NOT House
+- Save as .csv file
+
+ACRE TO SQUARE FEET CONVERSION:
+--------------------------------------------------------------------------------
+0.18 acres = 7,841 sqft
+0.20 acres = 8,712 sqft
+0.25 acres = 10,890 sqft
+0.30 acres = 13,068 sqft
+0.40 acres = 17,424 sqft
+0.50 acres = 21,780 sqft
+
+Formula: acres × 43,560 = square feet
+================================================================================

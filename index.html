@@ -372,6 +372,17 @@
             </div>
         </div>
 
+        <!-- Property Management -->
+        <div class="section" id="propertyManagementSection" style="display: none;">
+            <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
+                <span>🏠 Imported Properties</span>
+                <button class="btn danger" onclick="deleteAllProperties()" style="padding: 8px 16px; font-size: 0.9em;">
+                    🗑️ Delete All Properties
+                </button>
+            </div>
+            <div id="propertyList" style="background: rgba(255,255,255,0.05); border-radius: 15px; padding: 20px; max-height: 400px; overflow-y: auto;"></div>
+        </div>
+
         <!-- Available Enhancements -->
         <div class="section">
             <div class="section-title">
@@ -502,8 +513,89 @@
 
                 const unreadAlerts = await dataManager.getUnreadAlerts();
                 document.getElementById('unreadAlerts').textContent = unreadAlerts.length || 0;
+
+                // Update property list
+                await renderPropertyList();
             } catch (error) {
                 console.error('Error updating stats:', error);
+            }
+        }
+
+        // Render property list with delete buttons
+        async function renderPropertyList() {
+            try {
+                const properties = await dataManager.getAllProperties();
+                const section = document.getElementById('propertyManagementSection');
+                const list = document.getElementById('propertyList');
+
+                if (properties.length === 0) {
+                    section.style.display = 'none';
+                    return;
+                }
+
+                section.style.display = 'block';
+
+                list.innerHTML = properties.map(prop => `
+                    <div style="display: flex; justify-content: space-between; align-items: center;
+                                padding: 12px; margin-bottom: 8px; background: rgba(255,255,255,0.05);
+                                border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; color: #00d4ff; margin-bottom: 4px;">
+                                ${prop.address?.full_address || prop.address?.street || 'No Address'}
+                            </div>
+                            <div style="color: #a0a0a0; font-size: 0.9em;">
+                                ${prop.bedrooms || '?'} bed | ${prop.bathrooms?.total || '?'} bath |
+                                ${prop.square_feet?.living || '?'} sqft |
+                                $${(prop.price?.current || 0).toLocaleString()}
+                            </div>
+                        </div>
+                        <button onclick="deleteProperty('${prop.property_id}')"
+                                style="padding: 8px 16px; background: linear-gradient(135deg, #ff006e, #cc0055);
+                                       border: none; border-radius: 6px; color: white; cursor: pointer;
+                                       font-weight: 600; transition: all 0.3s;"
+                                onmouseover="this.style.transform='scale(1.05)'"
+                                onmouseout="this.style.transform='scale(1)'">
+                            🗑️ Delete
+                        </button>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error rendering property list:', error);
+            }
+        }
+
+        // Delete individual property
+        async function deleteProperty(propertyId) {
+            if (!confirm('Delete this property?')) return;
+
+            try {
+                await dataManager.deleteProperty(propertyId);
+                await updateStats();
+                console.log('✅ Property deleted:', propertyId);
+            } catch (error) {
+                console.error('❌ Error deleting property:', error);
+                alert('Failed to delete property: ' + error.message);
+            }
+        }
+
+        // Delete all properties
+        async function deleteAllProperties() {
+            const properties = await dataManager.getAllProperties();
+
+            if (!confirm(`Delete ALL ${properties.length} properties? This cannot be undone!`)) {
+                return;
+            }
+
+            try {
+                for (const prop of properties) {
+                    await dataManager.deleteProperty(prop.property_id);
+                }
+                await updateStats();
+                console.log('✅ All properties deleted');
+                alert(`Successfully deleted ${properties.length} properties`);
+            } catch (error) {
+                console.error('❌ Error deleting properties:', error);
+                alert('Failed to delete properties: ' + error.message);
             }
         }
 
