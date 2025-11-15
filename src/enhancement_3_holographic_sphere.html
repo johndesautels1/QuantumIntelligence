@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CLUES™ - Holographic Comparison Sphere</title>
+
+    <!-- Core CLUES™ System -->
+    <script src="/src/core/data-manager.js"></script>
+    <script src="/src/core/scoring-engine.js"></script>
+    <script src="/src/shared-data-adapter.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -314,117 +320,15 @@
     </div>
 
     <script>
-        // Property Database
-        const PROPERTIES = [
-            {
-                id: 1,
-                name: '123 Sunset Boulevard',
-                price: 475000,
-                metrics: {
-                    location: 85,
-                    size: 2200,
-                    bedrooms: 4,
-                    bathrooms: 3,
-                    age: 8,
-                    condition: 88,
-                    schools: 92,
-                    safety: 86,
-                    roi: 78,
-                    walkability: 82
-                }
-            },
-            {
-                id: 2,
-                name: '456 Oak Avenue',
-                price: 525000,
-                metrics: {
-                    location: 72,
-                    size: 2500,
-                    bedrooms: 4,
-                    bathrooms: 2.5,
-                    age: 15,
-                    condition: 70,
-                    schools: 68,
-                    safety: 75,
-                    roi: 85,
-                    walkability: 68
-                }
-            },
-            {
-                id: 3,
-                name: '789 Maple Drive',
-                price: 395000,
-                metrics: {
-                    location: 78,
-                    size: 1800,
-                    bedrooms: 3,
-                    bathrooms: 2,
-                    age: 5,
-                    condition: 92,
-                    schools: 70,
-                    safety: 80,
-                    roi: 88,
-                    walkability: 90
-                }
-            },
-            {
-                id: 4,
-                name: '321 Pine Street',
-                price: 615000,
-                metrics: {
-                    location: 95,
-                    size: 3000,
-                    bedrooms: 5,
-                    bathrooms: 4,
-                    age: 12,
-                    condition: 75,
-                    schools: 98,
-                    safety: 92,
-                    roi: 70,
-                    walkability: 92
-                }
-            },
-            {
-                id: 5,
-                name: '654 Birch Lane',
-                price: 445000,
-                metrics: {
-                    location: 80,
-                    size: 2100,
-                    bedrooms: 3,
-                    bathrooms: 2.5,
-                    age: 10,
-                    condition: 85,
-                    schools: 82,
-                    safety: 88,
-                    roi: 92,
-                    walkability: 75
-                }
-            },
-            {
-                id: 6,
-                name: '987 Cedar Court',
-                price: 505000,
-                metrics: {
-                    location: 88,
-                    size: 2400,
-                    bedrooms: 4,
-                    bathrooms: 3.5,
-                    age: 6,
-                    condition: 90,
-                    schools: 85,
-                    safety: 90,
-                    roi: 82,
-                    walkability: 85
-                }
-            }
-        ];
+        // ===== REAL PROPERTY DATA FROM DATABASE =====
+        // NO HARDCODED FAKE DATA - Loads from IndexedDB
+        let PROPERTIES = [];
 
         // Scene Setup
         let scene, camera, renderer, controls;
         let sphereA, sphereB, sphereC;
-        let propertyA = PROPERTIES[0];
-        let propertyB = PROPERTIES[1];
+        let propertyA = null;
+        let propertyB = null;
         let propertyC = null;
         let autoRotating = false;
         let exploded = false;
@@ -800,8 +704,66 @@
             }
         }
 
-        // Initialize
-        window.addEventListener('load', initScene);
+        // Initialize Enhancement with REAL Data
+        async function initializeEnhancement() {
+            try {
+                // Show loading
+                document.getElementById('loading').textContent = 'Loading property data from database...';
+
+                // Initialize shared data adapter
+                await sharedDataAdapter.init();
+
+                // Load REAL properties from IndexedDB
+                PROPERTIES = await sharedDataAdapter.getPropertiesForHolographicSphere('balanced');
+
+                console.log(`✅ Loaded ${PROPERTIES.length} real properties from database`);
+
+                // Check if we have properties
+                if (PROPERTIES.length === 0) {
+                    document.getElementById('loading').innerHTML = `
+                        <div style="text-align: center; padding: 20px;">
+                            <h2>No Properties Found</h2>
+                            <p>Import property data from the main dashboard to visualize them here.</p>
+                            <button onclick="window.location.href='/index.html'"
+                                    style="margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #00d4ff, #0099cc);
+                                           border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
+                                Go to Dashboard
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Set default properties for comparison
+                propertyA = PROPERTIES[0];
+                propertyB = PROPERTIES.length > 1 ? PROPERTIES[1] : PROPERTIES[0];
+
+                // Initialize 3D scene with REAL data
+                document.getElementById('loading').textContent = 'Initializing Holographic Sphere...';
+                initScene();
+                populatePropertyDropdowns();
+                updateStats();
+
+            } catch (error) {
+                console.error('❌ Enhancement initialization failed:', error);
+                document.getElementById('loading').innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #ff4444;">
+                        <h2>Initialization Error</h2>
+                        <p>${error.message}</p>
+                        <button onclick="location.reload()"
+                                style="margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #00d4ff, #0099cc);
+                                       border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
+                            Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize Everything
+        window.addEventListener('load', () => {
+            initializeEnhancement();
+        });
     </script>
 </body>
 </html>
