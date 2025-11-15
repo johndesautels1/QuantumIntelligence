@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLUES™ Enhancement #22: Client Portfolio Manager</title>
+
+    <!-- Core CLUES™ System -->
+    <script src="/src/core/data-manager.js"></script>
+    <script src="/src/core/scoring-engine.js"></script>
+    <script src="/src/shared-data-adapter.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container { max-width: 1800px; margin: 0 auto; }
+
+        .header {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .toolbar {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            border: none;
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-align: center;
+        }
+
+        .stat-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            color: white;
+            font-size: 2.2em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .panel-title {
+            color: white;
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .client-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .client-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .client-card:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateX(5px);
+        }
+
+        .client-card.active {
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.6), rgba(0, 242, 254, 0.6));
+            border-color: white;
+        }
+
+        .client-name {
+            color: white;
+            font-weight: 700;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .client-info {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .client-stats {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .client-stat {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 13px;
+            color: white;
+        }
+
+        .property-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .property-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .property-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .property-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 12px;
+        }
+
+        .property-address {
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            flex: 1;
+        }
+
+        .property-badge {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .property-price {
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .property-details {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 12px;
+        }
+
+        .detail-item {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 13px;
+        }
+
+        .property-score {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .score-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 11px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .score-value {
+            color: #00ff88;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        canvas {
+            max-height: 300px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .empty-icon {
+            font-size: 100px;
+            margin-bottom: 20px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .modal-title {
+            color: white;
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 16px;
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>👥 Client Portfolio Manager</h1>
+            <div style="color: rgba(255,255,255,0.9); font-size: 1.2em;">Client Relationship Management • Property Tracking • Portfolio Analytics</div>
+        </div>
+
+        <div id="mainContent"></div>
+    </div>
+
+    <!-- Add Client Modal -->
+    <div class="modal" id="addClientModal">
+        <div class="modal-content">
+            <div class="modal-title">➕ Add New Client</div>
+            <div class="form-group">
+                <label class="form-label">Client Name</label>
+                <input type="text" class="form-input" id="clientName" placeholder="John Smith">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" id="clientEmail" placeholder="john@example.com">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Phone</label>
+                <input type="tel" class="form-input" id="clientPhone" placeholder="(555) 123-4567">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Budget Range</label>
+                <input type="text" class="form-input" id="clientBudget" placeholder="$300,000 - $500,000">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 30px;">
+                <button class="btn btn-primary" style="flex: 1;" onclick="saveClient()">Save Client</button>
+                <button class="btn" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let PROPERTIES = [];
+        let CLIENTS = [];
+        let selectedClient = null;
+
+        async function initializeEnhancement() {
+            try {
+                await sharedDataAdapter.init();
+                PROPERTIES = await sharedDataAdapter.getPropertiesWithScores('balanced');
+
+                // Load or create sample clients
+                CLIENTS = await loadClients();
+
+                renderInterface();
+                if (CLIENTS.length > 0) {
+                    selectClient(0);
+                }
+            } catch (error) {
+                console.error('❌ Initialization failed:', error);
+                renderEmptyState();
+            }
+        }
+
+        async function loadClients() {
+            // In real app, load from IndexedDB
+            // For now, create sample clients with property assignments
+            const sampleClients = [
+                {
+                    id: 'client_1',
+                    name: 'Sarah Johnson',
+                    email: 'sarah.j@email.com',
+                    phone: '(555) 123-4567',
+                    budget: '$400K - $600K',
+                    properties: PROPERTIES.slice(0, Math.min(3, PROPERTIES.length)).map(p => p.property_id)
+                },
+                {
+                    id: 'client_2',
+                    name: 'Michael Chen',
+                    email: 'm.chen@email.com',
+                    phone: '(555) 234-5678',
+                    budget: '$500K - $800K',
+                    properties: PROPERTIES.slice(2, Math.min(5, PROPERTIES.length)).map(p => p.property_id)
+                },
+                {
+                    id: 'client_3',
+                    name: 'Emily Rodriguez',
+                    email: 'emily.r@email.com',
+                    phone: '(555) 345-6789',
+                    budget: '$300K - $500K',
+                    properties: PROPERTIES.slice(1, Math.min(4, PROPERTIES.length)).map(p => p.property_id)
+                }
+            ];
+
+            return sampleClients;
+        }
+
+        function renderEmptyState() {
+            document.getElementById('mainContent').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <h2 style="color: white; margin-bottom: 15px;">No Properties Available</h2>
+                    <p style="font-size: 18px; margin-bottom: 20px;">Import property data to manage client portfolios.</p>
+                    <button class="btn" onclick="window.location.href='/index.html'">Go to Dashboard</button>
+                </div>
+            `;
+        }
+
+        function renderInterface() {
+            const totalClients = CLIENTS.length;
+            const totalProperties = PROPERTIES.length;
+            const avgPropertiesPerClient = totalClients > 0 ? (CLIENTS.reduce((sum, c) => sum + c.properties.length, 0) / totalClients).toFixed(1) : 0;
+
+            const html = `
+                <div class="toolbar">
+                    <div style="color: white; font-weight: 600; font-size: 16px;">Client Management Dashboard</div>
+                    <div>
+                        <button class="btn btn-primary" onclick="openAddClientModal()">➕ Add Client</button>
+                        <button class="btn" onclick="exportClientData()">📊 Export Data</button>
+                    </div>
+                </div>
+
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-icon">👥</div>
+                        <div class="stat-value">${totalClients}</div>
+                        <div class="stat-label">Total Clients</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🏠</div>
+                        <div class="stat-value">${totalProperties}</div>
+                        <div class="stat-label">Properties Available</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📋</div>
+                        <div class="stat-value">${avgPropertiesPerClient}</div>
+                        <div class="stat-label">Avg Per Client</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">⭐</div>
+                        <div class="stat-value">${CLIENTS.reduce((sum, c) => sum + c.properties.length, 0)}</div>
+                        <div class="stat-label">Total Assignments</div>
+                    </div>
+                </div>
+
+                <div class="main-grid">
+                    <div class="panel">
+                        <div class="panel-title">👥 Client List</div>
+                        <div class="client-list" id="clientList"></div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-title" id="clientPanelTitle">📊 Client Portfolio</div>
+                        <div id="clientPortfolio"></div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('mainContent').innerHTML = html;
+            renderClientList();
+        }
+
+        function renderClientList() {
+            const listHtml = CLIENTS.map((client, idx) => `
+                <div class="client-card ${selectedClient === idx ? 'active' : ''}"
+                     onclick="selectClient(${idx})">
+                    <div class="client-name">${client.name}</div>
+                    <div class="client-info">📧 ${client.email}</div>
+                    <div class="client-info">📱 ${client.phone}</div>
+                    <div class="client-info">💰 ${client.budget}</div>
+                    <div class="client-stats">
+                        <span class="client-stat">${client.properties.length} Properties</span>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('clientList').innerHTML = listHtml || `
+                <div style="text-align: center; padding: 40px; color: rgba(255,255,255,0.6);">
+                    No clients yet. Click "Add Client" to get started.
+                </div>
+            `;
+        }
+
+        function selectClient(index) {
+            selectedClient = index;
+            renderClientList();
+            renderClientPortfolio();
+        }
+
+        function renderClientPortfolio() {
+            const client = CLIENTS[selectedClient];
+            const clientProperties = PROPERTIES.filter(p => client.properties.includes(p.property_id));
+
+            const avgScore = clientProperties.length > 0 ?
+                clientProperties.reduce((sum, p) => sum + (p.computed_scores?.overall || 50), 0) / clientProperties.length : 0;
+
+            const totalValue = clientProperties.reduce((sum, p) => sum + (p.price?.current || p.price || 0), 0);
+
+            const propertiesHtml = clientProperties.map(prop => {
+                const address = prop.address?.full_address || `${prop.address?.street}, ${prop.address?.city}` || 'Property';
+                const price = prop.price?.current || prop.price || 0;
+                const beds = prop.property_physical?.bedrooms || prop.bedrooms || '--';
+                const baths = prop.property_physical?.bathrooms || prop.bathrooms || '--';
+                const sqft = prop.property_physical?.square_feet || prop.sqft || 0;
+                const score = prop.computed_scores?.overall || 50;
+
+                return `
+                    <div class="property-card">
+                        <div class="property-header">
+                            <div class="property-address">${address}</div>
+                            <div class="property-badge">Match: ${score.toFixed(0)}%</div>
+                        </div>
+                        <div class="property-price">$${price.toLocaleString()}</div>
+                        <div class="property-details">
+                            <div class="detail-item">🛏️ ${beds} Beds</div>
+                            <div class="detail-item">🛁 ${baths} Baths</div>
+                            <div class="detail-item">📐 ${sqft.toLocaleString()} sqft</div>
+                        </div>
+                        <div class="property-score">
+                            <div class="score-label">CLUES™ Score</div>
+                            <div class="score-value">${score.toFixed(0)}/100</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            const html = `
+                <div style="background: rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; text-align: center;">
+                        <div>
+                            <div style="color: rgba(255,255,255,0.7); font-size: 12px; text-transform: uppercase; margin-bottom: 5px;">Properties</div>
+                            <div style="color: white; font-size: 28px; font-weight: 700;">${clientProperties.length}</div>
+                        </div>
+                        <div>
+                            <div style="color: rgba(255,255,255,0.7); font-size: 12px; text-transform: uppercase; margin-bottom: 5px;">Total Value</div>
+                            <div style="color: white; font-size: 28px; font-weight: 700;">$${(totalValue / 1000).toFixed(0)}K</div>
+                        </div>
+                        <div>
+                            <div style="color: rgba(255,255,255,0.7); font-size: 12px; text-transform: uppercase; margin-bottom: 5px;">Avg Score</div>
+                            <div style="color: white; font-size: 28px; font-weight: 700;">${avgScore.toFixed(0)}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="property-grid">
+                    ${propertiesHtml || '<div style="color: rgba(255,255,255,0.6); text-align: center; padding: 40px;">No properties assigned to this client.</div>'}
+                </div>
+
+                ${clientProperties.length > 0 ? `
+                    <div class="chart-container">
+                        <div style="color: white; font-weight: 700; margin-bottom: 15px;">Price Distribution</div>
+                        <canvas id="priceDistChart"></canvas>
+                    </div>
+                ` : ''}
+            `;
+
+            document.getElementById('clientPanelTitle').textContent = `📊 ${client.name}'s Portfolio`;
+            document.getElementById('clientPortfolio').innerHTML = html;
+
+            if (clientProperties.length > 0) {
+                renderPriceDistChart(clientProperties);
+            }
+        }
+
+        function renderPriceDistChart(properties) {
+            const ctx = document.getElementById('priceDistChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: properties.map((p, i) => `Property ${i + 1}`),
+                    datasets: [{
+                        label: 'Price',
+                        data: properties.map(p => p.price?.current || p.price || 0),
+                        backgroundColor: 'rgba(79, 172, 254, 0.7)',
+                        borderColor: '#4facfe',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { color: 'white' } } },
+                    scales: {
+                        y: {
+                            ticks: { color: 'white', callback: value => '$' + (value / 1000).toFixed(0) + 'K' },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        },
+                        x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                    }
+                }
+            });
+        }
+
+        function openAddClientModal() {
+            document.getElementById('addClientModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('addClientModal').classList.remove('active');
+        }
+
+        function saveClient() {
+            const name = document.getElementById('clientName').value;
+            const email = document.getElementById('clientEmail').value;
+            const phone = document.getElementById('clientPhone').value;
+            const budget = document.getElementById('clientBudget').value;
+
+            if (!name || !email) {
+                alert('Please fill in required fields (Name and Email)');
+                return;
+            }
+
+            const newClient = {
+                id: 'client_' + Date.now(),
+                name,
+                email,
+                phone: phone || 'Not provided',
+                budget: budget || 'Not specified',
+                properties: []
+            };
+
+            CLIENTS.push(newClient);
+
+            // In real app, save to IndexedDB via data-manager
+            console.log('Saving new client:', newClient);
+
+            closeModal();
+            renderInterface();
+            selectClient(CLIENTS.length - 1);
+
+            // Clear form
+            document.getElementById('clientName').value = '';
+            document.getElementById('clientEmail').value = '';
+            document.getElementById('clientPhone').value = '';
+            document.getElementById('clientBudget').value = '';
+        }
+
+        function exportClientData() {
+            const exportData = {
+                clients: CLIENTS,
+                properties: PROPERTIES,
+                exported_at: new Date().toISOString()
+            };
+
+            const dataStr = JSON.stringify(exportData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `client_portfolio_${Date.now()}.json`;
+            link.click();
+
+            alert('✅ Client portfolio data exported successfully!');
+        }
+
+        window.addEventListener('load', initializeEnhancement);
+    </script>
+</body>
+</html>
