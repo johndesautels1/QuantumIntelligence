@@ -9,15 +9,15 @@
     <title>CLUES™ Quantum Property Intelligence</title>
 
     <!-- PWA Manifest -->
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="manifest.json">
 
     <!-- Icons -->
-    <link rel="icon" type="image/png" sizes="192x192" href="/src/assets/icons/icon-192x192.png">
-    <link rel="apple-touch-icon" href="/src/assets/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="src/assets/icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="src/assets/icons/icon-192x192.png">
 
     <!-- Preload critical resources -->
-    <link rel="preload" href="/src/core/data-manager.js" as="script">
-    <link rel="preload" href="/src/core/scoring-engine.js" as="script">
+    <link rel="preload" href="src/core/data-manager.js" as="script">
+    <link rel="preload" href="src/core/scoring-engine.js" as="script">
 
     <style>
         * {
@@ -418,9 +418,9 @@
     </div>
 
     <!-- Core Scripts -->
-    <script src="/src/core/data-manager.js"></script>
-    <script src="/src/core/scoring-engine.js"></script>
-    <script src="/src/core/import-export.js"></script>
+    <script src="src/core/data-manager.js"></script>
+    <script src="src/core/scoring-engine.js"></script>
+    <script src="src/core/import-export.js"></script>
 
     <script>
         // Global instances
@@ -512,7 +512,7 @@
             const grid = document.getElementById('enhancementGrid');
 
             grid.innerHTML = ENHANCEMENTS.map(enh => `
-                <a href="/src/${enh.file}" class="enhancement-card">
+                <a href="src/${enh.file}" class="enhancement-card">
                     <div class="enhancement-number">Enhancement #${enh.id}</div>
                     <div class="enhancement-title">${enh.title}</div>
                     <div class="enhancement-description">${enh.description}</div>
@@ -651,7 +651,7 @@
         // Register service worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
+                navigator.serviceWorker.register('service-worker.js')
                     .then(registration => {
                         console.log('✅ Service Worker registered:', registration);
                     })
