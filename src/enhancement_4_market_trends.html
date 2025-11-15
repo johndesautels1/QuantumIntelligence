@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLUES™ Enhancement #4: Market Trend Analyzer</title>
+
+    <!-- Core CLUES™ System -->
+    <script src="/src/core/data-manager.js"></script>
+    <script src="/src/core/scoring-engine.js"></script>
+    <script src="/src/shared-data-adapter.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0066CC 0%, #00D4FF 50%, #9D4EDD 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container { max-width: 1800px; margin: 0 auto; }
+
+        .header {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            text-align: center;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            color: white;
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-change {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .stat-change.positive { color: #00ff88; }
+        .stat-change.negative { color: #ff6b6b; }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            color: white;
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        canvas {
+            max-height: 400px;
+        }
+
+        .insight-box {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(157, 78, 221, 0.2));
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .insight-title {
+            color: white;
+            font-weight: 700;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .insight-text {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Market Trend Analyzer</h1>
+            <div style="color: rgba(255,255,255,0.9); font-size: 1.2em;">Real-Time Market Intelligence • Predictive Analytics</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Average Price</div>
+                <div class="stat-value" id="avgPrice">$0</div>
+                <div class="stat-change" id="priceChange">--</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Properties</div>
+                <div class="stat-value" id="totalProps">0</div>
+                <div class="stat-change">In Database</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Price Range</div>
+                <div class="stat-value" id="priceRange">--</div>
+                <div class="stat-change">Min - Max</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Market Score</div>
+                <div class="stat-value" id="marketScore">--</div>
+                <div class="stat-change" id="scoreChange">--</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">Price Distribution Analysis</div>
+            <canvas id="priceChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">Property Type Breakdown</div>
+            <canvas id="typeChart"></canvas>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">Market Insights</div>
+            <div id="insights"></div>
+        </div>
+    </div>
+
+    <script>
+        let PROPERTIES = [];
+
+        async function initializeEnhancement() {
+            try {
+                await sharedDataAdapter.init();
+                PROPERTIES = await sharedDataAdapter.getAllProperties();
+
+                if (PROPERTIES.length === 0) {
+                    alert('No properties found. Import data first.');
+                    window.location.href = '/index.html';
+                    return;
+                }
+
+                calculateStats();
+                renderPriceChart();
+                renderTypeChart();
+                generateInsights();
+            } catch (error) {
+                console.error('Error:', error);
+                window.location.href = '/index.html';
+            }
+        }
+
+        function calculateStats() {
+            const prices = PROPERTIES.map(p => p.price?.current || p.price || 0).filter(p => p > 0);
+            const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+            const minPrice = Math.min(...prices);
+            const maxPrice = Math.max(...prices);
+
+            document.getElementById('avgPrice').textContent = `$${Math.round(avgPrice).toLocaleString()}`;
+            document.getElementById('totalProps').textContent = PROPERTIES.length;
+            document.getElementById('priceRange').textContent = `$${(minPrice/1000).toFixed(0)}K - $${(maxPrice/1000).toFixed(0)}K`;
+
+            const avgScore = PROPERTIES.reduce((sum, p) => sum + (p.computed_scores?.overall || 50), 0) / PROPERTIES.length;
+            document.getElementById('marketScore').textContent = avgScore.toFixed(0);
+        }
+
+        function renderPriceChart() {
+            const ctx = document.getElementById('priceChart').getContext('2d');
+            const prices = PROPERTIES.map(p => p.price?.current || p.price || 0);
+
+            const buckets = [0, 250000, 500000, 750000, 1000000, 2000000];
+            const counts = buckets.map((min, i) => {
+                const max = buckets[i + 1] || Infinity;
+                return prices.filter(p => p >= min && p < max).length;
+            });
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['<$250K', '$250-500K', '$500-750K', '$750K-$1M', '$1M-$2M', '>$2M'],
+                    datasets: [{
+                        label: 'Properties',
+                        data: counts,
+                        backgroundColor: 'rgba(0, 212, 255, 0.6)',
+                        borderColor: '#00d4ff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { color: 'white' } } },
+                    scales: {
+                        y: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                        x: { ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                    }
+                }
+            });
+        }
+
+        function renderTypeChart() {
+            const ctx = document.getElementById('typeChart').getContext('2d');
+            const types = {};
+            PROPERTIES.forEach(p => {
+                const type = p.property_type || 'Unknown';
+                types[type] = (types[type] || 0) + 1;
+            });
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(types),
+                    datasets: [{
+                        data: Object.values(types),
+                        backgroundColor: ['#00d4ff', '#9d4edd', '#ff6b35', '#ffd700', '#00ff88']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { color: 'white', font: { size: 14 } } } }
+                }
+            });
+        }
+
+        function generateInsights() {
+            const insights = document.getElementById('insights');
+            const avgPrice = PROPERTIES.reduce((sum, p) => sum + (p.price?.current || p.price || 0), 0) / PROPERTIES.length;
+            const highValue = PROPERTIES.filter(p => (p.price?.current || p.price) > avgPrice * 1.2).length;
+            const goodDeals = PROPERTIES.filter(p => (p.computed_scores?.overall || 0) > 75).length;
+
+            insights.innerHTML = `
+                <div class="insight-box">
+                    <div class="insight-title">🎯 Market Opportunity</div>
+                    <div class="insight-text">
+                        Found ${goodDeals} high-scoring properties (75+ rating) representing excellent value opportunities.
+                    </div>
+                </div>
+                <div class="insight-box">
+                    <div class="insight-title">💎 Premium Segment</div>
+                    <div class="insight-text">
+                        ${highValue} properties are priced 20%+ above market average, indicating premium positioning.
+                    </div>
+                </div>
+                <div class="insight-box">
+                    <div class="insight-title">📈 Market Health</div>
+                    <div class="insight-text">
+                        Database contains ${PROPERTIES.length} properties with an average market score of ${(PROPERTIES.reduce((s, p) => s + (p.computed_scores?.overall || 50), 0) / PROPERTIES.length).toFixed(0)}/100.
+                    </div>
+                </div>
+            `;
+        }
+
+        window.addEventListener('load', initializeEnhancement);
+    </script>
+</body>
+</html>
