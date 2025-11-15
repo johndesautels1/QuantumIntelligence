@@ -523,6 +523,25 @@
         // ===== REAL PROPERTY DATA FROM DATABASE =====
         // NO HARDCODED FAKE DATA - Loads from IndexedDB
         let PROPERTIES = [];
+        let debugMessages = [];
+
+        // Debug logging helper
+        function debugLog(message, type = 'info') {
+            console.log(message);
+            debugMessages.push({ message, type, time: new Date().toLocaleTimeString() });
+            updateDebugPanel();
+        }
+
+        function updateDebugPanel() {
+            const content = document.getElementById('debugContent');
+            if (!content) return;
+
+            content.innerHTML = debugMessages.slice(-10).map(msg => `
+                <div class="debug-line ${msg.type === 'error' ? 'debug-error' : msg.type === 'warning' ? 'debug-warning' : ''}">
+                    [${msg.time}] ${msg.message}
+                </div>
+            `).join('');
+        }
 
         const DIMENSIONS = [
             { id: 'location', name: 'Location Quality', axis: 'X', icon: '📍' },

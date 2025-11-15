@@ -169,7 +169,10 @@ class ImportExportHandler {
                 case 'sqft_living':
                 case 'square_feet':
                 case 'living_area':
-                    property.square_feet.living = parseInt(value.replace(/,/g, ''));
+                case 'sq ft':
+                case 'sqft living':
+                case 'living sqft':
+                    property.square_feet.living = parseInt(value.replace(/[, ]/g, ''));
                     break;
 
                 case 'lot_size':
