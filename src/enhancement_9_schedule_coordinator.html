@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLUES™ - Schedule & Showing Coordinator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0066CC 0%, #00D4FF 50%, #9D4EDD 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2em;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .panel h2 {
+            color: white;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .properties-checklist {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .property-item {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .property-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .property-item.selected {
+            background: linear-gradient(135deg, rgba(0, 102, 204, 0.4), rgba(0, 212, 255, 0.4));
+            border-color: #FFD700;
+        }
+
+        .property-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid white;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .property-item.selected .checkbox {
+            background: #10b981;
+            border-color: #10b981;
+        }
+
+        .property-item.selected .checkbox::after {
+            content: '✓';
+            color: white;
+            font-weight: bold;
+        }
+
+        .property-name {
+            color: white;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .property-details {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9em;
+            margin-bottom: 8px;
+        }
+
+        .availability-tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .available {
+            background: rgba(16, 185, 129, 0.3);
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+
+        .limited {
+            background: rgba(245, 158, 11, 0.3);
+            color: #f59e0b;
+            border: 1px solid #f59e0b;
+        }
+
+        .route-map {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            min-height: 400px;
+            position: relative;
+        }
+
+        .map-placeholder {
+            width: 100%;
+            height: 350px;
+            background: linear-gradient(135deg, rgba(0, 102, 204, 0.2), rgba(0, 212, 255, 0.2));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+        }
+
+        .map-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+
+        .map-text {
+            color: white;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .route-markers {
+            position: absolute;
+            top: 50px;
+            left: 50px;
+            right: 50px;
+            bottom: 50px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .marker {
+            width: 40px;
+            height: 40px;
+            background: #FFD700;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            border: 3px solid white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .marker::after {
+            content: attr(data-num);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(45deg);
+            color: #000;
+            font-weight: bold;
+        }
+
+        .route-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .time-slot {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .time-slot:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .time-slot.booked {
+            background: linear-gradient(135deg, rgba(0, 102, 204, 0.3), rgba(0, 212, 255, 0.3));
+            border: 2px solid #00D4FF;
+        }
+
+        .time {
+            color: white;
+            font-weight: 600;
+            font-size: 1.1em;
+            min-width: 100px;
+        }
+
+        .slot-content {
+            flex: 1;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, #0066CC, #00D4FF);
+            border-color: #00D4FF;
+        }
+
+        .btn.success {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            border-color: #34d399;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .suggestions-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .suggestion-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid #FFD700;
+            transition: all 0.3s ease;
+        }
+
+        .suggestion-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .suggestion-title {
+            color: white;
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+
+        .suggestion-text {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+        }
+
+        .time-budget-bar {
+            width: 100%;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .budget-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #FFD700, #ef4444);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .budget-label {
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .traffic-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .traffic-light {
+            background: rgba(16, 185, 129, 0.3);
+            color: #10b981;
+            border: 1px solid #10b981;
+        }
+
+        .traffic-moderate {
+            background: rgba(245, 158, 11, 0.3);
+            color: #f59e0b;
+            border: 1px solid #f59e0b;
+        }
+
+        .traffic-heavy {
+            background: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Schedule & Showing Coordinator</h1>
+            <p class="subtitle">Optimize Your Property Tour Route & Schedule</p>
+        </div>
+
+        <!-- Property Selection -->
+        <div class="panel">
+            <h2>🏠 Select Properties to Tour</h2>
+            <div class="properties-checklist" id="propertiesChecklist">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Route Optimizer -->
+        <div class="panel">
+            <h2>🗺️ Optimized Route Map</h2>
+            <div class="controls">
+                <button class="btn primary" onclick="optimizeRoute()">🚀 Optimize Route</button>
+                <button class="btn" onclick="reverseRoute()">🔄 Reverse Order</button>
+            </div>
+            <div class="route-map">
+                <div class="map-placeholder">
+                    <div class="map-icon">🗺️</div>
+                    <div class="map-text" id="routeMessage">Select properties above to generate route</div>
+                    <div class="route-markers" id="routeMarkers"></div>
+                </div>
+                <div class="route-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalDistance">0</div>
+                        <div class="stat-label">Miles</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalTime">0</div>
+                        <div class="stat-label">Minutes</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="propertyCount">0</div>
+                        <div class="stat-label">Properties</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="trafficStatus">Light</div>
+                        <div class="stat-label">Traffic</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Time Budget Visualizer -->
+        <div class="panel">
+            <h2>⏱️ Time Budget Visualizer</h2>
+            <div class="budget-label">Estimated Time Allocation</div>
+            <div class="time-budget-bar">
+                <div class="budget-fill" id="budgetFill">0%</div>
+            </div>
+            <div class="chart-container">
+                <canvas id="timeBudgetChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Schedule View -->
+        <div class="panel">
+            <h2>📋 Proposed Schedule</h2>
+            <div class="schedule-grid" id="scheduleContainer">
+                <!-- Populated by JS -->
+            </div>
+            <div class="controls">
+                <button class="btn success" onclick="bookTour()">✓ Book All Showings</button>
+                <button class="btn" onclick="exportCalendar()">📤 Export to Calendar</button>
+            </div>
+        </div>
+
+        <!-- Show Me On The Way -->
+        <div class="panel">
+            <h2>🎯 "Show Me On The Way" Suggestions</h2>
+            <div class="suggestions-list" id="suggestionsContainer">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Property Data
+        const PROPERTIES = [
+            { id: 1, name: '123 Sunset Boulevard', lat: 34.05, lng: -118.25, available: ['9:00 AM', '2:00 PM'], distance: 0 },
+            { id: 2, name: '456 Oak Avenue', lat: 34.08, lng: -118.20, available: ['10:00 AM', '3:00 PM'], distance: 5.2 },
+            { id: 3, name: '789 Maple Drive', lat: 34.10, lng: -118.28, available: ['11:00 AM', '4:00 PM'], distance: 8.7 },
+            { id: 4, name: '321 Pine Street', lat: 34.03, lng: -118.32, available: ['1:00 PM', '5:00 PM'], distance: 12.3 },
+            { id: 5, name: '654 Birch Lane', lat: 34.12, lng: -118.22, available: ['9:30 AM', '2:30 PM'], distance: 10.5 },
+            { id: 6, name: '987 Cedar Court', lat: 34.07, lng: -118.18, available: ['10:30 AM', '3:30 PM'], distance: 6.8 }
+        ];
+
+        let selectedProperties = [];
+        let optimizedRoute = [];
+        let timeBudgetChart;
+
+        // Initialize
+        function init() {
+            renderPropertiesChecklist();
+            initTimeBudgetChart();
+            updateStats();
+        }
+
+        // Render Properties Checklist
+        function renderPropertiesChecklist() {
+            const container = document.getElementById('propertiesChecklist');
+            container.innerHTML = PROPERTIES.map(p => `
+                <div class="property-item ${selectedProperties.includes(p.id) ? 'selected' : ''}"
+                     onclick="toggleProperty(${p.id})">
+                    <div class="property-header">
+                        <div class="checkbox"></div>
+                        <div class="property-name">${p.name}</div>
+                    </div>
+                    <div class="property-details">
+                        Available: ${p.available[0]}, ${p.available[1]}
+                    </div>
+                    <span class="availability-tag ${p.available.length > 1 ? 'available' : 'limited'}">
+                        ${p.available.length > 1 ? 'Flexible' : 'Limited'}
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        // Toggle Property Selection
+        function toggleProperty(id) {
+            if (selectedProperties.includes(id)) {
+                selectedProperties = selectedProperties.filter(p => p !== id);
+            } else {
+                selectedProperties.push(id);
+            }
+
+            renderPropertiesChecklist();
+            updateStats();
+            updateSuggestions();
+        }
+
+        // Optimize Route
+        function optimizeRoute() {
+            if (selectedProperties.length === 0) {
+                alert('Please select at least one property first!');
+                return;
+            }
+
+            // Simple nearest-neighbor optimization
+            optimizedRoute = [];
+            let remaining = [...selectedProperties];
+            let current = remaining[0];
+
+            while (remaining.length > 0) {
+                optimizedRoute.push(current);
+                remaining = remaining.filter(id => id !== current);
+
+                if (remaining.length > 0) {
+                    // Find nearest remaining property
+                    let nearest = remaining[0];
+                    let minDist = calculateDistance(current, remaining[0]);
+
+                    remaining.forEach(id => {
+                        const dist = calculateDistance(current, id);
+                        if (dist < minDist) {
+                            minDist = dist;
+                            nearest = id;
+                        }
+                    });
+
+                    current = nearest;
+                }
+            }
+
+            updateStats();
+            renderRoute();
+            renderSchedule();
+            updateTimeBudgetChart();
+        }
+
+        // Calculate Distance (simplified)
+        function calculateDistance(id1, id2) {
+            const p1 = PROPERTIES.find(p => p.id === id1);
+            const p2 = PROPERTIES.find(p => p.id === id2);
+
+            const lat1 = p1.lat, lng1 = p1.lng;
+            const lat2 = p2.lat, lng2 = p2.lng;
+
+            const dlat = lat2 - lat1;
+            const dlng = lng2 - lng1;
+
+            return Math.sqrt(dlat * dlat + dlng * dlng) * 69; // Rough miles estimate
+        }
+
+        // Reverse Route
+        function reverseRoute() {
+            optimizedRoute.reverse();
+            updateStats();
+            renderRoute();
+            renderSchedule();
+        }
+
+        // Render Route
+        function renderRoute() {
+            const container = document.getElementById('routeMarkers');
+            const message = document.getElementById('routeMessage');
+
+            if (optimizedRoute.length === 0) {
+                container.innerHTML = '';
+                message.textContent = 'Select properties above to generate route';
+                return;
+            }
+
+            message.textContent = `Optimized Route: ${optimizedRoute.length} Properties`;
+
+            container.innerHTML = optimizedRoute.map((id, index) => `
+                <div class="marker" data-num="${index + 1}"></div>
+            `).join('');
+        }
+
+        // Render Schedule
+        function renderSchedule() {
+            const container = document.getElementById('scheduleContainer');
+
+            if (optimizedRoute.length === 0) {
+                container.innerHTML = '<p style="color: rgba(255,255,255,0.7); grid-column: 1/-1;">Optimize route first to see schedule</p>';
+                return;
+            }
+
+            let currentTime = new Date();
+            currentTime.setHours(9, 0, 0, 0); // Start at 9 AM
+
+            let html = '';
+
+            optimizedRoute.forEach((id, index) => {
+                const property = PROPERTIES.find(p => p.id === id);
+
+                // Travel time
+                if (index > 0) {
+                    const prevId = optimizedRoute[index - 1];
+                    const travelTime = Math.ceil(calculateDistance(prevId, id) / 30 * 60); // Assume 30mph average
+                    const traffic = travelTime > 20 ? 'heavy' : travelTime > 10 ? 'moderate' : 'light';
+
+                    html += `
+                        <div class="time" style="color: rgba(255,255,255,0.6);">
+                            ${formatTime(currentTime)} - ${formatTime(addMinutes(currentTime, travelTime))}
+                        </div>
+                        <div class="time-slot">
+                            <div class="slot-content">
+                                🚗 Travel to ${property.name}
+                                <span class="traffic-indicator traffic-${traffic}" style="margin-left: 10px;">
+                                    ${traffic === 'heavy' ? '🔴' : traffic === 'moderate' ? '🟡' : '🟢'}
+                                    ${travelTime} min
+                                </span>
+                            </div>
+                        </div>
+                    `;
+
+                    currentTime = addMinutes(currentTime, travelTime);
+                }
+
+                // Property showing (30 min each)
+                const endTime = addMinutes(currentTime, 30);
+
+                html += `
+                    <div class="time">${formatTime(currentTime)} - ${formatTime(endTime)}</div>
+                    <div class="time-slot booked">
+                        <div class="slot-content">
+                            <strong>${property.name}</strong><br>
+                            Property Viewing • 30 minutes
+                        </div>
+                    </div>
+                `;
+
+                currentTime = endTime;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // Update Stats
+        function updateStats() {
+            const count = optimizedRoute.length || selectedProperties.length;
+            document.getElementById('propertyCount').textContent = count;
+
+            if (optimizedRoute.length > 0) {
+                // Calculate total distance
+                let totalDist = 0;
+                for (let i = 0; i < optimizedRoute.length - 1; i++) {
+                    totalDist += calculateDistance(optimizedRoute[i], optimizedRoute[i + 1]);
+                }
+
+                document.getElementById('totalDistance').textContent = totalDist.toFixed(1);
+
+                // Calculate total time (travel + showings)
+                const travelTime = Math.ceil(totalDist / 30 * 60); // 30 mph average
+                const showingTime = optimizedRoute.length * 30;
+                const totalTime = travelTime + showingTime;
+
+                document.getElementById('totalTime').textContent = totalTime;
+
+                // Traffic status
+                const avgTravelTime = travelTime / Math.max(1, optimizedRoute.length - 1);
+                const traffic = avgTravelTime > 20 ? 'Heavy' : avgTravelTime > 10 ? 'Moderate' : 'Light';
+                document.getElementById('trafficStatus').textContent = traffic;
+
+                // Time budget
+                const budgetPercent = Math.min(100, (totalTime / 240) * 100); // 4 hours = 240 min
+                const budgetFill = document.getElementById('budgetFill');
+                budgetFill.style.width = budgetPercent + '%';
+                budgetFill.textContent = totalTime + ' min';
+            } else {
+                document.getElementById('totalDistance').textContent = '0';
+                document.getElementById('totalTime').textContent = '0';
+                document.getElementById('trafficStatus').textContent = 'Light';
+            }
+        }
+
+        // Update Suggestions
+        function updateSuggestions() {
+            const container = document.getElementById('suggestionsContainer');
+
+            if (optimizedRoute.length < 2) {
+                container.innerHTML = '<p style="color: rgba(255,255,255,0.7);">Add more properties to see suggestions</p>';
+                return;
+            }
+
+            const suggestions = [];
+
+            // Check for nearby unselected properties
+            optimizedRoute.forEach((id, index) => {
+                if (index < optimizedRoute.length - 1) {
+                    const current = PROPERTIES.find(p => p.id === id);
+                    const next = PROPERTIES.find(p => p.id === optimizedRoute[index + 1]);
+
+                    PROPERTIES.filter(p => !selectedProperties.includes(p.id)).forEach(nearby => {
+                        const distToCurrent = calculateDistance(id, nearby.id);
+                        const distToNext = calculateDistance(nearby.id, optimizedRoute[index + 1]);
+
+                        if (distToCurrent < 3 && distToNext < 3) {
+                            suggestions.push({
+                                title: `${nearby.name} is on your way`,
+                                text: `Between ${current.name} and ${next.name}. Only ${distToCurrent.toFixed(1)} miles detour. Available: ${nearby.available.join(', ')}`
+                            });
+                        }
+                    });
+                }
+            });
+
+            if (suggestions.length === 0) {
+                suggestions.push({
+                    title: 'Efficient Route!',
+                    text: 'Your current route is optimized. No nearby properties detected along your path.'
+                });
+            }
+
+            container.innerHTML = suggestions.slice(0, 3).map(s => `
+                <div class="suggestion-card">
+                    <div class="suggestion-title">${s.title}</div>
+                    <div class="suggestion-text">${s.text}</div>
+                </div>
+            `).join('');
+        }
+
+        // Init Time Budget Chart
+        function initTimeBudgetChart() {
+            const ctx = document.getElementById('timeBudgetChart').getContext('2d');
+            timeBudgetChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Travel Time', 'Showing Time', 'Buffer Time'],
+                    datasets: [{
+                        data: [0, 0, 60],
+                        backgroundColor: ['#00D4FF', '#10b981', '#FFD700'],
+                        borderColor: 'white',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: 'white', font: { size: 14, weight: 'bold' } } }
+                    }
+                }
+            });
+        }
+
+        // Update Time Budget Chart
+        function updateTimeBudgetChart() {
+            if (optimizedRoute.length === 0) return;
+
+            let totalDist = 0;
+            for (let i = 0; i < optimizedRoute.length - 1; i++) {
+                totalDist += calculateDistance(optimizedRoute[i], optimizedRoute[i + 1]);
+            }
+
+            const travelTime = Math.ceil(totalDist / 30 * 60);
+            const showingTime = optimizedRoute.length * 30;
+            const bufferTime = 15 * optimizedRoute.length;
+
+            timeBudgetChart.data.datasets[0].data = [travelTime, showingTime, bufferTime];
+            timeBudgetChart.update();
+        }
+
+        // Book Tour
+        function bookTour() {
+            if (optimizedRoute.length === 0) {
+                alert('Please optimize your route first!');
+                return;
+            }
+
+            alert(`🎉 Tour Booked!\n\n${optimizedRoute.length} properties scheduled.\n\nConfirmation emails will be sent to all parties.\n\nIn production, this would:\n- Send calendar invites\n- Notify property agents\n- Create Calendly bookings\n- Send SMS reminders`);
+        }
+
+        // Export Calendar
+        function exportCalendar() {
+            if (optimizedRoute.length === 0) {
+                alert('Please optimize your route first!');
+                return;
+            }
+
+            const report = {
+                properties: optimizedRoute.map(id => PROPERTIES.find(p => p.id === id).name),
+                startTime: '9:00 AM',
+                exportDate: new Date().toISOString()
+            };
+
+            const dataStr = JSON.stringify(report, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `property-tour-${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            URL.revokeObjectURL(url);
+
+            alert('Calendar data exported! In production, this would create a .ics file for Google Calendar/Outlook.');
+        }
+
+        // Utilities
+        function formatTime(date) {
+            return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        }
+
+        function addMinutes(date, minutes) {
+            return new Date(date.getTime() + minutes * 60000);
+        }
+
+        // Initialize
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
