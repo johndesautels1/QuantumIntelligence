@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CLUES™ - AI-Powered Property Matchmaker</title>
+
+    <!-- Core CLUES™ System -->
+    <script src="/src/core/data-manager.js"></script>
+    <script src="/src/core/scoring-engine.js"></script>
+    <script src="/src/shared-data-adapter.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {
@@ -492,59 +498,9 @@
     </div>
 
     <script>
-        // Property Database with Features
-        const PROPERTIES = [
-            {
-                id: 1, name: '123 Sunset Boulevard', price: 475000, beds: 4, baths: 3, sqft: 2200,
-                location: 'Coastal', style: 'Modern', age: 8, schools: 92, walkability: 85, roi: 78,
-                features: ['ocean_view', 'garage', 'pool', 'modern_kitchen']
-            },
-            {
-                id: 2, name: '456 Oak Avenue', price: 525000, beds: 4, baths: 2.5, sqft: 2500,
-                location: 'Suburban', style: 'Traditional', age: 15, schools: 68, walkability: 65, roi: 85,
-                features: ['large_yard', 'garage', 'fireplace', 'basement']
-            },
-            {
-                id: 3, name: '789 Maple Drive', price: 395000, beds: 3, baths: 2, sqft: 1800,
-                location: 'Urban', style: 'Contemporary', age: 5, schools: 70, walkability: 95, roi: 88,
-                features: ['modern_kitchen', 'walkable', 'downtown', 'renovated']
-            },
-            {
-                id: 4, name: '321 Pine Street', price: 615000, beds: 5, baths: 4, sqft: 3000,
-                location: 'Premium', style: 'Luxury', age: 12, schools: 98, walkability: 92, roi: 70,
-                features: ['luxury', 'pool', 'large_lot', 'gourmet_kitchen', 'home_theater']
-            },
-            {
-                id: 5, name: '654 Birch Lane', price: 445000, beds: 3, baths: 2.5, sqft: 2100,
-                location: 'Suburban', style: 'Modern', age: 10, schools: 82, walkability: 70, roi: 92,
-                features: ['garage', 'modern_kitchen', 'open_floor', 'energy_efficient']
-            },
-            {
-                id: 6, name: '987 Cedar Court', price: 505000, beds: 4, baths: 3.5, sqft: 2400,
-                location: 'Suburban', style: 'Traditional', age: 6, schools: 85, walkability: 75, roi: 82,
-                features: ['pool', 'garage', 'large_yard', 'updated']
-            },
-            {
-                id: 7, name: '147 Willow Way', price: 380000, beds: 3, baths: 2, sqft: 1700,
-                location: 'Urban', style: 'Loft', age: 3, schools: 65, walkability: 98, roi: 90,
-                features: ['downtown', 'walkable', 'modern_kitchen', 'rooftop']
-            },
-            {
-                id: 8, name: '258 Elm Drive', price: 680000, beds: 5, baths: 4.5, sqft: 3500,
-                location: 'Premium', style: 'Luxury', age: 8, schools: 95, walkability: 80, roi: 68,
-                features: ['luxury', 'pool', 'wine_cellar', 'smart_home', 'spa']
-            },
-            {
-                id: 9, name: '369 Aspen Lane', price: 425000, beds: 3, baths: 2.5, sqft: 1900,
-                location: 'Suburban', style: 'Craftsman', age: 7, schools: 88, walkability: 72, roi: 85,
-                features: ['garage', 'fireplace', 'hardwood', 'covered_patio']
-            },
-            {
-                id: 10, name: '741 Spruce Street', price: 355000, beds: 2, baths: 2, sqft: 1400,
-                location: 'Urban', style: 'Condo', age: 2, schools: 60, walkability: 100, roi: 95,
-                features: ['downtown', 'walkable', 'gym', 'concierge', 'parking']
-            }
-        ];
+        // ===== REAL PROPERTY DATA FROM DATABASE =====
+        // NO HARDCODED FAKE DATA - Loads from IndexedDB
+        let PROPERTIES = [];
 
         // User Preferences
         let likedProperties = [];
@@ -1088,8 +1044,38 @@
             }
         }
 
-        // Initialize
-        window.addEventListener('load', init);
+        // Initialize Enhancement with REAL Data
+        async function initializeEnhancement() {
+            try {
+                // Initialize shared data adapter
+                await sharedDataAdapter.init();
+
+                // Load REAL properties from IndexedDB
+                PROPERTIES = await sharedDataAdapter.getPropertiesForAIMatchmaker();
+
+                console.log(`✅ Loaded ${PROPERTIES.length} real properties from database`);
+
+                // Check if we have properties
+                if (PROPERTIES.length === 0) {
+                    alert('No properties found in database. Please import property data from the main dashboard first.');
+                    window.location.href = '/index.html';
+                    return;
+                }
+
+                // Initialize the UI
+                init();
+
+            } catch (error) {
+                console.error('❌ Enhancement initialization failed:', error);
+                alert(`Initialization error: ${error.message}\n\nClick OK to return to dashboard.`);
+                window.location.href = '/index.html';
+            }
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            initializeEnhancement();
+        });
     </script>
 </body>
 </html>
