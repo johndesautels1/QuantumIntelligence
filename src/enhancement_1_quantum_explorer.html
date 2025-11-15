@@ -51,6 +51,47 @@
             z-index: 10;
         }
 
+        #debugPanel {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            color: #00ff88;
+            padding: 15px;
+            border-radius: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-width: 400px;
+            max-height: 300px;
+            overflow-y: auto;
+            pointer-events: all;
+            border: 2px solid #00ff88;
+            z-index: 10000;
+        }
+
+        #debugPanel h3 {
+            margin: 0 0 10px 0;
+            color: #00d4ff;
+            font-size: 14px;
+        }
+
+        #debugPanel .debug-line {
+            margin: 3px 0;
+            padding: 3px;
+            border-left: 3px solid #00ff88;
+            padding-left: 8px;
+        }
+
+        #debugPanel .debug-error {
+            border-left-color: #ff006e;
+            color: #ff006e;
+        }
+
+        #debugPanel .debug-warning {
+            border-left-color: #ff9e00;
+            color: #ff9e00;
+        }
+
         .header {
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(20px);
