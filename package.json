@@ -9,8 +9,13 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "real estate",
+    "property intelligence",
+    "analytics",
+    "mobile"
+  ],
+  "author": "John Desautels <cluesnomads@gmail.com> (https://cluesnomad.com)",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
@@ -28,5 +33,9 @@
     "@capacitor/share": "^7.0.2",
     "@capacitor/splash-screen": "^7.0.3",
     "@capacitor/status-bar": "^7.0.3"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "sharp": "^0.34.5"
   }
 }
