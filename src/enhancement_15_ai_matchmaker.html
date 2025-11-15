@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLUES™ - AI-Powered Property Matchmaker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0066CC 0%, #00D4FF 50%, #9D4EDD 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2em;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .panel h2 {
+            color: white;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .recommendations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .property-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .property-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .confidence-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #10b981, #34d399);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.95em;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .property-name {
+            color: white;
+            font-weight: 600;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+            padding-right: 100px;
+        }
+
+        .property-price {
+            color: #FFD700;
+            font-weight: bold;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+        }
+
+        .property-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .detail-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 0.9em;
+            color: white;
+        }
+
+        .match-reasons {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .match-reason-title {
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .match-reason {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.95em;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .match-reason::before {
+            content: '✓';
+            color: #10b981;
+            font-weight: bold;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, #0066CC, #00D4FF);
+            border-color: #00D4FF;
+        }
+
+        .btn.action {
+            width: 100%;
+            margin-top: 10px;
+            justify-content: center;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .history-panel {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .history-icon {
+            font-size: 1.5em;
+        }
+
+        .history-text {
+            flex: 1;
+            color: white;
+        }
+
+        .history-time {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85em;
+        }
+
+        .warning-card {
+            background: rgba(239, 68, 68, 0.2);
+            border: 2px solid #ef4444;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .warning-title {
+            color: #ef4444;
+            font-weight: 600;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .warning-text {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+        }
+
+        .serendipity-badge {
+            background: linear-gradient(135deg, #9D4EDD, #c084fc);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .learning-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1em;
+            margin-top: 5px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+        }
+
+        .similarity-matrix {
+            overflow-x: auto;
+        }
+
+        .matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        .matrix-table th,
+        .matrix-table td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .matrix-table th {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-weight: 600;
+        }
+
+        .matrix-table td {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-weight: 600;
+        }
+
+        .matrix-high {
+            background: rgba(16, 185, 129, 0.3) !important;
+            color: #10b981 !important;
+        }
+
+        .matrix-medium {
+            background: rgba(255, 215, 0, 0.3) !important;
+            color: #FFD700 !important;
+        }
+
+        .matrix-low {
+            background: rgba(239, 68, 68, 0.3) !important;
+            color: #ef4444 !important;
+        }
+
+        .preference-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .preference-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .preference-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .preference-card.selected {
+            background: linear-gradient(135deg, rgba(0, 102, 204, 0.4), rgba(0, 212, 255, 0.4));
+            border-color: #FFD700;
+        }
+
+        .preference-name {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .preference-price {
+            color: #FFD700;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 AI-Powered Property Matchmaker</h1>
+            <p class="subtitle">Intelligent Recommendations Based on Your Preferences & Behavior</p>
+        </div>
+
+        <!-- Learning Dashboard -->
+        <div class="panel">
+            <h2>📊 Learning Dashboard</h2>
+            <div class="learning-stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="propertiesViewed">0</div>
+                    <div class="stat-label">Properties Viewed</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="propertiesLiked">0</div>
+                    <div class="stat-label">Properties Liked</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="matchAccuracy">0%</div>
+                    <div class="stat-label">Match Accuracy</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="modelVersion">v2.1</div>
+                    <div class="stat-label">Model Version</div>
+                </div>
+            </div>
+
+            <div class="history-panel">
+                <h3 style="color: white; margin-bottom: 15px;">Recent Activity</h3>
+                <div id="historyContainer">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Liked Properties Selector -->
+        <div class="panel">
+            <h2>❤️ Your Liked Properties</h2>
+            <p style="color: rgba(255,255,255,0.9); margin-bottom: 20px;">Select properties you like to get personalized recommendations</p>
+            <div class="preference-selector" id="preferenceSelector">
+                <!-- Populated by JS -->
+            </div>
+            <div class="controls">
+                <button class="btn primary" onclick="generateRecommendations()">🔮 Generate Recommendations</button>
+                <button class="btn" onclick="resetPreferences()">🔄 Reset Preferences</button>
+            </div>
+        </div>
+
+        <!-- AI Recommendations -->
+        <div class="panel">
+            <h2>💝 Properties You Might Love</h2>
+            <div class="recommendations-grid" id="recommendationsContainer">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Hidden Gems -->
+        <div class="panel">
+            <h2>💎 Hidden Gems</h2>
+            <p style="color: rgba(255,255,255,0.9); margin-bottom: 20px;">Undervalued properties that match your profile</p>
+            <div class="recommendations-grid" id="hiddenGemsContainer">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Serendipity Suggestions -->
+        <div class="panel">
+            <h2>✨ Serendipity Suggestions</h2>
+            <p style="color: rgba(255,255,255,0.9); margin-bottom: 20px;">Wildcard picks outside your usual preferences</p>
+            <div class="recommendations-grid" id="serendipityContainer">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Anti-Matches -->
+        <div class="panel">
+            <h2>⚠️ Anti-Match Warnings</h2>
+            <div id="antiMatchContainer">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Similarity Matrix -->
+        <div class="panel">
+            <h2>🧮 Property Similarity Matrix</h2>
+            <div class="controls">
+                <button class="btn" onclick="toggleMatrix()">👁️ Show/Hide Matrix</button>
+            </div>
+            <div class="similarity-matrix" id="matrixContainer" style="display: none;">
+                <table class="matrix-table" id="similarityTable">
+                    <!-- Populated by JS -->
+                </table>
+            </div>
+        </div>
+
+        <!-- Learning Insights -->
+        <div class="panel">
+            <h2>📈 AI Learning Insights</h2>
+            <div class="chart-container">
+                <canvas id="learningChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Property Database with Features
+        const PROPERTIES = [
+            {
+                id: 1, name: '123 Sunset Boulevard', price: 475000, beds: 4, baths: 3, sqft: 2200,
+                location: 'Coastal', style: 'Modern', age: 8, schools: 92, walkability: 85, roi: 78,
+                features: ['ocean_view', 'garage', 'pool', 'modern_kitchen']
+            },
+            {
+                id: 2, name: '456 Oak Avenue', price: 525000, beds: 4, baths: 2.5, sqft: 2500,
+                location: 'Suburban', style: 'Traditional', age: 15, schools: 68, walkability: 65, roi: 85,
+                features: ['large_yard', 'garage', 'fireplace', 'basement']
+            },
+            {
+                id: 3, name: '789 Maple Drive', price: 395000, beds: 3, baths: 2, sqft: 1800,
+                location: 'Urban', style: 'Contemporary', age: 5, schools: 70, walkability: 95, roi: 88,
+                features: ['modern_kitchen', 'walkable', 'downtown', 'renovated']
+            },
+            {
+                id: 4, name: '321 Pine Street', price: 615000, beds: 5, baths: 4, sqft: 3000,
+                location: 'Premium', style: 'Luxury', age: 12, schools: 98, walkability: 92, roi: 70,
+                features: ['luxury', 'pool', 'large_lot', 'gourmet_kitchen', 'home_theater']
+            },
+            {
+                id: 5, name: '654 Birch Lane', price: 445000, beds: 3, baths: 2.5, sqft: 2100,
+                location: 'Suburban', style: 'Modern', age: 10, schools: 82, walkability: 70, roi: 92,
+                features: ['garage', 'modern_kitchen', 'open_floor', 'energy_efficient']
+            },
+            {
+                id: 6, name: '987 Cedar Court', price: 505000, beds: 4, baths: 3.5, sqft: 2400,
+                location: 'Suburban', style: 'Traditional', age: 6, schools: 85, walkability: 75, roi: 82,
+                features: ['pool', 'garage', 'large_yard', 'updated']
+            },
+            {
+                id: 7, name: '147 Willow Way', price: 380000, beds: 3, baths: 2, sqft: 1700,
+                location: 'Urban', style: 'Loft', age: 3, schools: 65, walkability: 98, roi: 90,
+                features: ['downtown', 'walkable', 'modern_kitchen', 'rooftop']
+            },
+            {
+                id: 8, name: '258 Elm Drive', price: 680000, beds: 5, baths: 4.5, sqft: 3500,
+                location: 'Premium', style: 'Luxury', age: 8, schools: 95, walkability: 80, roi: 68,
+                features: ['luxury', 'pool', 'wine_cellar', 'smart_home', 'spa']
+            },
+            {
+                id: 9, name: '369 Aspen Lane', price: 425000, beds: 3, baths: 2.5, sqft: 1900,
+                location: 'Suburban', style: 'Craftsman', age: 7, schools: 88, walkability: 72, roi: 85,
+                features: ['garage', 'fireplace', 'hardwood', 'covered_patio']
+            },
+            {
+                id: 10, name: '741 Spruce Street', price: 355000, beds: 2, baths: 2, sqft: 1400,
+                location: 'Urban', style: 'Condo', age: 2, schools: 60, walkability: 100, roi: 95,
+                features: ['downtown', 'walkable', 'gym', 'concierge', 'parking']
+            }
+        ];
+
+        // User Preferences
+        let likedProperties = [];
+        let viewedProperties = [];
+        let userProfile = {
+            preferredLocation: [],
+            preferredStyle: [],
+            budgetRange: [0, 1000000],
+            minBeds: 0,
+            priceWeight: 0.3,
+            locationWeight: 0.3,
+            featuresWeight: 0.4
+        };
+
+        let learningChart;
+
+        // Initialize
+        function init() {
+            renderPreferenceSelector();
+            renderHistory();
+            updateStats();
+            initChart();
+            loadFromStorage();
+        }
+
+        // Render Preference Selector
+        function renderPreferenceSelector() {
+            const container = document.getElementById('preferenceSelector');
+            container.innerHTML = PROPERTIES.slice(0, 6).map(p => `
+                <div class="preference-card ${likedProperties.includes(p.id) ? 'selected' : ''}"
+                     onclick="toggleLike(${p.id})">
+                    <div class="preference-name">${p.name}</div>
+                    <div class="preference-price">$${p.price.toLocaleString()}</div>
+                    <div style="color: rgba(255,255,255,0.8); font-size: 0.85em; margin-top: 5px;">
+                        ${p.beds} bed • ${p.baths} bath • ${p.sqft.toLocaleString()} sqft
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Toggle Like
+        function toggleLike(propertyId) {
+            if (likedProperties.includes(propertyId)) {
+                likedProperties = likedProperties.filter(id => id !== propertyId);
+                addHistory('❌', `Unliked ${PROPERTIES.find(p => p.id === propertyId).name}`);
+            } else {
+                likedProperties.push(propertyId);
+                addHistory('❤️', `Liked ${PROPERTIES.find(p => p.id === propertyId).name}`);
+            }
+
+            renderPreferenceSelector();
+            updateUserProfile();
+            updateStats();
+            saveToStorage();
+        }
+
+        // Update User Profile from Likes
+        function updateUserProfile() {
+            if (likedProperties.length === 0) return;
+
+            const liked = PROPERTIES.filter(p => likedProperties.includes(p.id));
+
+            // Extract preferred locations
+            userProfile.preferredLocation = [...new Set(liked.map(p => p.location))];
+
+            // Extract preferred styles
+            userProfile.preferredStyle = [...new Set(liked.map(p => p.style))];
+
+            // Calculate budget range
+            const prices = liked.map(p => p.price);
+            const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+            userProfile.budgetRange = [avgPrice * 0.8, avgPrice * 1.2];
+
+            // Min beds
+            userProfile.minBeds = Math.min(...liked.map(p => p.beds));
+        }
+
+        // Calculate Similarity Score
+        function calculateSimilarity(property1, property2) {
+            let score = 0;
+
+            // Price similarity (30%)
+            const priceDiff = Math.abs(property1.price - property2.price);
+            const priceScore = Math.max(0, 100 - (priceDiff / 10000));
+            score += priceScore * 0.3;
+
+            // Location match (20%)
+            score += (property1.location === property2.location) ? 20 : 0;
+
+            // Style match (15%)
+            score += (property1.style === property2.style) ? 15 : 0;
+
+            // Size similarity (15%)
+            const sizeDiff = Math.abs(property1.sqft - property2.sqft);
+            const sizeScore = Math.max(0, 100 - (sizeDiff / 50));
+            score += sizeScore * 0.15;
+
+            // Feature overlap (20%)
+            const commonFeatures = property1.features.filter(f => property2.features.includes(f)).length;
+            const featureScore = (commonFeatures / Math.max(property1.features.length, property2.features.length)) * 100;
+            score += featureScore * 0.2;
+
+            return Math.min(100, score);
+        }
+
+        // Generate Recommendations
+        function generateRecommendations() {
+            if (likedProperties.length === 0) {
+                alert('Please select at least one property you like first!');
+                return;
+            }
+
+            const recommendations = [];
+            const unlikedProperties = PROPERTIES.filter(p => !likedProperties.includes(p.id));
+
+            // Collaborative Filtering
+            unlikedProperties.forEach(candidate => {
+                let totalSimilarity = 0;
+                let count = 0;
+
+                likedProperties.forEach(likedId => {
+                    const likedProp = PROPERTIES.find(p => p.id === likedId);
+                    const similarity = calculateSimilarity(likedProp, candidate);
+                    totalSimilarity += similarity;
+                    count++;
+                });
+
+                const avgSimilarity = totalSimilarity / count;
+
+                // Content-based filtering bonus
+                let contentBonus = 0;
+                if (userProfile.preferredLocation.includes(candidate.location)) contentBonus += 10;
+                if (userProfile.preferredStyle.includes(candidate.style)) contentBonus += 10;
+                if (candidate.price >= userProfile.budgetRange[0] && candidate.price <= userProfile.budgetRange[1]) contentBonus += 15;
+
+                const confidence = Math.min(99, Math.round(avgSimilarity + contentBonus));
+
+                recommendations.push({
+                    property: candidate,
+                    confidence: confidence,
+                    reasons: generateMatchReasons(candidate, likedProperties)
+                });
+            });
+
+            // Sort by confidence
+            recommendations.sort((a, b) => b.confidence - a.confidence);
+
+            // Render top recommendations
+            renderRecommendations(recommendations.slice(0, 3));
+
+            // Hidden Gems (high ROI, lower price, medium confidence)
+            const hiddenGems = recommendations.filter(r =>
+                r.property.roi > 85 &&
+                r.property.price < 450000 &&
+                r.confidence > 60
+            ).slice(0, 2);
+            renderHiddenGems(hiddenGems);
+
+            // Serendipity (wildcard - different style/location)
+            const serendipity = recommendations.filter(r =>
+                !userProfile.preferredStyle.includes(r.property.style) &&
+                r.confidence > 50
+            ).slice(0, 2);
+            renderSerendipity(serendipity);
+
+            // Anti-matches (low confidence)
+            const antiMatches = recommendations.filter(r => r.confidence < 40).slice(0, 2);
+            renderAntiMatches(antiMatches);
+
+            // Update similarity matrix
+            renderSimilarityMatrix();
+
+            // Update chart
+            updateChart();
+
+            addHistory('🔮', `Generated ${recommendations.length} recommendations`);
+        }
+
+        // Generate Match Reasons
+        function generateMatchReasons(candidate, likedIds) {
+            const reasons = [];
+            const liked = PROPERTIES.filter(p => likedIds.includes(p.id));
+
+            // Price range
+            const likedPrices = liked.map(p => p.price);
+            const avgPrice = likedPrices.reduce((a, b) => a + b, 0) / likedPrices.length;
+            if (Math.abs(candidate.price - avgPrice) < 50000) {
+                reasons.push('Price matches your preferred range');
+            }
+
+            // Location
+            if (userProfile.preferredLocation.includes(candidate.location)) {
+                reasons.push(`You liked other ${candidate.location} properties`);
+            }
+
+            // Style
+            if (userProfile.preferredStyle.includes(candidate.style)) {
+                reasons.push(`${candidate.style} style matches your taste`);
+            }
+
+            // Features
+            const likedFeatures = liked.flatMap(p => p.features);
+            const commonFeatures = candidate.features.filter(f => likedFeatures.includes(f));
+            if (commonFeatures.length > 0) {
+                reasons.push(`Has ${commonFeatures.slice(0, 2).join(', ')} you like`);
+            }
+
+            // Schools
+            if (liked.some(p => p.schools > 80) && candidate.schools > 80) {
+                reasons.push('Excellent school district');
+            }
+
+            // ROI
+            if (candidate.roi > 85) {
+                reasons.push('Strong investment potential');
+            }
+
+            return reasons.slice(0, 4);
+        }
+
+        // Render Recommendations
+        function renderRecommendations(recommendations) {
+            const container = document.getElementById('recommendationsContainer');
+
+            if (recommendations.length === 0) {
+                container.innerHTML = '<p style="color: rgba(255,255,255,0.7);">Select liked properties and click "Generate Recommendations"</p>';
+                return;
+            }
+
+            container.innerHTML = recommendations.map(rec => `
+                <div class="property-card">
+                    <div class="confidence-badge">${rec.confidence}% Match</div>
+                    <div class="property-name">${rec.property.name}</div>
+                    <div class="property-price">$${rec.property.price.toLocaleString()}</div>
+                    <div class="property-details">
+                        <span class="detail-badge">${rec.property.beds} bed</span>
+                        <span class="detail-badge">${rec.property.baths} bath</span>
+                        <span class="detail-badge">${rec.property.sqft.toLocaleString()} sqft</span>
+                        <span class="detail-badge">${rec.property.location}</span>
+                    </div>
+                    <div class="match-reasons">
+                        <div class="match-reason-title">Why you might love this:</div>
+                        ${rec.reasons.map(r => `<div class="match-reason">${r}</div>`).join('')}
+                    </div>
+                    <button class="btn action primary" onclick="viewProperty(${rec.property.id})">
+                        👁️ View Details
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Render Hidden Gems
+        function renderHiddenGems(gems) {
+            const container = document.getElementById('hiddenGemsContainer');
+
+            if (gems.length === 0) {
+                container.innerHTML = '<p style="color: rgba(255,255,255,0.7);">No hidden gems found yet</p>';
+                return;
+            }
+
+            container.innerHTML = gems.map(rec => `
+                <div class="property-card">
+                    <div style="background: linear-gradient(135deg, #FFD700, #FFA500); color: #000; padding: 8px 16px; border-radius: 20px; font-weight: bold; display: inline-block; margin-bottom: 10px;">
+                        💎 Hidden Gem
+                    </div>
+                    <div class="property-name">${rec.property.name}</div>
+                    <div class="property-price">$${rec.property.price.toLocaleString()}</div>
+                    <div class="property-details">
+                        <span class="detail-badge">ROI: ${rec.property.roi}%</span>
+                        <span class="detail-badge">${rec.property.beds} bed</span>
+                        <span class="detail-badge">${rec.property.sqft.toLocaleString()} sqft</span>
+                    </div>
+                    <div class="match-reasons">
+                        <div class="match-reason-title">Why it's undervalued:</div>
+                        <div class="match-reason">High ROI potential (${rec.property.roi}%)</div>
+                        <div class="match-reason">Below average price point</div>
+                        <div class="match-reason">Strong fundamentals</div>
+                    </div>
+                    <button class="btn action primary" onclick="viewProperty(${rec.property.id})">
+                        💎 Explore Gem
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Render Serendipity
+        function renderSerendipity(suggestions) {
+            const container = document.getElementById('serendipityContainer');
+
+            if (suggestions.length === 0) {
+                container.innerHTML = '<p style="color: rgba(255,255,255,0.7);">No wildcard suggestions yet</p>';
+                return;
+            }
+
+            container.innerHTML = suggestions.map(rec => `
+                <div class="property-card">
+                    <div class="serendipity-badge">✨ Wildcard Pick</div>
+                    <div class="property-name">${rec.property.name}</div>
+                    <div class="property-price">$${rec.property.price.toLocaleString()}</div>
+                    <div class="property-details">
+                        <span class="detail-badge">${rec.property.style}</span>
+                        <span class="detail-badge">${rec.property.location}</span>
+                        <span class="detail-badge">${rec.property.beds} bed</span>
+                    </div>
+                    <div class="match-reasons">
+                        <div class="match-reason-title">Something different:</div>
+                        <div class="match-reason">Outside your usual style (${rec.property.style})</div>
+                        <div class="match-reason">Might expand your preferences</div>
+                        <div class="match-reason">Worth a look!</div>
+                    </div>
+                    <button class="btn action" onclick="viewProperty(${rec.property.id})">
+                        ✨ Explore Wildcard
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Render Anti-Matches
+        function renderAntiMatches(antiMatches) {
+            const container = document.getElementById('antiMatchContainer');
+
+            if (antiMatches.length === 0) {
+                container.innerHTML = '<p style="color: rgba(255,255,255,0.7);">No anti-matches detected</p>';
+                return;
+            }
+
+            container.innerHTML = antiMatches.map(rec => `
+                <div class="warning-card">
+                    <div class="warning-title">
+                        ⚠️ ${rec.property.name} - Low Match (${rec.confidence}%)
+                    </div>
+                    <div class="warning-text">
+                        This property doesn't align well with your preferences.
+                        Price: $${rec.property.price.toLocaleString()} •
+                        ${rec.property.style} style in ${rec.property.location} area.
+                        Consider other options from the recommendations above.
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Similarity Matrix
+        function renderSimilarityMatrix() {
+            if (likedProperties.length === 0) return;
+
+            const liked = PROPERTIES.filter(p => likedProperties.includes(p.id));
+            const table = document.getElementById('similarityTable');
+
+            let html = '<thead><tr><th>Property</th>';
+            liked.forEach(p => {
+                html += `<th>${p.name.split(' ')[0]}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+
+            liked.forEach(p1 => {
+                html += `<tr><td><strong>${p1.name.split(' ')[0]}</strong></td>`;
+                liked.forEach(p2 => {
+                    if (p1.id === p2.id) {
+                        html += '<td>100</td>';
+                    } else {
+                        const similarity = Math.round(calculateSimilarity(p1, p2));
+                        const className = similarity > 70 ? 'matrix-high' :
+                                        similarity > 40 ? 'matrix-medium' : 'matrix-low';
+                        html += `<td class="${className}">${similarity}</td>`;
+                    }
+                });
+                html += '</tr>';
+            });
+
+            html += '</tbody>';
+            table.innerHTML = html;
+        }
+
+        // Toggle Matrix
+        function toggleMatrix() {
+            const container = document.getElementById('matrixContainer');
+            container.style.display = container.style.display === 'none' ? 'block' : 'none';
+        }
+
+        // View Property
+        function viewProperty(id) {
+            if (!viewedProperties.includes(id)) {
+                viewedProperties.push(id);
+                updateStats();
+            }
+            const prop = PROPERTIES.find(p => p.id === id);
+            addHistory('👁️', `Viewed ${prop.name}`);
+            alert(`Viewing ${prop.name}\n\nIn a full implementation, this would open detailed property view.`);
+        }
+
+        // Add History
+        function addHistory(icon, text) {
+            const history = JSON.parse(localStorage.getItem('aiHistory') || '[]');
+            history.unshift({
+                icon: icon,
+                text: text,
+                time: new Date().toLocaleTimeString()
+            });
+
+            // Keep last 10
+            if (history.length > 10) history.pop();
+
+            localStorage.setItem('aiHistory', JSON.stringify(history));
+            renderHistory();
+        }
+
+        // Render History
+        function renderHistory() {
+            const container = document.getElementById('historyContainer');
+            const history = JSON.parse(localStorage.getItem('aiHistory') || '[]');
+
+            if (history.length === 0) {
+                container.innerHTML = '<p style="color: rgba(255,255,255,0.6);">No activity yet</p>';
+                return;
+            }
+
+            container.innerHTML = history.slice(0, 5).map(h => `
+                <div class="history-item">
+                    <div class="history-icon">${h.icon}</div>
+                    <div class="history-text">${h.text}</div>
+                    <div class="history-time">${h.time}</div>
+                </div>
+            `).join('');
+        }
+
+        // Update Stats
+        function updateStats() {
+            document.getElementById('propertiesViewed').textContent = viewedProperties.length;
+            document.getElementById('propertiesLiked').textContent = likedProperties.length;
+
+            // Calculate match accuracy (simplified)
+            const accuracy = likedProperties.length > 0
+                ? Math.min(95, 60 + (likedProperties.length * 5))
+                : 0;
+            document.getElementById('matchAccuracy').textContent = accuracy + '%';
+        }
+
+        // Initialize Chart
+        function initChart() {
+            const ctx = document.getElementById('learningChart').getContext('2d');
+            learningChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'],
+                    datasets: [{
+                        label: 'Match Accuracy',
+                        data: [45, 52, 61, 68, 74, 79, 85],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Confidence Score',
+                        data: [50, 58, 65, 71, 76, 82, 87],
+                        borderColor: '#00D4FF',
+                        backgroundColor: 'rgba(0, 212, 255, 0.2)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: 'white', font: { size: 14, weight: 'bold' } } }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            title: { display: true, text: 'Score (%)', color: 'white', font: { weight: 'bold' } }
+                        },
+                        x: {
+                            ticks: { color: 'white' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Update Chart
+        function updateChart() {
+            // Simulate learning improvement
+            const newAccuracy = Math.min(95, learningChart.data.datasets[0].data[6] + 2);
+            learningChart.data.datasets[0].data.push(newAccuracy);
+            learningChart.data.datasets[1].data.push(newAccuracy + 2);
+
+            learningChart.data.labels.push(`Day ${learningChart.data.labels.length + 1}`);
+
+            if (learningChart.data.labels.length > 10) {
+                learningChart.data.labels.shift();
+                learningChart.data.datasets[0].data.shift();
+                learningChart.data.datasets[1].data.shift();
+            }
+
+            learningChart.update();
+        }
+
+        // Reset Preferences
+        function resetPreferences() {
+            if (confirm('Reset all preferences and start fresh?')) {
+                likedProperties = [];
+                viewedProperties = [];
+                localStorage.removeItem('aiHistory');
+                localStorage.removeItem('aiPreferences');
+
+                renderPreferenceSelector();
+                renderHistory();
+                updateStats();
+
+                document.getElementById('recommendationsContainer').innerHTML = '<p style="color: rgba(255,255,255,0.7);">Select liked properties and click "Generate Recommendations"</p>';
+                document.getElementById('hiddenGemsContainer').innerHTML = '<p style="color: rgba(255,255,255,0.7);">No hidden gems found yet</p>';
+                document.getElementById('serendipityContainer').innerHTML = '<p style="color: rgba(255,255,255,0.7);">No wildcard suggestions yet</p>';
+                document.getElementById('antiMatchContainer').innerHTML = '<p style="color: rgba(255,255,255,0.7);">No anti-matches detected</p>';
+
+                addHistory('🔄', 'Reset all preferences');
+            }
+        }
+
+        // Storage
+        function saveToStorage() {
+            localStorage.setItem('aiPreferences', JSON.stringify({
+                liked: likedProperties,
+                viewed: viewedProperties
+            }));
+        }
+
+        function loadFromStorage() {
+            const saved = localStorage.getItem('aiPreferences');
+            if (saved) {
+                const data = JSON.parse(saved);
+                likedProperties = data.liked || [];
+                viewedProperties = data.viewed || [];
+                renderPreferenceSelector();
+                updateStats();
+            }
+        }
+
+        // Initialize
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
