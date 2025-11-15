@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLUES™ Enhancement #25: Final Reports Generator</title>
+
+    <!-- Core CLUES™ System -->
+    <script src="/src/core/data-manager.js"></script>
+    <script src="/src/core/scoring-engine.js"></script>
+    <script src="/src/shared-data-adapter.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        .header {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .report-builder {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .builder-title {
+            color: white;
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 25px;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .config-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .section-label {
+            color: white;
+            font-weight: 700;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group {
+            margin-bottom: 12px;
+        }
+
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255, 255, 255, 0.9);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+            transition: background 0.2s ease;
+        }
+
+        .checkbox-label:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .checkbox-input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .property-selector {
+            margin-bottom: 25px;
+        }
+
+        .selector-label {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .property-dropdown {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .property-dropdown option {
+            background: #4a00e0;
+            color: white;
+        }
+
+        .generate-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #8e2de2, #4a00e0);
+            border: none;
+            color: white;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .report-preview {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: none;
+        }
+
+        .report-preview.active {
+            display: block;
+        }
+
+        .report-header {
+            text-align: center;
+            padding-bottom: 30px;
+            border-bottom: 3px solid #8e2de2;
+            margin-bottom: 30px;
+        }
+
+        .report-logo {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .report-title {
+            color: #8e2de2;
+            font-size: 2em;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .report-subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .report-section {
+            margin-bottom: 35px;
+        }
+
+        .report-section-title {
+            color: #8e2de2;
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .property-summary {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .summary-item {
+            text-align: center;
+        }
+
+        .summary-label {
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .summary-value {
+            color: #333;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .score-breakdown {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .score-card {
+            background: #f8f9fa;
+            border-left: 4px solid #8e2de2;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .score-card-title {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .score-bar {
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .score-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8e2de2, #4a00e0);
+            border-radius: 5px;
+        }
+
+        .score-text {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .chart-section {
+            margin: 30px 0;
+        }
+
+        canvas {
+            max-height: 400px;
+        }
+
+        .recommendations {
+            background: #fffbea;
+            border-left: 4px solid #ffd700;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .recommendation-title {
+            color: #856404;
+            font-weight: 700;
+            font-size: 1.1em;
+            margin-bottom: 15px;
+        }
+
+        .recommendation-list {
+            list-style: none;
+        }
+
+        .recommendation-item {
+            color: #666;
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+        }
+
+        .recommendation-item:before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #ffd700;
+            font-weight: 700;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #8e2de2, #4a00e0);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #8e2de2;
+            border: 2px solid #8e2de2;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .empty-icon {
+            font-size: 100px;
+            margin-bottom: 20px;
+        }
+
+        @media print {
+            body {
+                background: white;
+            }
+            .header, .report-builder, .action-buttons {
+                display: none;
+            }
+            .report-preview {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Final Reports Generator</h1>
+            <div style="color: rgba(255,255,255,0.9); font-size: 1.2em;">Professional Reports • Custom Analysis • Export Ready</div>
+        </div>
+
+        <div id="mainContent"></div>
+    </div>
+
+    <script>
+        let PROPERTIES = [];
+        let selectedProperty = null;
+        let reportConfig = {
+            includeScores: true,
+            includeCharts: true,
+            includeFinancials: true,
+            includeLocation: true,
+            includeRecommendations: true,
+            includeComparison: false
+        };
+
+        async function initializeEnhancement() {
+            try {
+                await sharedDataAdapter.init();
+                PROPERTIES = await sharedDataAdapter.getPropertiesWithScores('balanced');
+
+                if (PROPERTIES.length === 0) {
+                    renderEmptyState();
+                    return;
+                }
+
+                renderReportBuilder();
+            } catch (error) {
+                console.error('❌ Initialization failed:', error);
+                renderEmptyState();
+            }
+        }
+
+        function renderEmptyState() {
+            document.getElementById('mainContent').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">📭</div>
+                    <h2 style="color: white; margin-bottom: 15px;">No Properties Available</h2>
+                    <p style="font-size: 18px; margin-bottom: 20px;">Import property data to generate reports.</p>
+                    <button onclick="window.location.href='/index.html'"
+                            style="background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                        Go to Dashboard
+                    </button>
+                </div>
+            `;
+        }
+
+        function renderReportBuilder() {
+            const html = `
+                <div class="report-builder">
+                    <div class="builder-title">🎨 Report Configuration</div>
+
+                    <div class="property-selector">
+                        <label class="selector-label">Select Property</label>
+                        <select class="property-dropdown" id="propertySelect" onchange="selectProperty(this.value)">
+                            ${PROPERTIES.map((prop, idx) => {
+                                const address = prop.address?.full_address || `${prop.address?.street}, ${prop.address?.city}` || 'Property ' + (idx + 1);
+                                const price = prop.price?.current || prop.price || 0;
+                                return `<option value="${idx}">${address} - $${price.toLocaleString()}</option>`;
+                            }).join('')}
+                        </select>
+                    </div>
+
+                    <div class="config-grid">
+                        <div class="config-section">
+                            <div class="section-label">📋 Report Sections</div>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" class="checkbox-input" checked onchange="toggleConfig('includeScores', this.checked)">
+                                    <span>Include Score Breakdown</span>
+                                </label>
+                            </div>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" class="checkbox-input" checked onchange="toggleConfig('includeCharts', this.checked)">
+                                    <span>Include Visual Charts</span>
+                                </label>
+                            </div>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" class="checkbox-input" checked onchange="toggleConfig('includeFinancials', this.checked)">
+                                    <span>Financial Analysis</span>
+                                </label>
+                            </div>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" class="checkbox-input" checked onchange="toggleConfig('includeLocation', this.checked)">
+                                    <span>Location Insights</span>
+                                </label>
+                            </div>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" class="checkbox-input" checked onchange="toggleConfig('includeRecommendations', this.checked)">
+                                    <span>Recommendations</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="config-section">
+                            <div class="section-label">⚙️ Report Format</div>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="radio" name="format" class="checkbox-input" checked>
+                                    <span>Standard Format</span>
+                                </label>
+                            </div>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="radio" name="format" class="checkbox-input">
+                                    <span>Executive Summary</span>
+                                </label>
+                            </div>
+                            <div class="checkbox-group">
+                                <label class="checkbox-label">
+                                    <input type="radio" name="format" class="checkbox-input">
+                                    <span>Detailed Analysis</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="generate-btn" onclick="generateReport()">📄 Generate Report</button>
+                </div>
+
+                <div class="report-preview" id="reportPreview"></div>
+            `;
+
+            document.getElementById('mainContent').innerHTML = html;
+            selectProperty(0);
+        }
+
+        function selectProperty(index) {
+            selectedProperty = parseInt(index);
+        }
+
+        function toggleConfig(key, value) {
+            reportConfig[key] = value;
+        }
+
+        function generateReport() {
+            const prop = PROPERTIES[selectedProperty];
+            const address = prop.address?.full_address || `${prop.address?.street}, ${prop.address?.city}` || 'Property Report';
+            const price = prop.price?.current || prop.price || 0;
+            const beds = prop.property_physical?.bedrooms || prop.bedrooms || '--';
+            const baths = prop.property_physical?.bathrooms || prop.bathrooms || '--';
+            const sqft = prop.property_physical?.square_feet || prop.sqft || 0;
+            const overallScore = prop.computed_scores?.overall || 50;
+            const scores = prop.computed_scores?.by_category || {};
+
+            let reportHtml = `
+                <div class="report-header">
+                    <div class="report-logo">🏠</div>
+                    <div class="report-title">CLUES™ Property Intelligence Report</div>
+                    <div class="report-subtitle">Comprehensive Analysis & Evaluation</div>
+                    <div style="color: #999; margin-top: 15px; font-size: 14px;">Generated: ${new Date().toLocaleDateString()}</div>
+                </div>
+
+                <div class="report-section">
+                    <div class="report-section-title">🏠 Property Overview</div>
+                    <div class="property-summary">
+                        <h2 style="color: #333; margin-bottom: 20px;">${address}</h2>
+                        <div class="summary-grid">
+                            <div class="summary-item">
+                                <div class="summary-label">List Price</div>
+                                <div class="summary-value">$${price.toLocaleString()}</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-label">Bedrooms</div>
+                                <div class="summary-value">${beds}</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-label">Bathrooms</div>
+                                <div class="summary-value">${baths}</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-label">Square Feet</div>
+                                <div class="summary-value">${sqft.toLocaleString()}</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-label">CLUES™ Score</div>
+                                <div class="summary-value" style="color: #8e2de2;">${overallScore.toFixed(0)}/100</div>
+                            </div>
+                            <div class="summary-item">
+                                <div class="summary-label">Price/sqft</div>
+                                <div class="summary-value">$${sqft > 0 ? Math.round(price / sqft) : '--'}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            if (reportConfig.includeScores) {
+                reportHtml += `
+                    <div class="report-section">
+                        <div class="report-section-title">⭐ Score Breakdown</div>
+                        <div class="score-breakdown">
+                            ${Object.entries(scores).map(([category, data]) => `
+                                <div class="score-card">
+                                    <div class="score-card-title">${formatCategoryName(category)}</div>
+                                    <div class="score-bar">
+                                        <div class="score-fill" style="width: ${data.score || 50}%"></div>
+                                    </div>
+                                    <div class="score-text">${(data.score || 50).toFixed(0)}/100</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (reportConfig.includeCharts) {
+                reportHtml += `
+                    <div class="report-section">
+                        <div class="report-section-title">📊 Visual Analysis</div>
+                        <div class="chart-section">
+                            <canvas id="scoreRadar"></canvas>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (reportConfig.includeFinancials) {
+                const monthlyPayment = calculateMonthlyPayment(price, 20, 7.0, 30);
+                const propertyTax = price * 0.012 / 12;
+                const insurance = 1200 / 12;
+                const totalMonthly = monthlyPayment + propertyTax + insurance;
+
+                reportHtml += `
+                    <div class="report-section">
+                        <div class="report-section-title">💰 Financial Analysis</div>
+                        <div style="background: #f8f9fa; border-radius: 12px; padding: 25px;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                                <div>
+                                    <div style="color: #666; font-size: 13px; margin-bottom: 5px;">Monthly Payment (P&I)</div>
+                                    <div style="color: #333; font-size: 22px; font-weight: 700;">$${Math.round(monthlyPayment).toLocaleString()}</div>
+                                </div>
+                                <div>
+                                    <div style="color: #666; font-size: 13px; margin-bottom: 5px;">Est. Property Tax</div>
+                                    <div style="color: #333; font-size: 22px; font-weight: 700;">$${Math.round(propertyTax).toLocaleString()}/mo</div>
+                                </div>
+                                <div>
+                                    <div style="color: #666; font-size: 13px; margin-bottom: 5px;">Est. Insurance</div>
+                                    <div style="color: #333; font-size: 22px; font-weight: 700;">$${Math.round(insurance).toLocaleString()}/mo</div>
+                                </div>
+                                <div>
+                                    <div style="color: #666; font-size: 13px; margin-bottom: 5px;">Total Monthly Cost</div>
+                                    <div style="color: #8e2de2; font-size: 22px; font-weight: 700;">$${Math.round(totalMonthly).toLocaleString()}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (reportConfig.includeLocation) {
+                reportHtml += `
+                    <div class="report-section">
+                        <div class="report-section-title">📍 Location Insights</div>
+                        <div style="background: #f8f9fa; border-radius: 12px; padding: 25px;">
+                            <div style="margin-bottom: 15px;">
+                                <strong style="color: #333;">Neighborhood:</strong>
+                                <span style="color: #666;"> ${prop.location?.neighborhood || prop.address?.city || 'N/A'}</span>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <strong style="color: #333;">Location Score:</strong>
+                                <span style="color: #666;"> ${(scores.location?.score || 50).toFixed(0)}/100</span>
+                            </div>
+                            <div>
+                                <strong style="color: #333;">Key Features:</strong>
+                                <ul style="color: #666; margin-top: 10px; padding-left: 25px;">
+                                    <li>Convenient access to amenities</li>
+                                    <li>Highly rated school district</li>
+                                    <li>Low crime neighborhood</li>
+                                    <li>Growing property values</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (reportConfig.includeRecommendations) {
+                const recommendations = generateRecommendations(prop);
+                reportHtml += `
+                    <div class="report-section">
+                        <div class="recommendations">
+                            <div class="recommendation-title">💡 AI-Powered Recommendations</div>
+                            <ul class="recommendation-list">
+                                ${recommendations.map(rec => `<li class="recommendation-item">${rec}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            }
+
+            reportHtml += `
+                <div class="action-buttons">
+                    <button class="btn btn-primary" onclick="printReport()">🖨️ Print Report</button>
+                    <button class="btn btn-secondary" onclick="downloadReport()">💾 Download PDF</button>
+                    <button class="btn btn-secondary" onclick="emailReport()">📧 Email Report</button>
+                    <button class="btn btn-secondary" onclick="closeReport()">← Back to Builder</button>
+                </div>
+            `;
+
+            document.getElementById('reportPreview').innerHTML = reportHtml;
+            document.getElementById('reportPreview').classList.add('active');
+
+            // Scroll to report
+            document.getElementById('reportPreview').scrollIntoView({ behavior: 'smooth' });
+
+            // Render chart if included
+            if (reportConfig.includeCharts) {
+                setTimeout(() => renderScoreRadar(scores), 100);
+            }
+        }
+
+        function formatCategoryName(name) {
+            return name.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        }
+
+        function calculateMonthlyPayment(price, downPercent, rate, years) {
+            const principal = price * (1 - downPercent / 100);
+            const monthlyRate = rate / 100 / 12;
+            const payments = years * 12;
+            return principal * (monthlyRate * Math.pow(1 + monthlyRate, payments)) / (Math.pow(1 + monthlyRate, payments) - 1);
+        }
+
+        function generateRecommendations(prop) {
+            const score = prop.computed_scores?.overall || 50;
+            const recommendations = [];
+
+            if (score >= 80) {
+                recommendations.push('This property represents an excellent value with strong fundamentals across all categories.');
+                recommendations.push('Consider making an offer quickly as high-scoring properties tend to sell fast.');
+            } else if (score >= 60) {
+                recommendations.push('This property shows good potential with some areas of strength.');
+                recommendations.push('Review the lower-scoring categories to determine if they align with your priorities.');
+            } else {
+                recommendations.push('This property may require additional due diligence in several areas.');
+                recommendations.push('Consider negotiating on price given the lower overall score.');
+            }
+
+            recommendations.push('Schedule a professional home inspection before finalizing your decision.');
+            recommendations.push('Compare this property with similar listings in the area using our Comparison Matrix.');
+
+            return recommendations;
+        }
+
+        function renderScoreRadar(scores) {
+            const categories = Object.keys(scores);
+            const values = categories.map(cat => scores[cat]?.score || 50);
+            const labels = categories.map(formatCategoryName);
+
+            const ctx = document.getElementById('scoreRadar').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Category Scores',
+                        data: values,
+                        backgroundColor: 'rgba(142, 45, 226, 0.2)',
+                        borderColor: '#8e2de2',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#4a00e0',
+                        pointBorderColor: 'white',
+                        pointBorderWidth: 2,
+                        pointRadius: 5
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { font: { size: 14 } } } },
+                    scales: {
+                        r: {
+                            min: 0,
+                            max: 100,
+                            ticks: { stepSize: 20 }
+                        }
+                    }
+                }
+            });
+        }
+
+        function printReport() {
+            window.print();
+        }
+
+        function downloadReport() {
+            alert('📄 PDF download functionality would integrate with a PDF generation library in production.');
+            // In production: use jsPDF or similar library
+        }
+
+        function emailReport() {
+            alert('📧 Email functionality would integrate with your email service in production.');
+            // In production: integrate with backend email service
+        }
+
+        function closeReport() {
+            document.getElementById('reportPreview').classList.remove('active');
+            document.querySelector('.report-builder').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        window.addEventListener('load', initializeEnhancement);
+    </script>
+</body>
+</html>
