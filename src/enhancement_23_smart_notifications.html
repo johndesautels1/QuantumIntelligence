@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enhancement #23: Smart Notification Prioritization | CLUES™</title>
+
+    <!-- Core CLUES™ System -->
+    <script src="/src/core/data-manager.js"></script>
+    <script src="/src/core/scoring-engine.js"></script>
+    <script src="/src/shared-data-adapter.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {
@@ -592,13 +598,31 @@
         let currentFilter = 'all';
         let charts = {};
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            loadFromStorage();
-            initializeCharts();
-            populateInitialNotifications();
-            updateDashboard();
-            setupEventListeners();
+        // Initialize Enhancement with REAL Data
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                // Initialize shared data adapter for access to alerts from database
+                await sharedDataAdapter.init();
+
+                console.log('✅ Connected to CLUES™ data system');
+
+                // Initialize the UI
+                loadFromStorage();
+                initializeCharts();
+                populateInitialNotifications();
+                updateDashboard();
+                setupEventListeners();
+
+            } catch (error) {
+                console.error('❌ Enhancement initialization failed:', error);
+                // Continue even if data connection fails - notifications can work standalone
+                console.warn('⚠️ Running in standalone mode without database connection');
+                loadFromStorage();
+                initializeCharts();
+                populateInitialNotifications();
+                updateDashboard();
+                setupEventListeners();
+            }
         });
 
         function setupEventListeners() {
