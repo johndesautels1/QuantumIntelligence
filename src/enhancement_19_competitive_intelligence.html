@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CLUES™ - Competitive Intelligence Dashboard</title>
+
+    <!-- Core CLUES™ System -->
+    <script src="/src/core/data-manager.js"></script>
+    <script src="/src/core/scoring-engine.js"></script>
+    <script src="/src/shared-data-adapter.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {
@@ -510,17 +516,11 @@
     </div>
 
     <script>
-        // Market Data
-        const PROPERTIES = [
-            { id: 1, name: '123 Sunset Boulevard', price: 475000, value: 510000, dom: 12, beds: 4, baths: 3, sqft: 2200 },
-            { id: 2, name: '456 Oak Avenue', price: 525000, value: 495000, dom: 28, beds: 4, baths: 2.5, sqft: 2500 },
-            { id: 3, name: '789 Maple Drive', price: 395000, value: 445000, dom: 8, beds: 3, baths: 2, sqft: 1800 },
-            { id: 4, name: '321 Pine Street', price: 615000, value: 580000, dom: 45, beds: 5, baths: 4, sqft: 3000 },
-            { id: 5, name: '654 Birch Lane', price: 445000, value: 460000, dom: 15, beds: 3, baths: 2.5, sqft: 2100 },
-            { id: 6, name: '987 Cedar Court', price: 505000, value: 520000, dom: 10, beds: 4, baths: 3.5, sqft: 2400 }
-        ];
+        // ===== REAL PROPERTY DATA FROM DATABASE =====
+        // NO HARDCODED FAKE DATA - Loads from IndexedDB
+        let PROPERTIES = [];
 
-        let currentProperty = PROPERTIES[0];
+        let currentProperty = null;
         let scatterChart;
 
         // Initialize
@@ -926,8 +926,41 @@
             URL.revokeObjectURL(url);
         }
 
-        // Initialize
-        window.addEventListener('load', init);
+        // Initialize Enhancement with REAL Data
+        async function initializeEnhancement() {
+            try {
+                // Initialize shared data adapter
+                await sharedDataAdapter.init();
+
+                // Load REAL properties from IndexedDB
+                PROPERTIES = await sharedDataAdapter.getPropertiesForCompetitiveIntelligence();
+
+                console.log(`✅ Loaded ${PROPERTIES.length} real properties from database`);
+
+                // Check if we have properties
+                if (PROPERTIES.length === 0) {
+                    alert('No properties found in database. Please import property data from the main dashboard first.');
+                    window.location.href = '/index.html';
+                    return;
+                }
+
+                // Set first property as current
+                currentProperty = PROPERTIES[0];
+
+                // Initialize the UI
+                init();
+
+            } catch (error) {
+                console.error('❌ Enhancement initialization failed:', error);
+                alert(`Initialization error: ${error.message}\n\nClick OK to return to dashboard.`);
+                window.location.href = '/index.html';
+            }
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            initializeEnhancement();
+        });
     </script>
 </body>
 </html>
