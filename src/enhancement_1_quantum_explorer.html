@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CLUES™ - 5D Quantum Property Explorer</title>
+
+    <!-- Core CLUES™ System -->
+    <script src="/src/core/data-manager.js"></script>
+    <script src="/src/core/scoring-engine.js"></script>
+    <script src="/src/shared-data-adapter.js"></script>
+
+    <!-- 3D Graphics -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/controls/OrbitControls.js"></script>
     <style>
@@ -466,81 +473,9 @@
     </div>
 
     <script>
-        // Property Data with 5 Dimensions
-        const PROPERTIES = [
-            {
-                id: 1,
-                name: '123 Sunset Boulevard',
-                price: 475000,
-                dimensions: {
-                    location: 85,    // D1: X-axis
-                    price: 92,        // D2: Y-axis
-                    condition: 88,    // D3: Z-axis
-                    investment: 78,   // D4: Size
-                    lifestyle: 82     // D5: Color
-                }
-            },
-            {
-                id: 2,
-                name: '456 Oak Avenue',
-                price: 525000,
-                dimensions: {
-                    location: 72,
-                    price: 65,
-                    condition: 70,
-                    investment: 85,
-                    lifestyle: 68
-                }
-            },
-            {
-                id: 3,
-                name: '789 Maple Drive',
-                price: 395000,
-                dimensions: {
-                    location: 78,
-                    price: 95,
-                    condition: 92,
-                    investment: 88,
-                    lifestyle: 90
-                }
-            },
-            {
-                id: 4,
-                name: '321 Pine Street',
-                price: 615000,
-                dimensions: {
-                    location: 95,
-                    price: 55,
-                    condition: 75,
-                    investment: 70,
-                    lifestyle: 92
-                }
-            },
-            {
-                id: 5,
-                name: '654 Birch Lane',
-                price: 445000,
-                dimensions: {
-                    location: 80,
-                    price: 88,
-                    condition: 85,
-                    investment: 92,
-                    lifestyle: 75
-                }
-            },
-            {
-                id: 6,
-                name: '987 Cedar Court',
-                price: 505000,
-                dimensions: {
-                    location: 88,
-                    price: 78,
-                    condition: 90,
-                    investment: 82,
-                    lifestyle: 85
-                }
-            }
-        ];
+        // ===== REAL PROPERTY DATA FROM DATABASE =====
+        // NO HARDCODED FAKE DATA - Loads from IndexedDB
+        let PROPERTIES = [];
 
         const DIMENSIONS = [
             { id: 'location', name: 'Location Quality', axis: 'X', icon: '📍' },
@@ -952,11 +887,61 @@
             controls.target.set(0, 0, 0);
         }
 
+        // Initialize Enhancement with REAL Data
+        async function initializeEnhancement() {
+            try {
+                // Show loading
+                document.getElementById('loading').textContent = 'Loading property data from database...';
+
+                // Initialize shared data adapter
+                await sharedDataAdapter.init();
+
+                // Load REAL properties from IndexedDB
+                PROPERTIES = await sharedDataAdapter.getPropertiesFor5DExplorer('balanced');
+
+                console.log(`✅ Loaded ${PROPERTIES.length} real properties from database`);
+
+                // Check if we have properties
+                if (PROPERTIES.length === 0) {
+                    document.getElementById('loading').innerHTML = `
+                        <div style="text-align: center; padding: 20px;">
+                            <h2>No Properties Found</h2>
+                            <p>Import property data from the main dashboard to visualize them here.</p>
+                            <button onclick="window.location.href='/index.html'"
+                                    style="margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #00d4ff, #0099cc);
+                                           border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
+                                Go to Dashboard
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Initialize 3D scene with REAL data
+                document.getElementById('loading').textContent = 'Initializing Quantum Space...';
+                initScene();
+                renderPropertiesList();
+                renderDimensionControls();
+
+            } catch (error) {
+                console.error('❌ Enhancement initialization failed:', error);
+                document.getElementById('loading').innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #ff4444;">
+                        <h2>Initialization Error</h2>
+                        <p>${error.message}</p>
+                        <button onclick="location.reload()"
+                                style="margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #00d4ff, #0099cc);
+                                       border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
+                            Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
         // Initialize Everything
         window.addEventListener('load', () => {
-            initScene();
-            renderPropertiesList();
-            renderDimensionControls();
+            initializeEnhancement();
         });
     </script>
 </body>
