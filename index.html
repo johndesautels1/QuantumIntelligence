@@ -549,29 +549,58 @@
             const file = event.target.files[0];
             if (!file) return;
 
+            console.log('📥 Starting import:', file.name, 'Size:', file.size, 'bytes');
+
             const extension = file.name.split('.').pop().toLowerCase();
 
             document.getElementById('progressBar').classList.add('active');
             document.getElementById('progressFill').style.width = '50%';
+            document.getElementById('importResults').innerHTML = `
+                <div style="color: #00d4ff;">Processing ${file.name}...</div>
+            `;
 
             try {
                 let results;
 
                 if (extension === 'csv') {
+                    console.log('📋 Importing CSV file...');
                     results = await importExporter.importCSV(file);
+                    console.log('✅ CSV import results:', results);
                 } else if (extension === 'json') {
+                    console.log('📋 Importing JSON file...');
                     results = await importExporter.importJSON(file);
+                    console.log('✅ JSON import results:', results);
                 } else {
                     throw new Error('Unsupported file format. Please use CSV or JSON.');
                 }
 
                 document.getElementById('progressFill').style.width = '100%';
 
-                // Show results
+                // Show detailed results
+                const errorDetails = results.errors && results.errors.length > 0
+                    ? `<div style="margin-top: 10px; font-size: 0.9em;">
+                        <strong>Errors:</strong><br>
+                        ${results.errors.slice(0, 5).map(e => `Row ${e.row}: ${e.error || e.errors?.join(', ')}`).join('<br>')}
+                        ${results.errors.length > 5 ? `<br>...and ${results.errors.length - 5} more` : ''}
+                       </div>`
+                    : '';
+
                 document.getElementById('importResults').innerHTML = `
                     <div style="background: rgba(0, 255, 136, 0.1); border: 1px solid #00ff88; border-radius: 8px; padding: 15px; color: #00ff88;">
                         <strong>✓ Import Successful</strong><br>
-                        Total: ${results.total} | Succeeded: ${results.succeeded} | Failed: ${results.failed}
+                        <div style="font-size: 1.2em; margin: 10px 0;">
+                            <strong>Total: ${results.total}</strong> |
+                            Succeeded: ${results.succeeded} |
+                            Failed: ${results.failed}
+                        </div>
+                        ${errorDetails}
+                        <div style="margin-top: 15px;">
+                            <button onclick="window.location.href='src/enhancement_1_quantum_explorer.html'"
+                                    style="padding: 10px 20px; background: linear-gradient(135deg, #00d4ff, #0099cc);
+                                           border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
+                                Open 5D Explorer →
+                            </button>
+                        </div>
                     </div>
                 `;
 
@@ -583,10 +612,14 @@
                 }, 1000);
 
             } catch (error) {
+                console.error('❌ Import error:', error);
                 document.getElementById('importResults').innerHTML = `
                     <div style="background: rgba(255, 0, 110, 0.1); border: 1px solid #ff006e; border-radius: 8px; padding: 15px; color: #ff006e;">
                         <strong>✗ Import Failed</strong><br>
                         ${error.message}
+                        <div style="margin-top: 10px; font-size: 0.9em;">
+                            Check browser console (F12) for details
+                        </div>
                     </div>
                 `;
                 document.getElementById('progressBar').classList.remove('active');
