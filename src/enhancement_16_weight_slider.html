@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CLUES™ Enhancement #16: Multivariant Weight Scale System</title>
 
+    <!-- Core CLUES™ System -->
+    <script src="/src/core/data-manager.js"></script>
+    <script src="/src/core/scoring-engine.js"></script>
+    <script src="/src/shared-data-adapter.js"></script>
+
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
@@ -521,109 +526,9 @@
             { id: 'lifestyle', name: '🌴 Lifestyle Fit', default: 2 }
         ];
 
-        // Sample Property Data
-        const PROPERTIES = [
-            {
-                id: 1,
-                name: '123 Sunset Boulevard',
-                price: 450000,
-                sqft: 2400,
-                beds: 4,
-                baths: 3,
-                scores: {
-                    location: 85,
-                    price: 92,
-                    schools: 95,
-                    size: 88,
-                    condition: 75,
-                    amenities: 82,
-                    safety: 90,
-                    investment: 88,
-                    commute: 70,
-                    lifestyle: 85
-                }
-            },
-            {
-                id: 2,
-                name: '456 Ocean Drive',
-                price: 625000,
-                sqft: 3200,
-                beds: 5,
-                baths: 4,
-                scores: {
-                    location: 95,
-                    price: 75,
-                    schools: 88,
-                    size: 95,
-                    condition: 92,
-                    amenities: 95,
-                    safety: 85,
-                    investment: 90,
-                    commute: 60,
-                    lifestyle: 95
-                }
-            },
-            {
-                id: 3,
-                name: '789 Maple Street',
-                price: 325000,
-                sqft: 1800,
-                beds: 3,
-                baths: 2,
-                scores: {
-                    location: 75,
-                    price: 98,
-                    schools: 92,
-                    size: 70,
-                    condition: 65,
-                    amenities: 70,
-                    safety: 95,
-                    investment: 82,
-                    commute: 85,
-                    lifestyle: 75
-                }
-            },
-            {
-                id: 4,
-                name: '321 Palm Avenue',
-                price: 550000,
-                sqft: 2800,
-                beds: 4,
-                baths: 3.5,
-                scores: {
-                    location: 90,
-                    price: 82,
-                    schools: 85,
-                    size: 85,
-                    condition: 88,
-                    amenities: 90,
-                    safety: 88,
-                    investment: 92,
-                    commute: 75,
-                    lifestyle: 90
-                }
-            },
-            {
-                id: 5,
-                name: '654 Harbor Lane',
-                price: 475000,
-                sqft: 2600,
-                beds: 4,
-                baths: 3,
-                scores: {
-                    location: 88,
-                    price: 88,
-                    schools: 78,
-                    size: 82,
-                    condition: 80,
-                    amenities: 85,
-                    safety: 82,
-                    investment: 85,
-                    commute: 80,
-                    lifestyle: 82
-                }
-            }
-        ];
+        // ===== REAL PROPERTY DATA FROM DATABASE =====
+        // NO HARDCODED FAKE DATA - Loads from IndexedDB
+        let PROPERTIES = [];
 
         // Preset Weight Configurations
         const PRESETS = {
@@ -1060,7 +965,33 @@
         // START APPLICATION
         // ==========================================
 
-        document.addEventListener('DOMContentLoaded', init);
+        // Initialize Enhancement with REAL Data
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                // Initialize shared data adapter
+                await sharedDataAdapter.init();
+
+                // Load REAL properties from IndexedDB with scores
+                PROPERTIES = await sharedDataAdapter.getPropertiesWithScores('balanced');
+
+                console.log(`✅ Loaded ${PROPERTIES.length} real properties from database`);
+
+                // Check if we have properties
+                if (PROPERTIES.length === 0) {
+                    alert('No properties found in database. Please import property data from the main dashboard first.');
+                    window.location.href = '/index.html';
+                    return;
+                }
+
+                // Initialize the UI
+                init();
+
+            } catch (error) {
+                console.error('❌ Enhancement initialization failed:', error);
+                alert(`Initialization error: ${error.message}\n\nClick OK to return to dashboard.`);
+                window.location.href = '/index.html';
+            }
+        });
     </script>
 </body>
 </html>

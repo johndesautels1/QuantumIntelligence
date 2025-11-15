@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CLUES™ - Risk & Opportunity Matrix</title>
+
+    <!-- Core CLUES™ System -->
+    <script src="/src/core/data-manager.js"></script>
+    <script src="/src/core/scoring-engine.js"></script>
+    <script src="/src/shared-data-adapter.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {
@@ -648,15 +654,11 @@
     </div>
 
     <script>
-        // Property Data
-        const PROPERTIES = [
-            { id: 1, name: '123 Sunset Boulevard', price: 475000 },
-            { id: 2, name: '456 Oak Avenue', price: 525000 },
-            { id: 3, name: '789 Maple Drive', price: 395000 },
-            { id: 4, name: '321 Pine Street', price: 615000 }
-        ];
+        // ===== REAL PROPERTY DATA FROM DATABASE =====
+        // NO HARDCODED FAKE DATA - Loads from IndexedDB
+        let PROPERTIES = [];
 
-        let currentProperty = PROPERTIES[0];
+        let currentProperty = null;
 
         // Risk Factors Database
         const RISK_FACTORS = {
@@ -1141,7 +1143,36 @@
         });
 
         // Initialize
-        window.addEventListener('load', init);
+        // Initialize Enhancement with REAL Data
+        window.addEventListener('load', async function() {
+            try {
+                // Initialize shared data adapter
+                await sharedDataAdapter.init();
+
+                // Load REAL properties from IndexedDB
+                PROPERTIES = await sharedDataAdapter.getAllProperties();
+
+                console.log(`✅ Loaded ${PROPERTIES.length} real properties from database`);
+
+                // Check if we have properties
+                if (PROPERTIES.length === 0) {
+                    alert('No properties found in database. Please import property data from the main dashboard first.');
+                    window.location.href = '/index.html';
+                    return;
+                }
+
+                // Set first property as current
+                currentProperty = PROPERTIES[0];
+
+                // Initialize the UI
+                init();
+
+            } catch (error) {
+                console.error('❌ Enhancement initialization failed:', error);
+                alert(`Initialization error: ${error.message}\n\nClick OK to return to dashboard.`);
+                window.location.href = '/index.html';
+            }
+        });
     </script>
 </body>
 </html>
