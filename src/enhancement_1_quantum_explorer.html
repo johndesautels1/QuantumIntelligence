@@ -599,13 +599,25 @@
 
         // Create Property Meshes
         function createPropertyMeshes() {
-            PROPERTIES.forEach(property => {
+            console.log('🎨 Creating spheres for', PROPERTIES.length, 'properties');
+
+            PROPERTIES.forEach((property, index) => {
                 const dims = property.dimensions;
+
+                console.log(`Property ${index + 1}:`, property.name, 'Dimensions:', dims);
+
+                // Check if dimensions exist
+                if (!dims) {
+                    console.error('❌ No dimensions for property:', property);
+                    return;
+                }
 
                 // Map dimension values (0-100) to 3D coordinates (-10 to 10)
                 const x = ((dims.location / 100) * 20) - 10;
                 const y = ((dims.price / 100) * 20) - 10;
                 const z = ((dims.condition / 100) * 20) - 10;
+
+                console.log(`  Position: x=${x.toFixed(2)}, y=${y.toFixed(2)}, z=${z.toFixed(2)}`);
 
                 // Size based on investment potential (D4)
                 const size = 0.3 + ((dims.investment / 100) * 0.7);
@@ -641,9 +653,13 @@
                 scene.add(sphere);
                 propertyMeshes.push(sphere);
 
+                console.log(`✅ Created sphere ${index + 1} at position`, sphere.position);
+
                 // Add label sprite
                 createLabel(property.name, sphere.position, size);
             });
+
+            console.log(`🎯 Total spheres created: ${propertyMeshes.length}`);
         }
 
         // Create Text Label
@@ -900,6 +916,10 @@
                 PROPERTIES = await sharedDataAdapter.getPropertiesFor5DExplorer('balanced');
 
                 console.log(`✅ Loaded ${PROPERTIES.length} real properties from database`);
+
+                if (PROPERTIES.length > 0) {
+                    console.log('📊 Sample property data:', PROPERTIES[0]);
+                }
 
                 // Check if we have properties
                 if (PROPERTIES.length === 0) {
