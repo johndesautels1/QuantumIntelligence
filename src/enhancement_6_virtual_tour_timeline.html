@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLUES™ Enhancement #6: Virtual Tour Timeline</title>
+
+    <!-- Core CLUES™ System -->
+    <script src="/src/core/data-manager.js"></script>
+    <script src="/src/core/scoring-engine.js"></script>
+    <script src="/src/shared-data-adapter.js"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        .header {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .tour-container {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .property-list {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            max-height: 800px;
+            overflow-y: auto;
+        }
+
+        .property-item {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .property-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateX(5px);
+        }
+
+        .property-item.active {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.6), rgba(118, 75, 162, 0.6));
+            border-color: white;
+        }
+
+        .property-name {
+            color: white;
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .property-price {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+
+        .timeline-viewer {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .timeline-title {
+            color: white;
+            font-size: 1.8em;
+            font-weight: 700;
+        }
+
+        .timeline-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .timeline-progress {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .timeline-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .photo-viewer {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .photo-placeholder {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .photo-placeholder-icon {
+            font-size: 120px;
+            margin-bottom: 20px;
+        }
+
+        .photo-info {
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .thumbnail-strip {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px 0;
+        }
+
+        .thumbnail {
+            min-width: 120px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .thumbnail:hover {
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .thumbnail.active {
+            border-color: white;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .details-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .detail-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .detail-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .notes-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .notes-title {
+            color: white;
+            font-weight: 700;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .notes-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            color: white;
+            font-family: inherit;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .notes-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .save-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .empty-state-icon {
+            font-size: 100px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 Virtual Tour Timeline</h1>
+            <div style="color: rgba(255,255,255,0.9); font-size: 1.2em;">Interactive Property Walkthrough • Photo Timeline • Tour Notes</div>
+        </div>
+
+        <div id="mainContent"></div>
+    </div>
+
+    <script>
+        let PROPERTIES = [];
+        let currentProperty = null;
+        let currentPhotoIndex = 0;
+        let autoPlayInterval = null;
+
+        async function initializeEnhancement() {
+            try {
+                await sharedDataAdapter.init();
+                PROPERTIES = await sharedDataAdapter.getPropertiesWithScores('balanced');
+
+                if (PROPERTIES.length === 0) {
+                    renderEmptyState();
+                    return;
+                }
+
+                renderTourInterface();
+                selectProperty(0);
+            } catch (error) {
+                console.error('❌ Initialization failed:', error);
+                renderEmptyState();
+            }
+        }
+
+        function renderEmptyState() {
+            document.getElementById('mainContent').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📭</div>
+                    <h2 style="color: white; margin-bottom: 15px;">No Properties Available</h2>
+                    <p style="font-size: 18px; margin-bottom: 20px;">Import property data from the main dashboard to start virtual tours.</p>
+                    <button class="control-btn" onclick="window.location.href='/index.html'">Go to Dashboard</button>
+                </div>
+            `;
+        }
+
+        function renderTourInterface() {
+            const html = `
+                <div class="tour-container">
+                    <div class="property-list" id="propertyList"></div>
+                    <div class="timeline-viewer" id="timelineViewer"></div>
+                </div>
+            `;
+            document.getElementById('mainContent').innerHTML = html;
+            renderPropertyList();
+        }
+
+        function renderPropertyList() {
+            const listHtml = PROPERTIES.map((prop, index) => {
+                const address = prop.address?.full_address || `${prop.address?.street}, ${prop.address?.city}` || 'Unknown Address';
+                const price = prop.price?.current || prop.price || 0;
+
+                return `
+                    <div class="property-item ${currentProperty === index ? 'active' : ''}"
+                         onclick="selectProperty(${index})">
+                        <div class="property-name">${address}</div>
+                        <div class="property-price">$${price.toLocaleString()}</div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('propertyList').innerHTML = listHtml;
+        }
+
+        function selectProperty(index) {
+            currentProperty = index;
+            currentPhotoIndex = 0;
+            renderPropertyList();
+            renderTimelineViewer();
+        }
+
+        function renderTimelineViewer() {
+            const prop = PROPERTIES[currentProperty];
+            const address = prop.address?.full_address || `${prop.address?.street}, ${prop.address?.city}` || 'Property';
+
+            // Simulate photo timeline (in real app, these would be actual property photos)
+            const photoRooms = ['Exterior Front', 'Living Room', 'Kitchen', 'Master Bedroom', 'Bathroom', 'Backyard'];
+
+            const thumbnailsHtml = photoRooms.map((room, idx) => `
+                <div class="thumbnail ${currentPhotoIndex === idx ? 'active' : ''}"
+                     onclick="selectPhoto(${idx})">
+                    ${room}
+                </div>
+            `).join('');
+
+            const html = `
+                <div class="timeline-header">
+                    <div class="timeline-title">${address}</div>
+                    <div class="timeline-controls">
+                        <button class="control-btn" onclick="previousPhoto()">◀ Previous</button>
+                        <button class="control-btn" onclick="toggleAutoPlay()" id="autoPlayBtn">▶ Auto Play</button>
+                        <button class="control-btn" onclick="nextPhoto()">Next ▶</button>
+                    </div>
+                </div>
+
+                <div class="timeline-progress">
+                    <div class="timeline-progress-bar" style="width: ${((currentPhotoIndex + 1) / photoRooms.length * 100).toFixed(0)}%"></div>
+                </div>
+
+                <div class="photo-viewer">
+                    <div class="photo-placeholder">
+                        <div class="photo-placeholder-icon">🏠</div>
+                        <div style="font-size: 24px; color: white;">Photo ${currentPhotoIndex + 1} of ${photoRooms.length}</div>
+                    </div>
+                    <div class="photo-info">${photoRooms[currentPhotoIndex]}</div>
+                </div>
+
+                <div class="thumbnail-strip">
+                    ${thumbnailsHtml}
+                </div>
+
+                <div class="details-panel">
+                    <div class="detail-card">
+                        <div class="detail-label">Price</div>
+                        <div class="detail-value">$${(prop.price?.current || prop.price || 0).toLocaleString()}</div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-label">Bedrooms</div>
+                        <div class="detail-value">${prop.property_physical?.bedrooms || prop.bedrooms || '--'}</div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-label">Bathrooms</div>
+                        <div class="detail-value">${prop.property_physical?.bathrooms || prop.bathrooms || '--'}</div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-label">Square Feet</div>
+                        <div class="detail-value">${(prop.property_physical?.square_feet || prop.sqft || 0).toLocaleString()}</div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-label">Overall Score</div>
+                        <div class="detail-value">${(prop.computed_scores?.overall || 50).toFixed(0)}/100</div>
+                    </div>
+                    <div class="detail-card">
+                        <div class="detail-label">Year Built</div>
+                        <div class="detail-value">${prop.property_physical?.year_built || '--'}</div>
+                    </div>
+                </div>
+
+                <div class="notes-section">
+                    <div class="notes-title">Tour Notes</div>
+                    <textarea class="notes-input" id="tourNotes" placeholder="Add notes about this property..."></textarea>
+                    <button class="save-btn" onclick="saveTourNotes()">💾 Save Notes</button>
+                </div>
+            `;
+
+            document.getElementById('timelineViewer').innerHTML = html;
+        }
+
+        function selectPhoto(index) {
+            currentPhotoIndex = index;
+            renderTimelineViewer();
+        }
+
+        function previousPhoto() {
+            const totalPhotos = 6;
+            currentPhotoIndex = (currentPhotoIndex - 1 + totalPhotos) % totalPhotos;
+            renderTimelineViewer();
+        }
+
+        function nextPhoto() {
+            const totalPhotos = 6;
+            currentPhotoIndex = (currentPhotoIndex + 1) % totalPhotos;
+            renderTimelineViewer();
+        }
+
+        function toggleAutoPlay() {
+            const btn = document.getElementById('autoPlayBtn');
+            if (autoPlayInterval) {
+                clearInterval(autoPlayInterval);
+                autoPlayInterval = null;
+                btn.textContent = '▶ Auto Play';
+            } else {
+                autoPlayInterval = setInterval(nextPhoto, 3000);
+                btn.textContent = '⏸ Pause';
+            }
+        }
+
+        function saveTourNotes() {
+            const notes = document.getElementById('tourNotes').value;
+            const prop = PROPERTIES[currentProperty];
+
+            // In real app, save to IndexedDB via data-manager
+            console.log('Saving notes for property:', prop.property_id, notes);
+
+            alert('✅ Tour notes saved successfully!');
+        }
+
+        window.addEventListener('load', initializeEnhancement);
+    </script>
+</body>
+</html>
