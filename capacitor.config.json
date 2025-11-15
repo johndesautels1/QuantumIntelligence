@@ -1,0 +1,25 @@
+{
+  "appId": "com.clues.propertyintelligence",
+  "appName": "CLUES Property Intelligence",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#0066CC",
+      "showSpinner": true,
+      "androidSpinnerStyle": "large",
+      "iosSpinnerStyle": "small",
+      "spinnerColor": "#FFFFFF"
+    },
+    "StatusBar": {
+      "style": "dark"
+    },
+    "Keyboard": {
+      "resize": "native"
+    }
+  }
+}

@@ -52,3 +52,14 @@ Thumbs.db
 # Debug
 npm-debug.log
 yarn-error.log
+
+# Node and Capacitor
+node_modules/
+www/
+android/build/
+android/.gradle/
+android/app/build/
+ios/App/Pods/
+ios/App/build/
+*.log
+.DS_Store
