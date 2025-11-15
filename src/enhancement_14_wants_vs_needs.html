@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLUES™ Enhancement #14: Interactive Wants vs Needs Balancer</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --sapphire-blue: #0066CC;
+            --sunshine-orange: #FF6B35;
+            --light-gold: #FFD700;
+            --quantum-blue: #00D4FF;
+            --quantum-purple: #9D4EDD;
+            --deep-space: #0A0E27;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --success-green: #00FF88;
+            --danger-red: #FF3366;
+        }
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0A0E27 0%, #1a1f3a 50%, #0F172A 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: -1;
+            animation: grid-move 20s linear infinite;
+        }
+        @keyframes grid-move {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--sapphire-blue);
+            border-radius: 20px;
+        }
+        .header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3em;
+            background: linear-gradient(135deg, var(--sapphire-blue), var(--sunshine-orange), var(--light-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        .panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid;
+            border-radius: 20px;
+            padding: 30px;
+        }
+        .needs-panel {
+            border-color: var(--danger-red);
+        }
+        .wants-panel {
+            border-color: var(--success-green);
+        }
+        .panel h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .needs-panel h2 {
+            color: var(--danger-red);
+        }
+        .wants-panel h2 {
+            color: var(--success-green);
+        }
+        .items-list {
+            display: grid;
+            gap: 12px;
+            min-height: 400px;
+        }
+        .item {
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 15px 20px;
+            cursor: move;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            user-select: none;
+        }
+        .item:hover {
+            transform: translateX(5px);
+            border-color: var(--quantum-blue);
+        }
+        .item.dragging {
+            opacity: 0.5;
+        }
+        .item-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .drag-handle {
+            font-size: 1.5em;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .item-text {
+            flex: 1;
+        }
+        .item-name {
+            font-weight: 700;
+            font-size: 1.1em;
+            color: var(--quantum-blue);
+            margin-bottom: 3px;
+        }
+        .item-description {
+            font-size: 0.85em;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .item-priority {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+        .priority-critical {
+            background: rgba(255, 51, 102, 0.2);
+            color: var(--danger-red);
+            border: 1px solid var(--danger-red);
+        }
+        .priority-high {
+            background: rgba(255, 165, 0, 0.2);
+            color: #FFA500;
+            border: 1px solid #FFA500;
+        }
+        .priority-medium {
+            background: rgba(255, 215, 0, 0.2);
+            color: var(--light-gold);
+            border: 1px solid var(--light-gold);
+        }
+        .priority-low {
+            background: rgba(0, 255, 136, 0.2);
+            color: var(--success-green);
+            border: 1px solid var(--success-green);
+        }
+        .analysis-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--quantum-purple);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+        .analysis-panel h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--quantum-purple);
+            font-size: 2em;
+            margin-bottom: 30px;
+        }
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid var(--glass-border);
+            text-align: center;
+        }
+        .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3em;
+            font-weight: 900;
+            color: var(--light-gold);
+            margin-bottom: 10px;
+        }
+        .stat-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .chart-container {
+            height: 350px;
+            margin-top: 20px;
+        }
+        .trade-offs {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 2px solid var(--sunshine-orange);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        .trade-offs h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--sunshine-orange);
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        .trade-off-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--sunshine-orange);
+        }
+        .trade-off-title {
+            font-weight: 700;
+            color: var(--quantum-blue);
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+        .trade-off-desc {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+        }
+        .btn {
+            padding: 15px 30px;
+            border: 2px solid;
+            border-radius: 12px;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--sapphire-blue), var(--sunshine-orange));
+            border-color: var(--light-gold);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4);
+        }
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            .analysis-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚖️ Interactive Wants vs. Needs Balancer</h1>
+            <p>CLUES™ Enhancement #14 | Prioritize What Matters Most</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="panel needs-panel">
+                <h2>🔴 NEEDS (Non-Negotiable)</h2>
+                <div class="items-list" id="needsList" ondrop="drop(event, 'needs')" ondragover="allowDrop(event)"></div>
+            </div>
+
+            <div class="panel wants-panel">
+                <h2>🟢 WANTS (Nice to Have)</h2>
+                <div class="items-list" id="wantsList" ondrop="drop(event, 'wants')" ondragover="allowDrop(event)"></div>
+            </div>
+        </div>
+
+        <div class="analysis-panel">
+            <h2>📊 Priority Analysis</h2>
+            <div class="analysis-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="needsCount">0</div>
+                    <div class="stat-label">Critical Needs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="wantsCount">0</div>
+                    <div class="stat-label">Nice to Haves</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="matchingProperties">12</div>
+                    <div class="stat-label">Matching Properties</div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="priorityChart"></canvas>
+            </div>
+        </div>
+
+        <div class="trade-offs">
+            <h2>💡 Trade-Off Insights</h2>
+            <div id="tradeOffsList"></div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn btn-primary" onclick="resetDefaults()">🔄 Reset to Defaults</button>
+            <button class="btn btn-primary" onclick="savePreferences()">💾 Save Preferences</button>
+            <button class="btn btn-primary" onclick="viewMatches()">🏠 View Matching Properties</button>
+        </div>
+    </div>
+
+    <script>
+        const ITEMS = [
+            { id: 1, name: 'Top School District', description: 'A+ rated schools nearby', priority: 'critical', category: 'needs' },
+            { id: 2, name: 'Safe Neighborhood', description: 'Low crime rates', priority: 'critical', category: 'needs' },
+            { id: 3, name: 'Within Budget', description: 'Price range $450K-$550K', priority: 'critical', category: 'needs' },
+            { id: 4, name: 'Home Office Space', description: 'Dedicated room for remote work', priority: 'high', category: 'needs' },
+            { id: 5, name: 'Fenced Yard', description: 'For pet safety', priority: 'high', category: 'needs' },
+            { id: 6, name: '3+ Bedrooms', description: 'Space for growing family', priority: 'high', category: 'needs' },
+            { id: 7, name: 'Swimming Pool', description: 'Private pool', priority: 'medium', category: 'wants' },
+            { id: 8, name: 'Gourmet Kitchen', description: 'High-end appliances', priority: 'medium', category: 'wants' },
+            { id: 9, name: 'Master Suite', description: 'Spa-like bathroom', priority: 'medium', category: 'wants' },
+            { id: 10, name: 'Smart Home Tech', description: 'Integrated automation', priority: 'low', category: 'wants' },
+            { id: 11, name: 'Lake View', description: 'Water views', priority: 'low', category: 'wants' },
+            { id: 12, name: 'Wine Cellar', description: 'Climate controlled', priority: 'low', category: 'wants' }
+        ];
+
+        let currentItems = JSON.parse(JSON.stringify(ITEMS));
+
+        function init() {
+            renderItems();
+            updateStats();
+            createChart();
+            renderTradeOffs();
+        }
+
+        function renderItems() {
+            const needsList = document.getElementById('needsList');
+            const wantsList = document.getElementById('wantsList');
+
+            needsList.innerHTML = '';
+            wantsList.innerHTML = '';
+
+            currentItems.forEach(item => {
+                const itemDiv = createItemElement(item);
+                if (item.category === 'needs') {
+                    needsList.appendChild(itemDiv);
+                } else {
+                    wantsList.appendChild(itemDiv);
+                }
+            });
+        }
+
+        function createItemElement(item) {
+            const div = document.createElement('div');
+            div.className = 'item';
+            div.draggable = true;
+            div.ondragstart = () => drag(event, item.id);
+
+            div.innerHTML = `
+                <div class="item-content">
+                    <div class="drag-handle">⋮⋮</div>
+                    <div class="item-text">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-description">${item.description}</div>
+                    </div>
+                </div>
+                <div class="item-priority priority-${item.priority}">${item.priority.toUpperCase()}</div>
+            `;
+
+            return div;
+        }
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        let draggedItemId = null;
+
+        function drag(ev, itemId) {
+            draggedItemId = itemId;
+            ev.target.classList.add('dragging');
+        }
+
+        function drop(ev, targetCategory) {
+            ev.preventDefault();
+
+            const item = currentItems.find(i => i.id === draggedItemId);
+            if (item) {
+                item.category = targetCategory;
+                renderItems();
+                updateStats();
+                updateChart();
+                renderTradeOffs();
+            }
+
+            document.querySelectorAll('.item').forEach(el => el.classList.remove('dragging'));
+        }
+
+        function updateStats() {
+            const needsCount = currentItems.filter(i => i.category === 'needs').length;
+            const wantsCount = currentItems.filter(i => i.category === 'wants').length;
+
+            document.getElementById('needsCount').textContent = needsCount;
+            document.getElementById('wantsCount').textContent = wantsCount;
+
+            // Simulate matching properties calculation
+            const matchingProperties = Math.max(1, 25 - needsCount * 2);
+            document.getElementById('matchingProperties').textContent = matchingProperties;
+        }
+
+        let priorityChart = null;
+
+        function createChart() {
+            const ctx = document.getElementById('priorityChart').getContext('2d');
+
+            priorityChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Critical Needs', 'High Priority', 'Medium Priority', 'Low Priority'],
+                    datasets: [{
+                        label: 'NEEDS',
+                        data: [0, 0, 0, 0],
+                        backgroundColor: 'rgba(255, 51, 102, 0.7)',
+                        borderColor: '#FF3366',
+                        borderWidth: 2
+                    }, {
+                        label: 'WANTS',
+                        data: [0, 0, 0, 0],
+                        backgroundColor: 'rgba(0, 255, 136, 0.7)',
+                        borderColor: '#00FF88',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            stacked: true,
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        y: {
+                            stacked: true,
+                            beginAtZero: true,
+                            ticks: { color: '#fff' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#fff', font: { size: 14 } } }
+                    }
+                }
+            });
+
+            updateChart();
+        }
+
+        function updateChart() {
+            if (!priorityChart) return;
+
+            const needsCritical = currentItems.filter(i => i.category === 'needs' && i.priority === 'critical').length;
+            const needsHigh = currentItems.filter(i => i.category === 'needs' && i.priority === 'high').length;
+            const needsMedium = currentItems.filter(i => i.category === 'needs' && i.priority === 'medium').length;
+            const needsLow = currentItems.filter(i => i.category === 'needs' && i.priority === 'low').length;
+
+            const wantsCritical = currentItems.filter(i => i.category === 'wants' && i.priority === 'critical').length;
+            const wantsHigh = currentItems.filter(i => i.category === 'wants' && i.priority === 'high').length;
+            const wantsMedium = currentItems.filter(i => i.category === 'wants' && i.priority === 'medium').length;
+            const wantsLow = currentItems.filter(i => i.category === 'wants' && i.priority === 'low').length;
+
+            priorityChart.data.datasets[0].data = [needsCritical, needsHigh, needsMedium, needsLow];
+            priorityChart.data.datasets[1].data = [wantsCritical, wantsHigh, wantsMedium, wantsLow];
+            priorityChart.update();
+        }
+
+        function renderTradeOffs() {
+            const container = document.getElementById('tradeOffsList');
+            const needs = currentItems.filter(i => i.category === 'needs');
+            const wants = currentItems.filter(i => i.category === 'wants');
+
+            const tradeOffs = [];
+
+            if (needs.length > 8) {
+                tradeOffs.push({
+                    title: '⚠️ Too Many Non-Negotiables',
+                    description: `You have ${needs.length} items in NEEDS. This may significantly reduce your available property options. Consider moving some high-priority items to WANTS to expand your search.`
+                });
+            }
+
+            if (needs.length < 3) {
+                tradeOffs.push({
+                    title: '💡 Define More Core Requirements',
+                    description: `You only have ${needs.length} critical needs defined. Consider what aspects of a home are truly non-negotiable for you and your family.`
+                });
+            }
+
+            if (needs.some(i => i.name.includes('Pool') || i.name.includes('Lake'))) {
+                tradeOffs.push({
+                    title: '💰 Luxury Features Impact Budget',
+                    description: 'Having luxury features like pools or water views as NEEDS may require budget flexibility. Moving these to WANTS could provide better value options.'
+                });
+            }
+
+            if (wants.length === 0) {
+                tradeOffs.push({
+                    title: '🎯 Balance Your Priorities',
+                    description: 'Everything is marked as a NEED. Consider which features would enhance your home but aren\'t absolutely required. This creates negotiating room.'
+                });
+            }
+
+            container.innerHTML = '';
+            tradeOffs.forEach(tradeOff => {
+                const div = document.createElement('div');
+                div.className = 'trade-off-item';
+                div.innerHTML = `
+                    <div class="trade-off-title">${tradeOff.title}</div>
+                    <div class="trade-off-desc">${tradeOff.description}</div>
+                `;
+                container.appendChild(div);
+            });
+
+            if (tradeOffs.length === 0) {
+                container.innerHTML = '<div class="trade-off-item"><div class="trade-off-title">✓ Well-Balanced Priorities</div><div class="trade-off-desc">Your needs and wants are well balanced. This should provide a good selection of properties without being too restrictive.</div></div>';
+            }
+        }
+
+        function resetDefaults() {
+            currentItems = JSON.parse(JSON.stringify(ITEMS));
+            renderItems();
+            updateStats();
+            updateChart();
+            renderTradeOffs();
+        }
+
+        function savePreferences() {
+            localStorage.setItem('clues_wants_needs', JSON.stringify(currentItems));
+            alert('✅ Preferences Saved!\n\nYour wants vs. needs configuration has been saved and will be used to filter property recommendations.');
+        }
+
+        function viewMatches() {
+            const needsCount = currentItems.filter(i => i.category === 'needs').length;
+            const matchingProperties = Math.max(1, 25 - needsCount * 2);
+            alert(`🏠 Viewing ${matchingProperties} Matching Properties\n\nBased on your ${needsCount} critical needs, we found ${matchingProperties} properties that meet all requirements.`);
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
