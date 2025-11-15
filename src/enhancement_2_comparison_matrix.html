@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLUES™ Enhancement #2: Property Comparison Matrix</title>
+
+    <!-- Core CLUES™ System -->
+    <script src="/src/core/data-manager.js"></script>
+    <script src="/src/core/scoring-engine.js"></script>
+    <script src="/src/shared-data-adapter.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0066CC 0%, #00D4FF 50%, #9D4EDD 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2em;
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .property-selectors {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .selector-group {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .selector-group label {
+            color: white;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .selector-group select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 14px;
+        }
+
+        .selector-group select option {
+            background: #1a1a2e;
+            color: white;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .property-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+        }
+
+        .property-card.winner {
+            border: 2px solid #00d4ff;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+        }
+
+        .winner-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
+        }
+
+        .property-header {
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+
+        .property-name {
+            color: white;
+            font-size: 1.3em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .property-price {
+            color: #00d4ff;
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+
+        .comparison-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .comparison-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+
+        .metric-value {
+            color: white;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .metric-value.best {
+            color: #00d4ff;
+            font-weight: 700;
+        }
+
+        .score-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+
+        .score-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d4ff, #0099cc);
+            transition: width 0.5s ease;
+        }
+
+        .overall-score {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .overall-score-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .overall-score-value {
+            color: white;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+
+        .radar-chart-container {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            color: white;
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+        }
+
+        .empty-state h2 {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+
+        .empty-state p {
+            font-size: 1.1em;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        @media (max-width: 768px) {
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Property Comparison Matrix</h1>
+            <div class="subtitle">Side-by-Side Analysis • Up to 4 Properties • Real-Time Scoring</div>
+        </div>
+
+        <div class="controls">
+            <div class="property-selectors" id="propertySelectors">
+                <div class="selector-group">
+                    <label>Property 1</label>
+                    <select id="property1" onchange="updateComparison()">
+                        <option value="">-- Select Property --</option>
+                    </select>
+                </div>
+                <div class="selector-group">
+                    <label>Property 2</label>
+                    <select id="property2" onchange="updateComparison()">
+                        <option value="">-- Select Property --</option>
+                    </select>
+                </div>
+                <div class="selector-group">
+                    <label>Property 3 (Optional)</label>
+                    <select id="property3" onchange="updateComparison()">
+                        <option value="">-- Select Property --</option>
+                    </select>
+                </div>
+                <div class="selector-group">
+                    <label>Property 4 (Optional)</label>
+                    <select id="property4" onchange="updateComparison()">
+                        <option value="">-- Select Property --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="updateComparison()">🔄 Refresh Comparison</button>
+                <button class="btn btn-secondary" onclick="clearComparison()">🗑️ Clear All</button>
+                <button class="btn btn-secondary" onclick="exportComparison()">📥 Export Report</button>
+            </div>
+        </div>
+
+        <div class="radar-chart-container" id="radarContainer" style="display: none;">
+            <div class="chart-title">Multi-Dimensional Score Comparison</div>
+            <canvas id="radarChart"></canvas>
+        </div>
+
+        <div class="comparison-grid" id="comparisonGrid">
+            <div class="empty-state">
+                <h2>Select Properties to Compare</h2>
+                <p>Choose at least 2 properties from the dropdowns above to begin comparison</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== REAL PROPERTY DATA FROM DATABASE =====
+        let PROPERTIES = [];
+        let selectedProperties = [];
+        let radarChart = null;
+
+        // Initialize Enhancement with REAL Data
+        async function initializeEnhancement() {
+            try {
+                await sharedDataAdapter.init();
+                PROPERTIES = await sharedDataAdapter.getPropertiesWithScores('balanced');
+
+                console.log(`✅ Loaded ${PROPERTIES.length} properties from database`);
+
+                if (PROPERTIES.length === 0) {
+                    alert('No properties found. Import data from the main dashboard.');
+                    window.location.href = '/index.html';
+                    return;
+                }
+
+                populateSelectors();
+            } catch (error) {
+                console.error('❌ Initialization failed:', error);
+                alert(`Error: ${error.message}`);
+                window.location.href = '/index.html';
+            }
+        }
+
+        function populateSelectors() {
+            const selectors = ['property1', 'property2', 'property3', 'property4'];
+            selectors.forEach(id => {
+                const select = document.getElementById(id);
+                select.innerHTML = '<option value="">-- Select Property --</option>';
+                PROPERTIES.forEach((prop, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = `${prop.name} - $${(prop.price || 0).toLocaleString()}`;
+                    select.appendChild(option);
+                });
+            });
+        }
+
+        function updateComparison() {
+            selectedProperties = [];
+            ['property1', 'property2', 'property3', 'property4'].forEach(id => {
+                const value = document.getElementById(id).value;
+                if (value !== '') {
+                    selectedProperties.push(PROPERTIES[parseInt(value)]);
+                }
+            });
+
+            if (selectedProperties.length < 2) {
+                document.getElementById('comparisonGrid').innerHTML = `
+                    <div class="empty-state">
+                        <h2>Select at least 2 properties</h2>
+                        <p>Choose properties from the dropdowns to compare</p>
+                    </div>
+                `;
+                document.getElementById('radarContainer').style.display = 'none';
+                return;
+            }
+
+            renderComparison();
+            renderRadarChart();
+            document.getElementById('radarContainer').style.display = 'block';
+        }
+
+        function renderComparison() {
+            const grid = document.getElementById('comparisonGrid');
+
+            // Find winner (highest overall score)
+            let winnerIndex = 0;
+            let highestScore = selectedProperties[0].computed_scores?.overall || 0;
+            selectedProperties.forEach((prop, i) => {
+                const score = prop.computed_scores?.overall || 0;
+                if (score > highestScore) {
+                    highestScore = score;
+                    winnerIndex = i;
+                }
+            });
+
+            grid.innerHTML = selectedProperties.map((prop, index) => {
+                const scores = prop.computed_scores || {};
+                const isWinner = index === winnerIndex;
+
+                return `
+                    <div class="property-card ${isWinner ? 'winner' : ''}">
+                        ${isWinner ? '<div class="winner-badge">🏆 Best Match</div>' : ''}
+
+                        <div class="property-header">
+                            <div class="property-name">${prop.name || 'Unknown Property'}</div>
+                            <div class="property-price">$${(prop.price || 0).toLocaleString()}</div>
+                        </div>
+
+                        <div class="comparison-row">
+                            <span class="metric-label">📍 Location Score</span>
+                            <span class="metric-value">${(scores.by_category?.location?.score || 50).toFixed(0)}/100</span>
+                        </div>
+                        <div class="score-bar">
+                            <div class="score-fill" style="width: ${scores.by_category?.location?.score || 50}%"></div>
+                        </div>
+
+                        <div class="comparison-row">
+                            <span class="metric-label">💰 Financial Score</span>
+                            <span class="metric-value">${(scores.by_category?.financial?.score || 50).toFixed(0)}/100</span>
+                        </div>
+                        <div class="score-bar">
+                            <div class="score-fill" style="width: ${scores.by_category?.financial?.score || 50}%"></div>
+                        </div>
+
+                        <div class="comparison-row">
+                            <span class="metric-label">🏠 Property Condition</span>
+                            <span class="metric-value">${(scores.by_category?.property_physical?.score || 50).toFixed(0)}/100</span>
+                        </div>
+                        <div class="score-bar">
+                            <div class="score-fill" style="width: ${scores.by_category?.property_physical?.score || 50}%"></div>
+                        </div>
+
+                        <div class="comparison-row">
+                            <span class="metric-label">📈 Investment Potential</span>
+                            <span class="metric-value">${(scores.by_category?.investment?.score || 50).toFixed(0)}/100</span>
+                        </div>
+                        <div class="score-bar">
+                            <div class="score-fill" style="width: ${scores.by_category?.investment?.score || 50}%"></div>
+                        </div>
+
+                        <div class="comparison-row">
+                            <span class="metric-label">🛏️ Bedrooms</span>
+                            <span class="metric-value">${prop.bedrooms || 'N/A'}</span>
+                        </div>
+
+                        <div class="comparison-row">
+                            <span class="metric-label">🚿 Bathrooms</span>
+                            <span class="metric-value">${prop.bathrooms?.total || prop.bathrooms || 'N/A'}</span>
+                        </div>
+
+                        <div class="comparison-row">
+                            <span class="metric-label">📐 Square Feet</span>
+                            <span class="metric-value">${(prop.square_feet?.living || prop.sqft || 0).toLocaleString()}</span>
+                        </div>
+
+                        <div class="overall-score">
+                            <div class="overall-score-label">Overall Score</div>
+                            <div class="overall-score-value">${(scores.overall || 50).toFixed(0)}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderRadarChart() {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+
+            if (radarChart) {
+                radarChart.destroy();
+            }
+
+            const datasets = selectedProperties.map((prop, index) => {
+                const scores = prop.computed_scores?.by_category || {};
+                const colors = ['#00d4ff', '#ff6b35', '#9d4edd', '#ffd700'];
+
+                return {
+                    label: prop.name || `Property ${index + 1}`,
+                    data: [
+                        scores.location?.score || 50,
+                        scores.financial?.score || 50,
+                        scores.property_physical?.score || 50,
+                        scores.investment?.score || 50,
+                        scores.lifestyle?.score || 50
+                    ],
+                    backgroundColor: colors[index] + '33',
+                    borderColor: colors[index],
+                    borderWidth: 2,
+                    pointBackgroundColor: colors[index],
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: colors[index]
+                };
+            });
+
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Location', 'Financial', 'Condition', 'Investment', 'Lifestyle'],
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: { color: 'white', backdropColor: 'transparent' },
+                            grid: { color: 'rgba(255, 255, 255, 0.2)' },
+                            pointLabels: { color: 'white', font: { size: 14, weight: 'bold' } }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: 'white', font: { size: 14 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        function clearComparison() {
+            ['property1', 'property2', 'property3', 'property4'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            updateComparison();
+        }
+
+        function exportComparison() {
+            if (selectedProperties.length < 2) {
+                alert('Select at least 2 properties to export');
+                return;
+            }
+
+            const report = {
+                generated: new Date().toISOString(),
+                properties: selectedProperties.map(p => ({
+                    name: p.name,
+                    price: p.price,
+                    scores: p.computed_scores,
+                    bedrooms: p.bedrooms,
+                    bathrooms: p.bathrooms?.total || p.bathrooms,
+                    sqft: p.square_feet?.living || p.sqft
+                }))
+            };
+
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `property-comparison-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        window.addEventListener('load', initializeEnhancement);
+    </script>
+</body>
+</html>
