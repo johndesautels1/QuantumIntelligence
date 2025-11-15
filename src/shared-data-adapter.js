@@ -72,16 +72,24 @@ class SharedDataAdapter {
     async getPropertiesFor5DExplorer(profileType = 'balanced') {
         const properties = await this.getPropertiesWithScores(profileType);
 
+        // Helper function to normalize scores to 0-100 range
+        const normalizeScore = (score, min = 0, max = 10000) => {
+            if (!score || isNaN(score)) return 50; // Default to middle
+            // Clamp between min and max, then scale to 0-100
+            const clamped = Math.max(min, Math.min(max, score));
+            return (clamped / max) * 100;
+        };
+
         return properties.map(prop => ({
             id: prop.property_id,
             name: prop.address?.full_address || `${prop.address?.street}, ${prop.address?.city}`,
             price: prop.price?.current || 0,
             dimensions: {
-                location: prop.computed_scores?.by_category?.location?.score || 50,
-                price: prop.computed_scores?.by_category?.financial?.score || 50,
-                condition: prop.computed_scores?.by_category?.property_physical?.score || 50,
-                investment: prop.computed_scores?.by_category?.investment?.score || 50,
-                lifestyle: prop.computed_scores?.by_category?.lifestyle?.score || 50
+                location: normalizeScore(prop.computed_scores?.by_category?.location?.score, 0, 10000),
+                price: normalizeScore(prop.computed_scores?.by_category?.financial?.score, 0, 10000),
+                condition: normalizeScore(prop.computed_scores?.by_category?.property_physical?.score, 0, 10000),
+                investment: normalizeScore(prop.computed_scores?.by_category?.investment?.score, 0, 10000),
+                lifestyle: normalizeScore(prop.computed_scores?.by_category?.lifestyle?.score, 0, 10000)
             }
         }));
     }
