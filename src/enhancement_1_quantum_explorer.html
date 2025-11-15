@@ -411,6 +411,12 @@
     <div class="container">
         <div id="canvas-container"></div>
 
+        <!-- Debug Panel -->
+        <div id="debugPanel">
+            <h3>🐛 Debug Info</h3>
+            <div id="debugContent"></div>
+        </div>
+
         <div class="ui-overlay">
             <!-- Header -->
             <div class="header">
@@ -599,25 +605,27 @@
 
         // Create Property Meshes
         function createPropertyMeshes() {
-            console.log('🎨 Creating spheres for', PROPERTIES.length, 'properties');
+            debugLog(`🎨 Creating spheres for ${PROPERTIES.length} properties`);
 
             PROPERTIES.forEach((property, index) => {
                 const dims = property.dimensions;
 
-                console.log(`Property ${index + 1}:`, property.name, 'Dimensions:', dims);
+                debugLog(`Property ${index + 1}: ${property.name}`);
 
                 // Check if dimensions exist
                 if (!dims) {
-                    console.error('❌ No dimensions for property:', property);
+                    debugLog(`❌ No dimensions for property: ${property.name}`, 'error');
                     return;
                 }
+
+                debugLog(`  Dims: L=${dims.location} P=${dims.price} C=${dims.condition} I=${dims.investment} Lf=${dims.lifestyle}`);
 
                 // Map dimension values (0-100) to 3D coordinates (-10 to 10)
                 const x = ((dims.location / 100) * 20) - 10;
                 const y = ((dims.price / 100) * 20) - 10;
                 const z = ((dims.condition / 100) * 20) - 10;
 
-                console.log(`  Position: x=${x.toFixed(2)}, y=${y.toFixed(2)}, z=${z.toFixed(2)}`);
+                debugLog(`  Position: x=${x.toFixed(1)}, y=${y.toFixed(1)}, z=${z.toFixed(1)}`);
 
                 // Size based on investment potential (D4)
                 const size = 0.3 + ((dims.investment / 100) * 0.7);
@@ -653,13 +661,13 @@
                 scene.add(sphere);
                 propertyMeshes.push(sphere);
 
-                console.log(`✅ Created sphere ${index + 1} at position`, sphere.position);
+                debugLog(`✅ Sphere ${index + 1} created`);
 
                 // Add label sprite
                 createLabel(property.name, sphere.position, size);
             });
 
-            console.log(`🎯 Total spheres created: ${propertyMeshes.length}`);
+            debugLog(`🎯 TOTAL SPHERES: ${propertyMeshes.length}`);
         }
 
         // Create Text Label
@@ -915,10 +923,11 @@
                 // Load REAL properties from IndexedDB
                 PROPERTIES = await sharedDataAdapter.getPropertiesFor5DExplorer('balanced');
 
-                console.log(`✅ Loaded ${PROPERTIES.length} real properties from database`);
+                debugLog(`✅ Loaded ${PROPERTIES.length} properties from database`);
 
                 if (PROPERTIES.length > 0) {
-                    console.log('📊 Sample property data:', PROPERTIES[0]);
+                    debugLog(`📊 First property: ${PROPERTIES[0].name}`);
+                    debugLog(`📊 Has dimensions: ${PROPERTIES[0].dimensions ? 'YES' : 'NO'}`, PROPERTIES[0].dimensions ? 'info' : 'error');
                 }
 
                 // Check if we have properties
