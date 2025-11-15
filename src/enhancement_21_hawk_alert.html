@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enhancement #21: Hawk Alert™ Real-Time Threat Detection | CLUES™</title>
+
+    <!-- Core CLUES™ System -->
+    <script src="/src/core/data-manager.js"></script>
+    <script src="/src/core/scoring-engine.js"></script>
+    <script src="/src/shared-data-adapter.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {
@@ -645,6 +651,10 @@
     </div>
 
     <script>
+        // ===== REAL PROPERTY DATA FROM DATABASE =====
+        // NO HARDCODED FAKE DATA - Loads from IndexedDB
+        let PROPERTIES = [];
+
         // Global State
         let isMonitoring = false;
         let monitoringInterval = null;
@@ -673,13 +683,36 @@
             financialWarnings: 0
         };
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            loadFromStorage();
-            initializeCharts();
-            populateRedFlags();
-            populateFinancialWarnings();
-            updateDashboard();
+        // Initialize Enhancement with REAL Data
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                // Initialize shared data adapter
+                await sharedDataAdapter.init();
+
+                // Load REAL properties from IndexedDB
+                PROPERTIES = await sharedDataAdapter.getPropertiesForHawkAlert();
+
+                console.log(`✅ Loaded ${PROPERTIES.length} real properties from database for monitoring`);
+
+                // Check if we have properties
+                if (PROPERTIES.length === 0) {
+                    alert('No properties found in database. Please import property data from the main dashboard first.');
+                    window.location.href = '/index.html';
+                    return;
+                }
+
+                // Initialize the UI
+                loadFromStorage();
+                initializeCharts();
+                populateRedFlags();
+                populateFinancialWarnings();
+                updateDashboard();
+
+            } catch (error) {
+                console.error('❌ Enhancement initialization failed:', error);
+                alert(`Initialization error: ${error.message}\n\nClick OK to return to dashboard.`);
+                window.location.href = '/index.html';
+            }
         });
 
         function loadFromStorage() {
@@ -716,7 +749,7 @@
             addAlert({
                 type: 'STATUS_CHANGE',
                 title: 'Monitoring Started',
-                message: 'Hawk Alert™ is now monitoring 247 properties in real-time',
+                message: `Hawk Alert™ is now monitoring ${PROPERTIES.length} properties in real-time`,
                 severity: 'info'
             });
         }
