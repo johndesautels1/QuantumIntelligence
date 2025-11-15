@@ -1,0 +1,254 @@
+[
+  {
+    "id": "prop_sample_001",
+    "source": "sample_data",
+    "importDate": "2025-11-15T00:00:00.000Z",
+    "basic": {
+      "address": "1234 Sunset Boulevard",
+      "bedrooms": 4,
+      "bathrooms": 3.5,
+      "squareFeet": 2800,
+      "lotSize": 7200,
+      "yearBuilt": 2018,
+      "propertyType": "Single Family",
+      "description": "Stunning modern home in prime LA location. Open floor plan with chef's kitchen, hardwood floors throughout. Master suite with spa-like bathroom. Beautifully landscaped yard with outdoor entertaining area.",
+      "mlsNumber": "LA5892341",
+      "listingUrl": "https://example.com/property/1234-sunset"
+    },
+    "financial": {
+      "listingPrice": 1250000,
+      "daysOnMarket": 15,
+      "hoaFees": 0,
+      "annualTaxes": 14500,
+      "pricePerSqFt": 446
+    },
+    "location": {
+      "city": "Los Angeles",
+      "state": "CA",
+      "zipCode": "90028",
+      "latitude": 34.0983,
+      "longitude": -118.3267,
+      "neighborhood": "Hollywood",
+      "county": "Los Angeles"
+    },
+    "features": {
+      "parking": "2-car attached garage",
+      "cooling": "Central AC",
+      "heating": "Forced air",
+      "fireplace": true,
+      "pool": false,
+      "stories": 2,
+      "basement": false,
+      "garage": 2
+    },
+    "condition": {
+      "overall": "Excellent",
+      "roof": "New",
+      "foundation": "Excellent",
+      "lastRenovated": 2018
+    }
+  },
+  {
+    "id": "prop_sample_002",
+    "source": "sample_data",
+    "importDate": "2025-11-15T00:00:00.000Z",
+    "basic": {
+      "address": "5678 Ocean Avenue",
+      "bedrooms": 5,
+      "bathrooms": 4,
+      "squareFeet": 3600,
+      "lotSize": 8500,
+      "yearBuilt": 2020,
+      "propertyType": "Single Family",
+      "description": "Luxurious coastal living at its finest. Steps from the beach, this architectural masterpiece features floor-to-ceiling windows, gourmet kitchen, and rooftop deck with ocean views.",
+      "mlsNumber": "SM9876543"
+    },
+    "financial": {
+      "listingPrice": 2850000,
+      "daysOnMarket": 8,
+      "hoaFees": 450,
+      "annualTaxes": 28000,
+      "pricePerSqFt": 792
+    },
+    "location": {
+      "city": "Santa Monica",
+      "state": "CA",
+      "zipCode": "90405",
+      "latitude": 34.0195,
+      "longitude": -118.4912,
+      "neighborhood": "Ocean Park",
+      "county": "Los Angeles"
+    },
+    "features": {
+      "parking": "3-car garage",
+      "cooling": "Central AC + Ceiling fans",
+      "heating": "Radiant floor heating",
+      "fireplace": true,
+      "pool": false,
+      "stories": 3,
+      "basement": false,
+      "garage": 3,
+      "roofDeck": true,
+      "oceanView": true
+    },
+    "condition": {
+      "overall": "Like New",
+      "roof": "New",
+      "foundation": "Excellent",
+      "lastRenovated": 2020
+    }
+  },
+  {
+    "id": "prop_sample_003",
+    "source": "sample_data",
+    "importDate": "2025-11-15T00:00:00.000Z",
+    "basic": {
+      "address": "910 Park Place",
+      "bedrooms": 6,
+      "bathrooms": 6.5,
+      "squareFeet": 6200,
+      "lotSize": 15000,
+      "yearBuilt": 2019,
+      "propertyType": "Single Family",
+      "description": "Exquisite estate in prestigious Beverly Hills. Smart home technology, theater room, wine cellar, infinity pool, and guest house. Unparalleled luxury and privacy.",
+      "mlsNumber": "BH1234567"
+    },
+    "financial": {
+      "listingPrice": 5750000,
+      "daysOnMarket": 22,
+      "hoaFees": 850,
+      "annualTaxes": 62000,
+      "pricePerSqFt": 927
+    },
+    "location": {
+      "city": "Beverly Hills",
+      "state": "CA",
+      "zipCode": "90210",
+      "latitude": 34.0901,
+      "longitude": -118.4065,
+      "neighborhood": "Beverly Hills Post Office",
+      "county": "Los Angeles"
+    },
+    "features": {
+      "parking": "4-car garage + motor court",
+      "cooling": "Multi-zone AC",
+      "heating": "Multi-zone forced air",
+      "fireplace": true,
+      "pool": true,
+      "spa": true,
+      "stories": 2,
+      "basement": true,
+      "garage": 4,
+      "guestHouse": true,
+      "wineRoom": true,
+      "theater": true,
+      "smartHome": true
+    },
+    "condition": {
+      "overall": "Mint",
+      "roof": "New",
+      "foundation": "Excellent",
+      "lastRenovated": 2019
+    }
+  },
+  {
+    "id": "prop_sample_004",
+    "source": "sample_data",
+    "importDate": "2025-11-15T00:00:00.000Z",
+    "basic": {
+      "address": "234 Main Street",
+      "bedrooms": 3,
+      "bathrooms": 2,
+      "squareFeet": 1850,
+      "lotSize": 5500,
+      "yearBuilt": 2005,
+      "propertyType": "Single Family",
+      "description": "Charming craftsman home with original details. Updated kitchen and baths, hardwood floors, cozy fireplace. Excellent Pasadena schools and walkable neighborhood.",
+      "mlsNumber": "PA4567890"
+    },
+    "financial": {
+      "listingPrice": 875000,
+      "daysOnMarket": 45,
+      "hoaFees": 0,
+      "annualTaxes": 9800,
+      "pricePerSqFt": 473
+    },
+    "location": {
+      "city": "Pasadena",
+      "state": "CA",
+      "zipCode": "91101",
+      "latitude": 34.1478,
+      "longitude": -118.1445,
+      "neighborhood": "Madison Heights",
+      "county": "Los Angeles"
+    },
+    "features": {
+      "parking": "2-car detached garage",
+      "cooling": "Window units",
+      "heating": "Forced air",
+      "fireplace": true,
+      "pool": false,
+      "stories": 1,
+      "basement": false,
+      "garage": 2,
+      "hardwoodFloors": true,
+      "originalDetails": true
+    },
+    "condition": {
+      "overall": "Good",
+      "roof": "10 years old",
+      "foundation": "Good",
+      "lastRenovated": 2015
+    }
+  },
+  {
+    "id": "prop_sample_005",
+    "source": "sample_data",
+    "importDate": "2025-11-15T00:00:00.000Z",
+    "basic": {
+      "address": "567 Lakeview Drive",
+      "bedrooms": 3,
+      "bathrooms": 2.5,
+      "squareFeet": 2100,
+      "lotSize": 6000,
+      "yearBuilt": 2010,
+      "propertyType": "Townhouse",
+      "description": "Modern townhouse in desirable Glendale community. Open concept living, two-car garage, private patio. Low-maintenance living with resort-style amenities.",
+      "mlsNumber": "GL7891234"
+    },
+    "financial": {
+      "listingPrice": 725000,
+      "daysOnMarket": 12,
+      "hoaFees": 325,
+      "annualTaxes": 7200,
+      "pricePerSqFt": 345
+    },
+    "location": {
+      "city": "Glendale",
+      "state": "CA",
+      "zipCode": "91205",
+      "latitude": 34.1425,
+      "longitude": -118.2551,
+      "neighborhood": "Emerald Isle",
+      "county": "Los Angeles"
+    },
+    "features": {
+      "parking": "2-car attached garage",
+      "cooling": "Central AC",
+      "heating": "Forced air",
+      "fireplace": false,
+      "pool": "Community pool",
+      "stories": 2,
+      "basement": false,
+      "garage": 2,
+      "patio": true,
+      "communityAmenities": true
+    },
+    "condition": {
+      "overall": "Very Good",
+      "roof": "Good",
+      "foundation": "Excellent",
+      "lastRenovated": 2010
+    }
+  }
+]
