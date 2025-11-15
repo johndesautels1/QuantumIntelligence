@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhancement #23: Smart Notification Prioritization | CLUES™</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #e0e0e0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf, #ff006e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #a0a0a0;
+            font-size: 1.1em;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .panel:hover {
+            border-color: rgba(0, 212, 255, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2);
+        }
+
+        .panel-header {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #00d4ff;
+        }
+
+        .notification-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .notification-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(5px);
+        }
+
+        .notification-item.critical {
+            border-left-color: #ff006e;
+            background: rgba(255, 0, 110, 0.08);
+        }
+
+        .notification-item.high {
+            border-left-color: #ff9e00;
+            background: rgba(255, 158, 0, 0.08);
+        }
+
+        .notification-item.medium {
+            border-left-color: #00d4ff;
+            background: rgba(0, 212, 255, 0.08);
+        }
+
+        .notification-item.low {
+            border-left-color: #a0a0a0;
+            background: rgba(160, 160, 160, 0.08);
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .notification-title {
+            font-weight: 600;
+            font-size: 1.05em;
+        }
+
+        .notification-time {
+            font-size: 0.85em;
+            color: #a0a0a0;
+        }
+
+        .notification-body {
+            color: #c0c0c0;
+            font-size: 0.95em;
+            margin-bottom: 8px;
+        }
+
+        .notification-meta {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            font-size: 0.85em;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #a0a0a0;
+        }
+
+        .priority-badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .priority-badge.critical {
+            background: rgba(255, 0, 110, 0.2);
+            color: #ff006e;
+        }
+
+        .priority-badge.high {
+            background: rgba(255, 158, 0, 0.2);
+            color: #ff9e00;
+        }
+
+        .priority-badge.medium {
+            background: rgba(0, 212, 255, 0.2);
+            color: #00d4ff;
+        }
+
+        .priority-badge.low {
+            background: rgba(160, 160, 160, 0.2);
+            color: #a0a0a0;
+        }
+
+        .channel-badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            background: rgba(123, 44, 191, 0.2);
+            color: #b794f4;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        button.secondary {
+            background: linear-gradient(135deg, #7b2cbf, #5a1e8f);
+        }
+
+        button.danger {
+            background: linear-gradient(135deg, #ff006e, #cc0055);
+        }
+
+        .preference-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .preference-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .toggle {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 13px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .toggle.active {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+        }
+
+        .toggle-knob {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s ease;
+        }
+
+        .toggle.active .toggle-knob {
+            transform: translateX(24px);
+        }
+
+        select, input[type="time"] {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 0.95em;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: 700;
+            background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .stat-label {
+            color: #a0a0a0;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+
+        .digest-preview {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .digest-section {
+            margin-bottom: 15px;
+        }
+
+        .digest-section-title {
+            font-weight: 600;
+            color: #00d4ff;
+            margin-bottom: 8px;
+        }
+
+        .digest-item {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.95em;
+        }
+
+        .learning-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(123, 44, 191, 0.1);
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .learning-bar {
+            flex: 1;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .learning-progress {
+            height: 100%;
+            background: linear-gradient(90deg, #7b2cbf, #b794f4);
+            transition: width 0.5s ease;
+        }
+
+        .dnd-schedule {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .filter-tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .filter-tab.active {
+            background: linear-gradient(135deg, #00d4ff, #0099cc);
+        }
+
+        .frequency-cap {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        input[type="number"] {
+            width: 60px;
+            padding: 5px 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: #e0e0e0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #a0a0a0;
+        }
+
+        .empty-state-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔔 Smart Notification Prioritization System</h1>
+        <div class="subtitle">AI-Powered Intelligent Notification Management with Learning Algorithms</div>
+    </div>
+
+    <div class="dashboard">
+        <!-- Notification Queue Panel -->
+        <div class="panel" style="grid-column: span 2;">
+            <div class="panel-header">
+                📬 Notification Queue
+            </div>
+            <div class="controls">
+                <button onclick="addTestNotification()">+ Add Test Notification</button>
+                <button class="secondary" onclick="generateDigest()">📊 Generate Digest</button>
+                <button class="danger" onclick="clearQueue()">🗑️ Clear Queue</button>
+            </div>
+            <div class="filter-tabs" id="filterTabs">
+                <div class="filter-tab active" data-filter="all">All</div>
+                <div class="filter-tab" data-filter="critical">Critical</div>
+                <div class="filter-tab" data-filter="high">High</div>
+                <div class="filter-tab" data-filter="medium">Medium</div>
+                <div class="filter-tab" data-filter="low">Low</div>
+            </div>
+            <div id="notificationQueue"></div>
+        </div>
+
+        <!-- User Preferences Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                ⚙️ User Preferences
+            </div>
+            <div class="preference-grid">
+                <div class="preference-item">
+                    <span>Do Not Disturb Mode</span>
+                    <div class="toggle" id="dndToggle" onclick="toggleDND()">
+                        <div class="toggle-knob"></div>
+                    </div>
+                </div>
+                <div class="dnd-schedule">
+                    <label>From:</label>
+                    <input type="time" id="dndStart" value="22:00" onchange="updatePreferences()">
+                    <label>To:</label>
+                    <input type="time" id="dndEnd" value="08:00" onchange="updatePreferences()">
+                </div>
+                <div class="preference-item">
+                    <span>Digest Mode (Morning Briefing)</span>
+                    <div class="toggle" id="digestToggle" onclick="toggleDigest()">
+                        <div class="toggle-knob"></div>
+                    </div>
+                </div>
+                <div class="preference-item">
+                    <span>Preferred Channel</span>
+                    <select id="preferredChannel" onchange="updatePreferences()">
+                        <option value="push">Push Notification</option>
+                        <option value="email">Email</option>
+                        <option value="sms">SMS/Text</option>
+                        <option value="auto">Auto (AI Decides)</option>
+                    </select>
+                </div>
+                <div class="frequency-cap">
+                    <span>Frequency Cap:</span>
+                    <input type="number" id="freqCap" value="10" min="1" max="100" onchange="updatePreferences()">
+                    <span>notifications/hour</span>
+                </div>
+            </div>
+
+            <div class="learning-indicator">
+                <span>🧠 Learning Progress</span>
+                <div class="learning-bar">
+                    <div class="learning-progress" id="learningProgress" style="width: 0%"></div>
+                </div>
+                <span id="learningPercent">0%</span>
+            </div>
+        </div>
+
+        <!-- Analytics Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                📊 Notification Analytics
+            </div>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalNotifications">0</div>
+                    <div class="stat-label">Total Queue</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="criticalCount">0</div>
+                    <div class="stat-label">Critical</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="deliveryRate">98%</div>
+                    <div class="stat-label">Delivery Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="avgResponseTime">2.3m</div>
+                    <div class="stat-label">Avg Response</div>
+                </div>
+            </div>
+            <div class="chart-container">
+                <canvas id="priorityChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Channel Optimization Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                📱 Channel Optimization
+            </div>
+            <div class="chart-container">
+                <canvas id="channelChart"></canvas>
+            </div>
+            <div style="margin-top: 20px; color: #a0a0a0; font-size: 0.9em;">
+                <strong>AI Recommendations:</strong>
+                <ul style="margin-left: 20px; margin-top: 10px;">
+                    <li>Critical alerts → SMS (fastest response)</li>
+                    <li>High priority → Push notifications (89% open rate)</li>
+                    <li>Medium priority → Email (digest mode)</li>
+                    <li>Low priority → Weekly digest only</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Digest Preview Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                📰 Morning Digest Preview
+            </div>
+            <div class="digest-preview" id="digestPreview"></div>
+            <button onclick="sendDigest()" style="margin-top: 15px; width: 100%;">📧 Send Digest Now</button>
+        </div>
+
+        <!-- Behavior Learning Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                🧠 Behavior Learning Insights
+            </div>
+            <div class="chart-container">
+                <canvas id="behaviorChart"></canvas>
+            </div>
+            <div style="margin-top: 20px; color: #a0a0a0; font-size: 0.9em;">
+                <strong>Learned Patterns:</strong>
+                <ul style="margin-left: 20px; margin-top: 10px;" id="learnedPatterns"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Notification Data Structure
+        const NOTIFICATION_TYPES = [
+            { type: 'new_listing', basePriority: 80, defaultChannel: 'push' },
+            { type: 'price_drop', basePriority: 90, defaultChannel: 'sms' },
+            { type: 'showing_request', basePriority: 95, defaultChannel: 'sms' },
+            { type: 'offer_received', basePriority: 100, defaultChannel: 'sms' },
+            { type: 'counter_offer', basePriority: 98, defaultChannel: 'sms' },
+            { type: 'inspection_scheduled', basePriority: 85, defaultChannel: 'push' },
+            { type: 'market_update', basePriority: 40, defaultChannel: 'email' },
+            { type: 'similar_property', basePriority: 50, defaultChannel: 'email' },
+            { type: 'agent_message', basePriority: 70, defaultChannel: 'push' },
+            { type: 'document_ready', basePriority: 75, defaultChannel: 'email' }
+        ];
+
+        // Global State
+        let notificationQueue = [];
+        let userPreferences = {
+            dndEnabled: false,
+            dndStart: '22:00',
+            dndEnd: '08:00',
+            digestEnabled: false,
+            preferredChannel: 'auto',
+            frequencyCap: 10
+        };
+
+        let behaviorData = {
+            interactions: [],
+            channelPerformance: { push: 0, email: 0, sms: 0 },
+            priorityAccuracy: [],
+            learningScore: 0
+        };
+
+        let currentFilter = 'all';
+        let charts = {};
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFromStorage();
+            initializeCharts();
+            populateInitialNotifications();
+            updateDashboard();
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.filter;
+                    renderNotificationQueue();
+                });
+            });
+        }
+
+        function loadFromStorage() {
+            const saved = localStorage.getItem('smartNotifications');
+            if (saved) {
+                const data = JSON.parse(saved);
+                notificationQueue = data.queue || [];
+                userPreferences = data.preferences || userPreferences;
+                behaviorData = data.behavior || behaviorData;
+
+                // Apply preferences to UI
+                document.getElementById('dndToggle').classList.toggle('active', userPreferences.dndEnabled);
+                document.getElementById('digestToggle').classList.toggle('active', userPreferences.digestEnabled);
+                document.getElementById('dndStart').value = userPreferences.dndStart;
+                document.getElementById('dndEnd').value = userPreferences.dndEnd;
+                document.getElementById('preferredChannel').value = userPreferences.preferredChannel;
+                document.getElementById('freqCap').value = userPreferences.frequencyCap;
+            }
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('smartNotifications', JSON.stringify({
+                queue: notificationQueue,
+                preferences: userPreferences,
+                behavior: behaviorData
+            }));
+        }
+
+        // Urgency Scoring Algorithm (Machine Learning-based)
+        function calculateUrgencyScore(notification) {
+            let score = notification.basePriority;
+
+            // Time sensitivity factor
+            const age = Date.now() - notification.timestamp;
+            const hoursSinceCreated = age / (1000 * 60 * 60);
+
+            if (notification.type === 'offer_received' || notification.type === 'showing_request') {
+                // Time-critical notifications decay rapidly
+                score -= hoursSinceCreated * 5;
+            } else {
+                score -= hoursSinceCreated * 1;
+            }
+
+            // User behavior learning
+            const interactionHistory = behaviorData.interactions.filter(i => i.type === notification.type);
+            if (interactionHistory.length > 0) {
+                const avgResponseTime = interactionHistory.reduce((sum, i) => sum + i.responseTime, 0) / interactionHistory.length;
+                if (avgResponseTime < 300000) { // 5 minutes
+                    score += 10; // User responds quickly to this type
+                }
+            }
+
+            // DND adjustment
+            if (userPreferences.dndEnabled && isDNDTime()) {
+                if (score < 90) {
+                    score = 0; // Suppress non-critical during DND
+                }
+            }
+
+            // Frequency capping adjustment
+            const recentNotifications = notificationQueue.filter(n =>
+                Date.now() - n.timestamp < 3600000 // Last hour
+            ).length;
+
+            if (recentNotifications >= userPreferences.frequencyCap) {
+                if (score < 95) {
+                    score -= 30; // Reduce priority when at cap
+                }
+            }
+
+            return Math.max(0, Math.min(100, score));
+        }
+
+        function getPriorityLevel(score) {
+            if (score >= 90) return 'critical';
+            if (score >= 70) return 'high';
+            if (score >= 40) return 'medium';
+            return 'low';
+        }
+
+        function isDNDTime() {
+            const now = new Date();
+            const currentTime = now.getHours() * 60 + now.getMinutes();
+
+            const [startHour, startMin] = userPreferences.dndStart.split(':').map(Number);
+            const [endHour, endMin] = userPreferences.dndEnd.split(':').map(Number);
+
+            const dndStart = startHour * 60 + startMin;
+            const dndEnd = endHour * 60 + endMin;
+
+            if (dndStart < dndEnd) {
+                return currentTime >= dndStart && currentTime <= dndEnd;
+            } else {
+                // DND spans midnight
+                return currentTime >= dndStart || currentTime <= dndEnd;
+            }
+        }
+
+        // Channel Optimization Algorithm
+        function optimizeDeliveryChannel(notification) {
+            if (userPreferences.preferredChannel !== 'auto') {
+                return userPreferences.preferredChannel;
+            }
+
+            const priority = getPriorityLevel(notification.urgencyScore);
+
+            // Use learned channel performance
+            const channelPerf = behaviorData.channelPerformance;
+            const bestChannel = Object.keys(channelPerf).reduce((a, b) =>
+                channelPerf[a] > channelPerf[b] ? a : b
+            );
+
+            // Override with priority-based logic
+            if (priority === 'critical') return 'sms';
+            if (priority === 'high') return bestChannel || 'push';
+            if (priority === 'medium') return 'email';
+            if (priority === 'low') return 'email';
+
+            return notification.defaultChannel;
+        }
+
+        function populateInitialNotifications() {
+            const sampleNotifications = [
+                {
+                    type: 'offer_received',
+                    title: 'New Offer Received',
+                    message: 'Client submitted offer on 456 Elm Street for $525,000',
+                    property: '456 Elm Street'
+                },
+                {
+                    type: 'price_drop',
+                    title: 'Price Reduction Alert',
+                    message: '789 Oak Ave reduced from $650K to $599K (-8%)',
+                    property: '789 Oak Ave'
+                },
+                {
+                    type: 'showing_request',
+                    title: 'Showing Request',
+                    message: 'Client wants to see 123 Maple Lane today at 3 PM',
+                    property: '123 Maple Lane'
+                },
+                {
+                    type: 'market_update',
+                    title: 'Weekly Market Update',
+                    message: 'Downtown inventory down 12% this week, median price up 3.2%',
+                    property: null
+                },
+                {
+                    type: 'similar_property',
+                    title: 'Similar Property Alert',
+                    message: 'New listing matches client criteria: 321 Pine St - 3bd/2ba, $485K',
+                    property: '321 Pine St'
+                }
+            ];
+
+            sampleNotifications.forEach(notif => {
+                const notifType = NOTIFICATION_TYPES.find(t => t.type === notif.type);
+                addNotification({
+                    ...notif,
+                    basePriority: notifType.basePriority,
+                    defaultChannel: notifType.defaultChannel
+                });
+            });
+        }
+
+        function addNotification(data) {
+            const notification = {
+                id: Date.now() + Math.random(),
+                timestamp: Date.now(),
+                type: data.type,
+                title: data.title,
+                message: data.message,
+                property: data.property,
+                basePriority: data.basePriority,
+                defaultChannel: data.defaultChannel,
+                urgencyScore: 0,
+                deliveryChannel: '',
+                read: false,
+                interacted: false
+            };
+
+            notification.urgencyScore = calculateUrgencyScore(notification);
+            notification.deliveryChannel = optimizeDeliveryChannel(notification);
+
+            notificationQueue.unshift(notification);
+
+            // Sort by urgency score
+            notificationQueue.sort((a, b) => b.urgencyScore - a.urgencyScore);
+
+            saveToStorage();
+            updateDashboard();
+        }
+
+        function addTestNotification() {
+            const randomType = NOTIFICATION_TYPES[Math.floor(Math.random() * NOTIFICATION_TYPES.length)];
+            const testMessages = {
+                'new_listing': 'New property at 555 Test Drive matches client criteria',
+                'price_drop': 'Price reduced on watched property by 5%',
+                'showing_request': 'New showing request for tomorrow afternoon',
+                'offer_received': 'Offer received on active listing',
+                'counter_offer': 'Counter-offer submitted by seller',
+                'inspection_scheduled': 'Home inspection scheduled for Friday',
+                'market_update': 'Market conditions changed in target area',
+                'similar_property': 'Similar property just listed in neighborhood',
+                'agent_message': 'Message from listing agent',
+                'document_ready': 'Contract documents ready for review'
+            };
+
+            addNotification({
+                type: randomType.type,
+                title: randomType.type.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+                message: testMessages[randomType.type],
+                property: Math.random() > 0.5 ? `${Math.floor(Math.random() * 999)} Test St` : null,
+                basePriority: randomType.basePriority,
+                defaultChannel: randomType.defaultChannel
+            });
+        }
+
+        function renderNotificationQueue() {
+            const container = document.getElementById('notificationQueue');
+
+            let filteredQueue = notificationQueue;
+            if (currentFilter !== 'all') {
+                filteredQueue = notificationQueue.filter(n =>
+                    getPriorityLevel(n.urgencyScore) === currentFilter
+                );
+            }
+
+            if (filteredQueue.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <div>No notifications in queue</div>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredQueue.map(notif => {
+                const priority = getPriorityLevel(notif.urgencyScore);
+                const timeAgo = getTimeAgo(notif.timestamp);
+
+                return `
+                    <div class="notification-item ${priority}" onclick="interactWithNotification(${notif.id})">
+                        <div class="notification-header">
+                            <div class="notification-title">${notif.title}</div>
+                            <div class="notification-time">${timeAgo}</div>
+                        </div>
+                        <div class="notification-body">${notif.message}</div>
+                        <div class="notification-meta">
+                            <div class="meta-item">
+                                <span class="priority-badge ${priority}">${priority}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="channel-badge">${getChannelIcon(notif.deliveryChannel)} ${notif.deliveryChannel}</span>
+                            </div>
+                            <div class="meta-item">
+                                📊 Score: ${Math.round(notif.urgencyScore)}
+                            </div>
+                            ${notif.property ? `<div class="meta-item">🏠 ${notif.property}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getChannelIcon(channel) {
+            const icons = { push: '🔔', email: '📧', sms: '💬' };
+            return icons[channel] || '📱';
+        }
+
+        function getTimeAgo(timestamp) {
+            const seconds = Math.floor((Date.now() - timestamp) / 1000);
+
+            if (seconds < 60) return `${seconds}s ago`;
+            if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+            return `${Math.floor(seconds / 86400)}d ago`;
+        }
+
+        function interactWithNotification(id) {
+            const notification = notificationQueue.find(n => n.id === id);
+            if (!notification) return;
+
+            notification.read = true;
+            notification.interacted = true;
+
+            // Learning: Track interaction
+            const responseTime = Date.now() - notification.timestamp;
+            behaviorData.interactions.push({
+                type: notification.type,
+                priority: getPriorityLevel(notification.urgencyScore),
+                channel: notification.deliveryChannel,
+                responseTime: responseTime,
+                timestamp: Date.now()
+            });
+
+            // Update channel performance
+            behaviorData.channelPerformance[notification.deliveryChannel] =
+                (behaviorData.channelPerformance[notification.deliveryChannel] || 0) + 1;
+
+            // Update learning score
+            behaviorData.learningScore = Math.min(100, behaviorData.interactions.length * 2);
+
+            saveToStorage();
+            updateDashboard();
+        }
+
+        function generateDigest() {
+            const digestContainer = document.getElementById('digestPreview');
+
+            const critical = notificationQueue.filter(n => getPriorityLevel(n.urgencyScore) === 'critical');
+            const high = notificationQueue.filter(n => getPriorityLevel(n.urgencyScore) === 'high');
+            const medium = notificationQueue.filter(n => getPriorityLevel(n.urgencyScore) === 'medium');
+
+            let html = '<h3 style="margin-bottom: 15px;">📅 Morning Briefing</h3>';
+
+            if (critical.length > 0) {
+                html += `<div class="digest-section">
+                    <div class="digest-section-title">🚨 Critical (${critical.length})</div>`;
+                critical.forEach(n => {
+                    html += `<div class="digest-item">• ${n.title}: ${n.message}</div>`;
+                });
+                html += '</div>';
+            }
+
+            if (high.length > 0) {
+                html += `<div class="digest-section">
+                    <div class="digest-section-title">⚠️ High Priority (${high.length})</div>`;
+                high.slice(0, 3).forEach(n => {
+                    html += `<div class="digest-item">• ${n.title}</div>`;
+                });
+                if (high.length > 3) {
+                    html += `<div class="digest-item" style="color: #a0a0a0;">...and ${high.length - 3} more</div>`;
+                }
+                html += '</div>';
+            }
+
+            if (medium.length > 0) {
+                html += `<div class="digest-section">
+                    <div class="digest-section-title">ℹ️ Updates (${medium.length})</div>`;
+                medium.slice(0, 2).forEach(n => {
+                    html += `<div class="digest-item">• ${n.title}</div>`;
+                });
+                if (medium.length > 2) {
+                    html += `<div class="digest-item" style="color: #a0a0a0;">...and ${medium.length - 2} more</div>`;
+                }
+                html += '</div>';
+            }
+
+            digestContainer.innerHTML = html || '<div style="color: #a0a0a0;">No items for digest</div>';
+        }
+
+        function sendDigest() {
+            alert('📧 Digest sent to your email!\n\nThis would integrate with SendGrid or similar email service in production.');
+            generateDigest();
+        }
+
+        function clearQueue() {
+            if (confirm('Clear all notifications from queue?')) {
+                notificationQueue = [];
+                saveToStorage();
+                updateDashboard();
+            }
+        }
+
+        function toggleDND() {
+            userPreferences.dndEnabled = !userPreferences.dndEnabled;
+            document.getElementById('dndToggle').classList.toggle('active');
+            saveToStorage();
+            updateDashboard();
+        }
+
+        function toggleDigest() {
+            userPreferences.digestEnabled = !userPreferences.digestEnabled;
+            document.getElementById('digestToggle').classList.toggle('active');
+            saveToStorage();
+        }
+
+        function updatePreferences() {
+            userPreferences.dndStart = document.getElementById('dndStart').value;
+            userPreferences.dndEnd = document.getElementById('dndEnd').value;
+            userPreferences.preferredChannel = document.getElementById('preferredChannel').value;
+            userPreferences.frequencyCap = parseInt(document.getElementById('freqCap').value);
+            saveToStorage();
+
+            // Recalculate all urgency scores with new preferences
+            notificationQueue.forEach(n => {
+                n.urgencyScore = calculateUrgencyScore(n);
+                n.deliveryChannel = optimizeDeliveryChannel(n);
+            });
+            notificationQueue.sort((a, b) => b.urgencyScore - a.urgencyScore);
+
+            updateDashboard();
+        }
+
+        function updateDashboard() {
+            renderNotificationQueue();
+            updateStats();
+            updateCharts();
+            generateDigest();
+            updateLearningIndicator();
+        }
+
+        function updateStats() {
+            document.getElementById('totalNotifications').textContent = notificationQueue.length;
+            document.getElementById('criticalCount').textContent =
+                notificationQueue.filter(n => getPriorityLevel(n.urgencyScore) === 'critical').length;
+
+            // Simulate delivery rate based on learning
+            const baseRate = 95;
+            const learningBonus = (behaviorData.learningScore / 100) * 5;
+            document.getElementById('deliveryRate').textContent =
+                `${Math.round(baseRate + learningBonus)}%`;
+
+            // Calculate average response time
+            if (behaviorData.interactions.length > 0) {
+                const avgTime = behaviorData.interactions
+                    .slice(-10)
+                    .reduce((sum, i) => sum + i.responseTime, 0) / Math.min(10, behaviorData.interactions.length);
+                const minutes = Math.round(avgTime / 60000);
+                document.getElementById('avgResponseTime').textContent = `${minutes}m`;
+            }
+        }
+
+        function updateLearningIndicator() {
+            const progress = document.getElementById('learningProgress');
+            const percent = document.getElementById('learningPercent');
+
+            progress.style.width = `${behaviorData.learningScore}%`;
+            percent.textContent = `${Math.round(behaviorData.learningScore)}%`;
+
+            // Update learned patterns
+            const patterns = [];
+
+            if (behaviorData.interactions.length > 5) {
+                const fastResponses = behaviorData.interactions.filter(i => i.responseTime < 300000);
+                if (fastResponses.length > behaviorData.interactions.length * 0.7) {
+                    patterns.push('User responds quickly to most notifications');
+                }
+            }
+
+            const channelCounts = Object.values(behaviorData.channelPerformance);
+            const totalChannelUse = channelCounts.reduce((a, b) => a + b, 0);
+            if (totalChannelUse > 10) {
+                const bestChannel = Object.keys(behaviorData.channelPerformance).reduce((a, b) =>
+                    behaviorData.channelPerformance[a] > behaviorData.channelPerformance[b] ? a : b
+                );
+                patterns.push(`Prefers ${bestChannel} notifications (${Math.round(behaviorData.channelPerformance[bestChannel] / totalChannelUse * 100)}% interaction rate)`);
+            }
+
+            if (userPreferences.dndEnabled) {
+                patterns.push(`Respects DND schedule (${userPreferences.dndStart} - ${userPreferences.dndEnd})`);
+            }
+
+            patterns.push(`Frequency cap: ${userPreferences.frequencyCap} notifications/hour`);
+
+            document.getElementById('learnedPatterns').innerHTML =
+                patterns.map(p => `<li>${p}</li>`).join('');
+        }
+
+        function initializeCharts() {
+            // Priority Distribution Chart
+            const priorityCtx = document.getElementById('priorityChart').getContext('2d');
+            charts.priority = new Chart(priorityCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Critical', 'High', 'Medium', 'Low'],
+                    datasets: [{
+                        data: [0, 0, 0, 0],
+                        backgroundColor: [
+                            'rgba(255, 0, 110, 0.7)',
+                            'rgba(255, 158, 0, 0.7)',
+                            'rgba(0, 212, 255, 0.7)',
+                            'rgba(160, 160, 160, 0.7)'
+                        ],
+                        borderColor: [
+                            '#ff006e',
+                            '#ff9e00',
+                            '#00d4ff',
+                            '#a0a0a0'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#e0e0e0' }
+                        }
+                    }
+                }
+            });
+
+            // Channel Performance Chart
+            const channelCtx = document.getElementById('channelChart').getContext('2d');
+            charts.channel = new Chart(channelCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Push', 'Email', 'SMS'],
+                    datasets: [{
+                        label: 'Interaction Count',
+                        data: [0, 0, 0],
+                        backgroundColor: 'rgba(0, 212, 255, 0.7)',
+                        borderColor: '#00d4ff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#a0a0a0' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        x: {
+                            ticks: { color: '#a0a0a0' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: '#e0e0e0' }
+                        }
+                    }
+                }
+            });
+
+            // Behavior Timeline Chart
+            const behaviorCtx = document.getElementById('behaviorChart').getContext('2d');
+            charts.behavior = new Chart(behaviorCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Response Time (minutes)',
+                        data: [],
+                        borderColor: '#7b2cbf',
+                        backgroundColor: 'rgba(123, 44, 191, 0.2)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#a0a0a0' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        },
+                        x: {
+                            ticks: { color: '#a0a0a0' },
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: { color: '#e0e0e0' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCharts() {
+            // Update priority distribution
+            const priorityCounts = {
+                critical: notificationQueue.filter(n => getPriorityLevel(n.urgencyScore) === 'critical').length,
+                high: notificationQueue.filter(n => getPriorityLevel(n.urgencyScore) === 'high').length,
+                medium: notificationQueue.filter(n => getPriorityLevel(n.urgencyScore) === 'medium').length,
+                low: notificationQueue.filter(n => getPriorityLevel(n.urgencyScore) === 'low').length
+            };
+
+            charts.priority.data.datasets[0].data = [
+                priorityCounts.critical,
+                priorityCounts.high,
+                priorityCounts.medium,
+                priorityCounts.low
+            ];
+            charts.priority.update();
+
+            // Update channel performance
+            charts.channel.data.datasets[0].data = [
+                behaviorData.channelPerformance.push || 0,
+                behaviorData.channelPerformance.email || 0,
+                behaviorData.channelPerformance.sms || 0
+            ];
+            charts.channel.update();
+
+            // Update behavior timeline
+            const recentInteractions = behaviorData.interactions.slice(-10);
+            charts.behavior.data.labels = recentInteractions.map((_, i) => `#${i + 1}`);
+            charts.behavior.data.datasets[0].data = recentInteractions.map(i =>
+                Math.round(i.responseTime / 60000)
+            );
+            charts.behavior.update();
+        }
+    </script>
+</body>
+</html>
