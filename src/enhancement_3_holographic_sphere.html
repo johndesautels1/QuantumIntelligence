@@ -10,14 +10,8 @@
     <script src="core/scoring-engine.js"></script>
     <script src="shared-data-adapter.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/js/controls/OrbitControls.js"></script>
-    <script>
-        // Fix OrbitControls namespace for older Three.js CDN builds
-        if (typeof THREE !== 'undefined' && typeof OrbitControls !== 'undefined') {
-            THREE.OrbitControls = OrbitControls;
-        }
-    </script>
+    <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.158.0/examples/js/controls/OrbitControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {
@@ -363,7 +357,7 @@
             document.getElementById('canvas-container').appendChild(renderer.domElement);
 
             // Controls
-            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls = new OrbitControls(camera, renderer.domElement);
             controls.enableDamping = true;
             controls.dampingFactor = 0.05;
             controls.minDistance = 8;
