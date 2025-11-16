@@ -1027,11 +1027,36 @@
         }
 
         const DIMENSIONS = [
-            { id: 'location', name: 'Geographic Location', axis: 'X (Longitude)', icon: '📍' },
-            { id: 'price', name: 'Price Value', axis: 'Y', icon: '💰' },
-            { id: 'condition', name: 'Geographic Position', axis: 'Z (Latitude)', icon: '🏠' },
-            { id: 'investment', name: 'Investment Potential', axis: 'Size', icon: '📈' },
-            { id: 'lifestyle', name: 'Overall Quality', axis: 'Color', icon: '✨' }
+            {
+                id: 'location',
+                name: 'Location Quality',
+                icon: '📍',
+                description: 'Walk score, transit access, schools, crime, amenities, neighborhood growth'
+            },
+            {
+                id: 'price',
+                name: 'Price Value',
+                icon: '💰',
+                description: 'Price per sqft vs market, appreciation rate, value for money'
+            },
+            {
+                id: 'condition',
+                name: 'Property Condition',
+                icon: '🏠',
+                description: 'Age, construction quality, bedrooms, bathrooms, square footage, lot size'
+            },
+            {
+                id: 'investment',
+                name: 'Investment Potential',
+                icon: '📈',
+                description: 'Rental income potential, cap rate, days on market, market trends'
+            },
+            {
+                id: 'lifestyle',
+                name: 'Lifestyle Features',
+                icon: '✨',
+                description: 'Pool, fireplace, updated kitchen/bathrooms, energy efficiency, views'
+            }
         ];
 
         // ===== UTILITY FUNCTIONS (MUST BE DEFINED FIRST) =====
@@ -2120,10 +2145,13 @@
                 const currentLevel = Math.round(dimensionWeights[d.id] * 5); // Convert 0-1 to 0-5
 
                 return `
-                <div class="dimension-control">
+                <div class="dimension-control" title="${d.description}">
                     <div class="dimension-label">
                         <span>${d.icon} ${d.name}</span>
                         <span class="dimension-value">${currentLevel}/5</span>
+                    </div>
+                    <div style="font-size: 0.75em; color: rgba(255,255,255,0.6); margin: 5px 0 8px 0; line-height: 1.3;">
+                        ${d.description}
                     </div>
                     <div class="importance-circles">
                         ${[1, 2, 3, 4, 5].map(level => `

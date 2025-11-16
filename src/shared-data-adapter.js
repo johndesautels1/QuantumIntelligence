@@ -56,8 +56,18 @@ class SharedDataAdapter {
         const properties = await this.dataManager.getAllProperties();
 
         return properties.map(property => {
+            // Transform CSV to scoring engine format
+            const transformed = {
+                bedrooms: property.basic?.bedrooms || 0,
+                bathrooms: { total: property.basic?.bathrooms || 0 },
+                square_feet: { living: property.basic?.squareFeet || 0, lot: property.basic?.lotSize || 0 },
+                year_built: property.basic?.yearBuilt || 2000,
+                price: { current: property.financial?.listingPrice || 0 },
+                address: { latitude: property.location?.latitude || 0, longitude: property.location?.longitude || 0 }
+            };
+
             // Calculate scores using weighted engine
-            const scores = this.scoringEngine.calculateScore(property, profileType);
+            const scores = this.scoringEngine.calculateScore(transformed, profileType);
 
             return {
                 ...property,
@@ -72,31 +82,23 @@ class SharedDataAdapter {
     async getPropertiesFor5DExplorer(profileType = 'balanced') {
         const properties = await this.getPropertiesWithScores(profileType);
 
-        // Helper function to normalize scores to 0-100 range
-        const normalizeScore = (score, min = 0, max = 10000) => {
-            if (!score || isNaN(score)) return 50; // Default to middle
-            // Clamp between min and max, then scale to 0-100
-            const clamped = Math.max(min, Math.min(max, score));
-            return (clamped / max) * 100;
-        };
-
         return properties.map(prop => {
-            // CSV importer saves in THIS structure:
-            // { basic: {address, bedrooms, bathrooms, coordinates}, location: {city, state, zipCode, latitude, longitude}, financial: {listingPrice} }
-
             const lat = prop.location?.latitude || prop.basic?.coordinates?.latitude || prop.address?.latitude || 0;
             const lng = prop.location?.longitude || prop.basic?.coordinates?.longitude || prop.address?.longitude || 0;
+
+            // Scoring engine already returns 0-100 scores, use directly
+            const scores = prop.computed_scores?.by_category || {};
 
             return {
                 id: prop.property_id || prop.id,
                 name: prop.basic?.address || `${prop.location?.city}, ${prop.location?.state}`,
                 price: prop.financial?.listingPrice || prop.price?.current || 0,
                 dimensions: {
-                    location: normalizeScore(prop.computed_scores?.by_category?.location?.score, 0, 10000),
-                    price: normalizeScore(prop.computed_scores?.by_category?.financial?.score, 0, 10000),
-                    condition: normalizeScore(prop.computed_scores?.by_category?.property_physical?.score, 0, 10000),
-                    investment: normalizeScore(prop.computed_scores?.by_category?.investment?.score, 0, 10000),
-                    lifestyle: normalizeScore(prop.computed_scores?.by_category?.lifestyle?.score, 0, 10000)
+                    location: scores.location?.score || 50,
+                    price: scores.financial?.score || 50,
+                    condition: scores.property_physical?.score || 50,
+                    investment: scores.investment?.score || 50,
+                    lifestyle: scores.lifestyle?.score || 50
                 },
                 // Include ALL possible coordinate formats
                 location: {
