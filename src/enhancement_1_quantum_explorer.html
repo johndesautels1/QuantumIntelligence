@@ -61,9 +61,13 @@
             pointer-events: auto;
         }
 
-        /* Map view styles */
+        /* Map view styles - disable canvas clicks when map is visible */
         .map-visible #canvas-container {
             opacity: 0.8;
+        }
+
+        .map-visible #canvas-container canvas {
+            pointer-events: none;
         }
 
         .ui-overlay {
@@ -2432,6 +2436,9 @@
                 btn.textContent = '🌐 Show 3D Only';
                 btn.classList.remove('primary');
 
+                // Add map-visible class to disable canvas pointer events
+                document.body.classList.add('map-visible');
+
                 // Show recenter button when map is visible
                 recenterBtn.style.display = 'inline-block';
 
@@ -2447,6 +2454,9 @@
                 renderer.setClearColor(0x0066CC, 1); // Solid background
                 btn.textContent = '🗺️ Show Map';
                 btn.classList.add('primary');
+
+                // Remove map-visible class to re-enable canvas pointer events
+                document.body.classList.remove('map-visible');
 
                 // Hide recenter button when map is hidden
                 recenterBtn.style.display = 'none';
