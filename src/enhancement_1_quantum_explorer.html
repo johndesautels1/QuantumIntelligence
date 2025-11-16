@@ -1846,6 +1846,24 @@
                         (texture) => {
                             // Texture loaded successfully
                             texture.colorSpace = THREE.SRGBColorSpace;
+
+                            // ALSO load satellite on top face immediately
+                            if (satelliteUrl) {
+                                const satLoader = new THREE.TextureLoader();
+                                satLoader.setCrossOrigin("anonymous");
+                                satLoader.load(
+                                    satelliteUrl,
+                                    (satTex) => {
+                                        satTex.colorSpace = THREE.SRGBColorSpace;
+                                        // Replace top face with satellite
+                                        if (Array.isArray(block.material) && block.material[4]) {
+                                            block.material[4].map = satTex;
+                                            block.material[4].needsUpdate = true;
+                                            console.log("Satellite view applied to top");
+                                        }
+                                    }
+                                );
+                            }
                             texture.minFilter = THREE.LinearFilter;
 
                             console.log(`✨ Street View texture loaded for ${property.name}`);
