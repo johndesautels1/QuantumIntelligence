@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLUES™ Enhancement #27: Client Profile Hub</title>
+
+    <!-- Core CLUES™ System -->
+    <script src="core/data-manager.js"></script>
+    <script src="core/scoring-engine.js"></script>
+    <script src="shared-data-adapter.js"></script>
+
+    <!-- Calendly Widget -->
+    <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+    <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0B1F3F 0%, #1a3a5f 50%, #0F172A 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .tab:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 215, 0, 0.5);
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #0B1F3F;
+            border-color: #FFD700;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 215, 0, 0.5);
+        }
+
+        .stat-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1.1em;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .properties-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .property-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .property-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(0, 212, 255, 0.5);
+            box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
+        }
+
+        .property-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .property-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #FFD700;
+            margin-bottom: 5px;
+        }
+
+        .property-price {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #10b981;
+        }
+
+        .property-details {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .property-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .profile-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .profile-info h2 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .profile-info p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #FFD700;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-size: 1em;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #FFD700;
+        }
+
+        .preferences-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .preference-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .preference-card h3 {
+            color: #FFD700;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .slider-container {
+            margin-bottom: 15px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            cursor: pointer;
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            cursor: pointer;
+        }
+
+        .appointments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .appointment-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .appointment-info {
+            flex: 1;
+        }
+
+        .appointment-date {
+            font-size: 1.2em;
+            color: #FFD700;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .appointment-property {
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .appointment-time {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .empty-state-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            font-size: 1.8em;
+            margin-bottom: 10px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .calendly-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            min-height: 700px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>👤 Client Profile Hub</h1>
+                <p style="color: rgba(255,255,255,0.8); font-size: 1.1em; margin-top: 10px;">
+                    Manage Your Preferences • Track Properties • Schedule Showings
+                </p>
+            </div>
+            <div class="nav-buttons">
+                <a href="/index.html" class="btn">🏠 Dashboard</a>
+                <a href="/src/enhancement_1_quantum_explorer.html" class="btn btn-primary">🌀 5D Explorer</a>
+            </div>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">❤️</div>
+                <div class="stat-value" id="heartedCount">0</div>
+                <div class="stat-label">Hearted Properties</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📅</div>
+                <div class="stat-value" id="appointmentCount">0</div>
+                <div class="stat-label">Scheduled Showings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🗑️</div>
+                <div class="stat-value" id="discardedCount">0</div>
+                <div class="stat-label">Discarded Properties</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👁️</div>
+                <div class="stat-value" id="viewedCount">0</div>
+                <div class="stat-label">Properties Viewed</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('hearted')">❤️ Hearted Properties</div>
+            <div class="tab" onclick="switchTab('appointments')">📅 My Appointments</div>
+            <div class="tab" onclick="switchTab('preferences')">⚙️ Preferences</div>
+            <div class="tab" onclick="switchTab('profile')">👤 My Profile</div>
+        </div>
+
+        <!-- Tab Content: Hearted Properties -->
+        <div id="heartedTab" class="tab-content active">
+            <div id="heartedProperties" class="properties-grid">
+                <!-- Will be populated dynamically -->
+            </div>
+        </div>
+
+        <!-- Tab Content: Appointments -->
+        <div id="appointmentsTab" class="tab-content">
+            <div class="profile-section">
+                <h2 style="color: #FFD700; margin-bottom: 20px;">📅 Scheduled Property Showings</h2>
+                <div id="appointmentsList" class="appointments-list">
+                    <!-- Will be populated dynamically -->
+                </div>
+
+                <h2 style="color: #FFD700; margin-top: 40px; margin-bottom: 20px;">Schedule New Showing</h2>
+                <div class="calendly-container" id="calendlyContainer"></div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Preferences -->
+        <div id="preferencesTab" class="tab-content">
+            <div class="profile-section">
+                <h2 style="color: #FFD700; margin-bottom: 20px;">⚙️ Your Property Preferences</h2>
+
+                <div class="preferences-grid">
+                    <div class="preference-card">
+                        <h3>💰 Budget Priorities</h3>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Price Value</span>
+                                <span id="priceWeight">50</span>%
+                            </div>
+                            <input type="range" min="0" max="100" value="50" class="slider"
+                                   id="priceSlider" oninput="updateWeight('price', this.value)">
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Investment Potential</span>
+                                <span id="investmentWeight">50</span>%
+                            </div>
+                            <input type="range" min="0" max="100" value="50" class="slider"
+                                   id="investmentSlider" oninput="updateWeight('investment', this.value)">
+                        </div>
+                    </div>
+
+                    <div class="preference-card">
+                        <h3>📍 Location Preferences</h3>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Location Quality</span>
+                                <span id="locationWeight">50</span>%
+                            </div>
+                            <input type="range" min="0" max="100" value="50" class="slider"
+                                   id="locationSlider" oninput="updateWeight('location', this.value)">
+                        </div>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Lifestyle Amenities</span>
+                                <span id="lifestyleWeight">50</span>%
+                            </div>
+                            <input type="range" min="0" max="100" value="50" class="slider"
+                                   id="lifestyleSlider" oninput="updateWeight('lifestyle', this.value)">
+                        </div>
+                    </div>
+
+                    <div class="preference-card">
+                        <h3>🏠 Property Condition</h3>
+                        <div class="slider-container">
+                            <div class="slider-label">
+                                <span>Condition Priority</span>
+                                <span id="conditionWeight">50</span>%
+                            </div>
+                            <input type="range" min="0" max="100" value="50" class="slider"
+                                   id="conditionSlider" oninput="updateWeight('condition', this.value)">
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 1.1em;"
+                        onclick="savePreferences()">
+                    💾 Save Preferences
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab Content: Profile -->
+        <div id="profileTab" class="tab-content">
+            <div class="profile-section">
+                <div class="profile-header">
+                    <div class="profile-avatar">👤</div>
+                    <div class="profile-info">
+                        <h2 id="userName">Property Buyer</h2>
+                        <p id="userEmail">user@example.com</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" class="form-input" id="nameInput" placeholder="John Smith">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-input" id="emailInput" placeholder="john@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" class="form-input" id="phoneInput" placeholder="(555) 123-4567">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Budget Range</label>
+                    <input type="text" class="form-input" id="budgetInput" placeholder="$300,000 - $500,000">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Preferred Locations</label>
+                    <input type="text" class="form-input" id="locationsInput" placeholder="Miami, Fort Lauderdale, Palm Beach">
+                </div>
+
+                <button class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 1.1em;"
+                        onclick="saveProfile()">
+                    💾 Save Profile
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let heartedProperties = [];
+        let appointments = [];
+        let userProfile = {};
+        let userPreferences = {
+            price: 50,
+            investment: 50,
+            location: 50,
+            lifestyle: 50,
+            condition: 50
+        };
+
+        // Initialize on page load
+        async function initialize() {
+            await loadUserData();
+            await loadHeartedProperties();
+            await loadAppointments();
+            updateStats();
+            renderHeartedProperties();
+            renderAppointments();
+            loadProfile();
+            loadPreferences();
+        }
+
+        // Load user data from localStorage or database
+        async function loadUserData() {
+            const savedProfile = localStorage.getItem('clientProfile');
+            if (savedProfile) {
+                userProfile = JSON.parse(savedProfile);
+            }
+
+            const savedPreferences = localStorage.getItem('clientPreferences');
+            if (savedPreferences) {
+                userPreferences = JSON.parse(savedPreferences);
+            }
+
+            const savedHearted = localStorage.getItem('heartedProperties');
+            if (savedHearted) {
+                heartedProperties = JSON.parse(savedHearted);
+            }
+
+            const savedAppointments = localStorage.getItem('appointments');
+            if (savedAppointments) {
+                appointments = JSON.parse(savedAppointments);
+            }
+        }
+
+        // Load hearted properties
+        async function loadHeartedProperties() {
+            // In production, load from IndexedDB
+            // For now, using localStorage
+        }
+
+        // Load appointments
+        async function loadAppointments() {
+            // Sample appointments for demo
+            if (appointments.length === 0) {
+                appointments = [
+                    {
+                        id: 'apt1',
+                        property: '280 41st Ave, Saint Pete Beach, FL',
+                        date: '2025-11-20',
+                        time: '2:00 PM',
+                        status: 'confirmed'
+                    },
+                    {
+                        id: 'apt2',
+                        property: '8485 Blind Pass Dr, Treasure Island, FL',
+                        date: '2025-11-22',
+                        time: '10:00 AM',
+                        status: 'pending'
+                    }
+                ];
+            }
+        }
+
+        // Update statistics
+        function updateStats() {
+            document.getElementById('heartedCount').textContent = heartedProperties.length;
+            document.getElementById('appointmentCount').textContent = appointments.length;
+            document.getElementById('discardedCount').textContent = 0;
+            document.getElementById('viewedCount').textContent = heartedProperties.length;
+        }
+
+        // Render hearted properties
+        function renderHeartedProperties() {
+            const container = document.getElementById('heartedProperties');
+
+            if (heartedProperties.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <div class="empty-state-icon">❤️</div>
+                        <h3>No Hearted Properties Yet</h3>
+                        <p>Visit the 5D Explorer to start hearting properties you love!</p>
+                        <a href="/src/enhancement_1_quantum_explorer.html" class="btn btn-primary"
+                           style="margin-top: 20px;">🌀 Go to 5D Explorer</a>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = heartedProperties.map(prop => `
+                <div class="property-card">
+                    <div class="property-header">
+                        <div>
+                            <div class="property-title">${prop.name || 'Property'}</div>
+                            <div style="color: rgba(255,255,255,0.7);">${prop.city || ''}, ${prop.state || ''}</div>
+                        </div>
+                        <div class="property-price">$${(prop.price || 0).toLocaleString()}</div>
+                    </div>
+                    <div class="property-details">
+                        <div class="detail-item">🛏️ ${prop.bedrooms || 0} beds</div>
+                        <div class="detail-item">🛁 ${prop.bathrooms || 0} baths</div>
+                        <div class="detail-item">📐 ${(prop.sqft_living || 0).toLocaleString()} sqft</div>
+                        <div class="detail-item">🏗️ ${prop.year_built || 'N/A'}</div>
+                    </div>
+                    <div class="property-actions">
+                        <button class="action-btn" style="background: #ef4444; color: white;"
+                                onclick="removeHeart('${prop.id}')">
+                            💔 Remove
+                        </button>
+                        <button class="action-btn" style="background: #10b981; color: white;"
+                                onclick="scheduleShowing('${prop.id}')">
+                            📅 Schedule
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render appointments
+        function renderAppointments() {
+            const container = document.getElementById('appointmentsList');
+
+            if (appointments.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📅</div>
+                        <h3>No Scheduled Appointments</h3>
+                        <p>Schedule your first property showing below!</p>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = appointments.map(apt => `
+                    <div class="appointment-card">
+                        <div class="appointment-info">
+                            <div class="appointment-date">📅 ${new Date(apt.date).toLocaleDateString('en-US', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            })}</div>
+                            <div class="appointment-property">🏠 ${apt.property}</div>
+                            <div class="appointment-time">🕐 ${apt.time}</div>
+                        </div>
+                        <button class="btn" style="background: #ef4444;"
+                                onclick="cancelAppointment('${apt.id}')">
+                            ❌ Cancel
+                        </button>
+                    </div>
+                `).join('');
+            }
+
+            // Initialize Calendly widget
+            if (typeof Calendly !== 'undefined') {
+                Calendly.initInlineWidget({
+                    url: 'https://calendly.com/cluesnomads/property-showing',
+                    parentElement: document.getElementById('calendlyContainer'),
+                    prefill: {
+                        email: userProfile.email || '',
+                        name: userProfile.name || ''
+                    },
+                    utm: {}
+                });
+            }
+        }
+
+        // Switch tabs
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Update preference weight
+        function updateWeight(dimension, value) {
+            userPreferences[dimension] = parseInt(value);
+            document.getElementById(dimension + 'Weight').textContent = value;
+        }
+
+        // Save preferences
+        function savePreferences() {
+            localStorage.setItem('clientPreferences', JSON.stringify(userPreferences));
+            alert('✅ Preferences saved successfully!');
+        }
+
+        // Load preferences
+        function loadPreferences() {
+            Object.keys(userPreferences).forEach(key => {
+                const slider = document.getElementById(key + 'Slider');
+                if (slider) {
+                    slider.value = userPreferences[key];
+                    document.getElementById(key + 'Weight').textContent = userPreferences[key];
+                }
+            });
+        }
+
+        // Save profile
+        function saveProfile() {
+            userProfile = {
+                name: document.getElementById('nameInput').value,
+                email: document.getElementById('emailInput').value,
+                phone: document.getElementById('phoneInput').value,
+                budget: document.getElementById('budgetInput').value,
+                locations: document.getElementById('locationsInput').value
+            };
+
+            localStorage.setItem('clientProfile', JSON.stringify(userProfile));
+            document.getElementById('userName').textContent = userProfile.name || 'Property Buyer';
+            document.getElementById('userEmail').textContent = userProfile.email || 'user@example.com';
+            alert('✅ Profile saved successfully!');
+        }
+
+        // Load profile
+        function loadProfile() {
+            if (userProfile.name) {
+                document.getElementById('nameInput').value = userProfile.name;
+                document.getElementById('userName').textContent = userProfile.name;
+            }
+            if (userProfile.email) {
+                document.getElementById('emailInput').value = userProfile.email;
+                document.getElementById('userEmail').textContent = userProfile.email;
+            }
+            if (userProfile.phone) {
+                document.getElementById('phoneInput').value = userProfile.phone;
+            }
+            if (userProfile.budget) {
+                document.getElementById('budgetInput').value = userProfile.budget;
+            }
+            if (userProfile.locations) {
+                document.getElementById('locationsInput').value = userProfile.locations;
+            }
+        }
+
+        // Remove heart
+        function removeHeart(propertyId) {
+            if (confirm('Remove this property from your favorites?')) {
+                heartedProperties = heartedProperties.filter(p => p.id !== propertyId);
+                localStorage.setItem('heartedProperties', JSON.stringify(heartedProperties));
+                updateStats();
+                renderHeartedProperties();
+            }
+        }
+
+        // Schedule showing
+        function scheduleShowing(propertyId) {
+            switchTab('appointments');
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab')[1].classList.add('active');
+        }
+
+        // Cancel appointment
+        function cancelAppointment(appointmentId) {
+            if (confirm('Cancel this appointment?')) {
+                appointments = appointments.filter(a => a.id !== appointmentId);
+                localStorage.setItem('appointments', JSON.stringify(appointments));
+                updateStats();
+                renderAppointments();
+            }
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', initialize);
+    </script>
+</body>
+</html>

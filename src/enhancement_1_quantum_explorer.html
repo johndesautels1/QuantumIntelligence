@@ -17,6 +17,10 @@
     <!-- Google Maps API -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAtnlfmqoHQkiJXc3KYUeR5_4mUupOPLbw&libraries=places"></script>
 
+    <!-- Calendly Widget -->
+    <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+    <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
+
     <style>
         * {
             margin: 0;
@@ -985,13 +989,13 @@
 
                     <!-- Showing Cart Section (Hidden by default) -->
                     <div class="showing-section" id="showingSection">
-                        <h3 style="color: #00D4FF; margin-bottom: 15px;">Schedule a Showing</h3>
-                        <input type="datetime-local" class="datetime-input" id="showingDateTime">
-                        <button class="btn primary" onclick="addToShowingCart()">
-                            Add to Showing Cart
-                        </button>
-                        <p style="color: rgba(255,255,255,0.7); font-size: 0.9em; margin-top: 12px;">
-                            This will sync with your Calendly/Google Calendar
+                        <h3 style="color: #00D4FF; margin-bottom: 15px;">📅 Schedule a Property Showing</h3>
+
+                        <!-- Calendly Inline Widget -->
+                        <div id="calendlyWidget" style="min-height: 700px; background: white; border-radius: 8px; overflow: hidden;"></div>
+
+                        <p style="color: rgba(255,255,255,0.7); font-size: 0.9em; margin-top: 12px; text-align: center;">
+                            💡 Select your preferred date/time and we'll confirm your showing appointment
                         </p>
                     </div>
                 </div>
@@ -1390,7 +1394,31 @@
             const notesSection = document.getElementById('notesSection');
             const showingSection = document.getElementById('showingSection');
             notesSection.classList.remove('active');
+
+            const isOpening = !showingSection.classList.contains('active');
             showingSection.classList.toggle('active');
+
+            // Initialize Calendly widget when opening
+            if (isOpening && typeof Calendly !== 'undefined') {
+                const property = currentPropertyIndex !== null ? PROPERTIES[currentPropertyIndex] : null;
+                const propertyInfo = property ? {
+                    name: 'Property Address',
+                    value: property.name || 'Unknown Property',
+                    required: true
+                } : {};
+
+                // Initialize Calendly inline widget
+                Calendly.initInlineWidget({
+                    url: 'https://calendly.com/cluesnomads/property-showing',
+                    parentElement: document.getElementById('calendlyWidget'),
+                    prefill: {
+                        email: '',
+                        name: '',
+                        customAnswers: propertyInfo
+                    },
+                    utm: {}
+                });
+            }
         }
 
         // Heart property
