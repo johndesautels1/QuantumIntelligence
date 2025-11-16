@@ -887,6 +887,7 @@
                     <!-- Populated by JS -->
                 </div>
                 <button class="btn primary" onclick="toggleMapView()" id="mapToggleBtn">🗺️ Show Map</button>
+                <button class="btn" onclick="recenterMap()" id="recenterBtn" style="display: none; background: #10b981;">📍 Update Map</button>
                 <button class="btn" onclick="resetView()">🔄 Reset View</button>
                 <button class="btn" onclick="autoRotate()">🔄 Auto Rotate</button>
                 <button class="btn" onclick="focusHighest()">⭐ Focus Top Rated</button>
@@ -2421,6 +2422,7 @@
             const mapContainer = document.getElementById('map-container');
             const canvasContainer = document.getElementById('canvas-container');
             const btn = document.getElementById('mapToggleBtn');
+            const recenterBtn = document.getElementById('recenterBtn');
 
             if (mapVisible) {
                 // Show map, make 3D semi-transparent overlay
@@ -2429,6 +2431,9 @@
                 renderer.setClearColor(0x000000, 0); // Transparent background
                 btn.textContent = '🌐 Show 3D Only';
                 btn.classList.remove('primary');
+
+                // Show recenter button when map is visible
+                recenterBtn.style.display = 'inline-block';
 
                 // RECENTER map on currently selected properties
                 recenterMap();
@@ -2442,6 +2447,9 @@
                 renderer.setClearColor(0x0066CC, 1); // Solid background
                 btn.textContent = '🗺️ Show Map';
                 btn.classList.add('primary');
+
+                // Hide recenter button when map is hidden
+                recenterBtn.style.display = 'none';
             }
         }
 
