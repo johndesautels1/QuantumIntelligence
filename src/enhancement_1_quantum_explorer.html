@@ -1195,31 +1195,45 @@
 
             // Populate images - use Google Street View + placeholder for listings photos
             const imagesContainer = document.getElementById('modalImages');
-            const address = property.name; // Full address
-            const encodedAddress = encodeURIComponent(address);
 
             // Get property from original ALL_PROPERTIES to access full data
             const fullProperty = ALL_PROPERTIES.find(p => p.id === property.id) || property;
 
+            // Build COMPLETE address with city, state, zip
+            const street = property.name || fullProperty.address?.street || fullProperty.basic?.address?.street || '';
+            const city = property.location?.city || fullProperty.location?.city || '';
+            const state = property.location?.state || fullProperty.location?.state || '';
+            const zip = property.address?.zip || fullProperty.address?.zip || '';
+            const fullAddress = `${street}, ${city}, ${state} ${zip}`.trim();
+
+            // Get coordinates (use geocoded coordinates if available)
+            const lat = property.location?.latitude || property.location?.lat || fullProperty.location?.latitude || 0;
+            const lng = property.location?.longitude || property.location?.lng || fullProperty.location?.longitude || 0;
+
             // MLS Photo URL (if available - ready for your MLS key)
             const mlsPhotoUrl = fullProperty.photos && fullProperty.photos[0] ? fullProperty.photos[0] : null;
 
-            // Google Street View Static API
-            const streetViewUrl = `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${encodedAddress}&key=AIzaSyAtnlfmqoHQkiJXc3KYUeR5_4mUupOPLbw`;
+            // Google Street View Static API - USE COORDINATES for accuracy (not address text)
+            const streetViewUrl = lat !== 0 && lng !== 0
+                ? `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${lat},${lng}&key=AIzaSyAtnlfmqoHQkiJXc3KYUeR5_4mUupOPLbw`
+                : `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${encodeURIComponent(fullAddress)}&key=AIzaSyAtnlfmqoHQkiJXc3KYUeR5_4mUupOPLbw`;
 
-            // Generate listing site URLs - CORRECTED WORKING FORMATS
+            console.log(`📸 Street View for: ${fullAddress} at coordinates ${lat}, ${lng}`);
 
-            // Zillow: Search by address
-            const zillowUrl = `https://www.zillow.com/homes/${encodeURIComponent(address)}_rb/`;
+            // Generate listing site URLs - USE FULL ADDRESS
+            const encodedFullAddress = encodeURIComponent(fullAddress);
 
-            // Realtor.com: Search by address
-            const realtorUrl = `https://www.realtor.com/realestateandhomes-search/${encodeURIComponent(address)}`;
+            // Zillow: Search by full address
+            const zillowUrl = `https://www.zillow.com/homes/${encodedFullAddress}_rb/`;
 
-            // Redfin: Search by address
-            const redfinUrl = `https://www.redfin.com/zipcode/${fullProperty.address?.zip || '33706'}/filter/property-address=${encodeURIComponent(address)}`;
+            // Realtor.com: Search by full address
+            const realtorUrl = `https://www.realtor.com/realestateandhomes-search/${encodedFullAddress}`;
+
+            // Redfin: Search by full address
+            const redfinUrl = `https://www.redfin.com/zipcode/${zip || '33706'}/filter/property-address=${encodedFullAddress}`;
 
             // Compass: Search by city/state (opens in new tab due to iframe blocking)
-            const compassUrl = `https://www.compass.com/homes-for-sale/${(fullProperty.address?.city || 'Saint Pete Beach').toLowerCase().replace(/\s+/g, '-')}-${(fullProperty.address?.state || 'FL').toLowerCase()}/`;
+            const compassUrl = `https://www.compass.com/homes-for-sale/${(city || 'Saint Pete Beach').toLowerCase().replace(/\s+/g, '-')}-${(state || 'FL').toLowerCase()}/`;
 
             imagesContainer.innerHTML = `
                 ${mlsPhotoUrl ? `
