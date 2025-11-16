@@ -432,6 +432,7 @@
     <!-- Core Scripts -->
     <script src="src/core/data-manager.js"></script>
     <script src="src/core/scoring-engine.js"></script>
+    <script src="src/core/data-importer.js"></script>
     <script src="src/core/import-export.js"></script>
 
     <script>
@@ -485,6 +486,14 @@
             try {
                 await dataManager.init();
                 console.log('✅ Data manager initialized');
+
+                // Initialize scoring engine
+                await scoringEngine.initialize(dataManager);
+                console.log('✅ Scoring engine initialized');
+
+                // Initialize data importer (includes coordinate support)
+                await dataImporter.initialize(dataManager, scoringEngine);
+                console.log('✅ Data importer initialized');
 
                 // Initialize import/export handler
                 importExporter = new ImportExportHandler(dataManager);
