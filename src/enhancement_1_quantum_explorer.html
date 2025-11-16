@@ -2463,8 +2463,18 @@
                 debugLog(`✅ Loaded ${ALL_PROPERTIES.length} properties from database`);
 
                 if (ALL_PROPERTIES.length > 0) {
+                    console.log('🔍 DIAGNOSTIC: First property full structure:', JSON.stringify(ALL_PROPERTIES[0], null, 2));
+                    console.log('🔍 DIAGNOSTIC: First property location object:', ALL_PROPERTIES[0].location);
+                    console.log('🔍 DIAGNOSTIC: First property address object:', ALL_PROPERTIES[0].address);
+                    console.log('🔍 DIAGNOSTIC: First property basic.coordinates:', ALL_PROPERTIES[0].basic?.coordinates);
+
                     debugLog(`📊 First property: ${ALL_PROPERTIES[0].name}`);
                     debugLog(`📊 Has dimensions: ${ALL_PROPERTIES[0].dimensions ? 'YES' : 'NO'}`, ALL_PROPERTIES[0].dimensions ? 'info' : 'error');
+
+                    // Test coordinate extraction
+                    const testLat = ALL_PROPERTIES[0].location?.lat || ALL_PROPERTIES[0].location?.latitude || ALL_PROPERTIES[0].address?.latitude || ALL_PROPERTIES[0].basic?.coordinates?.latitude;
+                    const testLng = ALL_PROPERTIES[0].location?.lng || ALL_PROPERTIES[0].location?.longitude || ALL_PROPERTIES[0].address?.longitude || ALL_PROPERTIES[0].basic?.coordinates?.longitude;
+                    console.log(`🔍 DIAGNOSTIC: Extracted coordinates: ${testLat}, ${testLng}`);
                 }
 
                 // Check if we have properties
