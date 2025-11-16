@@ -1880,13 +1880,25 @@
 
         // Show Connections Between Properties
         function showConnections() {
+            if (!scene || propertyMeshes.length < 2) {
+                console.log('⚠️ Need at least 2 properties to show connections');
+                return;
+            }
+
+            const btn = event?.target;
+
             if (showingConnections) {
                 // Remove connections
                 connectionLines.forEach(line => scene.remove(line));
                 connectionLines = [];
                 showingConnections = false;
+                if (btn) {
+                    btn.textContent = '🔗 Toggle Connections';
+                    btn.style.background = '';
+                }
+                console.log('✅ Connections hidden');
             } else {
-                // Create connections
+                // Create connections between all visible properties
                 for (let i = 0; i < propertyMeshes.length; i++) {
                     for (let j = i + 1; j < propertyMeshes.length; j++) {
                         const points = [];
@@ -1897,7 +1909,7 @@
                         const material = new THREE.LineBasicMaterial({
                             color: 0x00D4FF,
                             transparent: true,
-                            opacity: 0.2
+                            opacity: 0.3
                         });
 
                         const line = new THREE.Line(geometry, material);
@@ -1906,6 +1918,11 @@
                     }
                 }
                 showingConnections = true;
+                if (btn) {
+                    btn.textContent = '🔗 Hide Connections';
+                    btn.style.background = '#10b981';
+                }
+                console.log(`✅ Showing ${connectionLines.length} connections`);
             }
         }
 
