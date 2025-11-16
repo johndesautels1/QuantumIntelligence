@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Seed Test Data</title>
+    <script src="src/core/data-manager.js"></script>
+    <script src="src/core/scoring-engine.js"></script>
+    <script src="src/shared-data-adapter.js"></script>
+</head>
+<body>
+    <h1>Seeding Test Data</h1>
+    <pre id="output"></pre>
+
+    <script>
+        async function seedTestData() {
+            const output = document.getElementById('output');
+            let log = 'Seeding test properties...\n';
+
+            try {
+                // Initialize data manager
+                await dataManager.init();
+                log += 'Data manager initialized\n';
+
+                // Create diverse test properties
+                const testProperties = [
+                    {
+                        property_id: 'TEST001',
+                        basic: {
+                            address: '123 Main St',
+                            bedrooms: 3,
+                            bathrooms: 2,
+                            squareFeet: 2000,
+                            lotSize: 8000,
+                            yearBuilt: 2010,
+                            propertyType: 'single_family',
+                            mlsNumber: 'MLS001'
+                        },
+                        location: {
+                            latitude: 47.6062,
+                            longitude: -122.3321,
+                            city: 'Seattle',
+                            state: 'WA',
+                            zipCode: '98101'
+                        },
+                        financial: {
+                            listingPrice: 500000,
+                            daysOnMarket: 10,
+                            annualTaxes: 5000,
+                            hoaFees: 200
+                        },
+                        features: {
+                            interior: ['hardwood', 'fireplace'],
+                            exterior: ['deck', 'garden']
+                        }
+                    },
+                    {
+                        property_id: 'TEST002',
+                        basic: {
+                            address: '456 Oak Ave',
+                            bedrooms: 4,
+                            bathrooms: 3,
+                            squareFeet: 2800,
+                            lotSize: 12000,
+                            yearBuilt: 2018,
+                            propertyType: 'single_family',
+                            mlsNumber: 'MLS002'
+                        },
+                        location: {
+                            latitude: 47.6162,
+                            longitude: -122.3421,
+                            city: 'Bellevue',
+                            state: 'WA',
+                            zipCode: '98004'
+                        },
+                        financial: {
+                            listingPrice: 750000,
+                            daysOnMarket: 5,
+                            annualTaxes: 8000,
+                            hoaFees: 350
+                        },
+                        features: {
+                            interior: ['granite', 'smart home'],
+                            exterior: ['pool', 'patio']
+                        }
+                    },
+                    {
+                        property_id: 'TEST003',
+                        basic: {
+                            address: '789 Pine Ln',
+                            bedrooms: 2,
+                            bathrooms: 1,
+                            squareFeet: 1200,
+                            lotSize: 5000,
+                            yearBuilt: 1985,
+                            propertyType: 'condo',
+                            mlsNumber: 'MLS003'
+                        },
+                        location: {
+                            latitude: 47.5962,
+                            longitude: -122.3221,
+                            city: 'Tacoma',
+                            state: 'WA',
+                            zipCode: '98402'
+                        },
+                        financial: {
+                            listingPrice: 300000,
+                            daysOnMarket: 45,
+                            annualTaxes: 2500,
+                            hoaFees: 400
+                        },
+                        features: {
+                            interior: ['carpet'],
+                            exterior: ['balcony']
+                        }
+                    },
+                    {
+                        property_id: 'TEST004',
+                        basic: {
+                            address: '321 Elm Dr',
+                            bedrooms: 5,
+                            bathrooms: 4,
+                            squareFeet: 4000,
+                            lotSize: 20000,
+                            yearBuilt: 2022,
+                            propertyType: 'single_family',
+                            mlsNumber: 'MLS004'
+                        },
+                        location: {
+                            latitude: 47.6262,
+                            longitude: -122.3521,
+                            city: 'Kirkland',
+                            state: 'WA',
+                            zipCode: '98033'
+                        },
+                        financial: {
+                            listingPrice: 1200000,
+                            daysOnMarket: 20,
+                            annualTaxes: 15000,
+                            hoaFees: 0
+                        },
+                        features: {
+                            interior: ['marble', 'wine cellar', 'theater'],
+                            exterior: ['tennis court', 'guest house']
+                        }
+                    },
+                    {
+                        property_id: 'TEST005',
+                        basic: {
+                            address: '654 Birch Way',
+                            bedrooms: 3,
+                            bathrooms: 2,
+                            squareFeet: 1600,
+                            lotSize: 6500,
+                            yearBuilt: 1995,
+                            propertyType: 'townhouse',
+                            mlsNumber: 'MLS005'
+                        },
+                        location: {
+                            latitude: 47.5862,
+                            longitude: -122.3121,
+                            city: 'Renton',
+                            state: 'WA',
+                            zipCode: '98057'
+                        },
+                        financial: {
+                            listingPrice: 425000,
+                            daysOnMarket: 30,
+                            annualTaxes: 4000,
+                            hoaFees: 250
+                        },
+                        features: {
+                            interior: ['laminate'],
+                            exterior: ['porch', 'garage']
+                        }
+                    }
+                ];
+
+                // Clear existing test properties
+                const allProps = await dataManager.getAllProperties();
+                for (const prop of allProps) {
+                    if (prop.property_id && prop.property_id.startsWith('TEST')) {
+                        await dataManager.deleteProperty(prop.property_id);
+                    }
+                }
+
+                // Add test properties
+                for (const prop of testProperties) {
+                    // Transform to database format
+                    const dbProp = {
+                        ...prop,
+                        bedrooms: prop.basic.bedrooms,
+                        bathrooms: { total: prop.basic.bathrooms },
+                        square_feet: {
+                            living: prop.basic.squareFeet,
+                            lot: prop.basic.lotSize
+                        },
+                        year_built: prop.basic.yearBuilt,
+                        property_type: prop.basic.propertyType,
+                        price: { current: prop.financial.listingPrice },
+                        days_on_market: { current: prop.financial.daysOnMarket },
+                        taxes: { annual_amount: prop.financial.annualTaxes },
+                        hoa_fees: { monthly: prop.financial.hoaFees },
+                        address: {
+                            street: prop.basic.address,
+                            city: prop.location.city,
+                            state: prop.location.state,
+                            zip: prop.location.zipCode,
+                            latitude: prop.location.latitude,
+                            longitude: prop.location.longitude,
+                            full_address: `${prop.basic.address}, ${prop.location.city}, ${prop.location.state}`
+                        },
+                        features: prop.features
+                    };
+
+                    await dataManager.addProperty(dbProp);
+                    log += `Added property: ${prop.basic.address}\n`;
+                }
+
+                // Verify properties were added
+                const finalCount = await dataManager.count(dataManager.stores.properties);
+                log += `\nTotal properties in database: ${finalCount}\n`;
+
+                // Test scoring variation
+                await sharedDataAdapter.init();
+                const scoredProps = await sharedDataAdapter.getPropertiesFor5DExplorer('balanced');
+
+                log += '\n5D Explorer Dimensions:\n';
+                log += '======================\n';
+                scoredProps.forEach((prop, i) => {
+                    log += `${prop.name}:\n`;
+                    log += `  Location: ${prop.dimensions.location.toFixed(1)}\n`;
+                    log += `  Price: ${prop.dimensions.price.toFixed(1)}\n`;
+                    log += `  Condition: ${prop.dimensions.condition.toFixed(1)}\n`;
+                    log += `  Investment: ${prop.dimensions.investment.toFixed(1)}\n`;
+                    log += `  Lifestyle: ${prop.dimensions.lifestyle.toFixed(1)}\n\n`;
+                });
+
+                log += 'SUCCESS: Test data seeded!\n';
+
+            } catch (error) {
+                log += `\nERROR: ${error.message}\n${error.stack}`;
+            }
+
+            output.textContent = log;
+            console.log(log);
+        }
+
+        // Run seeding
+        seedTestData();
+    </script>
+</body>
+</html>

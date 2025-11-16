@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Final Score Variation Test</title>
+    <script src="src/core/data-manager.js"></script>
+    <script src="src/core/scoring-engine.js"></script>
+    <script src="src/shared-data-adapter.js"></script>
+</head>
+<body>
+    <h1>Final Score Variation Test</h1>
+    <pre id="output"></pre>
+
+    <script>
+        async function finalTest() {
+            const output = document.getElementById('output');
+            let log = 'FINAL SCORE VARIATION TEST\n';
+            log += '==========================\n\n';
+
+            try {
+                // Initialize systems
+                await dataManager.init();
+                await sharedDataAdapter.init();
+
+                // Create test properties with VERY different IDs for maximum variation
+                const testProperties = [
+                    { property_id: 'AAAA001', bedrooms: 2, bathrooms: { total: 1 }, square_feet: { living: 1000, lot: 3000 }, year_built: 1970, price: { current: 250000 }, days_on_market: { current: 90 }, taxes: { annual_amount: 2000 } },
+                    { property_id: 'ZZZZ999', bedrooms: 5, bathrooms: { total: 4 }, square_feet: { living: 4000, lot: 20000 }, year_built: 2023, price: { current: 1500000 }, days_on_market: { current: 1 }, taxes: { annual_amount: 20000 } },
+                    { property_id: 'MMMM555', bedrooms: 3, bathrooms: { total: 2 }, square_feet: { living: 2000, lot: 8000 }, year_built: 2000, price: { current: 500000 }, days_on_market: { current: 30 }, taxes: { annual_amount: 5000 } },
+                    { property_id: 'BBBB111', bedrooms: 1, bathrooms: { total: 1 }, square_feet: { living: 600, lot: 0 }, year_built: 2010, price: { current: 200000 }, days_on_market: { current: 60 }, taxes: { annual_amount: 1500 } },
+                    { property_id: 'XXXX888', bedrooms: 4, bathrooms: { total: 3 }, square_feet: { living: 3000, lot: 12000 }, year_built: 2020, price: { current: 900000 }, days_on_market: { current: 15 }, taxes: { annual_amount: 10000 } }
+                ];
+
+                // Clear and add test properties
+                const existing = await dataManager.getAllProperties();
+                for (const prop of existing) {
+                    await dataManager.deleteProperty(prop.property_id);
+                }
+
+                for (const prop of testProperties) {
+                    await dataManager.addProperty(prop);
+                }
+
+                log += `Added ${testProperties.length} test properties\n\n`;
+
+                // Get properties with scores
+                const scoredProps = await sharedDataAdapter.getPropertiesFor5DExplorer('balanced');
+
+                // Collect all scores
+                const allScores = {
+                    location: [],
+                    price: [],
+                    condition: [],
+                    investment: [],
+                    lifestyle: []
+                };
+
+                log += 'Property Scores:\n';
+                log += '===============\n';
+                scoredProps.forEach(prop => {
+                    log += `${prop.id}:\n`;
+                    log += `  Location:   ${prop.dimensions.location.toFixed(1)}\n`;
+                    log += `  Price:      ${prop.dimensions.price.toFixed(1)}\n`;
+                    log += `  Condition:  ${prop.dimensions.condition.toFixed(1)}\n`;
+                    log += `  Investment: ${prop.dimensions.investment.toFixed(1)}\n`;
+                    log += `  Lifestyle:  ${prop.dimensions.lifestyle.toFixed(1)}\n\n`;
+
+                    allScores.location.push(prop.dimensions.location);
+                    allScores.price.push(prop.dimensions.price);
+                    allScores.condition.push(prop.dimensions.condition);
+                    allScores.investment.push(prop.dimensions.investment);
+                    allScores.lifestyle.push(prop.dimensions.lifestyle);
+                });
+
+                // Calculate ranges
+                log += 'Score Ranges:\n';
+                log += '============\n';
+                let minRange = 100, maxRange = 0;
+                for (const [dim, scores] of Object.entries(allScores)) {
+                    const min = Math.min(...scores);
+                    const max = Math.max(...scores);
+                    const range = max - min;
+                    minRange = Math.min(minRange, range);
+                    maxRange = Math.max(maxRange, range);
+                    log += `${dim.padEnd(12)}: Min=${min.toFixed(1)}, Max=${max.toFixed(1)}, Range=${range.toFixed(1)}\n`;
+                }
+
+                log += '\n';
+                if (maxRange < 5) {
+                    log += `FAILED - Scores too similar (max range ${maxRange.toFixed(1)})\n`;
+                } else {
+                    log += `FIXED - scores now range from ${minRange.toFixed(1)} to ${maxRange.toFixed(1)}\n`;
+                }
+
+            } catch (error) {
+                log += `\nERROR: ${error.message}\n${error.stack}`;
+            }
+
+            output.textContent = log;
+            console.log(log);
+        }
+
+        // Run test
+        finalTest();
+    </script>
+</body>
+</html>

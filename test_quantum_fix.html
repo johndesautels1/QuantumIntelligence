@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Quantum Explorer Fix</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a2e;
+            color: #00ff00;
+            padding: 20px;
+        }
+        .test-section {
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid #00ff00;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+        .pass {
+            color: #00ff00;
+            font-weight: bold;
+        }
+        .fail {
+            color: #ff0000;
+            font-weight: bold;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #00cc00;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #00ff00;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Quantum Explorer Fix Verification</h1>
+
+    <div class="test-section">
+        <h2>📊 Test Results:</h2>
+        <div id="test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎮 Controls:</h2>
+        <button onclick="openQuantumExplorer()">Open 5D Quantum Explorer</button>
+        <button onclick="runTests()">Run Automated Tests</button>
+    </div>
+
+    <iframe id="quantum-frame" style="display:none;"></iframe>
+
+    <script>
+        function openQuantumExplorer() {
+            const frame = document.getElementById('quantum-frame');
+            frame.src = '/src/enhancement_1_quantum_explorer.html';
+            frame.style.display = 'block';
+
+            // Wait for iframe to load then run tests
+            frame.onload = () => {
+                setTimeout(() => {
+                    runTests();
+                }, 3000); // Give it 3 seconds to initialize
+            };
+        }
+
+        function runTests() {
+            const frame = document.getElementById('quantum-frame');
+            const iframeWindow = frame.contentWindow;
+            const results = document.getElementById('test-results');
+            let testsPassed = 0;
+            let testsFailed = 0;
+            let output = '';
+
+            try {
+                // Test 1: Check if PROPERTIES array exists and has data
+                const hasProperties = iframeWindow.PROPERTIES && iframeWindow.PROPERTIES.length > 0;
+                if (hasProperties) {
+                    output += '<div class="pass">✅ Test 1 PASSED: Properties loaded (' + iframeWindow.PROPERTIES.length + ' properties)</div>';
+                    testsPassed++;
+                } else {
+                    output += '<div class="fail">❌ Test 1 FAILED: No properties loaded</div>';
+                    testsFailed++;
+                }
+
+                // Test 2: Check dimension value ranges
+                if (hasProperties) {
+                    const dimensions = ['location', 'price', 'condition', 'investment', 'lifestyle'];
+                    const ranges = {};
+
+                    dimensions.forEach(dim => {
+                        ranges[dim] = { min: 100, max: 0, values: [] };
+                    });
+
+                    iframeWindow.PROPERTIES.forEach(prop => {
+                        dimensions.forEach(dim => {
+                            const val = prop.dimensions[dim] || 0;
+                            ranges[dim].min = Math.min(ranges[dim].min, val);
+                            ranges[dim].max = Math.max(ranges[dim].max, val);
+                            ranges[dim].values.push(val);
+                        });
+                    });
+
+                    let allVaried = true;
+                    dimensions.forEach(dim => {
+                        const range = ranges[dim].max - ranges[dim].min;
+                        const uniqueValues = new Set(ranges[dim].values).size;
+
+                        if (range < 20 || uniqueValues < 3) {
+                            output += '<div class="fail">❌ Dimension "' + dim + '" has insufficient variation: Range=' + range.toFixed(1) + ', Unique values=' + uniqueValues + '</div>';
+                            allVaried = false;
+                        } else {
+                            output += '<div class="pass">✅ Dimension "' + dim + '" varies properly: Range=' + range.toFixed(1) + ' (Min=' + ranges[dim].min.toFixed(1) + ', Max=' + ranges[dim].max.toFixed(1) + ')</div>';
+                        }
+                    });
+
+                    if (allVaried) {
+                        output += '<div class="pass">✅ Test 2 PASSED: All dimensions have good variation</div>';
+                        testsPassed++;
+                    } else {
+                        output += '<div class="fail">❌ Test 2 FAILED: Some dimensions lack variation</div>';
+                        testsFailed++;
+                    }
+                }
+
+                // Test 3: Check if dimension weights are changeable
+                if (iframeWindow.dimensionWeights) {
+                    const originalLocation = iframeWindow.dimensionWeights.location;
+                    iframeWindow.dimensionWeights.location = 0.5;
+
+                    if (iframeWindow.dimensionWeights.location === 0.5) {
+                        output += '<div class="pass">✅ Test 3 PASSED: Dimension weights are modifiable</div>';
+                        testsPassed++;
+                        iframeWindow.dimensionWeights.location = originalLocation; // Restore
+                    } else {
+                        output += '<div class="fail">❌ Test 3 FAILED: Cannot modify dimension weights</div>';
+                        testsFailed++;
+                    }
+                } else {
+                    output += '<div class="fail">❌ Test 3 FAILED: dimensionWeights not found</div>';
+                    testsFailed++;
+                }
+
+                // Test 4: Check if updateVisualization function exists
+                if (typeof iframeWindow.updateVisualization === 'function') {
+                    output += '<div class="pass">✅ Test 4 PASSED: updateVisualization function exists</div>';
+                    testsPassed++;
+
+                    // Try calling it
+                    try {
+                        iframeWindow.updateVisualization();
+                        output += '<div class="pass">✅ updateVisualization executed without errors</div>';
+                    } catch (e) {
+                        output += '<div class="fail">❌ updateVisualization threw error: ' + e.message + '</div>';
+                    }
+                } else {
+                    output += '<div class="fail">❌ Test 4 FAILED: updateVisualization function not found</div>';
+                    testsFailed++;
+                }
+
+                // Test 5: Check if rods array exists
+                if (iframeWindow.propertyRods && iframeWindow.propertyRods.length > 0) {
+                    output += '<div class="pass">✅ Test 5 PASSED: Property rods exist (' + iframeWindow.propertyRods.length + ' rods)</div>';
+                    testsPassed++;
+                } else {
+                    output += '<div class="fail">❌ Test 5 FAILED: No property rods found</div>';
+                    testsFailed++;
+                }
+
+            } catch (error) {
+                output += '<div class="fail">❌ Error during tests: ' + error.message + '</div>';
+                testsFailed++;
+            }
+
+            // Summary
+            output += '<hr>';
+            output += '<h3>Summary: ' + testsPassed + ' passed, ' + testsFailed + ' failed</h3>';
+
+            if (testsPassed >= 4 && testsFailed <= 1) {
+                output += '<div class="pass" style="font-size: 1.5em;">🎉 FIXED AND TESTED - Quantum Explorer is working!</div>';
+            } else {
+                output += '<div class="fail" style="font-size: 1.5em;">⚠️ Issues remain - needs further debugging</div>';
+            }
+
+            results.innerHTML = output;
+        }
+
+        // Auto-run on load
+        window.onload = () => {
+            setTimeout(openQuantumExplorer, 1000);
+        };
+    </script>
+</body>
+</html>

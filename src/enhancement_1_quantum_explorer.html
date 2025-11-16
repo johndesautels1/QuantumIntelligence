@@ -2183,6 +2183,27 @@
             console.log('🎛️ UPDATE VISUALIZATION - Current weights:', dimensionWeights);
             console.log('🎛️ PROPERTIES count:', PROPERTIES.length);
 
+            // Log dimension ranges for debugging
+            if (PROPERTIES.length > 0) {
+                const dimRanges = {
+                    location: { min: 100, max: 0 },
+                    price: { min: 100, max: 0 },
+                    condition: { min: 100, max: 0 },
+                    investment: { min: 100, max: 0 },
+                    lifestyle: { min: 100, max: 0 }
+                };
+
+                PROPERTIES.forEach(p => {
+                    Object.keys(dimRanges).forEach(dim => {
+                        const val = p.dimensions[dim] || 0;
+                        dimRanges[dim].min = Math.min(dimRanges[dim].min, val);
+                        dimRanges[dim].max = Math.max(dimRanges[dim].max, val);
+                    });
+                });
+
+                console.log('📊 Dimension value ranges:', dimRanges);
+            }
+
             // Calculate weighted match scores for all properties first (for ranking)
             const propertyScores = PROPERTIES.map((property, index) => {
                 const dims = property.dimensions || {};
@@ -2261,14 +2282,26 @@
                     const heightVariation = label.userData.heightVariation;
                     const offset = label.userData.offset;
 
+                    // Calculate new rod height based on match score
+                    const newRodHeight = Math.max(0.5, heightVariation * (matchScore / 100) * 2); // Scale rod height with score
+
                     // Update label position
-                    label.position.set(x, y + offset + heightVariation, z);
+                    label.position.set(x, y + offset + newRodHeight, z);
 
-                    // Update rod position (don't recreate geometry - just move it)
-                    rod.position.set(x, y + offset + (heightVariation / 2), z);
+                    // Update rod geometry and position
+                    rod.geometry.dispose(); // Dispose old geometry
+                    rod.geometry = new THREE.CylinderGeometry(0.02, 0.02, newRodHeight, 8);
+                    rod.position.set(x, y + offset + (newRodHeight / 2), z);
 
-                    // Update label text - updateLabelText function not defined, skip for now
-                    // updateLabelText(label, `#${rank} ${property.name} (${matchScore.toFixed(0)}%)`, property.name, index);
+                    // Update rod color to match property color
+                    rod.material.color.setHex(newColor);
+                    rod.material.emissive.setHex(newColor);
+                    rod.material.opacity = 0.8; // Make rod more visible
+
+                    // Update label opacity based on rank
+                    if (label.material) {
+                        label.material.opacity = rank <= 3 ? 1.0 : 0.85; // Top 3 fully visible
+                    }
                 }
 
                 // Update opacity to always visible

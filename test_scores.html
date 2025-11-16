@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Scores</title>
+</head>
+<body>
+    <h1>Testing Property Scores</h1>
+    <div id="output"></div>
+
+    <!-- Load required scripts -->
+    <script src="src/core/data-manager.js"></script>
+    <script src="src/core/scoring-engine.js"></script>
+    <script src="src/shared-data-adapter.js"></script>
+
+    <script>
+        async function testScores() {
+            const output = document.getElementById('output');
+
+            try {
+                // Initialize adapter
+                await sharedDataAdapter.init();
+
+                // Get properties with scores
+                const properties = await sharedDataAdapter.getPropertiesFor5DExplorer('balanced');
+
+                // Log results
+                console.log('Total properties:', properties.length);
+
+                if (properties.length > 0) {
+                    // Check first 3 properties
+                    for (let i = 0; i < Math.min(3, properties.length); i++) {
+                        const prop = properties[i];
+                        console.log(`Property ${i+1}: ${prop.name}`);
+                        console.log('Dimensions:', prop.dimensions);
+
+                        // Display in page
+                        const div = document.createElement('div');
+                        div.innerHTML = `
+                            <h3>Property ${i+1}: ${prop.name}</h3>
+                            <pre>${JSON.stringify(prop.dimensions, null, 2)}</pre>
+                        `;
+                        output.appendChild(div);
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                output.innerHTML = `<p style="color:red">Error: ${error.message}</p>`;
+            }
+        }
+
+        // Run test
+        testScores();
+    </script>
+</body>
+</html>

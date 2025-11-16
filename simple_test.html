@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Score Test</title>
+    <script src="src/core/scoring-engine.js"></script>
+</head>
+<body>
+    <h1>Simple Score Test</h1>
+    <pre id="output"></pre>
+
+    <script>
+        // Create test properties with different IDs
+        const testProperties = [
+            { property_id: 'PROP001', bedrooms: 3, bathrooms: { total: 2 }, square_feet: { living: 2000, lot: 8000 }, year_built: 2010, price: { current: 500000 }, days_on_market: { current: 10 }, taxes: { annual_amount: 5000 } },
+            { property_id: 'PROP002', bedrooms: 4, bathrooms: { total: 3 }, square_feet: { living: 2500, lot: 10000 }, year_built: 2015, price: { current: 650000 }, days_on_market: { current: 30 }, taxes: { annual_amount: 7000 } },
+            { property_id: 'PROP003', bedrooms: 2, bathrooms: { total: 1 }, square_feet: { living: 1200, lot: 5000 }, year_built: 1990, price: { current: 350000 }, days_on_market: { current: 60 }, taxes: { annual_amount: 3000 } },
+            { property_id: 'PROP004', bedrooms: 5, bathrooms: { total: 4 }, square_feet: { living: 3500, lot: 15000 }, year_built: 2020, price: { current: 850000 }, days_on_market: { current: 5 }, taxes: { annual_amount: 10000 } },
+            { property_id: 'PROP005', bedrooms: 3, bathrooms: { total: 2 }, square_feet: { living: 1800, lot: 7000 }, year_built: 2005, price: { current: 450000 }, days_on_market: { current: 45 }, taxes: { annual_amount: 4500 } }
+        ];
+
+        let output = 'Testing Property Score Variation\n';
+        output += '================================\n\n';
+
+        const allScores = {
+            location: [],
+            financial: [],
+            property_physical: [],
+            market: [],
+            risk: [],
+            lifestyle: [],
+            investment: [],
+            competitive: []
+        };
+
+        // Calculate scores for each property
+        testProperties.forEach((prop, index) => {
+            const scores = scoringEngine.calculateScore(prop, 'balanced');
+
+            output += `Property ${index + 1} (${prop.property_id}):\n`;
+            output += `  Overall: ${scores.overall.toFixed(1)}\n`;
+
+            for (const [category, data] of Object.entries(scores.by_category)) {
+                output += `  ${category}: ${data.score.toFixed(1)}\n`;
+                if (allScores[category]) {
+                    allScores[category].push(data.score);
+                }
+            }
+            output += '\n';
+        });
+
+        // Calculate ranges
+        output += 'Score Ranges:\n';
+        output += '=============\n';
+        let minRange = 100, maxRange = 0;
+        for (const [category, scores] of Object.entries(allScores)) {
+            if (scores.length > 0) {
+                const min = Math.min(...scores);
+                const max = Math.max(...scores);
+                const range = max - min;
+                minRange = Math.min(minRange, range);
+                maxRange = Math.max(maxRange, range);
+                output += `${category.padEnd(20)}: Min=${min.toFixed(1).padStart(5)}, Max=${max.toFixed(1).padStart(5)}, Range=${range.toFixed(1).padStart(5)}\n`;
+            }
+        }
+
+        output += '\n';
+        if (maxRange < 5) {
+            output += '❌ PROBLEM: Scores are too similar (max range < 5)!\n';
+        } else {
+            output += `✅ SUCCESS: Scores are varied (range from ${minRange.toFixed(1)} to ${maxRange.toFixed(1)})!\n`;
+        }
+
+        document.getElementById('output').textContent = output;
+        console.log(output);
+
+        // Also log to console for easy checking
+        console.log('SCORE RANGE SUMMARY:', { minRange, maxRange });
+    </script>
+</body>
+</html>

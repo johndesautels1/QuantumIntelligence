@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Varied Scores</title>
+</head>
+<body>
+    <h1>Testing Score Variation</h1>
+    <pre id="output"></pre>
+
+    <!-- Load required scripts -->
+    <script src="src/core/data-manager.js"></script>
+    <script src="src/core/scoring-engine.js"></script>
+    <script src="src/shared-data-adapter.js"></script>
+
+    <script>
+        async function testScores() {
+            const output = document.getElementById('output');
+            let results = 'Testing Property Score Variation\n';
+            results += '================================\n\n';
+
+            try {
+                // Initialize adapter
+                await sharedDataAdapter.init();
+
+                // Get properties with scores
+                const properties = await sharedDataAdapter.getPropertiesFor5DExplorer('balanced');
+
+                results += `Total properties loaded: ${properties.length}\n\n`;
+
+                if (properties.length > 0) {
+                    // Collect all dimension scores
+                    const allScores = {
+                        location: [],
+                        price: [],
+                        condition: [],
+                        investment: [],
+                        lifestyle: []
+                    };
+
+                    // Check first 10 properties
+                    for (let i = 0; i < Math.min(10, properties.length); i++) {
+                        const prop = properties[i];
+                        results += `Property ${i+1}: ${prop.name}\n`;
+                        results += `  Location:   ${prop.dimensions.location.toFixed(1)}\n`;
+                        results += `  Price:      ${prop.dimensions.price.toFixed(1)}\n`;
+                        results += `  Condition:  ${prop.dimensions.condition.toFixed(1)}\n`;
+                        results += `  Investment: ${prop.dimensions.investment.toFixed(1)}\n`;
+                        results += `  Lifestyle:  ${prop.dimensions.lifestyle.toFixed(1)}\n\n`;
+
+                        // Collect scores
+                        allScores.location.push(prop.dimensions.location);
+                        allScores.price.push(prop.dimensions.price);
+                        allScores.condition.push(prop.dimensions.condition);
+                        allScores.investment.push(prop.dimensions.investment);
+                        allScores.lifestyle.push(prop.dimensions.lifestyle);
+                    }
+
+                    // Calculate ranges
+                    results += '\nScore Ranges (first 10 properties):\n';
+                    results += '===================================\n';
+                    for (const [dim, scores] of Object.entries(allScores)) {
+                        const min = Math.min(...scores);
+                        const max = Math.max(...scores);
+                        const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+                        results += `${dim.padEnd(12)}: Min=${min.toFixed(1)}, Max=${max.toFixed(1)}, Avg=${avg.toFixed(1)}, Range=${(max-min).toFixed(1)}\n`;
+                    }
+
+                    // Check if all scores are 100 (the problem we're fixing)
+                    const allHundred = Object.values(allScores).every(scores =>
+                        scores.every(score => Math.abs(score - 100) < 0.1)
+                    );
+
+                    results += '\n';
+                    if (allHundred) {
+                        results += '❌ PROBLEM: All scores are 100!\n';
+                    } else {
+                        results += '✅ SUCCESS: Scores are varied!\n';
+                    }
+                }
+
+                output.textContent = results;
+                console.log(results);
+
+            } catch (error) {
+                const errorMsg = `Error: ${error.message}\n${error.stack}`;
+                output.textContent = errorMsg;
+                console.error(errorMsg);
+            }
+        }
+
+        // Run test
+        testScores();
+    </script>
+</body>
+</html>
