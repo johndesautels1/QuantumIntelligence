@@ -108,27 +108,31 @@ class DataImporter {
         const result = [];
 
         for (let line of lines) {
-            if (line.trim()) {
-                // Handle quoted fields with commas
-                const fields = [];
-                let current = '';
-                let inQuotes = false;
+            // Remove only \r, keep the line content
+            line = line.replace(/\r/g, '');
 
-                for (let i = 0; i < line.length; i++) {
-                    const char = line[i];
+            if (line.length === 0) continue; // Skip truly empty lines
 
-                    if (char === '"') {
-                        inQuotes = !inQuotes;
-                    } else if (char === ',' && !inQuotes) {
-                        fields.push(current.trim());
-                        current = '';
-                    } else {
-                        current += char;
-                    }
+            // Handle quoted fields with commas
+            const fields = [];
+            let current = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    fields.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
                 }
-                fields.push(current.trim());
-                result.push(fields);
             }
+            // Always push the last field (even if empty)
+            fields.push(current.trim());
+            result.push(fields);
         }
 
         return result;
