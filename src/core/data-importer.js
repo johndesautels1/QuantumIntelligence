@@ -98,11 +98,18 @@ class DataImporter {
         const lines = text.split('\n');
         const result = [];
 
+        let lineNum = 0;
         for (let line of lines) {
             // Remove only \r, keep the line content
             line = line.replace(/\r/g, '');
 
             if (line.length === 0) continue; // Skip truly empty lines
+
+            // DEBUG: Show first line (header)
+            if (lineNum === 0) {
+                alert(`🔍 RAW HEADER LINE:\n\nLength: ${line.length} chars\n\nRaw text:\n"${line}"\n\nEnds with: "${line.slice(-20)}"`);
+            }
+            lineNum++;
 
             // Handle quoted fields with commas
             const fields = [];
