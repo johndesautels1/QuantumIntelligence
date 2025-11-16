@@ -51,53 +51,6 @@
             z-index: 10;
         }
 
-        #debugPanel {
-            position: fixed;
-            bottom: 10px;
-            left: 10px;
-            background: rgba(0, 0, 0, 0.95);
-            color: #00ff88;
-            padding: 10px;
-            border-radius: 8px;
-            font-family: monospace;
-            font-size: 10px;
-            max-width: 250px;
-            max-height: 150px;
-            overflow-y: auto;
-            pointer-events: all;
-            border: 1px solid #00ff88;
-            z-index: 10000;
-            opacity: 0.7;
-            transition: opacity 0.3s;
-        }
-
-        #debugPanel:hover {
-            opacity: 1;
-        }
-
-        #debugPanel h3 {
-            margin: 0 0 5px 0;
-            color: #00d4ff;
-            font-size: 11px;
-        }
-
-        #debugPanel .debug-line {
-            margin: 2px 0;
-            padding: 2px;
-            border-left: 2px solid #00ff88;
-            padding-left: 5px;
-            font-size: 9px;
-        }
-
-        #debugPanel .debug-error {
-            border-left-color: #ff006e;
-            color: #ff006e;
-        }
-
-        #debugPanel .debug-warning {
-            border-left-color: #ff9e00;
-            color: #ff9e00;
-        }
 
         .header {
             background: rgba(0, 212, 255, 0.2);
@@ -139,12 +92,23 @@
             backdrop-filter: blur(20px);
             border-radius: 20px;
             padding: 20px;
+            padding-bottom: 30px;
             border: 2px solid rgba(0, 212, 255, 0.5);
             box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2);
             pointer-events: all;
             max-width: 320px;
-            max-height: calc(100vh - 40px);
+            max-height: calc(100vh - 30px);
             overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .control-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .control-panel::-webkit-scrollbar-thumb {
+            background: rgba(0, 212, 255, 0.5);
+            border-radius: 3px;
         }
 
         .control-panel h2 {
@@ -181,36 +145,55 @@
             font-weight: bold;
         }
 
-        .dimension-slider {
-            width: 100%;
-            height: 8px;
-            -webkit-appearance: none;
-            appearance: none;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
-            outline: none;
+        .importance-circles {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 5px;
         }
 
-        .dimension-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            background: linear-gradient(135deg, #0066CC, #00D4FF);
-            cursor: pointer;
+        .importance-circle {
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
-            border: 2px solid white;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(0, 212, 255, 0.4);
+            background: rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
         }
 
-        .dimension-slider::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
+        .importance-circle:hover {
+            border-color: rgba(0, 212, 255, 0.8);
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+        }
+
+        .importance-circle.active {
             background: linear-gradient(135deg, #0066CC, #00D4FF);
-            cursor: pointer;
+            border-color: #00D4FF;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+        }
+
+        .importance-circle.active::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 12px;
+            height: 12px;
+            background: white;
             border-radius: 50%;
-            border: 2px solid white;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .importance-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7em;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 3px;
         }
 
         .properties-list {
@@ -362,8 +345,9 @@
             gap: 10px;
             align-items: center;
             flex-wrap: nowrap;
-            max-width: 70%;
+            max-width: 50%;
             justify-content: center;
+            z-index: 100;
         }
 
         .legend-item {
@@ -389,8 +373,9 @@
 
         .view-controls {
             position: absolute;
-            bottom: 20px;
-            right: 20px;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
             background: rgba(0, 212, 255, 0.15);
             backdrop-filter: blur(20px);
             border-radius: 12px;
@@ -400,6 +385,7 @@
             pointer-events: all;
             display: flex;
             gap: 8px;
+            z-index: 50;
         }
 
         .view-btn {
@@ -467,11 +453,6 @@
     <div class="container">
         <div id="canvas-container"></div>
 
-        <!-- Debug Panel -->
-        <div id="debugPanel">
-            <h3>🐛 Debug Info</h3>
-            <div id="debugContent"></div>
-        </div>
 
         <div class="ui-overlay">
             <!-- Header -->
@@ -549,24 +530,10 @@
         // ===== REAL PROPERTY DATA FROM DATABASE =====
         // NO HARDCODED FAKE DATA - Loads from IndexedDB
         let PROPERTIES = [];
-        let debugMessages = [];
-
-        // Debug logging helper
+        // Simplified logging (console only, no UI panel)
         function debugLog(message, type = 'info') {
-            console.log(message);
-            debugMessages.push({ message, type, time: new Date().toLocaleTimeString() });
-            updateDebugPanel();
-        }
-
-        function updateDebugPanel() {
-            const content = document.getElementById('debugContent');
-            if (!content) return;
-
-            content.innerHTML = debugMessages.slice(-10).map(msg => `
-                <div class="debug-line ${msg.type === 'error' ? 'debug-error' : msg.type === 'warning' ? 'debug-warning' : ''}">
-                    [${msg.time}] ${msg.message}
-                </div>
-            `).join('');
+            const prefix = type === 'error' ? '❌' : type === 'warning' ? '⚠️' : '✅';
+            console.log(`${prefix} ${message}`);
         }
 
         const DIMENSIONS = [
@@ -580,6 +547,8 @@
         // Three.js Scene Setup
         let scene, camera, renderer, controls;
         let propertyMeshes = [];
+        let propertyLabels = []; // Store label sprites
+        let propertyRods = []; // Store rod meshes
         let connectionLines = [];
         let showingConnections = false;
         let autoRotating = false;
@@ -716,8 +685,9 @@
                 // Size based on investment potential (D4)
                 const size = 0.3 + ((dims.investment / 100) * 0.7);
 
-                // Color based on lifestyle match (D5)
-                const color = getColorForValue(dims.lifestyle);
+                // Color based on OVERALL QUALITY (average of all dimensions)
+                const avgScore = (dims.location + dims.price + dims.condition + dims.investment + dims.lifestyle) / 5;
+                const color = getColorForValue(avgScore);
 
                 // Create sphere
                 const geometry = new THREE.SphereGeometry(size, 32, 32);
@@ -732,7 +702,11 @@
 
                 const sphere = new THREE.Mesh(geometry, material);
                 sphere.position.set(x, y, z);
-                sphere.userData = { property: property };
+                sphere.userData = {
+                    property: property,
+                    propertyIndex: index,
+                    baseColor: color
+                };
 
                 // Add glow effect
                 const glowGeometry = new THREE.SphereGeometry(size * 1.3, 32, 32);
@@ -747,10 +721,12 @@
                 scene.add(sphere);
                 propertyMeshes.push(sphere);
 
-                debugLog(`✅ Sphere ${index + 1} created`);
+                debugLog(`✅ Sphere ${index + 1} created with color based on avg score ${avgScore.toFixed(1)}`);
 
-                // Add label sprite with index for height variation
-                createLabel(property.name, sphere.position, size, index);
+                // Add label and rod (will be updated dynamically)
+                const labelData = createLabel(property.name, sphere.position, size, index);
+                propertyLabels.push(labelData.sprite);
+                propertyRods.push(labelData.rod);
             });
 
             debugLog(`🎯 TOTAL SPHERES: ${propertyMeshes.length}`);
@@ -773,6 +749,7 @@
             });
             const rod = new THREE.Mesh(rodGeometry, rodMaterial);
             rod.position.set(position.x, position.y + offset + (heightVariation / 2), position.z);
+            rod.userData = { heightVariation: heightVariation, offset: offset }; // Store for updates
             scene.add(rod);
 
             // Create label canvas with cyan gradient (like a stop sign)
@@ -833,8 +810,12 @@
 
             sprite.position.set(position.x, labelHeight, position.z);
             sprite.scale.set(6, 1.25, 1); // 1.5x width, 1.25x height
+            sprite.userData = { heightVariation: heightVariation, offset: offset }; // Store for updates
 
             scene.add(sprite);
+
+            // Return both sprite and rod for tracking
+            return { sprite: sprite, rod: rod };
         }
 
         // Get Color for Value (smooth gradient from red to yellow to green)
@@ -960,31 +941,39 @@
             }).join('');
         }
 
-        // Render Dimension Controls
+        // Render Dimension Controls (5-circle importance system)
         function renderDimensionControls() {
             const container = document.getElementById('dimensionControls');
-            container.innerHTML = DIMENSIONS.map(d => `
+            container.innerHTML = DIMENSIONS.map(d => {
+                const currentLevel = Math.round(dimensionWeights[d.id] * 5); // Convert 0-1 to 0-5
+
+                return `
                 <div class="dimension-control">
                     <div class="dimension-label">
                         <span>${d.icon} ${d.name}</span>
-                        <span class="dimension-value">${(dimensionWeights[d.id] * 100).toFixed(0)}%</span>
+                        <span class="dimension-value">${currentLevel}/5</span>
                     </div>
-                    <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        step="0.1"
-                        value="${dimensionWeights[d.id] * 100}"
-                        class="dimension-slider"
-                        oninput="updateDimension('${d.id}', this.value)"
-                    >
+                    <div class="importance-circles">
+                        ${[1, 2, 3, 4, 5].map(level => `
+                            <div class="importance-circle ${level <= currentLevel ? 'active' : ''}"
+                                 onclick="setImportance('${d.id}', ${level})"
+                                 title="${level === 1 ? 'Low' : level === 2 ? 'Below Average' : level === 3 ? 'Average' : level === 4 ? 'High' : 'Critical'}">
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="importance-label">
+                        <span>Low</span>
+                        <span>Critical</span>
+                    </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
         }
 
-        // Update Dimension Weight
-        function updateDimension(dimensionId, value) {
-            dimensionWeights[dimensionId] = value / 100;
+        // Set importance level (1-5 circles)
+        function setImportance(dimensionId, level) {
+            // Convert level (1-5) to weight (0.2-1.0)
+            dimensionWeights[dimensionId] = level / 5;
             renderDimensionControls();
             updateVisualization();
         }
@@ -1000,16 +989,55 @@
                 const y = ((dims.price / 100) * 20 * dimensionWeights.price) - 10;
                 const z = ((dims.condition / 100) * 20 * dimensionWeights.condition) - 10;
 
-                // Animate to new position
+                // Animate sphere to new position
                 mesh.position.x = x;
                 mesh.position.y = y;
                 mesh.position.z = z;
 
-                // Update size
-                const size = 0.3 + ((dims.investment / 100) * 0.7 * dimensionWeights.investment);
-                mesh.scale.set(size, size, size);
+                // Update size based on investment weight
+                const baseSize = 0.3 + ((dims.investment / 100) * 0.7);
+                const size = baseSize * (0.5 + (0.5 * dimensionWeights.investment));
+                mesh.scale.set(1, 1, 1); // Reset scale first
+                mesh.geometry = new THREE.SphereGeometry(size, 32, 32);
 
-                // Update opacity based on lifestyle weight
+                // Update glow size
+                if (mesh.children[0]) {
+                    mesh.children[0].geometry = new THREE.SphereGeometry(size * 1.3, 32, 32);
+                }
+
+                // Update color based on overall quality (with weights applied)
+                const weightedScore = (
+                    (dims.location * dimensionWeights.location) +
+                    (dims.price * dimensionWeights.price) +
+                    (dims.condition * dimensionWeights.condition) +
+                    (dims.investment * dimensionWeights.investment) +
+                    (dims.lifestyle * dimensionWeights.lifestyle)
+                ) / 5;
+
+                const newColor = getColorForValue(weightedScore);
+                mesh.material.color.setHex(newColor);
+                mesh.material.emissive.setHex(newColor);
+                if (mesh.children[0]) {
+                    mesh.children[0].material.color.setHex(newColor);
+                }
+
+                // Update label and rod positions to follow sphere
+                const label = propertyLabels[index];
+                const rod = propertyRods[index];
+
+                if (label && rod) {
+                    const heightVariation = label.userData.heightVariation;
+                    const offset = label.userData.offset;
+
+                    // Update label position
+                    label.position.set(x, y + offset + heightVariation, z);
+
+                    // Update rod position and height
+                    rod.position.set(x, y + offset + (heightVariation / 2), z);
+                    rod.geometry = new THREE.CylinderGeometry(0.02, 0.02, heightVariation, 8);
+                }
+
+                // Update opacity
                 mesh.material.opacity = 0.5 + (0.5 * dimensionWeights.lifestyle);
             });
         }
