@@ -1193,16 +1193,26 @@
             // Update raycaster
             raycaster.setFromCamera(mouse, camera);
 
-            // Check for intersections with labels
-            const intersects = raycaster.intersectObjects(propertyLabels);
+            // Check for intersections with HOUSES first, then labels
+            const houseIntersects = raycaster.intersectObjects(propertyMeshes);
+            const labelIntersects = raycaster.intersectObjects(propertyLabels);
 
-            if (intersects.length > 0) {
+            // Prioritize house clicks
+            if (houseIntersects.length > 0) {
+                const clickedHouse = houseIntersects[0].object;
+                const houseIndex = propertyMeshes.indexOf(clickedHouse);
+
+                if (houseIndex !== -1) {
+                    console.log('🏠 House clicked:', PROPERTIES[houseIndex].name);
+                    openPropertyModal(houseIndex);
+                }
+            } else if (labelIntersects.length > 0) {
                 // Get the clicked label index
-                const clickedLabel = intersects[0].object;
+                const clickedLabel = labelIntersects[0].object;
                 const labelIndex = propertyLabels.indexOf(clickedLabel);
 
                 if (labelIndex !== -1) {
-                    // Open property detail modal
+                    console.log('🏷️ Label clicked:', PROPERTIES[labelIndex].name);
                     openPropertyModal(labelIndex);
                 }
             }
@@ -1949,7 +1959,7 @@
                 propertyMeshes.push(block);
 
                 // Create ROD from ground plane to house
-                const rodHeight = Math.max(0.5, blockHeight);
+                const rodHeight = Math.max(0.3, blockHeight * 0.4); // Scaled down 60%
                 const rodGeometry = new THREE.CylinderGeometry(0.05, 0.05, rodHeight, 16);
                 const rodMaterial = new THREE.MeshPhongMaterial({
                     color: color,
@@ -2539,7 +2549,7 @@ function animate() {
                 const rod = propertyRods[index];
                 if (rod) {
                     // Rod height = distance from ground (-10) to house center
-                    const rodHeight = Math.max(0.5, blockHeight);
+                    const rodHeight = Math.max(0.3, blockHeight * 0.4); // Scaled down 60%
 
                     // Dispose old geometry and create new
                     rod.geometry.dispose();
