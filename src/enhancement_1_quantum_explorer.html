@@ -2355,18 +2355,6 @@
         function recenterMap() {
             if (!map) return;
 
-            // HARDCODED TEST: Always center on Treasure Island coordinates
-            const testLat = 27.7858812;
-            const testLng = -82.7692194;
-
-            console.log(`🔍 HARDCODED TEST: Centering map on Treasure Island at ${testLat}, ${testLng}`);
-
-            map.setCenter({ lat: testLat, lng: testLng });
-            map.setZoom(16);
-
-            alert(`✅ Map centered on HARDCODED coordinates:\nTreasure Island\n${testLat}, ${testLng}\n\nZoom: 16`);
-            return;
-
             // Get CURRENTLY selected properties
             const selectedProps = ALL_PROPERTIES.filter(p => selectedPropertyIds.has(p.id));
 
@@ -2475,36 +2463,6 @@
                 debugLog(`✅ Loaded ${ALL_PROPERTIES.length} properties from database`);
 
                 if (ALL_PROPERTIES.length > 0) {
-                    // DIAGNOSTIC ALERT - Show exact data structure
-                    let diagnostic = '🔍 DATABASE DIAGNOSTIC REPORT\n\n';
-                    diagnostic += `Total properties: ${ALL_PROPERTIES.length}\n\n`;
-                    diagnostic += `First property name: ${ALL_PROPERTIES[0].name}\n\n`;
-
-                    diagnostic += '--- LOCATION OBJECT ---\n';
-                    diagnostic += JSON.stringify(ALL_PROPERTIES[0].location, null, 2) + '\n\n';
-
-                    diagnostic += '--- ADDRESS OBJECT ---\n';
-                    diagnostic += JSON.stringify(ALL_PROPERTIES[0].address, null, 2) + '\n\n';
-
-                    diagnostic += '--- BASIC.COORDINATES ---\n';
-                    diagnostic += JSON.stringify(ALL_PROPERTIES[0].basic?.coordinates, null, 2) + '\n\n';
-
-                    // Test coordinate extraction
-                    const testLat = ALL_PROPERTIES[0].location?.lat || ALL_PROPERTIES[0].location?.latitude || ALL_PROPERTIES[0].address?.latitude || ALL_PROPERTIES[0].basic?.coordinates?.latitude;
-                    const testLng = ALL_PROPERTIES[0].location?.lng || ALL_PROPERTIES[0].location?.longitude || ALL_PROPERTIES[0].address?.longitude || ALL_PROPERTIES[0].basic?.coordinates?.longitude;
-
-                    diagnostic += `--- EXTRACTED COORDINATES ---\n`;
-                    diagnostic += `Latitude: ${testLat}\n`;
-                    diagnostic += `Longitude: ${testLng}\n\n`;
-
-                    diagnostic += '--- FULL FIRST PROPERTY (abbreviated) ---\n';
-                    diagnostic += `ID: ${ALL_PROPERTIES[0].id}\n`;
-                    diagnostic += `Price: ${ALL_PROPERTIES[0].price}\n`;
-                    diagnostic += `Bedrooms: ${ALL_PROPERTIES[0].bedrooms}\n`;
-                    diagnostic += `Bathrooms: ${ALL_PROPERTIES[0].bathrooms}\n`;
-
-                    alert(diagnostic);
-
                     debugLog(`📊 First property: ${ALL_PROPERTIES[0].name}`);
                     debugLog(`📊 Has dimensions: ${ALL_PROPERTIES[0].dimensions ? 'YES' : 'NO'}`, ALL_PROPERTIES[0].dimensions ? 'info' : 'error');
                 }
