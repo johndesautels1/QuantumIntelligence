@@ -56,14 +56,32 @@ class SharedDataAdapter {
         const properties = await this.dataManager.getAllProperties();
 
         return properties.map(property => {
-            // Transform CSV to scoring engine format
+            // Transform CSV to scoring engine format with ALL fields it expects
             const transformed = {
                 bedrooms: property.basic?.bedrooms || 0,
                 bathrooms: { total: property.basic?.bathrooms || 0 },
-                square_feet: { living: property.basic?.squareFeet || 0, lot: property.basic?.lotSize || 0 },
+                square_feet: {
+                    living: property.basic?.squareFeet || 0,
+                    lot: property.basic?.lotSize || 0
+                },
                 year_built: property.basic?.yearBuilt || 2000,
+                property_type: property.basic?.propertyType || 'single_family',
                 price: { current: property.financial?.listingPrice || 0 },
-                address: { latitude: property.location?.latitude || 0, longitude: property.location?.longitude || 0 }
+                days_on_market: { current: property.financial?.daysOnMarket || 0 },
+                taxes: { annual_amount: property.financial?.annualTaxes || 0 },
+                hoa_fees: { monthly: property.financial?.hoaFees || 0 },
+                address: {
+                    latitude: property.location?.latitude || 0,
+                    longitude: property.location?.longitude || 0,
+                    city: property.location?.city || '',
+                    state: property.location?.state || ''
+                },
+                features: {
+                    interior: property.features?.interior || [],
+                    exterior: property.features?.exterior || []
+                },
+                garage_spaces: 0,
+                stories: 1
             };
 
             // Calculate scores using weighted engine
