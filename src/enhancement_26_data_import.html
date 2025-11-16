@@ -413,6 +413,10 @@
             <button class="btn" onclick="checkCoordinates()" style="background: #3b82f6; margin-top: 10px;">
                 🔍 Check Database Coordinates
             </button>
+
+            <button class="btn" onclick="resetDatabase()" style="background: #f59e0b; margin-top: 10px;">
+                🔄 Reset Database (Fix Errors)
+            </button>
         </div>
 
         <!-- JSON Import Panel -->
@@ -957,8 +961,37 @@
         }
 
         // Delete All Properties
+        async function resetDatabase() {
+            if (!confirm('🔄 Reset Database?\n\nThis will close and reopen the database connection to fix errors.\n\nYour data will NOT be deleted.')) {
+                return;
+            }
+
+            try {
+                // Close database
+                if (window.indexedDB && dataManager.db) {
+                    dataManager.db.close();
+                }
+
+                // Clear the dataManager instance
+                dataManager.db = null;
+                dataManager.initialized = false;
+
+                // Reinitialize
+                await dataManager.init();
+
+                alert('✅ Database reset successfully!\n\nYou can now import or check coordinates.');
+                location.reload();
+
+            } catch (error) {
+                alert('❌ Reset failed: ' + error.message + '\n\nPlease close this browser tab completely and open a new one.');
+            }
+        }
+
         async function checkCoordinates() {
             try {
+                // Try to reinit in case of stale connection
+                await dataManager.init();
+
                 const properties = await dataManager.getAllProperties();
 
                 if (properties.length === 0) {
