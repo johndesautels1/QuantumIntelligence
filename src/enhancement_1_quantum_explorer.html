@@ -1143,8 +1143,8 @@
             // Create coordinate axes lines
             createAxes();
 
-            // Create property spheres
-            createPropertyMeshes();
+            // Don't create property meshes here - PROPERTIES array is empty at this point
+            // createPropertyMeshes() will be called by updateSelectedProperties() after selectTopRated()
 
             // Handle window resize
             window.addEventListener('resize', onWindowResize);
@@ -1982,10 +1982,10 @@
                 camera.lookAt(0, 0, 0);
             }
 
-            // Pulse spheres
+            // Pulse blocks (subtle height variation)
             propertyMeshes.forEach((mesh, index) => {
-                const pulse = Math.sin(Date.now() * 0.001 + index) * 0.1 + 1;
-                mesh.children[0].scale.set(pulse, pulse, pulse);
+                const pulse = Math.sin(Date.now() * 0.001 + index) * 0.05 + 1;
+                mesh.scale.y = pulse; // Only pulse the height of the blocks
             });
 
             // No dynamic label adjustment - use static positions
@@ -2010,7 +2010,7 @@
             countDisplay.style.color = selectedPropertyIds.size >= MAX_SELECTION ? '#FFD700' : '#00D4FF';
 
             container.innerHTML = ALL_PROPERTIES.map(p => {
-                const avgScore = Object.values(p.dimensions).reduce((a, b) => a + b) / 5;
+                const avgScore = p.dimensions ? Object.values(p.dimensions).reduce((a, b) => a + b) / 5 : 0;
                 const isSelected = selectedPropertyIds.has(p.id);
                 const isDimmed = !isSelected && selectedPropertyIds.size >= MAX_SELECTION;
 
@@ -2093,8 +2093,9 @@
         // Select top 5 rated properties
         function selectTopRated() {
             const sorted = [...ALL_PROPERTIES].sort((a, b) => {
-                const avgA = Object.values(a.dimensions).reduce((x, y) => x + y) / 5;
-                const avgB = Object.values(b.dimensions).reduce((x, y) => x + y) / 5;
+                // Safety check for dimensions
+                const avgA = a.dimensions ? Object.values(a.dimensions).reduce((x, y) => x + y) / 5 : 0;
+                const avgB = b.dimensions ? Object.values(b.dimensions).reduce((x, y) => x + y) / 5 : 0;
                 return avgB - avgA;
             });
 
@@ -2153,20 +2154,20 @@
         function updateVisualization() {
             // Calculate weighted match scores for all properties first (for ranking)
             const propertyScores = PROPERTIES.map((property, index) => {
-                const dims = property.dimensions;
+                const dims = property.dimensions || {};
 
                 // Calculate WEIGHTED match score based on user's importance sliders
                 const totalWeight = dimensionWeights.location + dimensionWeights.price +
                                   dimensionWeights.condition + dimensionWeights.investment +
                                   dimensionWeights.lifestyle;
 
-                const weightedMatchScore = (
-                    (dims.location * dimensionWeights.location) +
-                    (dims.price * dimensionWeights.price) +
-                    (dims.condition * dimensionWeights.condition) +
-                    (dims.investment * dimensionWeights.investment) +
-                    (dims.lifestyle * dimensionWeights.lifestyle)
-                ) / totalWeight; // Normalize by total weight
+                const weightedMatchScore = dims ? (
+                    ((dims.location || 0) * dimensionWeights.location) +
+                    ((dims.price || 0) * dimensionWeights.price) +
+                    ((dims.condition || 0) * dimensionWeights.condition) +
+                    ((dims.investment || 0) * dimensionWeights.investment) +
+                    ((dims.lifestyle || 0) * dimensionWeights.lifestyle)
+                ) / totalWeight : 0; // Normalize by total weight
 
                 return {
                     index,
@@ -2202,6 +2203,8 @@
 
                 // Update BLOCK height and position
                 const blockHeight = Math.max(0.2, y - (-10));
+                // Dispose old geometry and create new one
+                mesh.geometry.dispose();
                 mesh.geometry = new THREE.BoxGeometry(0.4, blockHeight, 0.4);
                 mesh.position.set(x, -10 + (blockHeight / 2), z);
 
@@ -2229,12 +2232,11 @@
                     // Update label position
                     label.position.set(x, y + offset + heightVariation, z);
 
-                    // Update rod position and height
+                    // Update rod position (don't recreate geometry - just move it)
                     rod.position.set(x, y + offset + (heightVariation / 2), z);
-                    rod.geometry = new THREE.CylinderGeometry(0.02, 0.02, heightVariation, 8);
 
-                    // Update label text
-                    updateLabelText(label, `#${rank} ${property.name} (${matchScore.toFixed(0)}%)`, property.name, index);
+                    // Update label text - updateLabelText function not defined, skip for now
+                    // updateLabelText(label, `#${rank} ${property.name} (${matchScore.toFixed(0)}%)`, property.name, index);
                 }
 
                 // Update opacity to always visible
