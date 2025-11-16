@@ -2160,46 +2160,82 @@
 
         // Update Visualization Based on Weights
         function updateVisualization() {
-            propertyMeshes.forEach((mesh, index) => {
-                const property = PROPERTIES[index];
+            // Calculate weighted match scores for all properties first (for ranking)
+            const propertyScores = PROPERTIES.map((property, index) => {
                 const dims = property.dimensions;
 
-                // Recalculate position based on weights
-                const x = ((dims.location / 100) * 20 * dimensionWeights.location) - 10;
-                const y = ((dims.price / 100) * 20 * dimensionWeights.price) - 10;
-                const z = ((dims.condition / 100) * 20 * dimensionWeights.condition) - 10;
+                // Calculate WEIGHTED match score based on user's importance sliders
+                const totalWeight = dimensionWeights.location + dimensionWeights.price +
+                                  dimensionWeights.condition + dimensionWeights.investment +
+                                  dimensionWeights.lifestyle;
 
-                // Animate sphere to new position
-                mesh.position.x = x;
-                mesh.position.y = y;
-                mesh.position.z = z;
-
-                // Update size based on investment weight
-                const baseSize = 0.3 + ((dims.investment / 100) * 0.7);
-                const size = baseSize * (0.5 + (0.5 * dimensionWeights.investment));
-                mesh.scale.set(1, 1, 1); // Reset scale first
-                mesh.geometry = new THREE.SphereGeometry(size, 32, 32);
-
-                // Update glow size
-                if (mesh.children[0]) {
-                    mesh.children[0].geometry = new THREE.SphereGeometry(size * 1.3, 32, 32);
-                }
-
-                // Update color based on overall quality (with weights applied)
-                const weightedScore = (
+                const weightedMatchScore = (
                     (dims.location * dimensionWeights.location) +
                     (dims.price * dimensionWeights.price) +
                     (dims.condition * dimensionWeights.condition) +
                     (dims.investment * dimensionWeights.investment) +
                     (dims.lifestyle * dimensionWeights.lifestyle)
-                ) / 5;
+                ) / totalWeight; // Normalize by total weight
 
-                const newColor = getColorForValue(weightedScore);
+                return {
+                    index,
+                    property,
+                    dims,
+                    matchScore: weightedMatchScore
+                };
+            });
+
+            // Sort by match score to determine rankings
+            const ranked = [...propertyScores].sort((a, b) => b.matchScore - a.matchScore);
+
+            propertyScores.forEach(({ index, property, dims, matchScore }) => {
+                const mesh = propertyMeshes[index];
+                if (!mesh) return;
+
+                // Find ranking (1-5)
+                const rank = ranked.findIndex(r => r.index === index) + 1;
+
+                // ===== CRITICAL: X/Z STAY AT GEOGRAPHIC COORDINATES =====
+                // DO NOT change X/Z based on weights - they represent REAL MAP POSITION
+                const lat = property.location?.latitude || property.location?.lat || 0;
+                const lng = property.location?.longitude || property.location?.lng || 0;
+
+                // Keep original geographic X/Z positions (don't recalculate)
+                const x = mesh.position.x; // Keep current X
+                const z = mesh.position.z; // Keep current Z
+
+                // ===== Y-AXIS = WEIGHTED MATCH SCORE =====
+                // Higher on screen = better match for YOUR preferences
+                // Map 0-100 match score to -10 to +10 height
+                const y = ((matchScore / 100) * 20) - 10;
+
+                // Animate sphere to new HEIGHT (keep X/Z unchanged)
+                mesh.position.y = y;
+
+                // ===== SIZE = Investment Potential (unchanged) =====
+                const baseSize = 0.3 + ((dims.investment / 100) * 0.7);
+                mesh.scale.set(1, 1, 1);
+                mesh.geometry = new THREE.SphereGeometry(baseSize, 32, 32);
+
+                // Update glow size
+                if (mesh.children[0]) {
+                    mesh.children[0].geometry = new THREE.SphereGeometry(baseSize * 1.3, 32, 32);
+                }
+
+                // ===== COLOR = MATCH QUALITY =====
+                // Green = Excellent match, Red = Poor match
+                const newColor = getColorForValue(matchScore);
                 mesh.material.color.setHex(newColor);
                 mesh.material.emissive.setHex(newColor);
                 if (mesh.children[0]) {
                     mesh.children[0].material.color.setHex(newColor);
                 }
+
+                // Store match score and rank for later use
+                mesh.userData.matchScore = matchScore;
+                mesh.userData.rank = rank;
+
+                console.log(`Property #${rank}: ${property.name} - Match: ${matchScore.toFixed(1)}%`);
 
                 // Update label and rod positions to follow sphere
                 const label = propertyLabels[index];
@@ -2209,17 +2245,22 @@
                     const heightVariation = label.userData.heightVariation;
                     const offset = label.userData.offset;
 
-                    // Update label position
-                    label.position.set(x, y + offset + heightVariation, z);
+                    // Update label position (use mesh.position for current X/Y/Z)
+                    label.position.set(mesh.position.x, mesh.position.y + offset + heightVariation, mesh.position.z);
 
                     // Update rod position and height
-                    rod.position.set(x, y + offset + (heightVariation / 2), z);
+                    rod.position.set(mesh.position.x, mesh.position.y + offset + (heightVariation / 2), mesh.position.z);
                     rod.geometry = new THREE.CylinderGeometry(0.02, 0.02, heightVariation, 8);
+
+                    // Update label text to show rank
+                    updateLabelText(label, `#${rank} ${property.name}`, property.name, index);
                 }
 
-                // Update opacity
-                mesh.material.opacity = 0.5 + (0.5 * dimensionWeights.lifestyle);
+                // Update opacity to always visible
+                mesh.material.opacity = 0.9;
             });
+
+            console.log(`📊 Visualization updated - Properties ranked by match to your preferences`);
         }
 
         // Select Property
