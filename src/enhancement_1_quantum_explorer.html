@@ -2180,9 +2180,13 @@
 
         // Update Visualization Based on Weights
         function updateVisualization() {
+            console.log('🎛️ UPDATE VISUALIZATION - Current weights:', dimensionWeights);
+            console.log('🎛️ PROPERTIES count:', PROPERTIES.length);
+
             // Calculate weighted match scores for all properties first (for ranking)
             const propertyScores = PROPERTIES.map((property, index) => {
                 const dims = property.dimensions || {};
+                console.log(`Property ${index}: ${property.name}`, dims);
 
                 // Calculate WEIGHTED match score based on user's importance sliders
                 const totalWeight = dimensionWeights.location + dimensionWeights.price +
