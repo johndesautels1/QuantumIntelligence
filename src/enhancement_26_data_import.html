@@ -684,40 +684,47 @@
             // DIAGNOSTIC: Check if coordinates were saved
             if (result.success && result.imported > 0) {
                 setTimeout(async () => {
-                    const allProps = await dataManager.getAllProperties();
-                    let coordReport = '🔍 COORDINATE IMPORT DIAGNOSTIC\n\n';
-                    coordReport += `Total imported: ${result.imported}\n`;
-                    coordReport += `Total in DB: ${allProps.length}\n\n`;
+                    try {
+                        // Re-initialize dataManager in case of database issues
+                        await dataManager.init();
 
-                    let withCoords = 0;
-                    let withoutCoords = 0;
+                        const allProps = await dataManager.getAllProperties();
+                        let coordReport = '🔍 COORDINATE IMPORT DIAGNOSTIC\n\n';
+                        coordReport += `Total imported: ${result.imported}\n`;
+                        coordReport += `Total in DB: ${allProps.length}\n\n`;
 
-                    allProps.forEach((p, i) => {
-                        const lat = p.location?.latitude || p.basic?.coordinates?.latitude;
-                        const lng = p.location?.longitude || p.basic?.coordinates?.longitude;
+                        let withCoords = 0;
+                        let withoutCoords = 0;
 
-                        if (lat && lng) {
-                            withCoords++;
-                            if (i < 3) {
-                                coordReport += `✅ ${p.basic?.address || 'Unknown'}\n`;
-                                coordReport += `   Lat: ${lat}, Lng: ${lng}\n`;
-                                coordReport += `   Saved in: ${p.location?.latitude ? 'location' : ''} ${p.basic?.coordinates?.latitude ? 'basic.coords' : ''}\n\n`;
+                        allProps.forEach((p, i) => {
+                            const lat = p.location?.latitude || p.basic?.coordinates?.latitude;
+                            const lng = p.location?.longitude || p.basic?.coordinates?.longitude;
+
+                            if (lat && lng) {
+                                withCoords++;
+                                if (i < 3) {
+                                    coordReport += `✅ ${p.basic?.address || 'Unknown'}\n`;
+                                    coordReport += `   Lat: ${lat}, Lng: ${lng}\n`;
+                                    coordReport += `   Saved in: ${p.location?.latitude ? 'location' : ''} ${p.basic?.coordinates?.latitude ? 'basic.coords' : ''}\n\n`;
+                                }
+                            } else {
+                                withoutCoords++;
+                                if (withoutCoords <= 3) {
+                                    coordReport += `❌ ${p.basic?.address || 'Unknown'}\n`;
+                                    coordReport += `   NO COORDINATES\n\n`;
+                                }
                             }
-                        } else {
-                            withoutCoords++;
-                            if (withoutCoords <= 3) {
-                                coordReport += `❌ ${p.basic?.address || 'Unknown'}\n`;
-                                coordReport += `   NO COORDINATES\n\n`;
-                            }
-                        }
-                    });
+                        });
 
-                    coordReport += `\n📊 SUMMARY:\n`;
-                    coordReport += `With coordinates: ${withCoords}\n`;
-                    coordReport += `Without coordinates: ${withoutCoords}`;
+                        coordReport += `\n📊 SUMMARY:\n`;
+                        coordReport += `With coordinates: ${withCoords}\n`;
+                        coordReport += `Without coordinates: ${withoutCoords}`;
 
-                    alert(coordReport);
-                }, 1000);
+                        alert(coordReport);
+                    } catch (error) {
+                        alert('⚠️ Database error after import:\n\n' + error.message + '\n\nPlease refresh the page and try again.');
+                    }
+                }, 2000);
             }
         }
 
