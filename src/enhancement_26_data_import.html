@@ -405,6 +405,10 @@
             <button class="btn btn-primary" onclick="importCSV()">
                 Import CSV File
             </button>
+
+            <button class="btn" onclick="deleteAllProperties()" style="background: #ef4444; margin-top: 10px;">
+                🗑️ Delete All Properties
+            </button>
         </div>
 
         <!-- JSON Import Panel -->
@@ -899,6 +903,36 @@
             } catch (error) {
                 hideProgress();
                 alert('Error adding property: ' + error.message);
+            }
+        }
+
+        // Delete All Properties
+        async function deleteAllProperties() {
+            if (!confirm('⚠️ Are you sure you want to delete ALL properties?\n\nThis cannot be undone!')) {
+                return;
+            }
+
+            if (!confirm('🚨 FINAL WARNING: This will permanently delete all ' + (await dataManager.count(dataManager.stores.properties)) + ' properties.\n\nAre you absolutely sure?')) {
+                return;
+            }
+
+            try {
+                showProgress(0);
+                updateProgress(50, 'Deleting all properties...');
+
+                await dataManager.clear(dataManager.stores.properties);
+
+                updateProgress(100, 'All properties deleted!');
+
+                setTimeout(() => {
+                    hideProgress();
+                    alert('✅ All properties have been deleted successfully!');
+                    location.reload();
+                }, 1500);
+
+            } catch (error) {
+                hideProgress();
+                alert('❌ Error deleting properties: ' + error.message);
             }
         }
 

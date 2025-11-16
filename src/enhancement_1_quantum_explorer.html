@@ -2208,10 +2208,15 @@
                     return;
                 }
 
-                // Calculate center point of all properties (default to St Pete Beach area)
+                // Calculate center point based on SELECTED properties
+                const selectedProps = ALL_PROPERTIES.filter(p => selectedPropertyIds.has(p.id));
+
+                // DEBUG: Show what we have
+                alert(`DEBUG: Found ${selectedProps.length} selected properties.\n\nChecking first property:\n${selectedProps[0]?.name}\nLocation: ${JSON.stringify(selectedProps[0]?.location)}\nAddress: ${JSON.stringify(selectedProps[0]?.address)}\nBasic.coordinates: ${JSON.stringify(selectedProps[0]?.basic?.coordinates)}`);
+
                 let validCoordCount = 0;
-                const avgLat = ALL_PROPERTIES.reduce((sum, p) => {
-                    const lat = p.location?.lat || p.location?.latitude || p.address?.latitude;
+                const avgLat = selectedProps.reduce((sum, p) => {
+                    const lat = p.location?.lat || p.location?.latitude || p.address?.latitude || p.basic?.coordinates?.latitude;
                     if (lat) {
                         validCoordCount++;
                         return sum + lat;
@@ -2220,8 +2225,8 @@
                 }, 0) / (validCoordCount || 1);
 
                 validCoordCount = 0;
-                const avgLng = ALL_PROPERTIES.reduce((sum, p) => {
-                    const lng = p.location?.lng || p.location?.longitude || p.address?.longitude;
+                const avgLng = selectedProps.reduce((sum, p) => {
+                    const lng = p.location?.lng || p.location?.longitude || p.address?.longitude || p.basic?.coordinates?.longitude;
                     if (lng) {
                         validCoordCount++;
                         return sum + lng;
@@ -2233,7 +2238,7 @@
                 const centerLat = avgLat || 27.7;
                 const centerLng = avgLng || -82.7;
 
-                console.log(`📍 Map centering at: ${centerLat}, ${centerLng}`);
+                alert(`DEBUG: Map centering at ${centerLat}, ${centerLng}\nValid coordinates found: ${validCoordCount}`);
 
                 // Create map centered on properties
                 map = new google.maps.Map(document.getElementById('map-container'), {
@@ -2271,7 +2276,7 @@
         }
 
         /**
-         * Add markers for all properties on the map
+         * Add markers for SELECTED properties only on the map
          */
         function addPropertyMarkers() {
             try {
@@ -2284,14 +2289,20 @@
                 mapMarkers.forEach(marker => marker.setMap(null));
                 mapMarkers = [];
 
-                ALL_PROPERTIES.forEach((property, index) => {
+                // Only show markers for SELECTED properties
+                const selectedProps = ALL_PROPERTIES.filter(p => selectedPropertyIds.has(p.id));
+                console.log(`📍 Adding markers for ${selectedProps.length} selected properties`);
+
+                selectedProps.forEach((property, index) => {
                     // Check multiple possible locations for coordinates
                     const lat = property.location?.lat ||
                                property.location?.latitude ||
-                               property.address?.latitude;
+                               property.address?.latitude ||
+                               property.basic?.coordinates?.latitude;
                     const lng = property.location?.lng ||
                                property.location?.longitude ||
-                               property.address?.longitude;
+                               property.address?.longitude ||
+                               property.basic?.coordinates?.longitude;
 
                     if (!lat || !lng) {
                         console.warn(`Property ${property.name} missing coordinates - skipping marker`);

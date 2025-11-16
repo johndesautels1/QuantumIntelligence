@@ -232,16 +232,27 @@ class DataImporter {
         if (mapping.taxes !== undefined) {
             property.financial.annualTaxes = this.parseNumber(row[mapping.taxes]);
         }
+        // Coordinates - save in BOTH location and basic for compatibility
         if (mapping.latitude !== undefined) {
             const lat = parseFloat(row[mapping.latitude]);
             if (!isNaN(lat) && lat !== 0) {
                 property.location.latitude = lat;
+                // Also save to basic for database compatibility
+                if (!property.basic.coordinates) {
+                    property.basic.coordinates = {};
+                }
+                property.basic.coordinates.latitude = lat;
             }
         }
         if (mapping.longitude !== undefined) {
             const lng = parseFloat(row[mapping.longitude]);
             if (!isNaN(lng) && lng !== 0) {
                 property.location.longitude = lng;
+                // Also save to basic for database compatibility
+                if (!property.basic.coordinates) {
+                    property.basic.coordinates = {};
+                }
+                property.basic.coordinates.longitude = lng;
             }
         }
 

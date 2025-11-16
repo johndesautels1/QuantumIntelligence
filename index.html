@@ -338,6 +338,7 @@
             <div class="header-actions">
                 <button class="btn secondary" onclick="openImportModal()">📥 Import Properties</button>
                 <button class="btn" onclick="exportData()">📤 Export Data</button>
+                <button class="btn" onclick="deleteAllProperties()" style="background: #ef4444;">🗑️ Delete All</button>
                 <button class="btn" id="installBtn" style="display: none;">📱 Install App</button>
             </div>
         </div>
@@ -580,22 +581,37 @@
 
         // Delete all properties
         async function deleteAllProperties() {
-            const properties = await dataManager.getAllProperties();
-
-            if (!confirm(`Delete ALL ${properties.length} properties? This cannot be undone!`)) {
-                return;
-            }
-
             try {
-                for (const prop of properties) {
-                    await dataManager.deleteProperty(prop.property_id);
+                const properties = await dataManager.getAllProperties();
+                const count = properties.length;
+
+                if (count === 0) {
+                    alert('No properties to delete!');
+                    return;
                 }
+
+                if (!confirm(`⚠️ Delete ALL ${count} properties?\n\nThis cannot be undone!`)) {
+                    return;
+                }
+
+                if (!confirm(`🚨 FINAL WARNING: Permanently delete ${count} properties?`)) {
+                    return;
+                }
+
+                console.log('🗑️ Deleting all properties...');
+
+                // Use clear() for fast deletion
+                await dataManager.clear(dataManager.stores.properties);
+
                 await updateStats();
                 console.log('✅ All properties deleted');
-                alert(`Successfully deleted ${properties.length} properties`);
+                alert(`✅ Successfully deleted ${count} properties!`);
+
+                // Refresh the page
+                location.reload();
             } catch (error) {
                 console.error('❌ Error deleting properties:', error);
-                alert('Failed to delete properties: ' + error.message);
+                alert('❌ Failed to delete properties: ' + error.message);
             }
         }
 
