@@ -152,18 +152,18 @@ class DataImporter {
             price: ['price', 'listing price', 'asking price', 'sale price'],
             bedrooms: ['bed', 'bedroom', 'beds', 'br'],
             bathrooms: ['bath', 'bathroom', 'baths', 'ba'],
-            squareFeet: ['sqft', 'square feet', 'sq ft', 'area', 'size'],
-            lotSize: ['lot', 'lot size', 'land'],
-            yearBuilt: ['year', 'year built', 'built'],
-            propertyType: ['type', 'property type', 'category'],
+            squareFeet: ['sqft_living', 'living_area', 'sqft', 'square feet', 'sq ft', 'area', 'size'],
+            lotSize: ['sqft_lot', 'lot_size', 'lot size', 'lot', 'land'],
+            yearBuilt: ['year_built', 'year built', 'year', 'built'],
+            propertyType: ['property_type', 'property type', 'type', 'category'],
             description: ['description', 'details', 'notes'],
             listingUrl: ['url', 'link', 'listing url', 'source'],
-            mls: ['mls', 'mls#', 'mls number'],
+            mls: ['mls_number', 'mls', 'mls#', 'mls number'],
             daysOnMarket: ['dom', 'days on market', 'days listed'],
             hoa: ['hoa', 'hoa fee', 'hoa dues'],
             taxes: ['tax', 'taxes', 'property tax', 'annual tax'],
-            latitude: ['lat', 'latitude'],
-            longitude: ['lng', 'lon', 'long', 'longitude']
+            latitude: ['latitude', 'lat'],
+            longitude: ['longitude', 'lng', 'lon', 'long']
         };
 
         let coordDebug = '🔍 COORDINATE COLUMN DETECTION:\n\n';
@@ -182,8 +182,12 @@ class DataImporter {
             }
 
             for (let [field, keywords] of Object.entries(patterns)) {
+                // Check if this field is already mapped
+                if (mapping[field] !== undefined) continue;
+
                 for (let keyword of keywords) {
-                    if (normalized.includes(keyword)) {
+                    // Use exact match for more specific patterns first
+                    if (normalized === keyword.toLowerCase() || normalized.includes(keyword)) {
                         mapping[field] = index;
                         break;
                     }
