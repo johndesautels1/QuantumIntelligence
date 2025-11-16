@@ -487,10 +487,6 @@
                 await dataManager.init();
                 console.log('✅ Data manager initialized');
 
-                // Initialize scoring engine
-                await scoringEngine.initialize(dataManager);
-                console.log('✅ Scoring engine initialized');
-
                 // Initialize data importer (includes coordinate support)
                 await dataImporter.initialize(dataManager, scoringEngine);
                 console.log('✅ Data importer initialized');
