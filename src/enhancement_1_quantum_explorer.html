@@ -1783,15 +1783,15 @@
 
                 // Generate Google Street View URL for this property
                 const streetViewUrl = lat !== 0 && lng !== 0
-                    ? `https://maps.googleapis.com/maps/api/streetview?size=1200x900&location=${lat},${lng}&fov=90&pitch=10&heading=0&key=AIzaSyAtnlfmqoHQkiJXc3KYUeR5_4mUupOPLbw`
+                    ? `https://maps.googleapis.com/maps/api/streetview?size=1600x1200&location=${lat},${lng}&fov=90&pitch=10&heading=0&key=AIzaSyAtnlfmqoHQkiJXc3KYUeR5_4mUupOPLbw`
                     : null;
 
                 let block;
 
                 if (streetViewUrl) {
                     // Create 3D house geometry (textured slab)
-                    const houseWidth = 2.8;
-                    const houseDepth = 2.0;
+                    const houseWidth = 5.6;
+                    const houseDepth = 4.0;
                     const houseThickness = Math.max(0.4, blockHeight * 0.15);
                     const geometry = new THREE.BoxGeometry(houseWidth, houseThickness, houseDepth);
 
@@ -1809,8 +1809,8 @@
                     }
 
                     block = new THREE.Mesh(geometry, materials);
-                    block.rotation.x = -0.4; // Tilt to show texture
-                    block.rotation.y = 0.5;  // Slight rotation
+                    // Billboard behavior - will face camera in animate loop
+                    block.userData.isBillboard = true;
 
                     // Load Street View texture
                     const textureLoader = new THREE.TextureLoader();
@@ -2109,8 +2109,76 @@
         }
 
         // Animation Loop
-        function animate() {
+        
+        // Explode house into full-size modal with data
+        function explodeHouseModal(property, houseMesh) {
+            console.log('🎆 Exploding house:', property.name);
+
+            // Get property position
+            const housePos = houseMesh.position.clone();
+
+            // Create full-size house (10x larger)
+            const explodedWidth = 56;
+            const explodedDepth = 40;
+            const explodedHeight = 5;
+
+            const geometry = new THREE.BoxGeometry(explodedWidth, explodedHeight, explodedDepth);
+
+            // Clone materials from original house
+            const materials = [];
+            if (Array.isArray(houseMesh.material)) {
+                houseMesh.material.forEach(mat => materials.push(mat.clone()));
+            }
+
+            const explodedHouse = new THREE.Mesh(geometry, materials);
+            explodedHouse.position.copy(housePos);
+            explodedHouse.position.y += 10; // Float above
+            explodedHouse.lookAt(camera.position);
+            explodedHouse.rotation.x = -0.3;
+            scene.add(explodedHouse);
+
+            // Animate explosion
+            let scale = 0.1;
+            const explodeInterval = setInterval(() => {
+                scale += 0.1;
+                explodedHouse.scale.set(scale, scale, scale);
+
+                if (scale >= 1.0) {
+                    clearInterval(explodeInterval);
+
+                    // Show property modal after explosion
+                    showPropertyModal(property);
+
+                    // Remove exploded house after 3 seconds
+                    setTimeout(() => {
+                        scene.remove(explodedHouse);
+                        explodedHouse.geometry.dispose();
+                        if (Array.isArray(explodedHouse.material)) {
+                            explodedHouse.material.forEach(m => m.dispose());
+                        }
+                    }, 3000);
+                }
+            }, 30);
+
+            // Camera zoom to house
+            const targetPos = housePos.clone();
+            targetPos.y += 5;
+            controls.target.copy(targetPos);
+            camera.position.set(housePos.x + 30, housePos.y + 20, housePos.z + 30);
+        }
+
+function animate() {
             requestAnimationFrame(animate);
+
+            // Update billboards to face camera
+            propertyMeshes.forEach(mesh => {
+                if (mesh && mesh.userData.isBillboard) {
+                    // Make house face camera
+                    mesh.lookAt(camera.position);
+                    // Tilt slightly down so we see the top texture
+                    mesh.rotation.x = -0.3;
+                }
+            });
 
             // Auto-rotate camera
             if (autoRotating) {
