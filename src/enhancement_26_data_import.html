@@ -409,6 +409,10 @@
             <button class="btn" onclick="deleteAllProperties()" style="background: #ef4444; margin-top: 10px;">
                 🗑️ Delete All Properties
             </button>
+
+            <button class="btn" onclick="checkCoordinates()" style="background: #3b82f6; margin-top: 10px;">
+                🔍 Check Database Coordinates
+            </button>
         </div>
 
         <!-- JSON Import Panel -->
@@ -907,6 +911,65 @@
         }
 
         // Delete All Properties
+        async function checkCoordinates() {
+            try {
+                const properties = await dataManager.getAllProperties();
+
+                if (properties.length === 0) {
+                    alert('❌ No properties in database!\n\nPlease import the CSV file first.');
+                    return;
+                }
+
+                let report = `📊 DATABASE COORDINATE REPORT\n`;
+                report += `Total properties: ${properties.length}\n\n`;
+
+                let withCoords = 0;
+                let withoutCoords = 0;
+
+                properties.forEach((prop, i) => {
+                    const lat = prop.location?.lat || prop.location?.latitude || prop.address?.latitude || prop.basic?.coordinates?.latitude;
+                    const lng = prop.location?.lng || prop.location?.longitude || prop.address?.longitude || prop.basic?.coordinates?.longitude;
+
+                    if (lat && lng) {
+                        withCoords++;
+                        if (i < 5) { // Show first 5
+                            report += `✅ ${prop.name || prop.basic?.address?.street}\n`;
+                            report += `   Lat: ${lat}, Lng: ${lng}\n`;
+                            report += `   Location: ${JSON.stringify(prop.location)}\n`;
+                            report += `   Basic.coords: ${JSON.stringify(prop.basic?.coordinates)}\n\n`;
+                        }
+                    } else {
+                        withoutCoords++;
+                        if (i < 3) { // Show first 3 without coords
+                            report += `❌ ${prop.name || prop.basic?.address?.street}\n`;
+                            report += `   NO COORDINATES FOUND\n`;
+                            report += `   Location: ${JSON.stringify(prop.location)}\n`;
+                            report += `   Basic.coords: ${JSON.stringify(prop.basic?.coordinates)}\n\n`;
+                        }
+                    }
+                });
+
+                report += `\n📈 SUMMARY:\n`;
+                report += `Properties WITH coordinates: ${withCoords}\n`;
+                report += `Properties WITHOUT coordinates: ${withoutCoords}\n\n`;
+
+                if (withoutCoords > 0) {
+                    report += `⚠️ ACTION REQUIRED:\n`;
+                    report += `1. Click "🗑️ Delete All Properties"\n`;
+                    report += `2. Re-import florida_properties.csv\n`;
+                    report += `3. New import will save coordinates correctly`;
+                }
+
+                alert(report);
+                console.log(report);
+                console.log('Full property data:', properties);
+
+            } catch (error) {
+                console.error('Error checking coordinates:', error);
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
         async function deleteAllProperties() {
             if (!confirm('⚠️ Are you sure you want to delete ALL properties?\n\nThis cannot be undone!')) {
                 return;
