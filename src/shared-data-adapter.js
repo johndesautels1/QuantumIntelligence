@@ -80,49 +80,63 @@ class SharedDataAdapter {
             return (clamped / max) * 100;
         };
 
-        return properties.map(prop => ({
-            id: prop.property_id,
-            name: prop.address?.full_address || `${prop.address?.street}, ${prop.address?.city}`,
-            price: prop.price?.current || 0,
-            dimensions: {
-                location: normalizeScore(prop.computed_scores?.by_category?.location?.score, 0, 10000),
-                price: normalizeScore(prop.computed_scores?.by_category?.financial?.score, 0, 10000),
-                condition: normalizeScore(prop.computed_scores?.by_category?.property_physical?.score, 0, 10000),
-                investment: normalizeScore(prop.computed_scores?.by_category?.investment?.score, 0, 10000),
-                lifestyle: normalizeScore(prop.computed_scores?.by_category?.lifestyle?.score, 0, 10000)
-            },
-            // CRITICAL: Include coordinates for Google Maps
-            location: {
-                latitude: prop.location?.latitude || prop.basic?.coordinates?.latitude || prop.address?.latitude,
-                longitude: prop.location?.longitude || prop.basic?.coordinates?.longitude || prop.address?.longitude,
-                lat: prop.location?.lat || prop.location?.latitude || prop.basic?.coordinates?.latitude || prop.address?.latitude,
-                lng: prop.location?.lng || prop.location?.longitude || prop.basic?.coordinates?.longitude || prop.address?.longitude
-            },
-            address: {
-                latitude: prop.address?.latitude || prop.location?.latitude || prop.basic?.coordinates?.latitude,
-                longitude: prop.address?.longitude || prop.location?.longitude || prop.basic?.coordinates?.longitude
-            },
-            basic: {
-                coordinates: {
-                    latitude: prop.basic?.coordinates?.latitude || prop.location?.latitude || prop.address?.latitude,
-                    longitude: prop.basic?.coordinates?.longitude || prop.location?.longitude || prop.address?.longitude
+        return properties.map(prop => {
+            // CSV importer saves in THIS structure:
+            // { basic: {address, bedrooms, bathrooms, coordinates}, location: {city, state, zipCode, latitude, longitude}, financial: {listingPrice} }
+
+            const lat = prop.location?.latitude || prop.basic?.coordinates?.latitude || prop.address?.latitude || 0;
+            const lng = prop.location?.longitude || prop.basic?.coordinates?.longitude || prop.address?.longitude || 0;
+
+            return {
+                id: prop.property_id || prop.id,
+                name: prop.basic?.address || `${prop.location?.city}, ${prop.location?.state}`,
+                price: prop.financial?.listingPrice || prop.price?.current || 0,
+                dimensions: {
+                    location: normalizeScore(prop.computed_scores?.by_category?.location?.score, 0, 10000),
+                    price: normalizeScore(prop.computed_scores?.by_category?.financial?.score, 0, 10000),
+                    condition: normalizeScore(prop.computed_scores?.by_category?.property_physical?.score, 0, 10000),
+                    investment: normalizeScore(prop.computed_scores?.by_category?.investment?.score, 0, 10000),
+                    lifestyle: normalizeScore(prop.computed_scores?.by_category?.lifestyle?.score, 0, 10000)
+                },
+                // Include ALL possible coordinate formats
+                location: {
+                    latitude: lat,
+                    longitude: lng,
+                    lat: lat,
+                    lng: lng,
+                    city: prop.location?.city,
+                    state: prop.location?.state
                 },
                 address: {
-                    street: prop.address?.street,
-                    city: prop.address?.city,
-                    state: prop.address?.state,
-                    zip: prop.address?.zip
-                }
-            },
-            // Include full property details for modal
-            bedrooms: prop.bedrooms,
-            bathrooms: prop.bathrooms?.total || prop.bathrooms,
-            sqft_living: prop.square_feet?.living || prop.sqft_living,
-            sqft_lot: prop.square_feet?.lot || prop.sqft_lot,
-            year_built: prop.year_built,
-            property_type: prop.property_type,
-            mls_number: prop.mls?.number || prop.mls_number
-        }));
+                    latitude: lat,
+                    longitude: lng,
+                    street: prop.basic?.address,
+                    city: prop.location?.city,
+                    state: prop.location?.state,
+                    zip: prop.location?.zipCode
+                },
+                basic: {
+                    coordinates: {
+                        latitude: lat,
+                        longitude: lng
+                    },
+                    address: {
+                        street: prop.basic?.address,
+                        city: prop.location?.city,
+                        state: prop.location?.state,
+                        zip: prop.location?.zipCode
+                    }
+                },
+                // CSV structure fields for modal
+                bedrooms: prop.basic?.bedrooms || prop.bedrooms,
+                bathrooms: prop.basic?.bathrooms || prop.bathrooms?.total || prop.bathrooms,
+                sqft_living: prop.basic?.squareFeet || prop.square_feet?.living || prop.sqft_living,
+                sqft_lot: prop.basic?.lotSize || prop.square_feet?.lot || prop.sqft_lot,
+                year_built: prop.basic?.yearBuilt || prop.year_built,
+                property_type: prop.basic?.propertyType || prop.property_type,
+                mls_number: prop.basic?.mlsNumber || prop.mls?.number || prop.mls_number
+            };
+        });
     }
 
     /**
