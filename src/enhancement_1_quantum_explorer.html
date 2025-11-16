@@ -2594,11 +2594,18 @@
 
                 // If property doesn't have coordinates, geocode it
                 if (lat === 0 || lng === 0) {
-                    const address = property.name || `${property.location?.city}, ${property.location?.state}`;
-                    document.getElementById('loading').textContent = `Geocoding ${geocodedCount + 1}/${totalNeeded}: ${address}`;
-                    console.log(`🔍 Geocoding via Google Maps API: ${address}`);
+                    // Build COMPLETE address with street, city, state, zip for accurate geocoding
+                    const street = property.name || property.address?.street || property.basic?.address?.street || '';
+                    const city = property.location?.city || property.address?.city || '';
+                    const state = property.location?.state || property.address?.state || '';
+                    const zip = property.address?.zip || property.location?.zip || '';
 
-                    const coords = await geocodeAddress(address);
+                    const fullAddress = `${street}, ${city}, ${state} ${zip}`.trim();
+
+                    document.getElementById('loading').textContent = `Geocoding ${geocodedCount + 1}/${totalNeeded}: ${fullAddress}`;
+                    console.log(`🔍 Geocoding FULL ADDRESS via Google Maps API: ${fullAddress}`);
+
+                    const coords = await geocodeAddress(fullAddress);
 
                     if (coords) {
                         // Add coordinates to property in all possible locations
@@ -2618,9 +2625,9 @@
                         property.basic.coordinates.longitude = coords.lng;
 
                         geocodedCount++;
-                        console.log(`✅ REAL coordinates from Google Maps: ${address} → ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`);
+                        console.log(`✅ REAL coordinates from Google Maps: ${fullAddress} → ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`);
                     } else {
-                        console.error(`❌ Failed to geocode: ${address}`);
+                        console.error(`❌ Failed to geocode: ${fullAddress}`);
                     }
                 }
             });
