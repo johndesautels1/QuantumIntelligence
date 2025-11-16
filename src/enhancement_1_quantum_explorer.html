@@ -224,7 +224,7 @@
         .properties-list {
             position: absolute;
             left: 20px;
-            top: 20px;  /* Moved up to align with dimension-controls */
+            top: 80px;  /* Moved down to not hide score display */
             background: rgba(0, 212, 255, 0.15);
             backdrop-filter: blur(20px);
             border-radius: 20px;
@@ -233,7 +233,7 @@
             box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2);
             pointer-events: all;
             max-width: 320px;
-            max-height: calc(100vh - 40px);  /* Adjusted for new position */
+            max-height: calc(100vh - 100px);  /* Adjusted for new position */
             overflow-y: auto;
         }
 
