@@ -358,8 +358,20 @@
 </head>
 <body>
     <div class="container">
-        <h1>📥 Data Import & Scraping</h1>
-        <p class="subtitle">Import properties from multiple sources: files, websites, MLS, and social media</p>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+                <h1>📥 Data Import & Scraping</h1>
+                <p class="subtitle">Import properties from multiple sources: files, websites, MLS, and social media</p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="window.location.href='/index.html'" class="btn" style="background: #3b82f6;">
+                    🏠 Dashboard
+                </button>
+                <button onclick="window.location.href='/src/enhancement_1_quantum_explorer.html'" class="btn" style="background: #10b981;">
+                    🌀 5D Explorer
+                </button>
+            </div>
+        </div>
 
         <div class="import-methods">
             <div class="method-card" onclick="showPanel('csv')">

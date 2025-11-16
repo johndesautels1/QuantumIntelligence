@@ -671,12 +671,12 @@
                 let results;
 
                 if (extension === 'csv') {
-                    console.log('📋 Importing CSV file...');
-                    results = await importExporter.importCSV(file);
+                    console.log('📋 Importing CSV file with dataImporter (includes coordinates)...');
+                    results = await dataImporter.importFromCSV(file);
                     console.log('✅ CSV import results:', results);
                 } else if (extension === 'json') {
                     console.log('📋 Importing JSON file...');
-                    results = await importExporter.importJSON(file);
+                    results = await dataImporter.importFromJSON(file);
                     console.log('✅ JSON import results:', results);
                 } else {
                     throw new Error('Unsupported file format. Please use CSV or JSON.');
