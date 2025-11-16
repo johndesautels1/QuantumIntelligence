@@ -1027,11 +1027,11 @@
         }
 
         const DIMENSIONS = [
-            { id: 'location', name: 'Location Quality', axis: 'X', icon: '📍' },
+            { id: 'location', name: 'Geographic Location', axis: 'X (Longitude)', icon: '📍' },
             { id: 'price', name: 'Price Value', axis: 'Y', icon: '💰' },
-            { id: 'condition', name: 'Property Condition', axis: 'Z', icon: '🏠' },
+            { id: 'condition', name: 'Geographic Position', axis: 'Z (Latitude)', icon: '🏠' },
             { id: 'investment', name: 'Investment Potential', axis: 'Size', icon: '📈' },
-            { id: 'lifestyle', name: 'Lifestyle Match', axis: 'Color', icon: '✨' }
+            { id: 'lifestyle', name: 'Overall Quality', axis: 'Color', icon: '✨' }
         ];
 
         // ===== UTILITY FUNCTIONS (MUST BE DEFINED FIRST) =====
@@ -1645,7 +1645,7 @@
             const axisLength = 12;
             const axisWidth = 2;
 
-            // X-Axis (Red - Location)
+            // X-Axis (Red - Longitude / East-West)
             const xGeometry = new THREE.CylinderGeometry(0.05, 0.05, axisLength, 16);
             const xMaterial = new THREE.MeshPhongMaterial({ color: 0xff0000, transparent: true, opacity: 0.6 });
             const xAxis = new THREE.Mesh(xGeometry, xMaterial);
@@ -1653,14 +1653,14 @@
             xAxis.position.x = axisLength / 2;
             scene.add(xAxis);
 
-            // Y-Axis (Green - Price)
+            // Y-Axis (Green - Price Value)
             const yGeometry = new THREE.CylinderGeometry(0.05, 0.05, axisLength, 16);
             const yMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00, transparent: true, opacity: 0.6 });
             const yAxis = new THREE.Mesh(yGeometry, yMaterial);
             yAxis.position.y = axisLength / 2;
             scene.add(yAxis);
 
-            // Z-Axis (Blue - Condition)
+            // Z-Axis (Blue - Latitude / North-South)
             const zGeometry = new THREE.CylinderGeometry(0.05, 0.05, axisLength, 16);
             const zMaterial = new THREE.MeshPhongMaterial({ color: 0x0000ff, transparent: true, opacity: 0.6 });
             const zAxis = new THREE.Mesh(zGeometry, zMaterial);
@@ -1672,6 +1672,30 @@
         // Create Property Meshes
         function createPropertyMeshes() {
             debugLog(`🎨 Creating spheres for ${PROPERTIES.length} properties`);
+
+            // Calculate geographic bounds for positioning
+            const geoCoords = PROPERTIES.map(p => ({
+                lat: p.location?.latitude || p.location?.lat || p.address?.latitude || p.basic?.coordinates?.latitude || 0,
+                lng: p.location?.longitude || p.location?.lng || p.address?.longitude || p.basic?.coordinates?.longitude || 0
+            }));
+
+            const validGeoCoords = geoCoords.filter(c => c.lat !== 0 && c.lng !== 0);
+            const hasGeoData = validGeoCoords.length > 0;
+
+            let minLat = hasGeoData ? Math.min(...validGeoCoords.map(c => c.lat)) : 0;
+            let maxLat = hasGeoData ? Math.max(...validGeoCoords.map(c => c.lat)) : 0;
+            let minLng = hasGeoData ? Math.min(...validGeoCoords.map(c => c.lng)) : 0;
+            let maxLng = hasGeoData ? Math.max(...validGeoCoords.map(c => c.lng)) : 0;
+
+            // Add padding to bounds
+            const latPadding = (maxLat - minLat) * 0.1 || 0.01;
+            const lngPadding = (maxLng - minLng) * 0.1 || 0.01;
+            minLat -= latPadding;
+            maxLat += latPadding;
+            minLng -= lngPadding;
+            maxLng += lngPadding;
+
+            debugLog(`📍 Geographic bounds: Lat ${minLat.toFixed(4)} to ${maxLat.toFixed(4)}, Lng ${minLng.toFixed(4)} to ${maxLng.toFixed(4)}`);
 
             PROPERTIES.forEach((property, index) => {
                 const dims = property.dimensions;
@@ -1686,10 +1710,26 @@
 
                 debugLog(`  Dims: L=${dims.location} P=${dims.price} C=${dims.condition} I=${dims.investment} Lf=${dims.lifestyle}`);
 
-                // Map dimension values (0-100) to 3D coordinates (-10 to 10)
-                const x = ((dims.location / 100) * 20) - 10;
+                // Get geographic coordinates
+                const lat = geoCoords[index].lat;
+                const lng = geoCoords[index].lng;
+
+                let x, z;
+                if (hasGeoData && lat !== 0 && lng !== 0) {
+                    // Map geographic coordinates to 3D space (-10 to 10)
+                    // X-axis = Longitude (East-West), Z-axis = Latitude (North-South)
+                    x = ((lng - minLng) / (maxLng - minLng) * 20) - 10;
+                    z = ((lat - minLat) / (maxLat - minLat) * 20) - 10;
+                    debugLog(`  📍 Using GEO coords: Lat=${lat.toFixed(4)}, Lng=${lng.toFixed(4)} -> X=${x.toFixed(1)}, Z=${z.toFixed(1)}`);
+                } else {
+                    // Fallback: use location score if no geo data
+                    x = ((dims.location / 100) * 20) - 10;
+                    z = ((dims.condition / 100) * 20) - 10;
+                    debugLog(`  ⚠️ No geo coords, using scores: X=${x.toFixed(1)}, Z=${z.toFixed(1)}`);
+                }
+
+                // Y-axis always represents price value
                 const y = ((dims.price / 100) * 20) - 10;
-                const z = ((dims.condition / 100) * 20) - 10;
 
                 debugLog(`  Position: x=${x.toFixed(1)}, y=${y.toFixed(1)}, z=${z.toFixed(1)}`);
 
