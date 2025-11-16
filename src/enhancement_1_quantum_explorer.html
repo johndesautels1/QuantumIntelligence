@@ -1847,7 +1847,7 @@
                             // Texture loaded successfully
                             texture.colorSpace = THREE.SRGBColorSpace;
 
-                            // ALSO load satellite on top face immediately
+                            // Load satellite on top face AFTER materials are assigned
                             if (satelliteUrl) {
                                 const satLoader = new THREE.TextureLoader();
                                 satLoader.setCrossOrigin("anonymous");
@@ -1855,13 +1855,16 @@
                                     satelliteUrl,
                                     (satTex) => {
                                         satTex.colorSpace = THREE.SRGBColorSpace;
-                                        // Replace top face with satellite
-                                        if (Array.isArray(block.material) && block.material[4]) {
+                                        satTex.minFilter = THREE.LinearFilter;
+                                        // Apply to top face (index 4)
+                                        if (block && Array.isArray(block.material) && block.material[4]) {
                                             block.material[4].map = satTex;
                                             block.material[4].needsUpdate = true;
-                                            console.log("Satellite view applied to top");
+                                            console.log(`🛰️ Satellite applied to TOP of ${property.name}`);
                                         }
-                                    }
+                                    },
+                                    undefined,
+                                    (err) => console.warn(`Failed to load satellite for ${property.name}`)
                                 );
                             }
                             texture.minFilter = THREE.LinearFilter;
@@ -1871,13 +1874,22 @@
                             // Store both textures in userData
                             block.userData.streetViewTexture = texture;
 
-                            // Update materials - put texture on top face (index 4)
+                            // Update materials - Street View on FRONT (2), Satellite will go on TOP (4)
                             const newMaterials = [];
                             for (let i = 0; i < 6; i++) {
-                                if (i === 4) {
-                                    // Top face gets the house texture (will switch based on camera angle)
+                                if (i === 2) {
+                                    // Front face gets Street View
                                     newMaterials.push(new THREE.MeshStandardMaterial({
                                         map: texture,
+                                        roughness: 0.45,
+                                        metalness: 0.05,
+                                        emissive: new THREE.Color(color),
+                                        emissiveIntensity: 0.15
+                                    }));
+                                } else if (i === 4) {
+                                    // Top face - will get satellite (placeholder for now)
+                                    newMaterials.push(new THREE.MeshStandardMaterial({
+                                        color: color,
                                         roughness: 0.45,
                                         metalness: 0.05,
                                         emissive: new THREE.Color(color),
