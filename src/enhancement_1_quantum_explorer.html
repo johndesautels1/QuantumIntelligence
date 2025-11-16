@@ -2572,6 +2572,22 @@
         // Add coordinates to properties that don't have them
         async function ensureCoordinates() {
             let geocodedCount = 0;
+            let totalNeeded = 0;
+
+            // Count how many need geocoding
+            ALL_PROPERTIES.forEach(property => {
+                const lat = property.location?.latitude || property.location?.lat || property.address?.latitude || property.basic?.coordinates?.latitude || 0;
+                const lng = property.location?.longitude || property.location?.lng || property.address?.longitude || property.basic?.coordinates?.longitude || 0;
+                if (lat === 0 || lng === 0) totalNeeded++;
+            });
+
+            if (totalNeeded === 0) {
+                console.log(`✅ All properties already have coordinates`);
+                return;
+            }
+
+            console.log(`🌍 Starting geocoding for ${totalNeeded} properties using Google Maps API...`);
+
             const promises = ALL_PROPERTIES.map(async (property, index) => {
                 const lat = property.location?.latitude || property.location?.lat || property.address?.latitude || property.basic?.coordinates?.latitude || 0;
                 const lng = property.location?.longitude || property.location?.lng || property.address?.longitude || property.basic?.coordinates?.longitude || 0;
@@ -2579,7 +2595,8 @@
                 // If property doesn't have coordinates, geocode it
                 if (lat === 0 || lng === 0) {
                     const address = property.name || `${property.location?.city}, ${property.location?.state}`;
-                    console.log(`🔍 Geocoding: ${address}`);
+                    document.getElementById('loading').textContent = `Geocoding ${geocodedCount + 1}/${totalNeeded}: ${address}`;
+                    console.log(`🔍 Geocoding via Google Maps API: ${address}`);
 
                     const coords = await geocodeAddress(address);
 
@@ -2601,13 +2618,19 @@
                         property.basic.coordinates.longitude = coords.lng;
 
                         geocodedCount++;
-                        console.log(`✅ Geocoded ${address}: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`);
+                        console.log(`✅ REAL coordinates from Google Maps: ${address} → ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`);
+                    } else {
+                        console.error(`❌ Failed to geocode: ${address}`);
                     }
                 }
             });
 
             await Promise.all(promises);
-            console.log(`📍 Geocoded ${geocodedCount} properties`);
+            console.log(`📍 Successfully geocoded ${geocodedCount}/${totalNeeded} properties using REAL Google Maps data`);
+
+            // Show summary
+            document.getElementById('loading').textContent = `Geocoded ${geocodedCount} properties with real coordinates`;
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Show for 1 second
         }
 
         // ===== END GEOCODING FUNCTIONS =====
