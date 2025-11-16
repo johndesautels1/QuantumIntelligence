@@ -162,8 +162,20 @@ class DataImporter {
             longitude: ['lng', 'lon', 'long', 'longitude']
         };
 
+        let coordDebug = '🔍 COORDINATE COLUMN DETECTION:\n\n';
+
         headers.forEach((header, index) => {
             const normalized = header.toLowerCase().trim();
+
+            // Debug lat/lng columns
+            if (index >= 12) {
+                coordDebug += `Column ${index}: "${header}"\n`;
+                coordDebug += `Normalized: "${normalized}"\n`;
+                coordDebug += `Contains "lat": ${normalized.includes('lat')}\n`;
+                coordDebug += `Contains "latitude": ${normalized.includes('latitude')}\n`;
+                coordDebug += `Contains "lng": ${normalized.includes('lng')}\n`;
+                coordDebug += `Contains "longitude": ${normalized.includes('longitude')}\n\n`;
+            }
 
             for (let [field, keywords] of Object.entries(patterns)) {
                 for (let keyword of keywords) {
@@ -174,6 +186,12 @@ class DataImporter {
                 }
             }
         });
+
+        coordDebug += `\nFinal mapping:\n`;
+        coordDebug += `latitude -> column ${mapping.latitude}\n`;
+        coordDebug += `longitude -> column ${mapping.longitude}`;
+
+        alert(coordDebug);
 
         return mapping;
     }
