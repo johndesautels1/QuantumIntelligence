@@ -40,25 +40,12 @@ class DataImporter {
             // Auto-detect columns if no mapping provided
             const mapping = columnMapping || this.autoDetectColumns(data[0]);
 
-            console.log('🔍 CSV HEADERS:', data[0]);
-            console.log('🔍 DETECTED MAPPING:', mapping);
-            console.log('🔍 Latitude column index:', mapping.latitude);
-            console.log('🔍 Longitude column index:', mapping.longitude);
-
-            // DIAGNOSTIC ALERT
-            alert(`🔍 CSV PARSING DIAGNOSTIC:\n\nHeaders: ${data[0].length} columns\n${JSON.stringify(data[0])}\n\nMapping:\nLatitude column: ${mapping.latitude}\nLongitude column: ${mapping.longitude}\n\nRow 8 data (12650 7th St E):\n${JSON.stringify(data[7])}\n\nRow 8 lat/lng values:\nLat [${mapping.latitude}]: "${data[7][mapping.latitude]}"\nLng [${mapping.longitude}]: "${data[7][mapping.longitude]}"`);
-
             const properties = [];
             const errors = [];
 
             // Skip header row
             for (let i = 1; i < data.length; i++) {
                 try {
-                    // DIAGNOSTIC: Show row 8 (12650 7th St E)
-                    if (i === 7) {
-                        alert(`🔍 ROW 8 DIAGNOSTIC (12650 7th St E):\n\nRaw row data: ${JSON.stringify(data[i])}\n\nColumn count: ${data[i].length}\n\nLatitude column ${mapping.latitude}: "${data[i][mapping.latitude]}"\nLongitude column ${mapping.longitude}: "${data[i][mapping.longitude]}"`);
-                    }
-
                     const property = this.mapCSVRow(data[i], mapping, data[0]);
                     const validation = this.validateProperty(property);
 
@@ -166,20 +153,8 @@ class DataImporter {
             longitude: ['longitude', 'lng', 'lon', 'long']
         };
 
-        let coordDebug = '🔍 COORDINATE COLUMN DETECTION:\n\n';
-
         headers.forEach((header, index) => {
             const normalized = header.toLowerCase().trim();
-
-            // Debug lat/lng columns
-            if (index >= 12) {
-                coordDebug += `Column ${index}: "${header}"\n`;
-                coordDebug += `Normalized: "${normalized}"\n`;
-                coordDebug += `Contains "lat": ${normalized.includes('lat')}\n`;
-                coordDebug += `Contains "latitude": ${normalized.includes('latitude')}\n`;
-                coordDebug += `Contains "lng": ${normalized.includes('lng')}\n`;
-                coordDebug += `Contains "longitude": ${normalized.includes('longitude')}\n\n`;
-            }
 
             for (let [field, keywords] of Object.entries(patterns)) {
                 // Check if this field is already mapped
@@ -194,12 +169,6 @@ class DataImporter {
                 }
             }
         });
-
-        coordDebug += `\nFinal mapping:\n`;
-        coordDebug += `latitude -> column ${mapping.latitude}\n`;
-        coordDebug += `longitude -> column ${mapping.longitude}`;
-
-        alert(coordDebug);
 
         return mapping;
     }
@@ -273,40 +242,24 @@ class DataImporter {
         }
         // Coordinates - save in BOTH location and basic for compatibility
         if (mapping.latitude !== undefined) {
-            const rawLat = row[mapping.latitude];
-            const lat = parseFloat(rawLat);
-            console.log(`🔍 CSV Import - Row lat value: "${rawLat}" (column ${mapping.latitude}) -> parsed: ${lat}`);
+            const lat = parseFloat(row[mapping.latitude]);
             if (!isNaN(lat) && lat !== 0) {
                 property.location.latitude = lat;
-                // Also save to basic for database compatibility
                 if (!property.basic.coordinates) {
                     property.basic.coordinates = {};
                 }
                 property.basic.coordinates.latitude = lat;
-                console.log(`✅ Saved latitude: ${lat} to both locations`);
-            } else {
-                console.log(`⚠️ Skipped latitude (NaN or zero): ${lat}`);
             }
-        } else {
-            console.log(`⚠️ No latitude mapping found in CSV headers`);
         }
         if (mapping.longitude !== undefined) {
-            const rawLng = row[mapping.longitude];
-            const lng = parseFloat(rawLng);
-            console.log(`🔍 CSV Import - Row lng value: "${rawLng}" (column ${mapping.longitude}) -> parsed: ${lng}`);
+            const lng = parseFloat(row[mapping.longitude]);
             if (!isNaN(lng) && lng !== 0) {
                 property.location.longitude = lng;
-                // Also save to basic for database compatibility
                 if (!property.basic.coordinates) {
                     property.basic.coordinates = {};
                 }
                 property.basic.coordinates.longitude = lng;
-                console.log(`✅ Saved longitude: ${lng} to both locations`);
-            } else {
-                console.log(`⚠️ Skipped longitude (NaN or zero): ${lng}`);
             }
-        } else {
-            console.log(`⚠️ No longitude mapping found in CSV headers`);
         }
 
         return property;
