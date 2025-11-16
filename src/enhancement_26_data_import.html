@@ -1054,14 +1054,25 @@
                 return;
             }
 
-            if (!confirm('🚨 FINAL WARNING: This will permanently delete all ' + (await dataManager.count(dataManager.stores.properties)) + ' properties.\n\nAre you absolutely sure?')) {
-                return;
-            }
-
             try {
+                // Try to get count, but don't fail if database is broken
+                let count = 'all';
+                try {
+                    await dataManager.init();
+                    count = await dataManager.count(dataManager.stores.properties);
+                } catch (e) {
+                    console.warn('Could not count properties:', e);
+                }
+
+                if (!confirm(`🚨 FINAL WARNING: This will permanently delete ${count} properties.\n\nAre you absolutely sure?`)) {
+                    return;
+                }
+
                 showProgress(0);
                 updateProgress(50, 'Deleting all properties...');
 
+                // Reinit to ensure clean connection
+                await dataManager.init();
                 await dataManager.clear(dataManager.stores.properties);
 
                 updateProgress(100, 'All properties deleted!');
@@ -1074,7 +1085,7 @@
 
             } catch (error) {
                 hideProgress();
-                alert('❌ Error deleting properties: ' + error.message);
+                alert('❌ Error deleting properties: ' + error.message + '\n\nTry clicking "🔄 Reset Database" first.');
             }
         }
 
