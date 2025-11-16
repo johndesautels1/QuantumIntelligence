@@ -86,19 +86,21 @@ class SharedDataAdapter {
             const lat = prop.location?.latitude || prop.basic?.coordinates?.latitude || prop.address?.latitude || 0;
             const lng = prop.location?.longitude || prop.basic?.coordinates?.longitude || prop.address?.longitude || 0;
 
-            // Scoring engine already returns 0-100 scores, use directly
+            // Scoring engine returns scores - clamp to 0-100 range
             const scores = prop.computed_scores?.by_category || {};
+
+            const clamp = (val) => Math.max(0, Math.min(100, val || 50));
 
             return {
                 id: prop.property_id || prop.id,
                 name: prop.basic?.address || `${prop.location?.city}, ${prop.location?.state}`,
                 price: prop.financial?.listingPrice || prop.price?.current || 0,
                 dimensions: {
-                    location: scores.location?.score || 50,
-                    price: scores.financial?.score || 50,
-                    condition: scores.property_physical?.score || 50,
-                    investment: scores.investment?.score || 50,
-                    lifestyle: scores.lifestyle?.score || 50
+                    location: clamp(scores.location?.score),
+                    price: clamp(scores.financial?.score),
+                    condition: clamp(scores.property_physical?.score),
+                    investment: clamp(scores.investment?.score),
+                    lifestyle: clamp(scores.lifestyle?.score)
                 },
                 // Include ALL possible coordinate formats
                 location: {
