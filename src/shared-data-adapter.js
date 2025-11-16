@@ -90,7 +90,38 @@ class SharedDataAdapter {
                 condition: normalizeScore(prop.computed_scores?.by_category?.property_physical?.score, 0, 10000),
                 investment: normalizeScore(prop.computed_scores?.by_category?.investment?.score, 0, 10000),
                 lifestyle: normalizeScore(prop.computed_scores?.by_category?.lifestyle?.score, 0, 10000)
-            }
+            },
+            // CRITICAL: Include coordinates for Google Maps
+            location: {
+                latitude: prop.location?.latitude || prop.basic?.coordinates?.latitude || prop.address?.latitude,
+                longitude: prop.location?.longitude || prop.basic?.coordinates?.longitude || prop.address?.longitude,
+                lat: prop.location?.lat || prop.location?.latitude || prop.basic?.coordinates?.latitude || prop.address?.latitude,
+                lng: prop.location?.lng || prop.location?.longitude || prop.basic?.coordinates?.longitude || prop.address?.longitude
+            },
+            address: {
+                latitude: prop.address?.latitude || prop.location?.latitude || prop.basic?.coordinates?.latitude,
+                longitude: prop.address?.longitude || prop.location?.longitude || prop.basic?.coordinates?.longitude
+            },
+            basic: {
+                coordinates: {
+                    latitude: prop.basic?.coordinates?.latitude || prop.location?.latitude || prop.address?.latitude,
+                    longitude: prop.basic?.coordinates?.longitude || prop.location?.longitude || prop.address?.longitude
+                },
+                address: {
+                    street: prop.address?.street,
+                    city: prop.address?.city,
+                    state: prop.address?.state,
+                    zip: prop.address?.zip
+                }
+            },
+            // Include full property details for modal
+            bedrooms: prop.bedrooms,
+            bathrooms: prop.bathrooms?.total || prop.bathrooms,
+            sqft_living: prop.square_feet?.living || prop.sqft_living,
+            sqft_lot: prop.square_feet?.lot || prop.sqft_lot,
+            year_built: prop.year_built,
+            property_type: prop.property_type,
+            mls_number: prop.mls?.number || prop.mls_number
         }));
     }
 
