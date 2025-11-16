@@ -51,6 +51,11 @@ class DataImporter {
             // Skip header row
             for (let i = 1; i < data.length; i++) {
                 try {
+                    // DIAGNOSTIC: Show row 8 (12650 7th St E)
+                    if (i === 7) {
+                        alert(`🔍 ROW 8 DIAGNOSTIC (12650 7th St E):\n\nRaw row data: ${JSON.stringify(data[i])}\n\nColumn count: ${data[i].length}\n\nLatitude column ${mapping.latitude}: "${data[i][mapping.latitude]}"\nLongitude column ${mapping.longitude}: "${data[i][mapping.longitude]}"`);
+                    }
+
                     const property = this.mapCSVRow(data[i], mapping, data[0]);
                     const validation = this.validateProperty(property);
 
