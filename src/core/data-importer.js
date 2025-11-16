@@ -144,7 +144,9 @@ class DataImporter {
             mls: ['mls', 'mls#', 'mls number'],
             daysOnMarket: ['dom', 'days on market', 'days listed'],
             hoa: ['hoa', 'hoa fee', 'hoa dues'],
-            taxes: ['tax', 'taxes', 'property tax', 'annual tax']
+            taxes: ['tax', 'taxes', 'property tax', 'annual tax'],
+            latitude: ['lat', 'latitude'],
+            longitude: ['lng', 'lon', 'long', 'longitude']
         };
 
         headers.forEach((header, index) => {
@@ -229,6 +231,18 @@ class DataImporter {
         }
         if (mapping.taxes !== undefined) {
             property.financial.annualTaxes = this.parseNumber(row[mapping.taxes]);
+        }
+        if (mapping.latitude !== undefined) {
+            const lat = parseFloat(row[mapping.latitude]);
+            if (!isNaN(lat) && lat !== 0) {
+                property.location.latitude = lat;
+            }
+        }
+        if (mapping.longitude !== undefined) {
+            const lng = parseFloat(row[mapping.longitude]);
+            if (!isNaN(lng) && lng !== 0) {
+                property.location.longitude = lng;
+            }
         }
 
         return property;

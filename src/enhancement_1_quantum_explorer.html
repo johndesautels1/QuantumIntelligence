@@ -13,6 +13,10 @@
     <!-- 3D Graphics -->
     <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
     <script src="lib/OrbitControls.js"></script>
+
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAtnlfmqoHQkiJXc3KYUeR5_4mUupOPLbw&libraries=places"></script>
+
     <style>
         * {
             margin: 0;
@@ -33,12 +37,33 @@
             position: relative;
         }
 
+        #map-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
         #canvas-container {
             width: 100%;
             height: 100%;
             position: absolute;
             top: 0;
             left: 0;
+            z-index: 5;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        #canvas-container canvas {
+            pointer-events: auto;
+        }
+
+        /* Map view styles */
+        .map-visible #canvas-container {
+            opacity: 0.8;
         }
 
         .ui-overlay {
@@ -199,7 +224,7 @@
         .properties-list {
             position: absolute;
             left: 20px;
-            top: 120px;
+            top: 20px;  /* Moved up to align with dimension-controls */
             background: rgba(0, 212, 255, 0.15);
             backdrop-filter: blur(20px);
             border-radius: 20px;
@@ -208,14 +233,53 @@
             box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2);
             pointer-events: all;
             max-width: 320px;
-            max-height: calc(100vh - 140px);
+            max-height: calc(100vh - 40px);  /* Adjusted for new position */
             overflow-y: auto;
         }
 
         .properties-list h2 {
             color: #00D4FF;
-            font-size: 1.3em;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .property-selector-info {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85em;
+            margin-bottom: 12px;
+            padding: 8px;
+            background: rgba(0, 212, 255, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid #00D4FF;
+        }
+
+        .property-selector-controls {
+            display: flex;
+            gap: 8px;
             margin-bottom: 15px;
+        }
+
+        .btn-small {
+            background: rgba(0, 212, 255, 0.2);
+            border: 1px solid rgba(0, 212, 255, 0.5);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            flex: 1;
+        }
+
+        .btn-small:hover {
+            background: rgba(0, 212, 255, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn-small.active {
+            background: linear-gradient(135deg, #0066CC, #00D4FF);
+            border-color: #00D4FF;
         }
 
         .property-card {
@@ -223,31 +287,62 @@
             backdrop-filter: blur(10px);
             border: 2px solid rgba(0, 212, 255, 0.4);
             border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 12px;
+            padding: 12px 40px 12px 12px;  /* Extra right padding for checkbox */
+            margin-bottom: 10px;
             cursor: pointer;
             transition: all 0.3s ease;
             box-shadow: 0 4px 16px rgba(0, 212, 255, 0.15);
+            position: relative;
         }
 
         .property-card:hover {
             background: rgba(0, 212, 255, 0.25);
-            transform: translateY(-3px);
+            transform: translateY(-2px);
             box-shadow: 0 6px 24px rgba(0, 212, 255, 0.35);
             border-color: rgba(0, 212, 255, 0.7);
         }
 
-        .property-card.active {
+        .property-card.selected {
             background: linear-gradient(135deg, rgba(0, 102, 204, 0.5), rgba(0, 212, 255, 0.5));
             border-color: #00D4FF;
-            box-shadow: 0 0 30px rgba(0, 212, 255, 0.6), 0 0 60px rgba(0, 212, 255, 0.3);
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.6);
+        }
+
+        .property-card.dimmed {
+            opacity: 0.4;
+            filter: grayscale(0.5);
+        }
+
+        .property-checkbox {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 24px;
+            height: 24px;
+            border: 2px solid #00D4FF;
+            border-radius: 4px;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            pointer-events: none;  /* Let clicks pass through to parent card */
+            flex-shrink: 0;  /* Prevent checkbox from shrinking */
+        }
+
+        .property-checkbox.checked {
+            background: linear-gradient(135deg, #0066CC, #00D4FF);
         }
 
         .property-name {
             color: white;
             font-weight: 600;
-            font-size: 1.05em;
+            font-size: 0.95em;
             margin-bottom: 8px;
+            line-height: 1.3;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            max-width: 100%;  /* Ensure it doesn't overflow */
         }
 
         .property-price {
@@ -447,10 +542,316 @@
             pointer-events: none;
             font-size: 1.1em;
         }
+
+        /* Property Detail Modal */
+        .property-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            pointer-events: all;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .property-modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #0B1F3F, #1a3a5f);
+            border-radius: 24px;
+            max-width: 900px;
+            max-height: 90vh;
+            width: 90%;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 212, 255, 0.3);
+            border: 2px solid rgba(0, 212, 255, 0.5);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 24px 30px;
+            background: linear-gradient(135deg, rgba(0, 102, 204, 0.3), rgba(0, 212, 255, 0.3));
+            border-bottom: 2px solid rgba(0, 212, 255, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            color: #00D4FF;
+            font-size: 1.8em;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            font-size: 1.5em;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            z-index: 10000;
+            position: relative;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 0, 0, 0.3);
+            border-color: #ff4444;
+        }
+
+        .modal-body {
+            padding: 30px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .property-images {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .property-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 2px solid rgba(0, 212, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .property-image:hover {
+            transform: scale(1.05);
+            border-color: #00D4FF;
+            box-shadow: 0 8px 24px rgba(0, 212, 255, 0.4);
+        }
+
+        .property-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .detail-item {
+            background: rgba(0, 212, 255, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+        }
+
+        .detail-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.85em;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            color: white;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .modal-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            padding: 15px 20px;
+            border-radius: 12px;
+            border: 2px solid;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .action-heart {
+            background: rgba(255, 20, 147, 0.2);
+            border-color: #FF1493;
+            color: #FF1493;
+        }
+
+        .action-heart:hover {
+            background: rgba(255, 20, 147, 0.4);
+        }
+
+        .action-discard {
+            background: rgba(255, 68, 68, 0.2);
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        .action-discard:hover {
+            background: rgba(255, 68, 68, 0.4);
+        }
+
+        .action-notes {
+            background: rgba(255, 215, 0, 0.2);
+            border-color: #FFD700;
+            color: #FFD700;
+        }
+
+        .action-notes:hover {
+            background: rgba(255, 215, 0, 0.4);
+        }
+
+        .action-showing {
+            background: rgba(0, 212, 255, 0.2);
+            border-color: #00D4FF;
+            color: #00D4FF;
+        }
+
+        .action-showing:hover {
+            background: rgba(0, 212, 255, 0.4);
+        }
+
+        .notes-section {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 2px solid rgba(255, 215, 0, 0.5);
+        }
+
+        .notes-section.active {
+            display: block;
+        }
+
+        .notes-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            border-radius: 8px;
+            color: white;
+            font-size: 1em;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .notes-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .showing-section {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            border: 2px solid rgba(0, 212, 255, 0.5);
+        }
+
+        .showing-section.active {
+            display: block;
+        }
+
+        .datetime-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(0, 212, 255, 0.5);
+            border-radius: 8px;
+            color: white;
+            font-size: 1em;
+            margin-bottom: 12px;
+        }
+
+        /* Listing Site Iframe Modal */
+        .listing-iframe-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 20000;
+            pointer-events: all;
+        }
+
+        .listing-iframe-modal.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .iframe-header {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #0066CC, #00D4FF);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .iframe-header h3 {
+            color: white;
+            margin: 0;
+            font-size: 1.2em;
+        }
+
+        .iframe-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .iframe-close:hover {
+            background: rgba(255, 0, 0, 0.5);
+        }
+
+        .listing-iframe {
+            flex: 1;
+            width: 100%;
+            border: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Google Map Base Layer -->
+        <div id="map-container"></div>
+
+        <!-- 3D Canvas Overlay -->
         <div id="canvas-container"></div>
 
 
@@ -463,7 +864,14 @@
 
             <!-- Properties List -->
             <div class="properties-list">
-                <h2>📍 Properties</h2>
+                <h2>📍 Select Properties (Max 5)</h2>
+                <div class="property-selector-info">
+                    <strong id="selectedCount">0/5</strong> selected for visualization
+                </div>
+                <div class="property-selector-controls">
+                    <button class="btn-small" onclick="selectTopRated()">Top 5</button>
+                    <button class="btn-small" onclick="clearSelection()">Clear</button>
+                </div>
                 <div id="propertiesList">
                     <!-- Populated by JS -->
                 </div>
@@ -478,7 +886,8 @@
                 <div class="dimension-controls" id="dimensionControls">
                     <!-- Populated by JS -->
                 </div>
-                <button class="btn primary" onclick="resetView()">🔄 Reset View</button>
+                <button class="btn primary" onclick="toggleMapView()" id="mapToggleBtn">🗺️ Show Map</button>
+                <button class="btn" onclick="resetView()">🔄 Reset View</button>
                 <button class="btn" onclick="autoRotate()">🔄 Auto Rotate</button>
                 <button class="btn" onclick="focusHighest()">⭐ Focus Top Rated</button>
                 <button class="btn" onclick="showConnections()">🔗 Toggle Connections</button>
@@ -524,12 +933,84 @@
         </div>
 
         <div class="loading" id="loading">Initializing Quantum Space...</div>
+
+        <!-- Property Detail Modal -->
+        <div class="property-modal" id="propertyModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalTitle">Property Details</h2>
+                    <button class="modal-close" onclick="closePropertyModal()">×</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Property Images -->
+                    <div class="property-images" id="modalImages">
+                        <!-- Images will be populated dynamically -->
+                    </div>
+
+                    <!-- Property Details -->
+                    <div class="property-details" id="modalDetails">
+                        <!-- Details will be populated dynamically -->
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="modal-actions">
+                        <button class="action-btn action-heart" onclick="heartProperty()">
+                            ❤️ Heart
+                        </button>
+                        <button class="action-btn action-discard" onclick="discardProperty()">
+                            🗑️ Discard
+                        </button>
+                        <button class="action-btn action-notes" onclick="toggleNotes()">
+                            📝 Questions
+                        </button>
+                        <button class="action-btn action-showing" onclick="toggleShowingCart()">
+                            📅 Schedule Showing
+                        </button>
+                    </div>
+
+                    <!-- Notes Section (Hidden by default) -->
+                    <div class="notes-section" id="notesSection">
+                        <h3 style="color: #FFD700; margin-bottom: 15px;">Ask Questions</h3>
+                        <textarea class="notes-textarea" id="notesText"
+                                  placeholder="Type your questions about this property..."></textarea>
+                        <button class="btn primary" onclick="sendNotes()">
+                            Send to cluesnomads@gmail.com
+                        </button>
+                    </div>
+
+                    <!-- Showing Cart Section (Hidden by default) -->
+                    <div class="showing-section" id="showingSection">
+                        <h3 style="color: #00D4FF; margin-bottom: 15px;">Schedule a Showing</h3>
+                        <input type="datetime-local" class="datetime-input" id="showingDateTime">
+                        <button class="btn primary" onclick="addToShowingCart()">
+                            Add to Showing Cart
+                        </button>
+                        <p style="color: rgba(255,255,255,0.7); font-size: 0.9em; margin-top: 12px;">
+                            This will sync with your Calendly/Google Calendar
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Listing Site Iframe Modal -->
+        <div class="listing-iframe-modal" id="listingIframeModal">
+            <div class="iframe-header">
+                <h3 id="iframeTitle">Viewing Listing</h3>
+                <button class="iframe-close" onclick="closeListingIframe()">×</button>
+            </div>
+            <iframe id="listingIframe" class="listing-iframe" sandbox="allow-same-origin allow-scripts allow-forms"></iframe>
+        </div>
     </div>
 
     <script>
         // ===== REAL PROPERTY DATA FROM DATABASE =====
         // NO HARDCODED FAKE DATA - Loads from IndexedDB
         let PROPERTIES = [];
+        let ALL_PROPERTIES = []; // Store all properties
+        let selectedPropertyIds = new Set(); // Track selected properties (max 5)
+        const MAX_SELECTION = 5;
+
         // Simplified logging (console only, no UI panel)
         function debugLog(message, type = 'info') {
             const prefix = type === 'error' ? '❌' : type === 'warning' ? '⚠️' : '✅';
@@ -544,6 +1025,39 @@
             { id: 'lifestyle', name: 'Lifestyle Match', axis: 'Color', icon: '✨' }
         ];
 
+        // ===== UTILITY FUNCTIONS (MUST BE DEFINED FIRST) =====
+
+        /**
+         * Get color for score (5-tier system matching app legend)
+         * @param {number} score - Score from 0-100
+         * @returns {string} Hex color code
+         */
+        function getScoreColor(score) {
+            if (score >= 80) return '#10b981';      // Excellent - Dark Green
+            if (score >= 60) return '#84cc16';      // Good - Light Green
+            if (score >= 40) return '#FFD700';      // Average - Yellow/Gold
+            if (score >= 20) return '#FF8C00';      // Below Average - Orange
+            return '#ef4444';                        // Poor - Red/Orange
+        }
+
+        /**
+         * Get tier name for score
+         * @param {number} score - Score from 0-100
+         * @returns {string} Tier name
+         */
+        function getScoreTier(score) {
+            if (score >= 80) return 'Excellent';
+            if (score >= 60) return 'Good';
+            if (score >= 40) return 'Average';
+            if (score >= 20) return 'Below Average';
+            return 'Poor';
+        }
+
+        // Google Maps Setup
+        let map;
+        let mapMarkers = [];
+        let mapVisible = false;
+
         // Three.js Scene Setup
         let scene, camera, renderer, controls;
         let propertyMeshes = [];
@@ -551,8 +1065,12 @@
         let propertyRods = []; // Store rod meshes
         let connectionLines = [];
         let showingConnections = false;
+        let labelBasePositions = []; // Store original label Y positions
         let autoRotating = false;
         let selectedProperty = null;
+        let highlightedLabelIndex = null; // Track which label is highlighted
+        let raycaster = new THREE.Raycaster();
+        let mouse = new THREE.Vector2();
 
         // Dimension weights (for filtering visualization)
         let dimensionWeights = {
@@ -622,11 +1140,471 @@
             // Handle window resize
             window.addEventListener('resize', onWindowResize);
 
+            // Handle label clicks
+            window.addEventListener('click', onLabelClick);
+
             // Hide loading
             document.getElementById('loading').style.display = 'none';
 
             // Start animation
             animate();
+        }
+
+        // Handle label clicks
+        function onLabelClick(event) {
+            // Calculate mouse position in normalized device coordinates
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            // Update raycaster
+            raycaster.setFromCamera(mouse, camera);
+
+            // Check for intersections with labels
+            const intersects = raycaster.intersectObjects(propertyLabels);
+
+            if (intersects.length > 0) {
+                // Get the clicked label index
+                const clickedLabel = intersects[0].object;
+                const labelIndex = propertyLabels.indexOf(clickedLabel);
+
+                if (labelIndex !== -1) {
+                    // Open property detail modal
+                    openPropertyModal(labelIndex);
+                }
+            }
+        }
+
+        // Open property detail modal
+        let currentPropertyIndex = null;
+        function openPropertyModal(propertyIndex) {
+            currentPropertyIndex = propertyIndex;
+            const property = PROPERTIES[propertyIndex];
+            if (!property) return;
+
+            // Update modal title
+            document.getElementById('modalTitle').textContent = property.name;
+
+            // Populate images - use Google Street View + placeholder for listings photos
+            const imagesContainer = document.getElementById('modalImages');
+            const address = property.name; // Full address
+            const encodedAddress = encodeURIComponent(address);
+
+            // Get property from original ALL_PROPERTIES to access full data
+            const fullProperty = ALL_PROPERTIES.find(p => p.id === property.id) || property;
+
+            // MLS Photo URL (if available - ready for your MLS key)
+            const mlsPhotoUrl = fullProperty.photos && fullProperty.photos[0] ? fullProperty.photos[0] : null;
+
+            // Google Street View Static API
+            const streetViewUrl = `https://maps.googleapis.com/maps/api/streetview?size=600x400&location=${encodedAddress}&key=AIzaSyAtnlfmqoHQkiJXc3KYUeR5_4mUupOPLbw`;
+
+            // Generate listing site URLs - CORRECTED WORKING FORMATS
+
+            // Zillow: Search by address
+            const zillowUrl = `https://www.zillow.com/homes/${encodeURIComponent(address)}_rb/`;
+
+            // Realtor.com: Search by address
+            const realtorUrl = `https://www.realtor.com/realestateandhomes-search/${encodeURIComponent(address)}`;
+
+            // Redfin: Search by address
+            const redfinUrl = `https://www.redfin.com/zipcode/${fullProperty.address?.zip || '33706'}/filter/property-address=${encodeURIComponent(address)}`;
+
+            // Compass: Search by city/state (opens in new tab due to iframe blocking)
+            const compassUrl = `https://www.compass.com/homes-for-sale/${(fullProperty.address?.city || 'Saint Pete Beach').toLowerCase().replace(/\s+/g, '-')}-${(fullProperty.address?.state || 'FL').toLowerCase()}/`;
+
+            imagesContainer.innerHTML = `
+                ${mlsPhotoUrl ? `
+                    <!-- MLS Primary Photo -->
+                    <img src="${mlsPhotoUrl}"
+                         class="property-image"
+                         alt="MLS Photo"
+                         onerror="this.style.display='none'">
+                ` : ''}
+
+                <!-- Google Street View -->
+                <img src="${streetViewUrl}"
+                     class="property-image"
+                     alt="Street View"
+                     onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22%3E%3Crect fill=%22%23333%22 width=%22400%22 height=%22300%22/%3E%3Ctext fill=%22%23fff%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22%3EStreet View%3C/text%3E%3C/svg%3E'">
+
+                <!-- Listing Sites - Open in modal iframe -->
+                <div style="padding: 20px; text-align: center; background: rgba(0,212,255,0.1); border-radius: 12px; border: 2px dashed rgba(0,212,255,0.3);">
+                    <p style="color: rgba(255,255,255,0.8); margin-bottom: 12px; font-weight: 600;">📷 View Full Listings</p>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                        <button onclick="openListingIframe('${zillowUrl}')"
+                                style="padding: 10px 16px; background: rgba(0,102,204,0.3); color: #00D4FF;
+                                       border: 1px solid #00D4FF; border-radius: 6px; cursor: pointer;
+                                       font-size: 0.85em; transition: all 0.3s ease; font-weight: 600;">
+                            🏠 Zillow
+                        </button>
+                        <button onclick="openListingIframe('${realtorUrl}')"
+                                style="padding: 10px 16px; background: rgba(0,102,204,0.3); color: #00D4FF;
+                                       border: 1px solid #00D4FF; border-radius: 6px; cursor: pointer;
+                                       font-size: 0.85em; transition: all 0.3s ease; font-weight: 600;">
+                            🏡 Realtor.com
+                        </button>
+                        <button onclick="openListingIframe('${redfinUrl}')"
+                                style="padding: 10px 16px; background: rgba(255,68,68,0.3); color: #ff6b6b;
+                                       border: 1px solid #ff6b6b; border-radius: 6px; cursor: pointer;
+                                       font-size: 0.85em; transition: all 0.3s ease; font-weight: 600;">
+                            🔴 Redfin
+                        </button>
+                        <button onclick="openListingIframe('${compassUrl}')"
+                                style="padding: 10px 16px; background: rgba(100,100,255,0.3); color: #6B8CFF;
+                                       border: 1px solid #6B8CFF; border-radius: 6px; cursor: pointer;
+                                       font-size: 0.85em; transition: all 0.3s ease; font-weight: 600;">
+                            🧭 Compass ↗
+                        </button>
+                    </div>
+                    <p style="color: rgba(255,255,255,0.5); font-size: 0.8em; margin-top: 12px;">
+                        MLS#: ${fullProperty.mls_number || property.id}
+                    </p>
+                </div>
+            `;
+
+            // Calculate overall score
+            const overallScore = (
+                property.dimensions.location +
+                property.dimensions.price +
+                property.dimensions.condition +
+                property.dimensions.investment +
+                property.dimensions.lifestyle
+            ) / 5;
+
+            // Populate comprehensive property details
+            const detailsContainer = document.getElementById('modalDetails');
+            detailsContainer.innerHTML = `
+                <div class="detail-item" style="grid-column: 1/-1; background: rgba(0, 212, 255, 0.1); padding: 15px; border-radius: 12px; border: 2px solid ${getScoreColor(overallScore)};">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5em; font-weight: bold; color: ${getScoreColor(overallScore)}; margin-bottom: 5px;">
+                            ⭐ ${Math.round(overallScore)}/100
+                        </div>
+                        <div style="font-size: 0.9em; color: rgba(255,255,255,0.8);">
+                            Overall Quality: <strong style="color: ${getScoreColor(overallScore)}">${getScoreTier(overallScore)}</strong>
+                        </div>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">💰 Price</div>
+                    <div class="detail-value">$${fullProperty.price || property.price ? (fullProperty.price || property.price).toLocaleString() : 'N/A'}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">🛏️ Bedrooms</div>
+                    <div class="detail-value">${fullProperty.bedrooms || 'N/A'}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">🚿 Bathrooms</div>
+                    <div class="detail-value">${fullProperty.bathrooms?.total || fullProperty.bathrooms || 'N/A'}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">📐 Square Feet</div>
+                    <div class="detail-value">${fullProperty.square_feet?.living || fullProperty.sqft_living ? (fullProperty.square_feet?.living || fullProperty.sqft_living).toLocaleString() : 'N/A'} sqft</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">🏗️ Year Built</div>
+                    <div class="detail-value">${fullProperty.year_built || 'N/A'}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">🏘️ Property Type</div>
+                    <div class="detail-value">${fullProperty.property_type ? fullProperty.property_type.replace('_', ' ').toUpperCase() : 'N/A'}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">🌲 Lot Size</div>
+                    <div class="detail-value">${fullProperty.square_feet?.lot || fullProperty.sqft_lot ? ((fullProperty.square_feet?.lot || fullProperty.sqft_lot) / 43560).toFixed(2) + ' acres' : 'N/A'}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">📅 Days on Market</div>
+                    <div class="detail-value">${fullProperty.days_on_market?.current || fullProperty.dom || 'N/A'}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">📍 Location Score</div>
+                    <div class="detail-value" style="color: ${getScoreColor(property.dimensions.location)}">
+                        ${Math.round(property.dimensions.location)}/100 <span style="opacity: 0.7; font-size: 0.85em;">(${getScoreTier(property.dimensions.location)})</span>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">💵 Price Value Score</div>
+                    <div class="detail-value" style="color: ${getScoreColor(property.dimensions.price)}">
+                        ${Math.round(property.dimensions.price)}/100 <span style="opacity: 0.7; font-size: 0.85em;">(${getScoreTier(property.dimensions.price)})</span>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">🏠 Condition Score</div>
+                    <div class="detail-value" style="color: ${getScoreColor(property.dimensions.condition)}">
+                        ${Math.round(property.dimensions.condition)}/100 <span style="opacity: 0.7; font-size: 0.85em;">(${getScoreTier(property.dimensions.condition)})</span>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">📈 Investment Score</div>
+                    <div class="detail-value" style="color: ${getScoreColor(property.dimensions.investment)}">
+                        ${Math.round(property.dimensions.investment)}/100 <span style="opacity: 0.7; font-size: 0.85em;">(${getScoreTier(property.dimensions.investment)})</span>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">✨ Lifestyle Score</div>
+                    <div class="detail-value" style="color: ${getScoreColor(property.dimensions.lifestyle)}">
+                        ${Math.round(property.dimensions.lifestyle)}/100 <span style="opacity: 0.7; font-size: 0.85em;">(${getScoreTier(property.dimensions.lifestyle)})</span>
+                    </div>
+                </div>
+                ${fullProperty.hoa_fee ? `
+                <div class="detail-item">
+                    <div class="detail-label">🏘️ HOA Fee</div>
+                    <div class="detail-value">$${fullProperty.hoa_fee.toLocaleString()}/mo</div>
+                </div>
+                ` : ''}
+                ${fullProperty.tax_annual_amount ? `
+                <div class="detail-item">
+                    <div class="detail-label">💸 Annual Taxes</div>
+                    <div class="detail-value">$${fullProperty.tax_annual_amount.toLocaleString()}</div>
+                </div>
+                ` : ''}
+            `;
+
+            // Show modal
+            document.getElementById('propertyModal').classList.add('active');
+        }
+
+        // Close modal
+        function closePropertyModal() {
+            document.getElementById('propertyModal').classList.remove('active');
+            document.getElementById('notesSection').classList.remove('active');
+            document.getElementById('showingSection').classList.remove('active');
+            currentPropertyIndex = null;
+        }
+
+        // Toggle notes section
+        function toggleNotes() {
+            const notesSection = document.getElementById('notesSection');
+            const showingSection = document.getElementById('showingSection');
+            showingSection.classList.remove('active');
+            notesSection.classList.toggle('active');
+        }
+
+        // Toggle showing cart section
+        function toggleShowingCart() {
+            const notesSection = document.getElementById('notesSection');
+            const showingSection = document.getElementById('showingSection');
+            notesSection.classList.remove('active');
+            showingSection.classList.toggle('active');
+        }
+
+        // Heart property
+        function heartProperty() {
+            if (currentPropertyIndex === null) return;
+            const property = PROPERTIES[currentPropertyIndex];
+
+            // Save to favorites in database
+            alert(`❤️ ${property.name} added to favorites!`);
+
+            // TODO: Save to database
+            console.log('Hearted property:', property);
+        }
+
+        // Discard property
+        function discardProperty() {
+            if (currentPropertyIndex === null) return;
+            const property = PROPERTIES[currentPropertyIndex];
+
+            if (confirm(`Are you sure you want to discard ${property.name}?`)) {
+                alert(`🗑️ ${property.name} has been discarded`);
+                closePropertyModal();
+
+                // TODO: Save to database as discarded
+                console.log('Discarded property:', property);
+            }
+        }
+
+        // Send notes/questions
+        function sendNotes() {
+            if (currentPropertyIndex === null) return;
+            const property = PROPERTIES[currentPropertyIndex];
+            const notes = document.getElementById('notesText').value;
+
+            if (!notes.trim()) {
+                alert('Please enter your questions first');
+                return;
+            }
+
+            // Create mailto link
+            const subject = encodeURIComponent(`Question about ${property.name}`);
+            const body = encodeURIComponent(`Property: ${property.name}\nMLS: ${property.id}\n\nQuestion:\n${notes}`);
+            const mailtoLink = `mailto:cluesnomads@gmail.com?subject=${subject}&body=${body}`;
+
+            window.location.href = mailtoLink;
+
+            alert('📧 Opening your email client...');
+            document.getElementById('notesText').value = '';
+        }
+
+        // Add to showing cart
+        function addToShowingCart() {
+            if (currentPropertyIndex === null) return;
+            const property = PROPERTIES[currentPropertyIndex];
+            const dateTime = document.getElementById('showingDateTime').value;
+
+            if (!dateTime) {
+                alert('Please select a date and time');
+                return;
+            }
+
+            alert(`📅 Showing scheduled for ${property.name} on ${new Date(dateTime).toLocaleString()}`);
+
+            // TODO: Integrate with Calendly/Google Calendar API
+            console.log('Showing scheduled:', {
+                property: property,
+                dateTime: dateTime
+            });
+
+            closePropertyModal();
+        }
+
+        // Open listing site in iframe (or new tab if iframe blocked)
+        function openListingIframe(url) {
+            const siteName = url.includes('zillow') ? 'Zillow' :
+                           url.includes('realtor') ? 'Realtor.com' :
+                           url.includes('redfin') ? 'Redfin' :
+                           url.includes('compass') ? 'Compass' : 'Listing Site';
+
+            // Compass and some sites block iframes - open in new tab instead
+            const blockedSites = ['compass.com'];
+            const isBlocked = blockedSites.some(site => url.includes(site));
+
+            if (isBlocked) {
+                // Open in new tab for sites that block iframes
+                window.open(url, '_blank', 'noopener,noreferrer');
+                return;
+            }
+
+            // Try iframe first, with fallback to new tab if it fails
+            document.getElementById('iframeTitle').textContent = `Viewing on ${siteName}`;
+            const iframe = document.getElementById('listingIframe');
+
+            // Set up error handler in case iframe is blocked
+            iframe.onerror = () => {
+                console.log(`${siteName} blocked iframe, opening in new tab`);
+                closeListingIframe();
+                window.open(url, '_blank', 'noopener,noreferrer');
+            };
+
+            iframe.src = url;
+            document.getElementById('listingIframeModal').classList.add('active');
+
+            // Check if iframe loaded after 3 seconds - if not, likely blocked
+            setTimeout(() => {
+                try {
+                    // Try to access iframe content - will throw error if blocked by X-Frame-Options
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    if (!iframeDoc || iframeDoc.location.href === 'about:blank') {
+                        throw new Error('Iframe blocked');
+                    }
+                } catch (e) {
+                    console.log(`${siteName} blocked iframe (X-Frame-Options), opening in new tab`);
+                    closeListingIframe();
+                    window.open(url, '_blank', 'noopener,noreferrer');
+                }
+            }, 3000);
+        }
+
+        // Close listing iframe
+        function closeListingIframe() {
+            document.getElementById('listingIframeModal').classList.remove('active');
+            document.getElementById('listingIframe').src = ''; // Clear iframe
+        }
+
+        // Update label appearance based on highlight state
+        function updateLabelAppearance() {
+            propertyLabels.forEach((sprite, index) => {
+                const isHighlighted = highlightedLabelIndex === index;
+
+                if (isHighlighted) {
+                    // Bring to front (larger scale, full opacity)
+                    sprite.scale.set(7, 1.5, 1);
+                    sprite.material.opacity = 1.0;
+                    sprite.renderOrder = 999; // Render on top
+
+                    // Get sphere color for this property
+                    const sphereColor = propertyMeshes[index].userData.baseColor;
+
+                    // Recreate label with sphere color background
+                    recreateLabelTexture(sprite, index, sphereColor, true);
+                } else {
+                    // Normal appearance
+                    sprite.scale.set(6, 1.25, 1);
+                    sprite.material.opacity = highlightedLabelIndex === null ? 0.98 : 0.4; // Dim if another is highlighted
+                    sprite.renderOrder = 0;
+
+                    // Standard cyan background
+                    if (highlightedLabelIndex !== null) {
+                        // Only recreate if we need to restore from highlighted state
+                        const currentOpacity = sprite.material.opacity;
+                        if (Math.abs(currentOpacity - 0.4) < 0.01) {
+                            recreateLabelTexture(sprite, index, null, false);
+                        }
+                    }
+                }
+            });
+        }
+
+        // Recreate label texture with new background color
+        function recreateLabelTexture(sprite, index, backgroundColor, isHighlighted) {
+            const property = PROPERTIES[index];
+            if (!property) return;
+
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 768;
+            canvas.height = 160;
+
+            if (isHighlighted && backgroundColor) {
+                // Use sphere color as solid background
+                context.fillStyle = `#${backgroundColor.toString(16).padStart(6, '0')}`;
+                context.fillRect(0, 0, canvas.width, canvas.height);
+
+                // White border for highlighted
+                context.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+                context.lineWidth = 12;
+                context.strokeRect(6, 6, canvas.width - 12, canvas.height - 12);
+            } else {
+                // Standard cyan gradient
+                const gradient = context.createLinearGradient(0, 0, 0, canvas.height);
+                gradient.addColorStop(0, 'rgba(0, 212, 255, 0.95)');
+                gradient.addColorStop(1, 'rgba(0, 102, 204, 0.95)');
+                context.fillStyle = gradient;
+                context.fillRect(0, 0, canvas.width, canvas.height);
+
+                context.strokeStyle = 'rgba(255, 255, 255, 0.95)';
+                context.lineWidth = 10;
+                context.strokeRect(5, 5, canvas.width - 10, canvas.height - 10);
+            }
+
+            // Text - crisp pure white with Helvetica (best reading font)
+            let fontSize = isHighlighted ? 60 : 56;
+            let font = `600 ${fontSize}px "Helvetica Neue", Helvetica, Arial, sans-serif`;
+            context.font = font;
+
+            const maxWidth = canvas.width - 40;
+            let textWidth = context.measureText(property.name).width;
+
+            while (textWidth > maxWidth && fontSize > 20) {
+                fontSize -= 2;
+                font = `600 ${fontSize}px "Helvetica Neue", Helvetica, Arial, sans-serif`;
+                context.font = font;
+                textWidth = context.measureText(property.name).width;
+            }
+
+            context.fillStyle = '#FFFFFF';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+
+            // Pure white text - no stroke/shadow
+            context.fillText(property.name, canvas.width / 2, canvas.height / 2);
+
+            // Update texture
+            const texture = new THREE.CanvasTexture(canvas);
+            texture.needsUpdate = true;
+            sprite.material.map.dispose();
+            sprite.material.map = texture;
+            sprite.material.needsUpdate = true;
         }
 
         // Create Coordinate Axes
@@ -689,6 +1667,8 @@
                 const avgScore = (dims.location + dims.price + dims.condition + dims.investment + dims.lifestyle) / 5;
                 const color = getColorForValue(avgScore);
 
+                debugLog(`  AvgScore: ${avgScore.toFixed(1)} -> Color: #${color.toString(16).padStart(6, '0')}`);
+
                 // Create sphere
                 const geometry = new THREE.SphereGeometry(size, 32, 32);
                 const material = new THREE.MeshPhongMaterial({
@@ -727,6 +1707,7 @@
                 const labelData = createLabel(property.name, sphere.position, size, index);
                 propertyLabels.push(labelData.sprite);
                 propertyRods.push(labelData.rod);
+                labelBasePositions.push(labelData.sprite.position.y); // Store original Y position
             });
 
             debugLog(`🎯 TOTAL SPHERES: ${propertyMeshes.length}`);
@@ -734,9 +1715,14 @@
 
         // Create Text Label (like a stop sign on a rod)
         function createLabel(text, position, offset, propertyIndex) {
-            // Vary label heights to prevent crowding - stagger them in a wave pattern
-            const heightVariation = Math.sin(propertyIndex * 0.5) * 2 + 3; // 1-5 units above sphere
+            // Spread labels with varied rod heights to prevent overlaps
+            // Create distinct heights using modulo pattern (cycles through 0-4)
+            const heightCycle = propertyIndex % 5;
+            const heightVariation = 1.5 + (heightCycle * 0.5); // 1.5, 2.0, 2.5, 3.0, 3.5 units
             const labelHeight = position.y + offset + heightVariation;
+
+            // Small horizontal offset based on position for variety
+            const horizontalOffset = (propertyIndex % 3 - 1) * 0.3; // -0.3, 0, or 0.3
 
             // Create rod/post connecting sphere to label
             const rodGeometry = new THREE.CylinderGeometry(0.02, 0.02, heightVariation, 8);
@@ -770,10 +1756,9 @@
             context.lineWidth = 10;
             context.strokeRect(5, 5, canvas.width - 10, canvas.height - 10);
 
-            // Text - Ultra crisp white with highly legible font
-            // Scale text to fit within label bounds
+            // Text - crisp pure white with Helvetica (best reading font)
             let fontSize = 56;
-            let font = `900 ${fontSize}px "Segoe UI", "Helvetica Neue", Arial, sans-serif`;
+            let font = `600 ${fontSize}px "Helvetica Neue", Helvetica, Arial, sans-serif`;
             context.font = font;
 
             // Measure text and scale down if needed
@@ -782,20 +1767,16 @@
 
             while (textWidth > maxWidth && fontSize > 20) {
                 fontSize -= 2;
-                font = `900 ${fontSize}px "Segoe UI", "Helvetica Neue", Arial, sans-serif`;
+                font = `600 ${fontSize}px "Helvetica Neue", Helvetica, Arial, sans-serif`;
                 context.font = font;
                 textWidth = context.measureText(text).width;
             }
 
             context.fillStyle = '#FFFFFF';
-            context.strokeStyle = 'rgba(0, 0, 0, 0.7)';
-            context.lineWidth = 4;
             context.textAlign = 'center';
             context.textBaseline = 'middle';
 
-            // Double stroke for ultra crisp edges
-            context.strokeText(text, canvas.width / 2, canvas.height / 2);
-            context.strokeText(text, canvas.width / 2, canvas.height / 2);
+            // Pure white text - no stroke/shadow
             context.fillText(text, canvas.width / 2, canvas.height / 2);
 
             const texture = new THREE.CanvasTexture(canvas);
@@ -808,7 +1789,8 @@
             });
             const sprite = new THREE.Sprite(spriteMaterial);
 
-            sprite.position.set(position.x, labelHeight, position.z);
+            // Position label with horizontal offset for better spacing
+            sprite.position.set(position.x + horizontalOffset, labelHeight, position.z);
             sprite.scale.set(6, 1.25, 1); // 1.5x width, 1.25x height
             sprite.userData = { heightVariation: heightVariation, offset: offset }; // Store for updates
 
@@ -911,6 +1893,8 @@
                 mesh.children[0].scale.set(pulse, pulse, pulse);
             });
 
+            // No dynamic label adjustment - use static positions
+
             controls.update();
             renderer.render(scene, camera);
         }
@@ -925,20 +1909,112 @@
         // Render Properties List
         function renderPropertiesList() {
             const container = document.getElementById('propertiesList');
-            container.innerHTML = PROPERTIES.map(p => {
+            const countDisplay = document.getElementById('selectedCount');
+
+            countDisplay.textContent = `${selectedPropertyIds.size}/${MAX_SELECTION}`;
+            countDisplay.style.color = selectedPropertyIds.size >= MAX_SELECTION ? '#FFD700' : '#00D4FF';
+
+            container.innerHTML = ALL_PROPERTIES.map(p => {
                 const avgScore = Object.values(p.dimensions).reduce((a, b) => a + b) / 5;
+                const isSelected = selectedPropertyIds.has(p.id);
+                const isDimmed = !isSelected && selectedPropertyIds.size >= MAX_SELECTION;
+
                 return `
-                    <div class="property-card ${selectedProperty?.id === p.id ? 'active' : ''}" onclick="selectProperty(${p.id})">
+                    <div class="property-card ${isSelected ? 'selected' : ''} ${isDimmed ? 'dimmed' : ''}"
+                         onclick="togglePropertySelection('${p.id}')">
+                        <div class="property-checkbox ${isSelected ? 'checked' : ''}">
+                            ${isSelected ? '✓' : ''}
+                        </div>
                         <div class="property-name">${p.name}</div>
                         <div class="property-price">$${p.price.toLocaleString()}</div>
                         <div class="property-stats">
                             <span class="stat-badge">Score: ${Math.round(avgScore)}</span>
-                            <span class="stat-badge">📍 ${p.dimensions.location}</span>
-                            <span class="stat-badge">💰 ${p.dimensions.price}</span>
                         </div>
                     </div>
                 `;
             }).join('');
+        }
+
+        // Toggle property selection
+        function togglePropertySelection(propertyId) {
+            console.log('Toggle clicked for property:', propertyId);
+            console.log('Current selections:', Array.from(selectedPropertyIds));
+
+            if (selectedPropertyIds.has(propertyId)) {
+                // Deselect
+                selectedPropertyIds.delete(propertyId);
+                console.log('Deselected:', propertyId);
+            } else {
+                // Select (if under limit)
+                if (selectedPropertyIds.size < MAX_SELECTION) {
+                    selectedPropertyIds.add(propertyId);
+                    console.log('Selected:', propertyId);
+                } else {
+                    console.log('Max selection reached');
+                    return; // Max reached, do nothing
+                }
+            }
+
+            // Update visualization with selected properties only
+            updateSelectedProperties();
+            renderPropertiesList();
+        }
+
+        // Update PROPERTIES array with only selected properties
+        function updateSelectedProperties() {
+            PROPERTIES = ALL_PROPERTIES.filter(p => selectedPropertyIds.has(p.id));
+
+            // Clear and rebuild 3D scene
+            clearScene();
+            if (PROPERTIES.length > 0) {
+                createPropertyMeshes();
+            }
+        }
+
+        // Clear 3D scene
+        function clearScene() {
+            // Only clear if scene is initialized
+            if (!scene) return;
+
+            // Remove all spheres
+            propertyMeshes.forEach(mesh => scene.remove(mesh));
+            propertyMeshes = [];
+
+            // Remove all labels
+            propertyLabels.forEach(label => scene.remove(label));
+            propertyLabels = [];
+            labelBasePositions = []; // Clear base positions
+
+            // Remove all rods
+            propertyRods.forEach(rod => scene.remove(rod));
+            propertyRods = [];
+
+            // Remove connection lines
+            connectionLines.forEach(line => scene.remove(line));
+            connectionLines = [];
+            showingConnections = false;
+        }
+
+        // Select top 5 rated properties
+        function selectTopRated() {
+            const sorted = [...ALL_PROPERTIES].sort((a, b) => {
+                const avgA = Object.values(a.dimensions).reduce((x, y) => x + y) / 5;
+                const avgB = Object.values(b.dimensions).reduce((x, y) => x + y) / 5;
+                return avgB - avgA;
+            });
+
+            selectedPropertyIds.clear();
+            sorted.slice(0, MAX_SELECTION).forEach(p => selectedPropertyIds.add(p.id));
+
+            updateSelectedProperties();
+            renderPropertiesList();
+        }
+
+        // Clear all selections
+        function clearSelection() {
+            selectedPropertyIds.clear();
+            updateSelectedProperties();
+            renderPropertiesList();
         }
 
         // Render Dimension Controls (5-circle importance system)
@@ -1120,6 +2196,213 @@
             controls.target.set(0, 0, 0);
         }
 
+        // ===== GOOGLE MAPS INTEGRATION =====
+
+        /**
+         * Initialize Google Map
+         */
+        function initGoogleMap() {
+            try {
+                if (!ALL_PROPERTIES || ALL_PROPERTIES.length === 0) {
+                    console.warn('No properties available for map initialization');
+                    return;
+                }
+
+                // Calculate center point of all properties (default to St Pete Beach area)
+                let validCoordCount = 0;
+                const avgLat = ALL_PROPERTIES.reduce((sum, p) => {
+                    const lat = p.location?.lat || p.location?.latitude || p.address?.latitude;
+                    if (lat) {
+                        validCoordCount++;
+                        return sum + lat;
+                    }
+                    return sum;
+                }, 0) / (validCoordCount || 1);
+
+                validCoordCount = 0;
+                const avgLng = ALL_PROPERTIES.reduce((sum, p) => {
+                    const lng = p.location?.lng || p.location?.longitude || p.address?.longitude;
+                    if (lng) {
+                        validCoordCount++;
+                        return sum + lng;
+                    }
+                    return sum;
+                }, 0) / (validCoordCount || 1);
+
+                // If no valid coordinates found, default to St Pete Beach
+                const centerLat = avgLat || 27.7;
+                const centerLng = avgLng || -82.7;
+
+                console.log(`📍 Map centering at: ${centerLat}, ${centerLng}`);
+
+                // Create map centered on properties
+                map = new google.maps.Map(document.getElementById('map-container'), {
+                    center: { lat: centerLat, lng: centerLng },
+                    zoom: 12,
+                    mapTypeId: 'hybrid', // satellite with labels
+                    disableDefaultUI: false,
+                    zoomControl: true,
+                    mapTypeControl: true,
+                    scaleControl: true,
+                    streetViewControl: true,
+                    rotateControl: true,
+                    fullscreenControl: true,
+                    styles: [
+                        {
+                            "featureType": "all",
+                            "elementType": "labels",
+                            "stylers": [{ "visibility": "on" }]
+                        }
+                    ]
+                });
+
+                // Add property markers
+                addPropertyMarkers();
+
+                // Hide map initially
+                document.getElementById('map-container').style.display = 'none';
+
+                console.log('✅ Google Map initialized successfully');
+            } catch (error) {
+                console.error('❌ Google Maps initialization failed:', error);
+                // Map is optional, don't block the app
+                document.getElementById('mapToggleBtn').style.display = 'none';
+            }
+        }
+
+        /**
+         * Add markers for all properties on the map
+         */
+        function addPropertyMarkers() {
+            try {
+                if (!map) {
+                    console.warn('Map not initialized');
+                    return;
+                }
+
+                // Clear existing markers
+                mapMarkers.forEach(marker => marker.setMap(null));
+                mapMarkers = [];
+
+                ALL_PROPERTIES.forEach((property, index) => {
+                    // Check multiple possible locations for coordinates
+                    const lat = property.location?.lat ||
+                               property.location?.latitude ||
+                               property.address?.latitude;
+                    const lng = property.location?.lng ||
+                               property.location?.longitude ||
+                               property.address?.longitude;
+
+                    if (!lat || !lng) {
+                        console.warn(`Property ${property.name} missing coordinates - skipping marker`);
+                        return;
+                    }
+
+                    console.log(`✅ Adding marker for ${property.name} at ${lat}, ${lng}`);
+
+                // Calculate overall score (average of all 5 dimensions)
+                const avgScore = (
+                    property.dimensions.location +
+                    property.dimensions.price +
+                    property.dimensions.condition +
+                    property.dimensions.investment +
+                    property.dimensions.lifestyle
+                ) / 5;
+
+                // Use 5-tier color system
+                const color = getScoreColor(avgScore);
+
+                // Create custom marker with score color
+                const marker = new google.maps.Marker({
+                    position: { lat, lng },
+                    map: map,
+                    title: property.name,
+                    label: {
+                        text: `${Math.round(avgScore)}`,
+                        color: 'white',
+                        fontSize: '12px',
+                        fontWeight: 'bold'
+                    },
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 15,
+                        fillColor: color,
+                        fillOpacity: 0.9,
+                        strokeColor: '#ffffff',
+                        strokeWeight: 2
+                    }
+                });
+
+                // Add click listener to marker
+                marker.addListener('click', () => {
+                    openPropertyModal(index);
+                });
+
+                // Info window on hover
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `
+                        <div style="padding: 10px; color: #000;">
+                            <h3 style="margin: 0 0 5px 0; font-size: 14px;">${property.name}</h3>
+                            <p style="margin: 0; font-size: 12px;"><strong>$${property.price.toLocaleString()}</strong></p>
+                            <p style="margin: 5px 0 0 0; font-size: 11px; color: #666;">Score: ${Math.round(avgScore)}/100</p>
+                        </div>
+                    `
+                });
+
+                marker.addListener('mouseover', () => {
+                    infoWindow.open(map, marker);
+                });
+
+                marker.addListener('mouseout', () => {
+                    infoWindow.close();
+                });
+
+                    mapMarkers.push(marker);
+                });
+
+                console.log(`✅ Added ${mapMarkers.length} property markers to map`);
+            } catch (error) {
+                console.error('❌ Error adding property markers:', error);
+            }
+        }
+
+        /**
+         * Toggle between Map View and 3D View
+         */
+        function toggleMapView() {
+            if (!map) {
+                console.error('Map not initialized');
+                alert('Map is not available. Please refresh the page.');
+                return;
+            }
+
+            mapVisible = !mapVisible;
+            const mapContainer = document.getElementById('map-container');
+            const canvasContainer = document.getElementById('canvas-container');
+            const btn = document.getElementById('mapToggleBtn');
+
+            if (mapVisible) {
+                // Show map, make 3D semi-transparent overlay
+                mapContainer.style.display = 'block';
+                canvasContainer.style.opacity = '0.8';
+                renderer.setClearColor(0x000000, 0); // Transparent background
+                btn.textContent = '🌐 Show 3D Only';
+                btn.classList.remove('primary');
+
+                // Trigger map resize
+                google.maps.event.trigger(map, 'resize');
+            } else {
+                // Hide map, show full 3D
+                mapContainer.style.display = 'none';
+                canvasContainer.style.opacity = '1';
+                renderer.setClearColor(0x0066CC, 1); // Solid background
+                btn.textContent = '🗺️ Show Map';
+                btn.classList.add('primary');
+            }
+        }
+
+        // ===== END GOOGLE MAPS INTEGRATION =====
+
         // Initialize Enhancement with REAL Data
         async function initializeEnhancement() {
             try {
@@ -1130,17 +2413,18 @@
                 await sharedDataAdapter.init();
 
                 // Load REAL properties from IndexedDB
-                PROPERTIES = await sharedDataAdapter.getPropertiesFor5DExplorer('balanced');
+                const loadedProperties = await sharedDataAdapter.getPropertiesFor5DExplorer('balanced');
+                ALL_PROPERTIES = loadedProperties; // Store all properties
 
-                debugLog(`✅ Loaded ${PROPERTIES.length} properties from database`);
+                debugLog(`✅ Loaded ${ALL_PROPERTIES.length} properties from database`);
 
-                if (PROPERTIES.length > 0) {
-                    debugLog(`📊 First property: ${PROPERTIES[0].name}`);
-                    debugLog(`📊 Has dimensions: ${PROPERTIES[0].dimensions ? 'YES' : 'NO'}`, PROPERTIES[0].dimensions ? 'info' : 'error');
+                if (ALL_PROPERTIES.length > 0) {
+                    debugLog(`📊 First property: ${ALL_PROPERTIES[0].name}`);
+                    debugLog(`📊 Has dimensions: ${ALL_PROPERTIES[0].dimensions ? 'YES' : 'NO'}`, ALL_PROPERTIES[0].dimensions ? 'info' : 'error');
                 }
 
                 // Check if we have properties
-                if (PROPERTIES.length === 0) {
+                if (ALL_PROPERTIES.length === 0) {
                     document.getElementById('loading').innerHTML = `
                         <div style="text-align: center; padding: 20px;">
                             <h2>No Properties Found</h2>
@@ -1155,9 +2439,18 @@
                     return;
                 }
 
-                // Initialize 3D scene with REAL data
+                // Initialize Google Map
+                document.getElementById('loading').textContent = 'Initializing Map...';
+                initGoogleMap();
+
+                // Initialize 3D scene
                 document.getElementById('loading').textContent = 'Initializing Quantum Space...';
                 initScene();
+
+                // Auto-select top 5 rated properties (after scene is initialized)
+                selectTopRated();
+
+                // Render UI
                 renderPropertiesList();
                 renderDimensionControls();
 
