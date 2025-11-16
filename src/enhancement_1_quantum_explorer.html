@@ -2548,7 +2548,69 @@
             }
         }
 
-        // ===== END GOOGLE MAPS INTEGRATION =====
+        // ===== GEOCODING FUNCTIONS =====
+
+        // Geocode an address using Google Maps Geocoding API
+        async function geocodeAddress(address) {
+            return new Promise((resolve, reject) => {
+                const geocoder = new google.maps.Geocoder();
+                geocoder.geocode({ address: address }, (results, status) => {
+                    if (status === 'OK' && results[0]) {
+                        const location = results[0].geometry.location;
+                        resolve({
+                            lat: location.lat(),
+                            lng: location.lng()
+                        });
+                    } else {
+                        console.warn(`❌ Geocoding failed for ${address}: ${status}`);
+                        resolve(null);
+                    }
+                });
+            });
+        }
+
+        // Add coordinates to properties that don't have them
+        async function ensureCoordinates() {
+            let geocodedCount = 0;
+            const promises = ALL_PROPERTIES.map(async (property, index) => {
+                const lat = property.location?.latitude || property.location?.lat || property.address?.latitude || property.basic?.coordinates?.latitude || 0;
+                const lng = property.location?.longitude || property.location?.lng || property.address?.longitude || property.basic?.coordinates?.longitude || 0;
+
+                // If property doesn't have coordinates, geocode it
+                if (lat === 0 || lng === 0) {
+                    const address = property.name || `${property.location?.city}, ${property.location?.state}`;
+                    console.log(`🔍 Geocoding: ${address}`);
+
+                    const coords = await geocodeAddress(address);
+
+                    if (coords) {
+                        // Add coordinates to property in all possible locations
+                        if (!property.location) property.location = {};
+                        property.location.latitude = coords.lat;
+                        property.location.longitude = coords.lng;
+                        property.location.lat = coords.lat;
+                        property.location.lng = coords.lng;
+
+                        if (!property.address) property.address = {};
+                        property.address.latitude = coords.lat;
+                        property.address.longitude = coords.lng;
+
+                        if (!property.basic) property.basic = {};
+                        if (!property.basic.coordinates) property.basic.coordinates = {};
+                        property.basic.coordinates.latitude = coords.lat;
+                        property.basic.coordinates.longitude = coords.lng;
+
+                        geocodedCount++;
+                        console.log(`✅ Geocoded ${address}: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`);
+                    }
+                }
+            });
+
+            await Promise.all(promises);
+            console.log(`📍 Geocoded ${geocodedCount} properties`);
+        }
+
+        // ===== END GEOCODING FUNCTIONS =====
 
         // Initialize Enhancement with REAL Data
         async function initializeEnhancement() {
@@ -2585,6 +2647,10 @@
                     `;
                     return;
                 }
+
+                // Geocode properties that don't have coordinates
+                document.getElementById('loading').textContent = 'Geocoding property addresses...';
+                await ensureCoordinates();
 
                 // Initialize Google Map
                 document.getElementById('loading').textContent = 'Initializing Map...';
