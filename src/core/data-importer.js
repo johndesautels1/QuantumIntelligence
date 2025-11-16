@@ -40,6 +40,11 @@ class DataImporter {
             // Auto-detect columns if no mapping provided
             const mapping = columnMapping || this.autoDetectColumns(data[0]);
 
+            console.log('🔍 CSV HEADERS:', data[0]);
+            console.log('🔍 DETECTED MAPPING:', mapping);
+            console.log('🔍 Latitude column index:', mapping.latitude);
+            console.log('🔍 Longitude column index:', mapping.longitude);
+
             const properties = [];
             const errors = [];
 
@@ -234,7 +239,9 @@ class DataImporter {
         }
         // Coordinates - save in BOTH location and basic for compatibility
         if (mapping.latitude !== undefined) {
-            const lat = parseFloat(row[mapping.latitude]);
+            const rawLat = row[mapping.latitude];
+            const lat = parseFloat(rawLat);
+            console.log(`🔍 CSV Import - Row lat value: "${rawLat}" (column ${mapping.latitude}) -> parsed: ${lat}`);
             if (!isNaN(lat) && lat !== 0) {
                 property.location.latitude = lat;
                 // Also save to basic for database compatibility
@@ -242,10 +249,17 @@ class DataImporter {
                     property.basic.coordinates = {};
                 }
                 property.basic.coordinates.latitude = lat;
+                console.log(`✅ Saved latitude: ${lat} to both locations`);
+            } else {
+                console.log(`⚠️ Skipped latitude (NaN or zero): ${lat}`);
             }
+        } else {
+            console.log(`⚠️ No latitude mapping found in CSV headers`);
         }
         if (mapping.longitude !== undefined) {
-            const lng = parseFloat(row[mapping.longitude]);
+            const rawLng = row[mapping.longitude];
+            const lng = parseFloat(rawLng);
+            console.log(`🔍 CSV Import - Row lng value: "${rawLng}" (column ${mapping.longitude}) -> parsed: ${lng}`);
             if (!isNaN(lng) && lng !== 0) {
                 property.location.longitude = lng;
                 // Also save to basic for database compatibility
@@ -253,7 +267,12 @@ class DataImporter {
                     property.basic.coordinates = {};
                 }
                 property.basic.coordinates.longitude = lng;
+                console.log(`✅ Saved longitude: ${lng} to both locations`);
+            } else {
+                console.log(`⚠️ Skipped longitude (NaN or zero): ${lng}`);
             }
+        } else {
+            console.log(`⚠️ No longitude mapping found in CSV headers`);
         }
 
         return property;
