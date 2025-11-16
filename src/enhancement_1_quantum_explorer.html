@@ -2355,6 +2355,18 @@
         function recenterMap() {
             if (!map) return;
 
+            // HARDCODED TEST: Always center on Treasure Island coordinates
+            const testLat = 27.7858812;
+            const testLng = -82.7692194;
+
+            console.log(`🔍 HARDCODED TEST: Centering map on Treasure Island at ${testLat}, ${testLng}`);
+
+            map.setCenter({ lat: testLat, lng: testLng });
+            map.setZoom(16);
+
+            alert(`✅ Map centered on HARDCODED coordinates:\nTreasure Island\n${testLat}, ${testLng}\n\nZoom: 16`);
+            return;
+
             // Get CURRENTLY selected properties
             const selectedProps = ALL_PROPERTIES.filter(p => selectedPropertyIds.has(p.id));
 
