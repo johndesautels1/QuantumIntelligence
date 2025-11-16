@@ -1856,10 +1856,10 @@
                                     (satTex) => {
                                         satTex.colorSpace = THREE.SRGBColorSpace;
                                         satTex.minFilter = THREE.LinearFilter;
-                                        // Apply to top face (index 4)
-                                        if (block && Array.isArray(block.material) && block.material[4]) {
-                                            block.material[4].map = satTex;
-                                            block.material[4].needsUpdate = true;
+                                        // Apply to FRONT face (index 2)
+                                        if (block && Array.isArray(block.material) && block.material[2]) {
+                                            block.material[2].map = satTex;
+                                            block.material[2].needsUpdate = true;
                                             console.log(`🛰️ Satellite applied to TOP of ${property.name}`);
                                         }
                                     },
@@ -1877,8 +1877,8 @@
                             // Update materials - Street View on FRONT (2), Satellite will go on TOP (4)
                             const newMaterials = [];
                             for (let i = 0; i < 6; i++) {
-                                if (i === 2) {
-                                    // Front face gets Street View
+                                if (i === 4) {
+                                    // Top face gets Street View
                                     newMaterials.push(new THREE.MeshStandardMaterial({
                                         map: texture,
                                         roughness: 0.45,
@@ -1886,8 +1886,8 @@
                                         emissive: new THREE.Color(color),
                                         emissiveIntensity: 0.15
                                     }));
-                                } else if (i === 4) {
-                                    // Top face - will get satellite (placeholder for now)
+                                } else if (i === 2) {
+                                    // Front face - will get satellite
                                     newMaterials.push(new THREE.MeshStandardMaterial({
                                         color: color,
                                         roughness: 0.45,
