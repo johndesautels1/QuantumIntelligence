@@ -2208,37 +2208,9 @@
                     return;
                 }
 
-                // Calculate center point based on SELECTED properties
-                const selectedProps = ALL_PROPERTIES.filter(p => selectedPropertyIds.has(p.id));
-
-                // DEBUG: Show what we have
-                alert(`DEBUG: Found ${selectedProps.length} selected properties.\n\nChecking first property:\n${selectedProps[0]?.name}\nLocation: ${JSON.stringify(selectedProps[0]?.location)}\nAddress: ${JSON.stringify(selectedProps[0]?.address)}\nBasic.coordinates: ${JSON.stringify(selectedProps[0]?.basic?.coordinates)}`);
-
-                let validCoordCount = 0;
-                const avgLat = selectedProps.reduce((sum, p) => {
-                    const lat = p.location?.lat || p.location?.latitude || p.address?.latitude || p.basic?.coordinates?.latitude;
-                    if (lat) {
-                        validCoordCount++;
-                        return sum + lat;
-                    }
-                    return sum;
-                }, 0) / (validCoordCount || 1);
-
-                validCoordCount = 0;
-                const avgLng = selectedProps.reduce((sum, p) => {
-                    const lng = p.location?.lng || p.location?.longitude || p.address?.longitude || p.basic?.coordinates?.longitude;
-                    if (lng) {
-                        validCoordCount++;
-                        return sum + lng;
-                    }
-                    return sum;
-                }, 0) / (validCoordCount || 1);
-
-                // If no valid coordinates found, default to St Pete Beach
-                const centerLat = avgLat || 27.7;
-                const centerLng = avgLng || -82.7;
-
-                alert(`DEBUG: Map centering at ${centerLat}, ${centerLng}\nValid coordinates found: ${validCoordCount}`);
+                // Default center (St Pete Beach area) - will be recentered when map is shown
+                const centerLat = 27.7;
+                const centerLng = -82.7;
 
                 // Create map centered on properties
                 map = new google.maps.Map(document.getElementById('map-container'), {
@@ -2378,6 +2350,64 @@
         }
 
         /**
+         * Recenter map on currently selected properties
+         */
+        function recenterMap() {
+            if (!map) return;
+
+            // Get CURRENTLY selected properties
+            const selectedProps = ALL_PROPERTIES.filter(p => selectedPropertyIds.has(p.id));
+
+            if (selectedProps.length === 0) {
+                console.warn('No properties selected for map centering');
+                alert('⚠️ Please select at least one property to show on the map!');
+                return;
+            }
+
+            // Calculate average center from selected properties with valid coordinates
+            let validCoords = [];
+            selectedProps.forEach(p => {
+                const lat = p.location?.lat || p.location?.latitude || p.address?.latitude || p.basic?.coordinates?.latitude;
+                const lng = p.location?.lng || p.location?.longitude || p.address?.longitude || p.basic?.coordinates?.longitude;
+
+                if (lat && lng && lat !== 0 && lng !== 0) {
+                    validCoords.push({ lat, lng });
+                    console.log(`✅ Found valid coords for ${p.name}: ${lat}, ${lng}`);
+                }
+            });
+
+            if (validCoords.length === 0) {
+                console.error('❌ No valid coordinates found in selected properties');
+                alert(`❌ Selected properties don't have coordinates!\n\nChecked ${selectedProps.length} properties but found no lat/lng data.`);
+                return;
+            }
+
+            // Calculate center
+            const centerLat = validCoords.reduce((sum, c) => sum + c.lat, 0) / validCoords.length;
+            const centerLng = validCoords.reduce((sum, c) => sum + c.lng, 0) / validCoords.length;
+
+            console.log(`📍 Recentering map to: ${centerLat}, ${centerLng} (${validCoords.length} valid coords)`);
+
+            // Set map center
+            map.setCenter({ lat: centerLat, lng: centerLng });
+
+            // Auto-zoom based on number of properties
+            if (validCoords.length === 1) {
+                map.setZoom(16); // Close zoom for single property
+            } else {
+                // Fit bounds to show all properties
+                const bounds = new google.maps.LatLngBounds();
+                validCoords.forEach(coord => {
+                    bounds.extend(new google.maps.LatLng(coord.lat, coord.lng));
+                });
+                map.fitBounds(bounds);
+            }
+
+            // Refresh markers
+            addPropertyMarkers();
+        }
+
+        /**
          * Toggle between Map View and 3D View
          */
         function toggleMapView() {
@@ -2399,6 +2429,9 @@
                 renderer.setClearColor(0x000000, 0); // Transparent background
                 btn.textContent = '🌐 Show 3D Only';
                 btn.classList.remove('primary');
+
+                // RECENTER map on currently selected properties
+                recenterMap();
 
                 // Trigger map resize
                 google.maps.event.trigger(map, 'resize');
