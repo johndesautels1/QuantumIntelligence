@@ -650,7 +650,7 @@
 
         // Initialize
         window.addEventListener('DOMContentLoaded', async () => {
-            await dataManager.initialize();
+            await dataManager.init();
             await scoringEngine.initialize(dataManager);
             await dataImporter.initialize(dataManager, scoringEngine);
         });
