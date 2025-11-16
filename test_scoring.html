@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Scoring Debug Test</title>
+</head>
+<body>
+    <h1>Scoring Engine Debug Test</h1>
+    <p>Open the browser console (F12) to see debug output</p>
+    <div id="output"></div>
+
+    <script type="module">
+        import { SharedDataAdapter } from './src/shared-data-adapter.js';
+
+        async function testScoring() {
+            const adapter = new SharedDataAdapter();
+
+            // Get properties with scores
+            const properties = await adapter.getPropertiesWithScores('balanced');
+
+            // Show first property's scores
+            if (properties.length > 0) {
+                const prop = properties[0];
+                console.log('First property scores:', prop.computed_scores);
+
+                // Also get 5D explorer format
+                const explorerProps = await adapter.getPropertiesFor5DExplorer('balanced');
+                if (explorerProps.length > 0) {
+                    console.log('5D Explorer dimensions:', explorerProps[0].dimensions);
+                }
+
+                // Display on page
+                document.getElementById('output').innerHTML = `
+                    <h2>First Property Scores:</h2>
+                    <pre>${JSON.stringify(prop.computed_scores, null, 2)}</pre>
+                    <h2>5D Explorer Dimensions:</h2>
+                    <pre>${JSON.stringify(explorerProps[0].dimensions, null, 2)}</pre>
+                `;
+            }
+        }
+
+        testScoring().catch(console.error);
+    </script>
+</body>
+</html>

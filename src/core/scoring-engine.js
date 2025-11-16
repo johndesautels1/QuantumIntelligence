@@ -878,8 +878,11 @@ class ScoringEngine {
             }
 
             // Store category score
+            // FIX: normalizedValue is already 0-100, so we don't multiply by 100 again
+            const finalCategoryScore = categoryWeight > 0 ? categoryScore / categoryWeight : 0;
+
             scores.by_category[categoryName] = {
-                score: categoryWeight > 0 ? (categoryScore / categoryWeight) * 100 : 0,
+                score: finalCategoryScore,
                 weight: categoryWeight
             };
 
@@ -888,8 +891,9 @@ class ScoringEngine {
         }
 
         // Calculate final overall score (0-100)
+        // FIX: normalizedValue is already 0-100, so we don't multiply by 100 again
         scores.overall = scores.total_weight > 0
-            ? (scores.overall / scores.total_weight) * 100
+            ? scores.overall / scores.total_weight
             : 0;
 
         return scores;

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Verify Scoring Fix</title>
+</head>
+<body>
+    <h1>Scoring Engine Fix Verification</h1>
+    <p>Open the browser console (F12) to see the scores</p>
+    <div id="results"></div>
+
+    <script type="module">
+        import { SharedDataAdapter } from './src/shared-data-adapter.js';
+
+        async function verifyFix() {
+            console.log('=== SCORING FIX VERIFICATION ===');
+
+            const adapter = new SharedDataAdapter();
+            await adapter.init();
+
+            // Get properties with scores
+            const properties = await adapter.getPropertiesWithScores('balanced');
+
+            console.log(`Loaded ${properties.length} properties`);
+
+            // Check first 3 properties
+            for (let i = 0; i < Math.min(3, properties.length); i++) {
+                const prop = properties[i];
+                console.log(`\n--- Property ${i + 1}: ${prop.basic?.address || 'Unknown'} ---`);
+                console.log('Overall Score:', prop.computed_scores?.overall);
+                console.log('Category Scores:');
+
+                for (const [category, data] of Object.entries(prop.computed_scores?.by_category || {})) {
+                    console.log(`  ${category}: ${data.score.toFixed(2)}`);
+                }
+            }
+
+            // Get 5D Explorer format
+            const explorerProps = await adapter.getPropertiesFor5DExplorer('balanced');
+
+            console.log('\n=== 5D EXPLORER DIMENSIONS (first property) ===');
+            if (explorerProps.length > 0) {
+                const dimensions = explorerProps[0].dimensions;
+                console.log('Dimensions:', dimensions);
+
+                // Verify all dimensions are in 0-100 range
+                let allValid = true;
+                for (const [key, value] of Object.entries(dimensions)) {
+                    const isValid = value >= 0 && value <= 100;
+                    console.log(`  ${key}: ${value} ${isValid ? '✅' : '❌ OUT OF RANGE!'}`);
+                    if (!isValid) allValid = false;
+                }
+
+                console.log(allValid ? '\n✅ ALL SCORES ARE NOW IN VALID RANGE (0-100)!' : '\n❌ SOME SCORES STILL OUT OF RANGE');
+
+                // Display results on page
+                const html = `
+                    <h2>Test Results:</h2>
+                    <p>Properties loaded: ${properties.length}</p>
+                    <h3>First Property Scores:</h3>
+                    <ul>
+                        <li>Overall: ${properties[0]?.computed_scores?.overall?.toFixed(2)}</li>
+                        ${Object.entries(properties[0]?.computed_scores?.by_category || {})
+                            .map(([cat, data]) => `<li>${cat}: ${data.score.toFixed(2)}</li>`)
+                            .join('')}
+                    </ul>
+                    <h3>5D Explorer Dimensions:</h3>
+                    <ul>
+                        ${Object.entries(dimensions)
+                            .map(([key, value]) => {
+                                const isValid = value >= 0 && value <= 100;
+                                return `<li>${key}: ${value} ${isValid ? '✅' : '❌'}</li>`;
+                            })
+                            .join('')}
+                    </ul>
+                    <h3>Status: ${allValid ? '✅ FIX SUCCESSFUL - All scores in valid range!' : '❌ Fix incomplete'}</h3>
+                `;
+                document.getElementById('results').innerHTML = html;
+            }
+        }
+
+        verifyFix().catch(console.error);
+    </script>
+</body>
+</html>
