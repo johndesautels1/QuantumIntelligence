@@ -45,6 +45,9 @@ class DataImporter {
             console.log('🔍 Latitude column index:', mapping.latitude);
             console.log('🔍 Longitude column index:', mapping.longitude);
 
+            // DIAGNOSTIC ALERT
+            alert(`🔍 CSV PARSING DIAGNOSTIC:\n\nHeaders: ${data[0].length} columns\n${JSON.stringify(data[0])}\n\nMapping:\nLatitude column: ${mapping.latitude}\nLongitude column: ${mapping.longitude}\n\nRow 8 data (12650 7th St E):\n${JSON.stringify(data[7])}\n\nRow 8 lat/lng values:\nLat [${mapping.latitude}]: "${data[7][mapping.latitude]}"\nLng [${mapping.longitude}]: "${data[7][mapping.longitude]}"`);
+
             const properties = [];
             const errors = [];
 
