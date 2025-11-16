@@ -1747,17 +1747,14 @@
 
                 debugLog(`  Position: x=${x.toFixed(1)}, y=${y.toFixed(1)}, z=${z.toFixed(1)}`);
 
-                // Size based on investment potential (D4)
-                const size = 0.3 + ((dims.investment / 100) * 0.7);
-
                 // Color based on OVERALL QUALITY (average of all dimensions)
                 const avgScore = (dims.location + dims.price + dims.condition + dims.investment + dims.lifestyle) / 5;
                 const color = getColorForValue(avgScore);
 
                 debugLog(`  AvgScore: ${avgScore.toFixed(1)} -> Color: #${color.toString(16).padStart(6, '0')}`);
 
-                // Create COLORED BLOCK instead of sphere - vertical from ground (y=-10) to label
-                const blockHeight = y - (-10); // Height from ground plane to position
+                // Create COLORED BLOCK from ground (-10) to top (y)
+                const blockHeight = Math.max(0.2, y - (-10)); // Ensure minimum height
                 const geometry = new THREE.BoxGeometry(0.4, blockHeight, 0.4);
                 const material = new THREE.MeshPhongMaterial({
                     color: color,
@@ -1783,11 +1780,12 @@
 
                 debugLog(`✅ Block ${index + 1} created: height=${blockHeight.toFixed(1)}, color based on avg score ${avgScore.toFixed(1)}`);
 
-                // Add label at TOP of block (no rod needed, block connects ground to label)
-                const labelData = createLabel(property.name, { x: x, y: y, z: z }, 0, index);
+                // Add label at TOP of block
+                const labelPosition = new THREE.Vector3(x, y, z);
+                const labelData = createLabel(property.name, labelPosition, 0.5, index);
                 propertyLabels.push(labelData.sprite);
-                propertyRods.push(null); // No separate rod - block IS the connector
-                labelBasePositions.push(y); // Store Y position
+                propertyRods.push(labelData.rod);
+                labelBasePositions.push(y);
             });
 
             debugLog(`🎯 TOTAL SPHERES: ${propertyMeshes.length}`);
@@ -2203,7 +2201,7 @@
                 const y = ((matchScore / 100) * 20) - 10;
 
                 // Update BLOCK height and position
-                const blockHeight = y - (-10);
+                const blockHeight = Math.max(0.2, y - (-10));
                 mesh.geometry = new THREE.BoxGeometry(0.4, blockHeight, 0.4);
                 mesh.position.set(x, -10 + (blockHeight / 2), z);
 
@@ -2220,12 +2218,22 @@
 
                 console.log(`Property #${rank}: ${property.name} - Match: ${matchScore.toFixed(1)}% - Color: #${newColor.toString(16)}`);
 
-                // Update label position at TOP of block
+                // Update label and rod
                 const label = propertyLabels[index];
-                if (label) {
-                    // Position label at top of block
-                    label.position.set(x, y + 0.5, z);
-                    // Update label text to show rank and match score
+                const rod = propertyRods[index];
+
+                if (label && rod) {
+                    const heightVariation = label.userData.heightVariation;
+                    const offset = label.userData.offset;
+
+                    // Update label position
+                    label.position.set(x, y + offset + heightVariation, z);
+
+                    // Update rod position and height
+                    rod.position.set(x, y + offset + (heightVariation / 2), z);
+                    rod.geometry = new THREE.CylinderGeometry(0.02, 0.02, heightVariation, 8);
+
+                    // Update label text
                     updateLabelText(label, `#${rank} ${property.name} (${matchScore.toFixed(0)}%)`, property.name, index);
                 }
 
