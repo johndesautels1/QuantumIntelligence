@@ -1778,111 +1778,19 @@
 
                 debugLog(`  AvgScore: ${avgScore.toFixed(1)} -> Color: #${color.toString(16).padStart(6, '0')}`);
 
-                // Create 3D TEXTURED HOUSE from Google Street View
+                // Create COLORED BLOCK from ground (-10) to top (y)
                 const blockHeight = Math.max(0.2, y - (-10)); // Ensure minimum height
+                const geometry = new THREE.BoxGeometry(0.4, blockHeight, 0.4);
+                const material = new THREE.MeshPhongMaterial({
+                    color: color,
+                    emissive: color,
+                    emissiveIntensity: 0.3,
+                    shininess: 100,
+                    transparent: true,
+                    opacity: 0.85
+                });
 
-                // Generate Google Street View URL for this property
-                const streetViewUrl = lat !== 0 && lng !== 0
-                    ? `https://maps.googleapis.com/maps/api/streetview?size=1200x900&location=${lat},${lng}&fov=90&pitch=10&heading=0&key=AIzaSyAtnlfmqoHQkiJXc3KYUeR5_4mUupOPLbw`
-                    : null;
-
-                let block;
-
-                if (streetViewUrl) {
-                    // Create 3D house geometry (textured slab)
-                    const houseWidth = 2.8;
-                    const houseDepth = 2.0;
-                    const houseThickness = Math.max(0.4, blockHeight * 0.15);
-                    const geometry = new THREE.BoxGeometry(houseWidth, houseThickness, houseDepth);
-
-                    // Create initial materials (will be updated when texture loads)
-                    const materials = [];
-                    for (let i = 0; i < 6; i++) {
-                        materials.push(new THREE.MeshPhongMaterial({
-                            color: color,
-                            emissive: color,
-                            emissiveIntensity: 0.3,
-                            shininess: 100,
-                            transparent: true,
-                            opacity: 0.85
-                        }));
-                    }
-
-                    block = new THREE.Mesh(geometry, materials);
-                    block.rotation.x = -0.4; // Tilt to show texture
-                    block.rotation.y = 0.5;  // Slight rotation
-
-                    // Load Street View texture
-                    const textureLoader = new THREE.TextureLoader();
-                    textureLoader.setCrossOrigin('anonymous');
-
-                    textureLoader.load(
-                        streetViewUrl,
-                        (texture) => {
-                            // Texture loaded successfully
-                            texture.colorSpace = THREE.SRGBColorSpace;
-                            texture.minFilter = THREE.LinearFilter;
-
-                            console.log(`✨ Texture loaded for ${property.name}`);
-
-                            // Update materials - put texture on top face (index 4)
-                            const newMaterials = [];
-                            for (let i = 0; i < 6; i++) {
-                                if (i === 4) {
-                                    // Top face gets the house texture
-                                    newMaterials.push(new THREE.MeshStandardMaterial({
-                                        map: texture,
-                                        roughness: 0.45,
-                                        metalness: 0.05,
-                                        emissive: new THREE.Color(color),
-                                        emissiveIntensity: 0.15
-                                    }));
-                                } else if (i === 5) {
-                                    // Bottom darker
-                                    newMaterials.push(new THREE.MeshPhongMaterial({
-                                        color: 0x020617,
-                                        transparent: true,
-                                        opacity: 0.8
-                                    }));
-                                } else {
-                                    // Sides - colored
-                                    newMaterials.push(new THREE.MeshPhongMaterial({
-                                        color: color,
-                                        emissive: color,
-                                        emissiveIntensity: 0.2,
-                                        transparent: true,
-                                        opacity: 0.75
-                                    }));
-                                }
-                            }
-
-                            // Dispose old materials and update
-                            if (block && block.material) {
-                                if (Array.isArray(block.material)) {
-                                    block.material.forEach(m => m.dispose());
-                                }
-                                block.material = newMaterials;
-                            }
-                        },
-                        undefined,
-                        (err) => {
-                            console.warn(`⚠️ Failed to load texture for ${property.name}`, err);
-                        }
-                    );
-                } else {
-                    // Fallback: colored block if no coordinates
-                    const geometry = new THREE.BoxGeometry(0.4, blockHeight, 0.4);
-                    const material = new THREE.MeshPhongMaterial({
-                        color: color,
-                        emissive: color,
-                        emissiveIntensity: 0.3,
-                        shininess: 100,
-                        transparent: true,
-                        opacity: 0.85
-                    });
-                    block = new THREE.Mesh(geometry, material);
-                }
-
+                const block = new THREE.Mesh(geometry, material);
                 // Position block so bottom is at ground plane (y=-10) and top is at y
                 block.position.set(x, -10 + (blockHeight / 2), z);
                 block.userData = {
@@ -1894,26 +1802,6 @@
 
                 scene.add(block);
                 propertyMeshes.push(block);
-
-                // Create ROD from ground plane to house
-                const rodHeight = Math.max(0.5, blockHeight);
-                const rodGeometry = new THREE.CylinderGeometry(0.05, 0.05, rodHeight, 16);
-                const rodMaterial = new THREE.MeshPhongMaterial({
-                    color: color,
-                    emissive: color,
-                    emissiveIntensity: 0.5,
-                    transparent: true,
-                    opacity: 0.9,
-                    shininess: 100
-                });
-                const rod = new THREE.Mesh(rodGeometry, rodMaterial);
-                rod.position.set(x, -10 + (rodHeight / 2), z);
-                rod.userData = {
-                    propertyIndex: index,
-                    isRod: true
-                };
-                scene.add(rod);
-                propertyRods.push(rod);
 
                 debugLog(`✅ Block ${index + 1} created: height=${blockHeight.toFixed(1)}, color based on avg score ${avgScore.toFixed(1)}`);
 
@@ -2366,34 +2254,18 @@
                 // Map 0-100 match score to -10 to +10 height
                 const y = ((matchScore / 100) * 20) - 10;
 
-                // Update HOUSE height and position based on match score
+                // Update BLOCK height and position
                 const blockHeight = Math.max(0.2, y - (-10));
-
-                // Animate position change smoothly
-                const targetY = -10 + (blockHeight / 2);
-                mesh.position.y = targetY;
+                // Dispose old geometry and create new one
+                mesh.geometry.dispose();
+                mesh.geometry = new THREE.BoxGeometry(0.4, blockHeight, 0.4);
+                mesh.position.set(x, -10 + (blockHeight / 2), z);
 
                 // ===== COLOR = MATCH QUALITY =====
                 // Green = Excellent match, Red = Poor match
                 const newColor = getColorForValue(matchScore);
-
-                // Update materials (handle both single material and multi-material arrays)
-                if (Array.isArray(mesh.material)) {
-                    // Multi-material (textured house)
-                    mesh.material.forEach((mat, i) => {
-                        if (i !== 4) { // Don't change texture face
-                            mat.color.setHex(newColor);
-                            if (mat.emissive) {
-                                mat.emissive.setHex(newColor);
-                                mat.emissiveIntensity = 0.2;
-                            }
-                        }
-                    });
-                } else {
-                    // Single material (fallback blocks)
-                    mesh.material.color.setHex(newColor);
-                    mesh.material.emissive.setHex(newColor);
-                }
+                mesh.material.color.setHex(newColor);
+                mesh.material.emissive.setHex(newColor);
 
                 // Store match score and rank for later use
                 mesh.userData.matchScore = matchScore;
@@ -2402,41 +2274,33 @@
 
                 console.log(`Property #${rank}: ${property.name} - Match: ${matchScore.toFixed(1)}% - Color: #${newColor.toString(16)}`);
 
-                // Update ROD connecting ground to house
+                // Update label and rod
+                const label = propertyLabels[index];
                 const rod = propertyRods[index];
-                if (rod) {
-                    // Rod height = distance from ground (-10) to house center
-                    const rodHeight = Math.max(0.5, blockHeight);
 
-                    // Dispose old geometry and create new
-                    rod.geometry.dispose();
-                    rod.geometry = new THREE.CylinderGeometry(0.05, 0.05, rodHeight, 16);
+                if (label && rod) {
+                    const heightVariation = label.userData.heightVariation;
+                    const offset = label.userData.offset;
 
-                    // Position rod from ground to house
-                    rod.position.set(x, -10 + (rodHeight / 2), z);
+                    // Calculate new rod height based on match score
+                    const newRodHeight = Math.max(0.5, heightVariation * (matchScore / 100) * 2); // Scale rod height with score
 
-                    // ILLUMINATE rod with match score color
+                    // Update label position
+                    label.position.set(x, y + offset + newRodHeight, z);
+
+                    // Update rod geometry and position
+                    rod.geometry.dispose(); // Dispose old geometry
+                    rod.geometry = new THREE.CylinderGeometry(0.02, 0.02, newRodHeight, 8);
+                    rod.position.set(x, y + offset + (newRodHeight / 2), z);
+
+                    // Update rod color to match property color
                     rod.material.color.setHex(newColor);
                     rod.material.emissive.setHex(newColor);
-                    rod.material.emissiveIntensity = 0.6; // Bright glow
-                    rod.material.opacity = 0.9;
-
-                    // Top ranked properties get brighter rods
-                    if (rank <= 3) {
-                        rod.material.emissiveIntensity = 0.8; // Extra bright for top 3
-                    }
-                }
-
-                // Update label position
-                const label = propertyLabels[index];
-                if (label) {
-                    const heightVariation = label.userData.heightVariation || 1.5;
-                    const offset = label.userData.offset || 0.5;
-                    label.position.set(x, y + offset + heightVariation, z);
+                    rod.material.opacity = 0.8; // Make rod more visible
 
                     // Update label opacity based on rank
                     if (label.material) {
-                        label.material.opacity = rank <= 3 ? 1.0 : 0.85;
+                        label.material.opacity = rank <= 3 ? 1.0 : 0.85; // Top 3 fully visible
                     }
                 }
 
