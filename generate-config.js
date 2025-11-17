@@ -21,7 +21,7 @@ export const API_KEYS = {
         apiKey: '${process.env.WEATHERCOM_API_KEY || ''}'
     },
     googleMaps: {
-        apiKey: '${process.env.GOOGLE_MAPS_API_KEY || ''}'
+        apiKey: '${process.env.GOOGLE_MAPS_API_KEY || process.env.GOOGLE_MAPS_KEY || ''}'
     },
     mls: {
         apiKey: '${process.env.MLS_API_KEY || 'YOUR_MLS_API_KEY_HERE'}',
