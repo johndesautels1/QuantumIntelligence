@@ -54,24 +54,49 @@ You should see: `config.js` listed in ignored files.
 - 1000 requests per day (resets at midnight UTC)
 - 5 requests per second
 
+### Weather.com API
+
+**Status:** ✅ Active
+**API Key:** 539f39179dab4d63ad0113545251711
+**Documentation:** https://www.ibm.com/docs/en/wdfaas
+
+**What it provides:**
+- Current weather conditions
+- 5-day forecast
+- 12-hour hourly forecast
+- Real-time temperature, humidity, wind speed
+- Precipitation data
+
+**Usage Limits:**
+- Varies by plan tier
+- Check your account dashboard for specific limits
+
 ---
 
 ## How Weather Data Works
 
 ### Real Data Flow:
 
+**NOAA Historical Data:**
 1. **Property loaded** → Has lat/lng coordinates
 2. **Find nearest station** → NOAA API `/stations` endpoint
-3. **Fetch historical data** → NOAA API `/data` endpoint
-4. **Process & cache** → Store in IndexedDB
-5. **Display** → Show real weather patterns
+3. **Fetch historical data** → NOAA API `/data` endpoint (past year)
+4. **Process & cache** → Store monthly averages
+5. **Display** → Show historical climate patterns
+
+**Weather.com Current/Forecast Data:**
+1. **Property loaded** → Has lat/lng coordinates
+2. **Fetch current conditions** → Weather.com API `/observations/current`
+3. **Fetch 5-day forecast** → Weather.com API `/forecast/daily/5day`
+4. **Fetch hourly forecast** → Weather.com API `/forecast/hourly/12hour`
+5. **Cache & display** → Real-time weather information
 
 ### Fallback Strategy:
 
 ```
-Real API → Cache in IndexedDB → Placeholder data
-   ↓              ↓                    ↓
- Fresh         Offline            Last resort
+Weather.com API → NOAA Historical → Placeholder Climate Data
+       ↓                 ↓                      ↓
+  Current/Forecast   Historical Avg      Generic Patterns
 ```
 
 ---
