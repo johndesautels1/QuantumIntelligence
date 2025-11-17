@@ -136,6 +136,63 @@ class WeatherComAPI {
     }
 
     /**
+     * Get historical monthly climate averages
+     * @param {number} lat - Latitude
+     * @param {number} lng - Longitude
+     */
+    async getMonthlyClimateData(lat, lng) {
+        try {
+            const url = `${this.baseUrl}${API_ENDPOINTS.weathercom.monthlyForecast}?geocode=${lat},${lng}&format=json&units=e&language=en-US`;
+
+            const response = await fetch(url, {
+                headers: { 'apiKey': this.apiKey }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Weather.com API error: ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            return {
+                monthlyAverages: data.temperatureMax || [],
+                precipitation: data.precipitationSum || [],
+                historicalData: data,
+                source: 'Weather.com Monthly Climate Data'
+            };
+
+        } catch (error) {
+            console.error('Error fetching monthly climate data:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Get severe weather history for a location
+     * @param {number} lat - Latitude
+     * @param {number} lng - Longitude
+     */
+    async getSevereWeatherHistory(lat, lng) {
+        try {
+            const url = `${this.baseUrl}/v1/location/${lat}:${lng}:4:US/severe.json`;
+
+            const response = await fetch(url, {
+                headers: { 'apiKey': this.apiKey }
+            });
+
+            if (!response.ok) {
+                throw new Error(`Weather.com API error: ${response.status}`);
+            }
+
+            return await response.json();
+
+        } catch (error) {
+            console.error('Error fetching severe weather history:', error);
+            return null;
+        }
+    }
+
+    /**
      * Get comprehensive weather data for a property
      * Combines current conditions and forecast
      */
