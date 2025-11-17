@@ -739,7 +739,7 @@
 
         // Render Weather Metrics
         function renderWeatherMetrics() {
-            if (!currentProperty || !currentProperty.climate) return;
+            if (!currentProperty || !currentProperty.climate || !WEATHER_DATA[currentProperty.climate]) return;
             const container = document.getElementById('weatherMetrics');
             const data = WEATHER_DATA[currentProperty.climate].months[currentMonth];
 
@@ -769,7 +769,7 @@
 
         // Render Impact Analysis
         function renderImpactAnalysis() {
-            if (!currentProperty || !currentProperty.climate) return;
+            if (!currentProperty || !currentProperty.climate || !WEATHER_DATA[currentProperty.climate]) return;
             const container = document.getElementById('impactGrid');
             const data = WEATHER_DATA[currentProperty.climate].months[currentMonth];
 
@@ -823,7 +823,7 @@
 
         // Render 7-Day Forecast
         function renderForecast() {
-            if (!currentProperty || !currentProperty.climate) return;
+            if (!currentProperty || !currentProperty.climate || !WEATHER_DATA[currentProperty.climate]) return;
             const container = document.getElementById('forecastGrid');
             const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
             const icons = ['☀️', '⛅', '🌤️', '🌦️', '🌧️', '⛈️', '🌈'];
@@ -844,7 +844,7 @@
 
         // Render Alerts
         function renderAlerts() {
-            if (!currentProperty || !currentProperty.climate) return;
+            if (!currentProperty || !currentProperty.climate || !WEATHER_DATA[currentProperty.climate]) return;
             const container = document.getElementById('alertsContainer');
             const data = WEATHER_DATA[currentProperty.climate].months[currentMonth];
 
@@ -899,7 +899,7 @@
 
         // Initialize Charts
         function initCharts() {
-            if (!currentProperty || !currentProperty.climate) return;
+            if (!currentProperty || !currentProperty.climate || !WEATHER_DATA[currentProperty.climate]) return;
             // Weather Chart
             const ctx1 = document.getElementById('weatherChart').getContext('2d');
             const climateData = WEATHER_DATA[currentProperty.climate].months;
@@ -1000,6 +1000,7 @@
 
         // Update Charts
         function updateCharts() {
+            if (!currentProperty || !currentProperty.climate || !WEATHER_DATA[currentProperty.climate]) return;
             const climateData = WEATHER_DATA[currentProperty.climate].months;
 
             weatherChart.data.datasets[0].data = climateData.map(m => m.temp);
@@ -1048,6 +1049,7 @@
 
         // Export Report
         function exportReport() {
+            if (!currentProperty || !currentProperty.climate || !WEATHER_DATA[currentProperty.climate]) return;
             const report = {
                 property: currentProperty,
                 month: MONTHS[currentMonth],
