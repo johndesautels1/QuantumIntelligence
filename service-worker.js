@@ -12,12 +12,10 @@ const OFFLINE_URL = '/offline.html';
 const PRECACHE_ASSETS = [
     '/',
     '/index.html',
-    '/manifest.json',
     '/offline.html',
     '/src/core/data-manager.js',
     '/src/core/scoring-engine.js',
     '/src/core/import-export.js',
-    '/src/styles/global.css',
     'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js'
 ];
 
@@ -31,7 +29,15 @@ self.addEventListener('install', event => {
                 console.log('[Service Worker] Pre-caching core assets');
                 return cache.addAll(PRECACHE_ASSETS);
             })
-            .then(() => self.skipWaiting())
+            .then(() => {
+                console.log('[Service Worker] Pre-cache complete');
+                return self.skipWaiting();
+            })
+            .catch(error => {
+                console.error('[Service Worker] Pre-cache failed:', error.message);
+                // Continue anyway - app will work without cache
+                return self.skipWaiting();
+            })
     );
 });
 
