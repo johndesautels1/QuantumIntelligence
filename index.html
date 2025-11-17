@@ -797,7 +797,15 @@
 
         // Register service worker
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
+            window.addEventListener('load', async () => {
+                // Unregister all old service workers first
+                const registrations = await navigator.serviceWorker.getRegistrations();
+                for (let registration of registrations) {
+                    await registration.unregister();
+                    console.log('🗑️ Unregistered old service worker');
+                }
+
+                // Register new service worker
                 navigator.serviceWorker.register('service-worker.js')
                     .then(registration => {
                         console.log('✅ Service Worker registered:', registration);
