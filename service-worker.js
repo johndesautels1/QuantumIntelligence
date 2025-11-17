@@ -5,7 +5,7 @@
  * @version 1.0.0
  */
 
-const CACHE_NAME = 'clues-quantum-v1.0.0';
+const CACHE_NAME = 'clues-quantum-v1.0.1';
 const OFFLINE_URL = '/offline.html';
 
 // Files to cache immediately
