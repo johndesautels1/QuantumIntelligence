@@ -63,3 +63,6 @@ ios/App/Pods/
 ios/App/build/
 *.log
 .DS_Store
+
+# API Keys - DO NOT COMMIT
+config.js
