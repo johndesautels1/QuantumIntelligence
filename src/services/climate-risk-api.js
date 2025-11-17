@@ -38,20 +38,41 @@ export default {
     }
 
     // ── 2. FEMA FLOOD ZONE (US only) ───────────────────────────────────────
-    let floodZone = { zone: 'X', staticBFE: null, message: 'Low risk (Zone X)' };
+    let floodZone = { zone: 'Unknown', staticBFE: null, message: 'Checking flood zone...' };
+
     try {
+      // Try primary FEMA NFHL ArcGIS service with longer timeout
       const floodUrl = `https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer/28/query?f=json&geometry=${lng},${lat}&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&returnGeometry=false&outFields=FLD_ZONE,STATIC_BFE,ZONE_SUBTY`;
-      const floodRes = await fetch(floodUrl);
-      const floodData = await floodRes.json();
-      if (floodData.features?.length > 0) {
-        const a = floodData.features[0].attributes;
-        floodZone = {
-          zone: a.FLD_ZONE || 'X',
-          staticBFE: a.STATIC_BFE && a.STATIC_BFE > 0 ? Number(a.STATIC_BFE).toFixed(1) : null,
-          message: a.ZONE_SUBTY ? `${a.FLD_ZONE} – ${a.ZONE_SUBTY}` : a.FLD_ZONE
-        };
+
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+      const floodRes = await fetch(floodUrl, { signal: controller.signal });
+      clearTimeout(timeout);
+
+      if (floodRes.ok) {
+        const floodData = await floodRes.json();
+        if (floodData.features?.length > 0) {
+          const a = floodData.features[0].attributes;
+          floodZone = {
+            zone: a.FLD_ZONE || 'X',
+            staticBFE: a.STATIC_BFE && a.STATIC_BFE > 0 ? Number(a.STATIC_BFE).toFixed(1) : null,
+            message: a.ZONE_SUBTY ? `${a.FLD_ZONE} – ${a.ZONE_SUBTY}` : (a.FLD_ZONE || 'Zone X')
+          };
+          console.log(`✅ FEMA flood zone found: ${floodZone.zone}`);
+        } else {
+          // No features = not in mapped flood hazard area
+          floodZone = { zone: 'X', staticBFE: null, message: 'Minimal flood hazard (Zone X)' };
+          console.log('✅ Property not in FEMA flood hazard area (Zone X)');
+        }
+      } else {
+        throw new Error(`FEMA API returned ${floodRes.status}`);
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn('⚠️ FEMA flood zone lookup failed:', e.message);
+      // When FEMA API fails, mark as unknown rather than defaulting to X
+      floodZone = { zone: 'Unknown', staticBFE: null, message: 'Flood zone data unavailable' };
+    }
 
     // ── 3. CLIMATE PROJECTIONS (simplified - use elevation + geography) ────
     // Note: Open-Meteo Climate API only has daily data (not monthly), and limited to 2050
