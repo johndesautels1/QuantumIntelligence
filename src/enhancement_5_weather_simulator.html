@@ -2127,16 +2127,22 @@
             await loadProjections();
 
             // ===== EXTREME HEAT CALENDAR HEATMAP =====
-            const heatData = {};
-            const cal = new CalHeatmap();
-            cal.paint({
-              itemSelector: "#heatCalendar",
-              domain: { type: 'year' },
-              subDomain: { type: 'day', radius: 4 },
-              data: { source: heatData, x: d => new Date(d), y: d => d },
-              scale: { color: { range: ["#0a1628", "#ff0066"] } },
-              theme: "dark"
-            });
+            // Cal-Heatmap v4 API - check if library loaded
+            if (typeof CalHeatmap !== 'undefined') {
+                const heatData = {};
+                const cal = new CalHeatmap();
+                cal.paint({
+                  itemSelector: "#heatCalendar",
+                  domain: { type: 'year' },
+                  subDomain: { type: 'day', radius: 4 },
+                  data: { source: heatData, x: d => new Date(d), y: d => d },
+                  scale: { color: { range: ["#0a1628", "#ff0066"] } },
+                  theme: "dark"
+                });
+            } else {
+                console.warn('⚠️ CalHeatmap library not loaded');
+                document.getElementById('heatCalendar').innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 40px;">Heat calendar unavailable</p>';
+            }
 
             console.log('✅ Climate risk assessment rendered');
         }
