@@ -238,8 +238,8 @@ class SharedDataAdapter {
             const fullAddress = [street, city, state].filter(x => x).join(', ');
 
             // Check multiple possible coordinate locations (same as 5D Explorer)
-            const lat = prop.location?.latitude || prop.basic?.coordinates?.latitude || prop.address?.latitude || 0;
-            const lng = prop.location?.longitude || prop.basic?.coordinates?.longitude || prop.address?.longitude || 0;
+            const lat = prop.location?.latitude || prop.basic?.coordinates?.latitude || prop.address?.latitude;
+            const lng = prop.location?.longitude || prop.basic?.coordinates?.longitude || prop.address?.longitude;
 
             return {
                 id: prop.property_id,
@@ -249,6 +249,8 @@ class SharedDataAdapter {
                 location: {
                     lat: lat,
                     lng: lng,
+                    latitude: lat,  // Include both formats
+                    longitude: lng, // Include both formats
                     city: city,
                     state: state
                 },

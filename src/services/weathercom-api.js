@@ -146,9 +146,11 @@ class WeatherComAPI {
         const lng = property.location?.lng || property.location?.longitude;
 
         if (!lat || !lng) {
-            console.warn(`⚠️ No coordinates for ${property.name}`);
+            console.warn(`⚠️ No coordinates for ${property.name} (lat: ${lat}, lng: ${lng})`);
             return null;
         }
+
+        console.log(`✅ Using coordinates for ${property.name}: lat=${lat}, lng=${lng}`);
 
         try {
             // Fetch current and forecast in parallel
