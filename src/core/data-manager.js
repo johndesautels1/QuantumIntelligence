@@ -223,16 +223,26 @@ class DataManager {
      * Query by index
      */
     async getByIndex(storeName, indexName, value) {
-        const transaction = this.db.transaction([storeName], 'readonly');
-        const store = transaction.objectStore(storeName);
-        const index = store.index(indexName);
+        try {
+            const transaction = this.db.transaction([storeName], 'readonly');
+            const store = transaction.objectStore(storeName);
+            const index = store.index(indexName);
 
-        return new Promise((resolve, reject) => {
-            const request = index.getAll(value);
+            return new Promise((resolve, reject) => {
+                const request = index.getAll(value);
 
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-        });
+                request.onsuccess = () => resolve(request.result || []);
+                request.onerror = () => {
+                    // Return empty array instead of rejecting when index is empty or value is invalid
+                    console.warn(`Index query failed for ${storeName}.${indexName} with value ${value}, returning empty array`);
+                    resolve([]);
+                };
+            });
+        } catch (error) {
+            // Handle case where store or index doesn't exist or value is invalid
+            console.warn(`Error accessing index ${indexName} on ${storeName}:`, error.message);
+            return [];
+        }
     }
 
     /**
