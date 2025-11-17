@@ -901,9 +901,9 @@
     </div>
 
     <script type="module">
-        // Import weather APIs
-        import weatherAPI from './services/weather-api.js';
-        import weatherComAPI from './services/weathercom-api.js';
+        // Import weather APIs - now using Open-Meteo (free, no API key required)
+        import climateNormalsAPI from './services/climate-normals-api.js';
+        import currentWeatherAPI from './services/current-weather-api.js';
 
         // Import climate risk & property intelligence APIs
         import climateRiskAPI from './services/climate-risk-api.js';
@@ -913,8 +913,8 @@
         // ===== REAL PROPERTY DATA FROM DATABASE =====
         // NO HARDCODED FAKE DATA - Loads from IndexedDB
         let PROPERTIES = [];
-        let REAL_WEATHER_DATA = {}; // Cache for real NOAA historical data by property ID
-        let WEATHERCOM_DATA = {}; // Cache for Weather.com current/forecast data by property ID
+        let REAL_WEATHER_DATA = {}; // Cache for real 30-year climate normals (Open-Meteo) by property ID
+        let CURRENT_WEATHER_DATA = {}; // Cache for current weather + 7-day forecast (Open-Meteo) by property ID
         let CLIMATE_RISK_DATA = {}; // Cache for climate risk assessments
         let MLS_DATA = {}; // Cache for MLS property details
 
@@ -1038,66 +1038,66 @@
         }
 
         /**
-         * Fetch real weather data from NOAA API for a property
+         * Fetch real weather data from Open-Meteo Archive API
+         * Gets 30-year climate normals (1991-2020)
          * Caches results to avoid repeated API calls
-         * Falls back to placeholder data if API fails
          */
         async function fetchRealWeatherData(property) {
             try {
                 // Check cache first
                 if (REAL_WEATHER_DATA[property.id]) {
-                    console.log(`✅ Using cached NOAA data for ${property.name}`);
+                    console.log(`✅ Using cached climate normals for ${property.name}`);
                     return REAL_WEATHER_DATA[property.id];
                 }
 
-                console.log(`🌦️ Fetching NOAA historical data for ${property.name}...`);
+                console.log(`🌦️ Fetching 30-year climate normals for ${property.name}...`);
 
-                // Fetch from NOAA API
-                const weatherData = await weatherAPI.getWeatherForProperty(property);
+                // Fetch from Open-Meteo Archive API
+                const weatherData = await climateNormalsAPI.getWeatherForProperty(property);
 
                 if (weatherData && weatherData.length === 12) {
                     // Store in cache
                     REAL_WEATHER_DATA[property.id] = weatherData;
-                    console.log(`✅ Successfully fetched NOAA data for ${property.name}`);
+                    console.log(`✅ Successfully fetched climate normals for ${property.name}`);
                     return weatherData;
                 }
 
-                console.warn(`⚠️ No NOAA data returned for ${property.name}, using placeholder`);
+                console.warn(`⚠️ No climate normals returned for ${property.name}, using placeholder`);
                 return null;
             } catch (error) {
-                console.warn(`⚠️ Failed to fetch NOAA data for ${property.name}:`, error.message);
+                console.warn(`⚠️ Failed to fetch climate normals for ${property.name}:`, error.message);
                 return null;
             }
         }
 
         /**
-         * Fetch Weather.com current conditions and forecast
-         * Provides real-time weather data
+         * Fetch current weather and 7-day forecast from Open-Meteo
+         * Provides real-time weather data with proper emoji icons
          */
-        async function fetchWeatherComData(property) {
+        async function fetchCurrentWeatherData(property) {
             try {
                 // Check cache first
-                if (WEATHERCOM_DATA[property.id]) {
-                    console.log(`✅ Using cached Weather.com data for ${property.name}`);
-                    return WEATHERCOM_DATA[property.id];
+                if (CURRENT_WEATHER_DATA[property.id]) {
+                    console.log(`✅ Using cached current weather for ${property.name}`);
+                    return CURRENT_WEATHER_DATA[property.id];
                 }
 
-                console.log(`☀️ Fetching Weather.com current conditions for ${property.name}...`);
+                console.log(`☀️ Fetching current weather for ${property.name}...`);
 
-                // Fetch from Weather.com API
-                const weatherComData = await weatherComAPI.getWeatherForProperty(property);
+                // Fetch from Open-Meteo Forecast API
+                const weatherData = await currentWeatherAPI.getWeatherForProperty(property);
 
-                if (weatherComData) {
+                if (weatherData) {
                     // Store in cache
-                    WEATHERCOM_DATA[property.id] = weatherComData;
-                    console.log(`✅ Successfully fetched Weather.com data for ${property.name}`);
-                    return weatherComData;
+                    CURRENT_WEATHER_DATA[property.id] = weatherData;
+                    console.log(`✅ Successfully fetched current weather for ${property.name}`);
+                    return weatherData;
                 }
 
-                console.warn(`⚠️ No Weather.com data returned for ${property.name}`);
+                console.warn(`⚠️ No current weather returned for ${property.name}`);
                 return null;
             } catch (error) {
-                console.warn(`⚠️ Failed to fetch Weather.com data for ${property.name}:`, error.message);
+                console.warn(`⚠️ Failed to fetch current weather for ${property.name}:`, error.message);
                 return null;
             }
         }
@@ -1139,21 +1139,21 @@
         function renderPropertySelector() {
             const container = document.getElementById('propertySelector');
             container.innerHTML = PROPERTIES.map(p => {
-                const hasNoaaData = REAL_WEATHER_DATA[p.id] !== undefined;
-                const hasWeatherComData = WEATHERCOM_DATA[p.id] !== undefined;
+                const hasClimateNormals = REAL_WEATHER_DATA[p.id] !== undefined;
+                const hasCurrentWeather = CURRENT_WEATHER_DATA[p.id] !== undefined;
 
                 let dataIndicator = '';
                 let dataTooltip = '';
 
-                if (hasNoaaData && hasWeatherComData) {
+                if (hasClimateNormals && hasCurrentWeather) {
                     dataIndicator = '📡☀️';
-                    dataTooltip = 'NOAA Historical + Weather.com Current';
-                } else if (hasNoaaData) {
+                    dataTooltip = 'Open-Meteo: 30-year normals + Current weather';
+                } else if (hasClimateNormals) {
                     dataIndicator = '📡';
-                    dataTooltip = 'NOAA Historical Data';
-                } else if (hasWeatherComData) {
+                    dataTooltip = 'Open-Meteo: 30-year climate normals';
+                } else if (hasCurrentWeather) {
                     dataIndicator = '☀️';
-                    dataTooltip = 'Weather.com Current Data';
+                    dataTooltip = 'Open-Meteo: Current weather';
                 } else {
                     dataIndicator = '📊';
                     dataTooltip = 'Placeholder Data';
@@ -1278,7 +1278,18 @@
             const container = document.getElementById('weatherMetrics');
             const weatherMonths = getWeatherData();
             if (!weatherMonths) return;
-            const data = weatherMonths[currentMonth];
+            let data = weatherMonths[currentMonth];
+
+            // Prefer real-time current data if we have it
+            const realTime = CURRENT_WEATHER_DATA[currentProperty.id]?.current;
+            if (realTime) {
+                data = {
+                    temp: realTime.temp,
+                    precip: realTime.precip,
+                    humidity: realTime.humidity,
+                    wind: realTime.wind
+                };
+            }
 
             container.innerHTML = `
                 <div class="weather-card">
@@ -1531,14 +1542,14 @@
             if (!currentProperty) return;
             const container = document.getElementById('forecastGrid');
 
-            // Try to use Weather.com forecast first
-            const weatherComData = WEATHERCOM_DATA[currentProperty.id];
-            if (weatherComData && weatherComData.forecast) {
-                // Use real Weather.com 5-day forecast
-                container.innerHTML = weatherComData.forecast.map(day => {
+            // Try to use Open-Meteo forecast first
+            const currentWeatherData = CURRENT_WEATHER_DATA[currentProperty.id];
+            if (currentWeatherData && currentWeatherData.forecast) {
+                // Use real Open-Meteo 7-day forecast with proper emojis
+                container.innerHTML = currentWeatherData.forecast.map(day => {
                     const date = new Date(day.date);
                     const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
-                    const icon = getWeatherIcon(day.icon);
+                    const icon = day.iconEmoji;
 
                     return `
                         <div class="day-card">
@@ -1569,24 +1580,6 @@
                     </div>
                 `;
             }).join('');
-        }
-
-        /**
-         * Map Weather.com icon codes to emojis
-         */
-        function getWeatherIcon(iconCode) {
-            const iconMap = {
-                1: '☀️', 2: '⛅', 3: '⛅', 4: '☁️', 5: '🌤️',
-                6: '☁️', 7: '☁️', 8: '☁️', 9: '🌧️', 10: '🌧️',
-                11: '🌧️', 12: '🌧️', 13: '🌦️', 14: '🌦️', 15: '⛈️',
-                16: '⛈️', 17: '⛈️', 18: '🌧️', 19: '🌫️', 20: '🌫️',
-                21: '🌫️', 22: '🌫️', 23: '💨', 24: '💨', 25: '❄️',
-                26: '❄️', 27: '🌙', 28: '☁️', 29: '⛅', 30: '⛅',
-                31: '🌙', 32: '☀️', 33: '🌙', 34: '☀️', 35: '🌧️',
-                36: '🔥', 37: '⛈️', 38: '⛈️', 39: '🌧️', 40: '🌧️',
-                41: '🌨️', 42: '🌨️', 43: '🌨️', 44: '⛅'
-            };
-            return iconMap[iconCode] || '☀️';
         }
 
         // Render Alerts
@@ -1926,19 +1919,19 @@
                 });
 
                 // Fetch real weather data for all properties (in parallel)
-                console.log('🌐 Fetching weather data from multiple sources...');
+                console.log('🌐 Fetching weather data from Open-Meteo...');
 
-                // Fetch NOAA historical data
-                const noaaPromises = PROPERTIES.map(prop => fetchRealWeatherData(prop));
-                await Promise.allSettled(noaaPromises);
-                const noaaCount = Object.keys(REAL_WEATHER_DATA).length;
-                console.log(`✅ Loaded NOAA historical data for ${noaaCount}/${PROPERTIES.length} properties`);
+                // Fetch 30-year climate normals from Open-Meteo Archive
+                const climateNormalsPromises = PROPERTIES.map(prop => fetchRealWeatherData(prop));
+                await Promise.allSettled(climateNormalsPromises);
+                const climateNormalsCount = Object.keys(REAL_WEATHER_DATA).length;
+                console.log(`✅ Loaded 30-year climate normals for ${climateNormalsCount}/${PROPERTIES.length} properties`);
 
-                // Fetch Weather.com current/forecast data
-                const weatherComPromises = PROPERTIES.map(prop => fetchWeatherComData(prop));
-                await Promise.allSettled(weatherComPromises);
-                const weatherComCount = Object.keys(WEATHERCOM_DATA).length;
-                console.log(`✅ Loaded Weather.com data for ${weatherComCount}/${PROPERTIES.length} properties`);
+                // Fetch current weather + 7-day forecast from Open-Meteo
+                const currentWeatherPromises = PROPERTIES.map(prop => fetchCurrentWeatherData(prop));
+                await Promise.allSettled(currentWeatherPromises);
+                const currentWeatherCount = Object.keys(CURRENT_WEATHER_DATA).length;
+                console.log(`✅ Loaded current weather for ${currentWeatherCount}/${PROPERTIES.length} properties`);
 
                 // Set first property as current
                 currentProperty = PROPERTIES[0];
