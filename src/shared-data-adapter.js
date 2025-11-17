@@ -232,20 +232,17 @@ class SharedDataAdapter {
 
         return properties.map(prop => ({
             id: prop.property_id,
-            name: prop.address?.full_address || `${prop.address?.street}, ${prop.address?.city}`,
-            address: prop.address?.full_address || '',
+            name: prop.basic?.address || `${prop.location?.city}, ${prop.location?.state}` || 'Unknown Property',
+            address: prop.basic?.address || '',
             price: prop.price?.current || 0,
             location: {
-                lat: prop.address?.latitude || 0,
-                lng: prop.address?.longitude || 0,
-                city: prop.address?.city || '',
-                state: prop.address?.state || ''
+                lat: prop.basic?.coordinates?.latitude || 0,
+                lng: prop.basic?.coordinates?.longitude || 0,
+                city: prop.location?.city || '',
+                state: prop.location?.state || ''
             },
-            climate: {
-                zone: 'temperate', // Would come from location API
-                floodRisk: prop.analytics?.flood_zone ? 'high' : 'low',
-                hurricaneRisk: prop.analytics?.variable_values?.hurricane_risk > 50 ? 'high' : 'low'
-            }
+            // Don't set climate here - let detectClimate() function handle it
+            climate: null
         }));
     }
 
