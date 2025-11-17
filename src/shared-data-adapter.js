@@ -230,20 +230,28 @@ class SharedDataAdapter {
     async getPropertiesForWeatherSimulator() {
         const properties = await this.getAllProperties();
 
-        return properties.map(prop => ({
-            id: prop.property_id,
-            name: prop.basic?.address || `${prop.location?.city}, ${prop.location?.state}` || 'Unknown Property',
-            address: prop.basic?.address || '',
-            price: prop.price?.current || 0,
-            location: {
-                lat: prop.basic?.coordinates?.latitude || 0,
-                lng: prop.basic?.coordinates?.longitude || 0,
-                city: prop.location?.city || '',
-                state: prop.location?.state || ''
-            },
-            // Don't set climate here - let detectClimate() function handle it
-            climate: null
-        }));
+        return properties.map(prop => {
+            // Build full address string
+            const street = prop.basic?.address || '';
+            const city = prop.location?.city || '';
+            const state = prop.location?.state || '';
+            const fullAddress = [street, city, state].filter(x => x).join(', ');
+
+            return {
+                id: prop.property_id,
+                name: fullAddress || 'Unknown Property',
+                address: street,
+                price: prop.price?.current || 0,
+                location: {
+                    lat: prop.basic?.coordinates?.latitude || 0,
+                    lng: prop.basic?.coordinates?.longitude || 0,
+                    city: city,
+                    state: state
+                },
+                // Don't set climate here - let detectClimate() function handle it
+                climate: null
+            };
+        });
     }
 
     /**
