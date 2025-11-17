@@ -549,10 +549,10 @@
 
             <!-- Season Selector -->
             <div class="season-selector">
-                <button class="season-btn active" onclick="setSeason('spring')">🌸 Spring</button>
-                <button class="season-btn" onclick="setSeason('summer')">☀️ Summer</button>
-                <button class="season-btn" onclick="setSeason('fall')">🍂 Fall</button>
-                <button class="season-btn" onclick="setSeason('winter')">❄️ Winter</button>
+                <button class="season-btn active" onclick="setSeason('spring', this)">🌸 Spring</button>
+                <button class="season-btn" onclick="setSeason('summer', this)">☀️ Summer</button>
+                <button class="season-btn" onclick="setSeason('fall', this)">🍂 Fall</button>
+                <button class="season-btn" onclick="setSeason('winter', this)">❄️ Winter</button>
             </div>
         </div>
 
@@ -710,7 +710,7 @@
         function renderPropertySelector() {
             const container = document.getElementById('propertySelector');
             container.innerHTML = PROPERTIES.map(p => `
-                <div class="property-card ${currentProperty.id === p.id ? 'active' : ''}" onclick="selectProperty(${p.id})">
+                <div class="property-card ${currentProperty && currentProperty.id === p.id ? 'active' : ''}" onclick="selectProperty(${p.id})">
                     <div class="property-name">${p.name}</div>
                     <div class="property-location">${p.location} • ${p.climate}</div>
                 </div>
@@ -1012,14 +1012,16 @@
         }
 
         // Set Season
-        function setSeason(season) {
+        function setSeason(season, buttonElement) {
             const seasonMap = { spring: 3, summer: 6, fall: 9, winter: 0 };
             currentMonth = seasonMap[season];
             currentSeason = season;
 
             document.getElementById('timelineSlider').value = currentMonth;
             document.querySelectorAll('.season-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            if (buttonElement) {
+                buttonElement.classList.add('active');
+            }
 
             updateDisplay();
         }
