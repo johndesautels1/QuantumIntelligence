@@ -267,6 +267,12 @@ class SharedDataAdapter {
                     city: city,
                     state: state
                 },
+                // Include MLS number for property structural data
+                mls_number: prop.basic?.mlsNumber || prop.mls_number,
+                mlsNumber: prop.basic?.mlsNumber || prop.mls_number,
+                basic: {
+                    mlsNumber: prop.basic?.mlsNumber || prop.mls_number
+                },
                 // Don't set climate here - let detectClimate() function handle it
                 climate: null
             };
