@@ -53,39 +53,35 @@ export default {
       }
     } catch (e) {}
 
-    // ── 3. CLIMATE PROJECTIONS (Open-Meteo EC_Earth3P_HR model SSP2-4.5) ───
+    // ── 3. CLIMATE PROJECTIONS (simplified - use elevation + geography) ────
+    // Note: Open-Meteo Climate API only has daily data (not monthly), and limited to 2050
+    // We'll use geographic heuristics for now
     let projections = {
-      tempIncreaseC: 0,
+      tempIncreaseC: 1.5, // Global average by 2050
       precipChangePercent: 0,
       windExtremeIncrease: 0
     };
 
-    try {
-      const projUrl = `https://climate-api.open-meteo.com/v1/climate?latitude=${lat}&longitude=${lng}&models=EC_Earth3P_HR&start_date=2041-01-01&end_date=2060-12-31&monthly=temperature_2m_mean,precipitation_sum,wind_speed_10m_max`;
-      const projRes = await fetch(projUrl);
-      const projData = await projRes.json();
+    // Regional climate adjustments based on latitude/geography
+    const absLat = Math.abs(lat);
 
-      // Historical baseline (1991–2020)
-      const histUrl = `https://climate-api.open-meteo.com/v1/climate?latitude=${lat}&longitude=${lng}&models=EC_Earth3P_HR&start_date=1991-01-01&end_date=2020-12-31&monthly=temperature_2m_mean,precipitation_sum,wind_speed_10m_max`;
-      const histRes = await fetch(histUrl);
-      const histData = await histRes.json();
+    // Higher latitudes = more warming
+    if (absLat > 60) projections.tempIncreaseC = 2.5;
+    else if (absLat > 45) projections.tempIncreaseC = 2.0;
+    else if (absLat < 35) projections.tempIncreaseC = 1.8; // Subtropical warming
 
-      if (projData.monthly && histData.monthly) {
-        const futureTemp = projData.monthly.temperature_2m_mean.reduce((a, b) => a + b, 0) / projData.monthly.temperature_2m_mean.length;
-        const histTemp = histData.monthly.temperature_2m_mean.reduce((a, b) => a + b, 0) / histData.monthly.temperature_2m_mean.length;
-        projections.tempIncreaseC = futureTemp - histTemp;
-
-        const futurePrecip = projData.monthly.precipitation_sum.reduce((a, b) => a + b, 0);
-        const histPrecip = histData.monthly.precipitation_sum.reduce((a, b) => a + b, 0);
-        projections.precipChangePercent = histPrecip > 0 ? ((futurePrecip - histPrecip) / histPrecip) * 100 : 0;
-
-        const futureWind = Math.max(...projData.monthly.wind_speed_10m_max);
-        const histWind = Math.max(...histData.monthly.wind_speed_10m_max);
-        projections.windExtremeIncrease = histWind > 0 ? ((futureWind - histWind) / histWind) * 100 : 0;
-      }
-    } catch (e) {
-      console.warn('Climate projection fetch failed – using conservative defaults');
+    // Arid regions (southwestern US, etc.) - increasing drought risk
+    if (lat > 30 && lat < 40 && lng > -120 && lng < -100) {
+      projections.precipChangePercent = -20; // SW US drought
+    } else if (absLat < 25) {
+      projections.precipChangePercent = 5; // Tropical regions: more precipitation
+    } else if (absLat > 50) {
+      projections.precipChangePercent = 10; // High latitudes: wetter
     }
+
+    // Coastal regions: higher wind extremes
+    // (This is simplified - in reality would need coastal distance calculation)
+    projections.windExtremeIncrease = 10; // Conservative default
 
     // ── 4. GRANULAR SCORING (now truly multi-hazard) ───────────────────────
     let score = 100;

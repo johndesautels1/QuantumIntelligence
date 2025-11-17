@@ -10,20 +10,33 @@ export default {
 
     if (!lat || !lng) throw new Error('Missing coordinates');
 
-    // Official Open-Meteo climate normals (1991–2020 average) – one call, 12 perfect monthly values
-    const url = `https://climate-api.open-meteo.com/v1/climate?latitude=${lat}&longitude=${lng}&models=EC_Earth3P_HR&monthly=temperature_2m_mean,precipitation_sum&temperature_unit=fahrenheit&precipitation_unit=inch`;
+    // Use Open-Meteo Archive API for historical climate data (1940-2022)
+    const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}&start_date=1991-01-01&end_date=2020-12-31&daily=temperature_2m_mean,precipitation_sum&temperature_unit=fahrenheit&precipitation_unit=inch&timezone=auto`;
 
     const response = await fetch(url);
     if (!response.ok) throw new Error('Climate normals API failed');
 
     const data = await response.json();
 
-    if (!data.monthly) throw new Error('No monthly data returned');
+    if (!data.daily) throw new Error('No daily data returned');
 
-    const result = data.monthly.time.map((_, i) => ({
-      temp: Math.round(data.monthly.temperature_2m_mean[i]),
-      precip: Number(data.monthly.precipitation_sum[i].toFixed(1)),
-      humidity: 65, // monthly humidity not in normals → safe average
+    // Calculate monthly averages from daily data (30 years: 1991-2020)
+    const monthlyData = Array.from({ length: 12 }, () => ({ temps: [], precips: [] }));
+
+    data.daily.time.forEach((dateStr, i) => {
+      const month = new Date(dateStr).getMonth(); // 0-11
+      if (data.daily.temperature_2m_mean[i] !== null) {
+        monthlyData[month].temps.push(data.daily.temperature_2m_mean[i]);
+      }
+      if (data.daily.precipitation_sum[i] !== null) {
+        monthlyData[month].precips.push(data.daily.precipitation_sum[i]);
+      }
+    });
+
+    const result = monthlyData.map(m => ({
+      temp: m.temps.length > 0 ? Math.round(m.temps.reduce((a, b) => a + b, 0) / m.temps.length) : 60,
+      precip: m.precips.length > 0 ? Number((m.precips.reduce((a, b) => a + b, 0) / m.precips.length).toFixed(1)) : 2.0,
+      humidity: 65,
       wind: 12
     }));
 
