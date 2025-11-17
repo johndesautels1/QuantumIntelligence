@@ -795,39 +795,24 @@
             document.getElementById('installPrompt').classList.remove('active');
         }
 
-        // Register service worker
+        // SERVICE WORKER DISABLED - Causing cache issues preventing code updates
+        // Unregister any existing service workers
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', async () => {
-                // Clear all caches first
-                const cacheNames = await caches.keys();
-                for (let cacheName of cacheNames) {
-                    await caches.delete(cacheName);
-                    console.log('🗑️ Deleted cache:', cacheName);
-                }
-
-                // Unregister all old service workers
-                const registrations = await navigator.serviceWorker.getRegistrations();
+            navigator.serviceWorker.getRegistrations().then(registrations => {
                 for (let registration of registrations) {
-                    await registration.unregister();
-                    console.log('🗑️ Unregistered old service worker');
+                    registration.unregister();
+                    console.log('🗑️ Service Worker unregistered (disabled for development)');
                 }
+            });
 
-                // Force reload if this is first time clearing
-                if (!sessionStorage.getItem('sw_cleared')) {
-                    sessionStorage.setItem('sw_cleared', 'true');
-                    console.log('🔄 Reloading to clear cache...');
-                    window.location.reload(true);
-                    return;
-                }
-
-                // Register new service worker
-                navigator.serviceWorker.register('service-worker.js')
-                    .then(registration => {
-                        console.log('✅ Service Worker registered:', registration);
+            // Clear all caches
+            caches.keys().then(cacheNames => {
+                return Promise.all(
+                    cacheNames.map(cacheName => {
+                        console.log('🗑️ Deleting cache:', cacheName);
+                        return caches.delete(cacheName);
                     })
-                    .catch(error => {
-                        console.log('❌ Service Worker registration failed:', error);
-                    });
+                );
             });
         }
 
