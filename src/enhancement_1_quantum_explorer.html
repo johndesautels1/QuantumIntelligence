@@ -1789,7 +1789,7 @@
                 debugLog(`  AvgScore: ${avgScore.toFixed(1)} -> Color: #${color.toString(16).padStart(6, '0')}`);
 
                 // Create 3D TEXTURED HOUSE from Google Street View
-                const blockHeight = Math.max(0.2, y - (-10)); // Ensure minimum height
+                const blockHeight = Math.max(0.2, y);  // Height from ground (y=0) // Ensure minimum height
 
                 // Generate Google Street View URL for this property
                 // Street View for front/side view
@@ -1947,7 +1947,7 @@
                 }
 
                 // Position block so bottom is at ground plane (y=-10) and top is at y
-                block.position.set(x, -10 + (blockHeight / 2), z);
+                block.position.set(x, blockHeight / 2, z);  // Bottom at y=0, top at y
                 block.userData = {
                     property: property,
                     propertyIndex: index,
@@ -1970,7 +1970,7 @@
                     shininess: 100
                 });
                 const rod = new THREE.Mesh(rodGeometry, rodMaterial);
-                rod.position.set(x, -10 + (rodHeight / 2), z);
+                rod.position.set(x, rodHeight / 2, z);  // Rod from ground up
                 rod.userData = {
                     propertyIndex: index,
                     isRod: true
@@ -2522,13 +2522,13 @@ function animate() {
                 // ===== Y-AXIS = WEIGHTED MATCH SCORE =====
                 // Higher on screen = better match for YOUR preferences
                 // Map 0-100 match score to -10 to +10 height
-                const y = ((matchScore / 100) * 20) - 10;
+                const y = (matchScore / 100) * 20;  // Score 0=0, 50=10, 100=20
 
                 // Update HOUSE height and position based on match score
-                const blockHeight = Math.max(0.2, y - (-10));
+                const blockHeight = Math.max(0.2, y);  // Height from ground (y=0)
 
                 // Animate position change smoothly
-                const targetY = -10 + (blockHeight / 2);
+                const targetY = blockHeight / 2;  // Position from ground up
                 mesh.position.y = targetY;
 
                 // ===== COLOR = MATCH QUALITY =====
@@ -2556,7 +2556,7 @@ function animate() {
                     rod.geometry = new THREE.CylinderGeometry(0.05, 0.05, rodHeight, 16);
 
                     // Position rod from ground to house
-                    rod.position.set(x, -10 + (rodHeight / 2), z);
+                    rod.position.set(x, rodHeight / 2, z);  // Rod from ground up
 
                     // ILLUMINATE rod with match score color
                     rod.material.color.setHex(newColor);
