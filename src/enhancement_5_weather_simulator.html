@@ -1625,7 +1625,7 @@
 
         // ===== PROPERTY TOOLBAR FUNCTIONS =====
 
-        function showPropertyPicker() {
+        window.showPropertyPicker = function() {
             const modal = document.getElementById('propertyPickerModal');
             const grid = document.getElementById('propertyPickerGrid');
 
@@ -1653,11 +1653,11 @@
             });
 
             modal.style.display = 'flex';
-        }
+        };
 
-        function hidePropertyPicker() {
+        window.hidePropertyPicker = function() {
             document.getElementById('propertyPickerModal').style.display = 'none';
-        }
+        };
 
         async function addPropertyToSelected(propertyId) {
             // Validate max 4
@@ -1714,7 +1714,7 @@
             }
         }
 
-        function removePropertyFromSelected(propertyId) {
+        window.removePropertyFromSelected = function(propertyId) {
             const index = SELECTED_PROPERTIES.indexOf(propertyId);
             if (index === -1) return;
 
@@ -1735,7 +1735,7 @@
             }
 
             renderSelectedPropertiesToolbar();
-        }
+        };
 
         function renderSelectedPropertiesToolbar() {
             const toolbar = document.getElementById('selectedPropertiesToolbar');
@@ -1773,13 +1773,13 @@
 
         // ===== END PROPERTY TOOLBAR FUNCTIONS =====
 
-        function selectProperty(id) {
+        window.selectProperty = function(id) {
             currentProperty = PROPERTIES.find(p => p.id === id);
             renderSelectedPropertiesToolbar(); // Update toolbar to show active property
             updateDisplay();
             updateCharts();
             renderClimateRisk(); // Add climate risk assessment
-        }
+        };
 
         // Update Display
         function updateDisplay() {
