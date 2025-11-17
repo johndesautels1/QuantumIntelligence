@@ -754,12 +754,13 @@
 
             if (!locationStr) return 'Continental';
 
-            // Mediterranean climates (California coast, Mediterranean regions)
+            // Mediterranean climates (California coast, Florida coast, Mediterranean regions)
             if (locationStr.includes('los angeles') || locationStr.includes('la ') ||
                 locationStr.includes('san diego') || locationStr.includes('santa barbara') ||
                 locationStr.includes('malibu') || locationStr.includes('santa monica') ||
                 locationStr.includes('ventura') || locationStr.includes('san luis obispo') ||
-                state === 'ca' && (city.includes('santa') || city.includes('san'))) {
+                state === 'ca' && (city.includes('santa') || city.includes('san')) ||
+                state === 'fl' || state === 'florida') {
                 return 'Mediterranean';
             }
 
