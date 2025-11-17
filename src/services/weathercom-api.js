@@ -68,23 +68,23 @@ class WeatherComAPI {
         try {
             const response = await this.request(API_ENDPOINTS.weathercom.currentConditions, {
                 geocode: `${lat},${lng}`,
-                units: 'e', // English units (Fahrenheit)
+                units: 'e',
                 language: 'en-US'
             });
 
-            // Weather.com API response is nested
-            const data = response.observation || response;
+            // weatherapi.com response format
+            const current = response.current;
 
             return {
-                temperature: data.temperature || data.temp,
-                feelsLike: data.temperatureFeelsLike || data.feelsLike,
-                humidity: data.relativeHumidity || data.humidity,
-                windSpeed: data.windSpeed || data.wspd,
-                windDirection: data.windDirection || data.wdir,
-                precipitation: data.precip1Hour || data.precip,
-                conditions: data.wxPhraseLong || data.wx_phrase,
-                icon: data.iconCode || data.icon_code,
-                timestamp: data.validTimeLocal || data.valid_time_local
+                temperature: current.temp_f,
+                feelsLike: current.feelslike_f,
+                humidity: current.humidity,
+                windSpeed: current.wind_mph,
+                windDirection: current.wind_dir,
+                precipitation: current.precip_in,
+                conditions: current.condition.text,
+                icon: current.condition.code,
+                timestamp: response.location.localtime
             };
         } catch (error) {
             console.error('Error fetching current conditions:', error);
@@ -101,24 +101,21 @@ class WeatherComAPI {
         try {
             const data = await this.request(API_ENDPOINTS.weathercom.forecast, {
                 geocode: `${lat},${lng}`,
-                units: 'e', // English units
+                units: 'e',
                 language: 'en-US'
             });
 
-            // Process forecast data
-            const forecast = [];
-            for (let i = 0; i < 5; i++) {
-                forecast.push({
-                    date: data.validTimeLocal[i],
-                    dayOfWeek: data.dayOfWeek[i],
-                    tempHigh: data.temperatureMax[i],
-                    tempLow: data.temperatureMin[i],
-                    precipitation: data.qpf[i],
-                    precipChance: data.qpfSnow[i],
-                    narrative: data.narrative[i],
-                    icon: data.daypart[0].iconCode[i * 2]
-                });
-            }
+            // weatherapi.com forecast format
+            const forecast = data.forecast.forecastday.map(day => ({
+                date: day.date,
+                dayOfWeek: new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' }),
+                tempHigh: day.day.maxtemp_f,
+                tempLow: day.day.mintemp_f,
+                precipitation: day.day.totalprecip_in,
+                precipChance: day.day.daily_chance_of_rain,
+                narrative: day.day.condition.text,
+                icon: day.day.condition.code
+            }));
 
             return forecast;
         } catch (error) {

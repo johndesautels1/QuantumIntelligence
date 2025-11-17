@@ -26,17 +26,17 @@ export default async function handler(req, res) {
 
     try {
         let url;
-        const baseUrl = 'https://api.weather.com/v3/wx';
+        const baseUrl = 'https://api.weatherapi.com/v1';
 
         switch (endpoint) {
             case 'current':
-                url = `${baseUrl}/observations/current?geocode=${lat},${lng}&units=e&language=en-US&format=json&apiKey=${apiKey}`;
+                url = `${baseUrl}/current.json?key=${apiKey}&q=${lat},${lng}`;
                 break;
             case 'forecast':
-                url = `${baseUrl}/forecast/daily/5day?geocode=${lat},${lng}&units=e&language=en-US&format=json&apiKey=${apiKey}`;
+                url = `${baseUrl}/forecast.json?key=${apiKey}&q=${lat},${lng}&days=7`;
                 break;
             case 'hourly':
-                url = `${baseUrl}/forecast/hourly/12hour?geocode=${lat},${lng}&units=e&language=en-US&format=json&apiKey=${apiKey}`;
+                url = `${baseUrl}/forecast.json?key=${apiKey}&q=${lat},${lng}&days=1`;
                 break;
             default:
                 return res.status(400).json({ error: 'Invalid endpoint' });
