@@ -66,22 +66,25 @@ class WeatherComAPI {
      */
     async getCurrentConditions(lat, lng) {
         try {
-            const data = await this.request(API_ENDPOINTS.weathercom.currentConditions, {
+            const response = await this.request(API_ENDPOINTS.weathercom.currentConditions, {
                 geocode: `${lat},${lng}`,
                 units: 'e', // English units (Fahrenheit)
                 language: 'en-US'
             });
 
+            // Weather.com API response is nested
+            const data = response.observation || response;
+
             return {
-                temperature: data.temperature,
-                feelsLike: data.temperatureFeelsLike,
-                humidity: data.relativeHumidity,
-                windSpeed: data.windSpeed,
-                windDirection: data.windDirection,
-                precipitation: data.precip1Hour,
-                conditions: data.wxPhraseLong,
-                icon: data.iconCode,
-                timestamp: data.validTimeLocal
+                temperature: data.temperature || data.temp,
+                feelsLike: data.temperatureFeelsLike || data.feelsLike,
+                humidity: data.relativeHumidity || data.humidity,
+                windSpeed: data.windSpeed || data.wspd,
+                windDirection: data.windDirection || data.wdir,
+                precipitation: data.precip1Hour || data.precip,
+                conditions: data.wxPhraseLong || data.wx_phrase,
+                icon: data.iconCode || data.icon_code,
+                timestamp: data.validTimeLocal || data.valid_time_local
             };
         } catch (error) {
             console.error('Error fetching current conditions:', error);
