@@ -902,8 +902,8 @@
 
     <script type="module">
         // Import weather APIs - now using Open-Meteo (free, no API key required)
-        import climateNormalsAPI from './services/climate-normals-api.js';
-        import currentWeatherAPI from './services/current-weather-api.js';
+        import weatherAPI from './services/weather-api.js'; // Climate normals
+        import weatherComAPI from './services/weathercom-api.js'; // Current + forecast
 
         // Import climate risk & property intelligence APIs
         import climateRiskAPI from './services/climate-risk-api.js';
@@ -914,7 +914,7 @@
         // NO HARDCODED FAKE DATA - Loads from IndexedDB
         let PROPERTIES = [];
         let REAL_WEATHER_DATA = {}; // Cache for real 30-year climate normals (Open-Meteo) by property ID
-        let CURRENT_WEATHER_DATA = {}; // Cache for current weather + 7-day forecast (Open-Meteo) by property ID
+        let WEATHERCOM_DATA = {}; // Cache for current weather + 7-day forecast (Open-Meteo) by property ID
         let CLIMATE_RISK_DATA = {}; // Cache for climate risk assessments
         let MLS_DATA = {}; // Cache for MLS property details
 
@@ -1038,7 +1038,7 @@
         }
 
         /**
-         * Fetch real weather data from Open-Meteo Archive API
+         * Fetch real weather data from Open-Meteo Climate API
          * Gets 30-year climate normals (1991-2020)
          * Caches results to avoid repeated API calls
          */
@@ -1052,8 +1052,8 @@
 
                 console.log(`🌦️ Fetching 30-year climate normals for ${property.name}...`);
 
-                // Fetch from Open-Meteo Archive API
-                const weatherData = await climateNormalsAPI.getWeatherForProperty(property);
+                // Fetch from Open-Meteo Climate API
+                const weatherData = await weatherAPI.getWeatherForProperty(property);
 
                 if (weatherData && weatherData.length === 12) {
                     // Store in cache
@@ -1074,22 +1074,22 @@
          * Fetch current weather and 7-day forecast from Open-Meteo
          * Provides real-time weather data with proper emoji icons
          */
-        async function fetchCurrentWeatherData(property) {
+        async function fetchWeatherComData(property) {
             try {
                 // Check cache first
-                if (CURRENT_WEATHER_DATA[property.id]) {
+                if (WEATHERCOM_DATA[property.id]) {
                     console.log(`✅ Using cached current weather for ${property.name}`);
-                    return CURRENT_WEATHER_DATA[property.id];
+                    return WEATHERCOM_DATA[property.id];
                 }
 
                 console.log(`☀️ Fetching current weather for ${property.name}...`);
 
                 // Fetch from Open-Meteo Forecast API
-                const weatherData = await currentWeatherAPI.getWeatherForProperty(property);
+                const weatherData = await weatherComAPI.getWeatherForProperty(property);
 
                 if (weatherData) {
                     // Store in cache
-                    CURRENT_WEATHER_DATA[property.id] = weatherData;
+                    WEATHERCOM_DATA[property.id] = weatherData;
                     console.log(`✅ Successfully fetched current weather for ${property.name}`);
                     return weatherData;
                 }
@@ -1140,7 +1140,7 @@
             const container = document.getElementById('propertySelector');
             container.innerHTML = PROPERTIES.map(p => {
                 const hasClimateNormals = REAL_WEATHER_DATA[p.id] !== undefined;
-                const hasCurrentWeather = CURRENT_WEATHER_DATA[p.id] !== undefined;
+                const hasCurrentWeather = WEATHERCOM_DATA[p.id] !== undefined;
 
                 let dataIndicator = '';
                 let dataTooltip = '';
@@ -1281,14 +1281,11 @@
             let data = weatherMonths[currentMonth];
 
             // Prefer real-time current data if we have it
-            const realTime = CURRENT_WEATHER_DATA[currentProperty.id]?.current;
+            const realTime = WEATHERCOM_DATA[currentProperty.id]?.current;
             if (realTime) {
-                data = {
-                    temp: realTime.temp,
-                    precip: realTime.precip,
-                    humidity: realTime.humidity,
-                    wind: realTime.wind
-                };
+                data.temp = realTime.temp;
+                data.humidity = realTime.humidity;
+                data.wind = realTime.wind;
             }
 
             container.innerHTML = `
@@ -1451,7 +1448,7 @@
             document.getElementById('elevationContent').innerHTML = `
                 <div class="risk-metric">
                     <span class="label">Elevation:</span>
-                    <span class="value">${climateRisk.elevation.elevationFeet.toFixed(1)} feet</span>
+                    <span class="value">${Number(climateRisk.elevation.elevationFeet).toFixed(1)} feet</span>
                 </div>
                 <p style="color: rgba(255,255,255,0.9); margin-top: 15px;">${climateRisk.elevation.riskLevel}</p>
                 <p style="color: rgba(255,255,255,0.9); margin-top: 15px;"><strong>Sea Level Rise Risk:</strong><br/>${climateRisk.seaLevelRise.riskSummary}</p>
@@ -1543,10 +1540,10 @@
             const container = document.getElementById('forecastGrid');
 
             // Try to use Open-Meteo forecast first
-            const currentWeatherData = CURRENT_WEATHER_DATA[currentProperty.id];
-            if (currentWeatherData && currentWeatherData.forecast) {
+            const weatherComData = WEATHERCOM_DATA[currentProperty.id];
+            if (weatherComData && weatherComData.forecast) {
                 // Use real Open-Meteo 7-day forecast with proper emojis
-                container.innerHTML = currentWeatherData.forecast.map(day => {
+                container.innerHTML = weatherComData.forecast.map(day => {
                     const date = new Date(day.date);
                     const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
                     const icon = day.iconEmoji;
@@ -1928,10 +1925,10 @@
                 console.log(`✅ Loaded 30-year climate normals for ${climateNormalsCount}/${PROPERTIES.length} properties`);
 
                 // Fetch current weather + 7-day forecast from Open-Meteo
-                const currentWeatherPromises = PROPERTIES.map(prop => fetchCurrentWeatherData(prop));
-                await Promise.allSettled(currentWeatherPromises);
-                const currentWeatherCount = Object.keys(CURRENT_WEATHER_DATA).length;
-                console.log(`✅ Loaded current weather for ${currentWeatherCount}/${PROPERTIES.length} properties`);
+                const weatherComPromises = PROPERTIES.map(prop => fetchWeatherComData(prop));
+                await Promise.allSettled(weatherComPromises);
+                const weatherComCount = Object.keys(WEATHERCOM_DATA).length;
+                console.log(`✅ Loaded current weather for ${weatherComCount}/${PROPERTIES.length} properties`);
 
                 // Set first property as current
                 currentProperty = PROPERTIES[0];
