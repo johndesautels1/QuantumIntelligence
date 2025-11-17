@@ -1437,7 +1437,6 @@
             `;
 
             // ===== UPDATE PARTICLE BACKGROUND BASED ON WEATHER =====
-            const realTime = WEATHERCOM_DATA[currentProperty.id]?.current;
             if (realTime) {
                 updateParticles(realTime.temp, realTime.precip);
             }
