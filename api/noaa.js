@@ -23,9 +23,12 @@ export default async function handler(req, res) {
     try {
         const baseUrl = 'https://www.ncdc.noaa.gov/cdo-web/api/v2';
 
+        // Decode the endpoint parameter (comes as %2Fstations, need /stations)
+        const decodedEndpoint = decodeURIComponent(endpoint);
+
         // Build query string
         const queryString = new URLSearchParams(params).toString();
-        const url = `${baseUrl}/${endpoint}${queryString ? '?' + queryString : ''}`;
+        const url = `${baseUrl}${decodedEndpoint}${queryString ? '?' + queryString : ''}`;
 
         const response = await fetch(url, {
             headers: {
