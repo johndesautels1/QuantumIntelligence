@@ -1487,17 +1487,12 @@
         function init() {
             renderSelectedPropertiesToolbar(); // Initialize toolbar (will show empty state)
 
-            // Only render metrics if we have a currentProperty
-            if (currentProperty) {
-                renderWeatherMetrics();
-                renderImpactAnalysis();
-                renderForecast();
-                renderAlerts();
-                initCharts();
-            } else {
-                // Show empty state
-                document.getElementById('weatherMetrics').innerHTML = '<p style="color: rgba(255,255,255,0.7); text-align: center; padding: 40px;">No properties selected yet. Click "+ Add Property" above to load weather data.</p>';
-            }
+            // Always call render functions - they handle empty states internally
+            renderWeatherMetrics();
+            renderImpactAnalysis();
+            renderForecast();
+            renderAlerts();
+            initCharts();
 
             // Timeline slider
             document.getElementById('timelineSlider').addEventListener('input', (e) => {
@@ -2146,8 +2141,11 @@
 
         // Render 7-Day Forecast
         function renderForecast() {
-            if (!currentProperty) return;
             const container = document.getElementById('forecastGrid');
+            if (!currentProperty) {
+                container.innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 40px;">No property selected. Add a property to view forecast.</p>';
+                return;
+            }
 
             // Try to use Open-Meteo forecast first
             const weatherComData = WEATHERCOM_DATA[currentProperty.id];
@@ -2191,8 +2189,11 @@
 
         // Render Alerts
         function renderAlerts() {
-            if (!currentProperty) return;
             const container = document.getElementById('alertsContainer');
+            if (!currentProperty) {
+                container.innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 40px;">No property selected. Add a property to view alerts.</p>';
+                return;
+            }
             const weatherMonths = getWeatherData();
             if (!weatherMonths) return;
             const data = weatherMonths[currentMonth];
@@ -2258,7 +2259,13 @@
 
         // Initialize Charts (ApexCharts - Glassmorphic)
         function initCharts() {
-            if (!currentProperty) return;
+            if (!currentProperty) {
+                // Show empty state for charts
+                document.getElementById('weatherChart').innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 80px 20px;">No property selected. Add a property to view annual weather patterns.</p>';
+                document.getElementById('precipChart').innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 80px 20px;">No property selected. Add a property to view precipitation trends.</p>';
+                document.getElementById('heatCalendar').innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 80px 20px;">No property selected. Add a property to view heat calendar.</p>';
+                return;
+            }
             const weatherMonths = getWeatherData();
             if (!weatherMonths) return;
 
