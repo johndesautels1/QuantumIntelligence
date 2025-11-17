@@ -1084,6 +1084,11 @@
                 // Set first property as current
                 currentProperty = PROPERTIES[0];
 
+                // Ensure property has a climate (default to Mediterranean if missing)
+                if (!currentProperty.climate) {
+                    currentProperty.climate = 'Mediterranean';
+                }
+
                 // Initialize the UI
                 init();
 
