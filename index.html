@@ -798,11 +798,26 @@
         // Register service worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', async () => {
-                // Unregister all old service workers first
+                // Clear all caches first
+                const cacheNames = await caches.keys();
+                for (let cacheName of cacheNames) {
+                    await caches.delete(cacheName);
+                    console.log('🗑️ Deleted cache:', cacheName);
+                }
+
+                // Unregister all old service workers
                 const registrations = await navigator.serviceWorker.getRegistrations();
                 for (let registration of registrations) {
                     await registration.unregister();
                     console.log('🗑️ Unregistered old service worker');
+                }
+
+                // Force reload if this is first time clearing
+                if (!sessionStorage.getItem('sw_cleared')) {
+                    sessionStorage.setItem('sw_cleared', 'true');
+                    console.log('🔄 Reloading to clear cache...');
+                    window.location.reload(true);
+                    return;
                 }
 
                 // Register new service worker
