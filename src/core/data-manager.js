@@ -229,14 +229,20 @@ class DataManager {
             const index = store.index(indexName);
 
             return new Promise((resolve, reject) => {
-                const request = index.getAll(value);
+                try {
+                    const request = index.getAll(value);
 
-                request.onsuccess = () => resolve(request.result || []);
-                request.onerror = () => {
-                    // Return empty array instead of rejecting when index is empty or value is invalid
-                    console.warn(`Index query failed for ${storeName}.${indexName} with value ${value}, returning empty array`);
+                    request.onsuccess = () => resolve(request.result || []);
+                    request.onerror = () => {
+                        // Return empty array instead of rejecting when index is empty or value is invalid
+                        console.warn(`Index query failed for ${storeName}.${indexName} with value ${value}, returning empty array`);
+                        resolve([]);
+                    };
+                } catch (error) {
+                    // Catch synchronous errors from getAll
+                    console.warn(`getAll threw error for ${storeName}.${indexName}:`, error.message);
                     resolve([]);
-                };
+                }
             });
         } catch (error) {
             // Handle case where store or index doesn't exist or value is invalid
