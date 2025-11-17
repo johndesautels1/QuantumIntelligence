@@ -804,9 +804,9 @@
         function renderPropertySelector() {
             const container = document.getElementById('propertySelector');
             container.innerHTML = PROPERTIES.map(p => `
-                <div class="property-card ${currentProperty && currentProperty.id === p.id ? 'active' : ''}" onclick="selectProperty(${p.id})">
+                <div class="property-card ${currentProperty && currentProperty.id === p.id ? 'active' : ''}" onclick="selectProperty('${p.id}')">
                     <div class="property-name">${p.name}</div>
-                    <div class="property-location">${p.location} • ${p.climate}</div>
+                    <div class="property-location">${p.location.city}, ${p.location.state} • ${p.climate}</div>
                 </div>
             `).join('');
         }
