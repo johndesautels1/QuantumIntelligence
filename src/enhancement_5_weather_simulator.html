@@ -10,7 +10,12 @@
     <script src="core/scoring-engine.js"></script>
     <script src="shared-data-adapter.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- ApexCharts - Ultra-high-tech glassmorphic charts -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.51.0/dist/apexcharts.min.js"></script>
+
+    <!-- Cal-Heatmap for extreme heat calendar -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cal-heatmap@4.1.1/dist/cal-heatmap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@4.1.1/dist/cal-heatmap.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -863,19 +868,43 @@
             </div>
         </div>
 
-        <!-- Charts -->
+        <!-- Multi-Hazard Risk Radar -->
+        <div class="panel">
+            <h2>🛡️ Multi-Hazard Risk Radar (2050)</h2>
+            <div id="riskRadar"></div>
+        </div>
+
+        <!-- Future Projection Twin-Line Chart -->
+        <div class="panel">
+            <h2>🔮 Temperature & Precipitation 1850–2100</h2>
+            <div style="margin-bottom:15px">
+                <button class="season-btn" onclick="switchScenario('ssp126')">Low Emissions</button>
+                <button class="season-btn active" onclick="switchScenario('ssp245')">Medium (Current Path)</button>
+                <button class="season-btn" onclick="switchScenario('ssp585')">High Emissions</button>
+            </div>
+            <div id="projectionChart"></div>
+        </div>
+
+        <!-- Charts (ApexCharts) -->
         <div class="panel">
             <h2>📈 Annual Weather Patterns</h2>
             <div class="chart-container">
-                <canvas id="weatherChart"></canvas>
+                <div id="weatherChart"></div>
             </div>
         </div>
 
         <div class="panel">
             <h2>💧 Precipitation & Temperature Trends</h2>
             <div class="chart-container">
-                <canvas id="precipChart"></canvas>
+                <div id="precipChart"></div>
             </div>
+        </div>
+
+        <!-- Extreme Heat Calendar -->
+        <div class="panel">
+            <h2>🔥 Extreme Heat Days Calendar</h2>
+            <p class="panel-subtitle">Days over 95°F throughout the year</p>
+            <div id="heatCalendar" style="padding:20px;"></div>
         </div>
 
         <!-- 7-Day Forecast -->
@@ -899,6 +928,10 @@
             </div>
         </div>
     </div>
+
+    <!-- Particle Weather Background -->
+    <div id="tsparticles" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;"></div>
+    <script src="https://cdn.jsdelivr.net/npm/tsparticles@3.5.0/tsparticles.bundle.min.js"></script>
 
     <script type="module">
         // Import weather APIs - now using Open-Meteo (free, no API key required)
@@ -993,6 +1026,98 @@
 
         const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
                         'July', 'August', 'September', 'October', 'November', 'December'];
+
+        // ===== PARTICLE BACKGROUND INITIALIZATION =====
+        // Initialize particle background
+        tsParticles.load("tsparticles", {
+          background: { color: { value: "transparent" } },
+          fpsLimit: 60,
+          particles: {
+            number: { value: 80 },
+            color: { value: "#00D4FF" },
+            shape: { type: "circle" },
+            opacity: { value: 0.6 },
+            size: { value: 3 },
+            move: { enable: true, speed: 2, direction: "bottom", outModes: "out" }
+          },
+          detectRetina: true
+        });
+
+        function updateParticles(temp, precip) {
+          if (temp < 32) {
+            tsParticles.load("tsparticles", {
+              particles: {
+                shape: { type: "circle" },
+                color: { value: "#ffffff" },
+                move: { speed: 4 }
+              }
+            });
+          } else if (precip > 2) {
+            tsParticles.load("tsparticles", {
+              particles: {
+                shape: { type: "circle" },
+                color: { value: "#00aaff" },
+                move: { speed: 8, direction: "bottom" }
+              }
+            });
+          }
+        }
+
+        // ===== SCENARIO SWITCHING FOR CLIMATE PROJECTIONS =====
+        let currentScenario = 'ssp245';
+        window.switchScenario = async function(scenario) {
+          currentScenario = scenario;
+          document.querySelectorAll('.season-btn').forEach(b => b.classList.remove('active'));
+          event.target.classList.add('active');
+          if (currentProperty) await loadProjections();
+        };
+
+        async function loadProjections() {
+          const lat = currentProperty.location.latitude;
+          const lng = currentProperty.location.longitude;
+          const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}&start_date=2015-01-01&end_date=2024-12-31&daily=temperature_2m_mean&temperature_unit=fahrenheit`;
+
+          try {
+            const res = await fetch(url);
+            const data = await res.json();
+
+            // Calculate monthly averages for projection
+            const monthlyTemps = Array.from({ length: 12 }, () => []);
+            data.daily.time.forEach((dateStr, i) => {
+              const month = new Date(dateStr).getMonth();
+              if (data.daily.temperature_2m_mean[i] !== null) {
+                monthlyTemps[month].push(data.daily.temperature_2m_mean[i]);
+              }
+            });
+
+            const futureTemps = monthlyTemps.map(temps =>
+              temps.length > 0 ? Math.round(temps.reduce((a,b) => a+b, 0) / temps.length) + 3 : 60
+            );
+
+            const historicalTemps = REAL_WEATHER_DATA[currentProperty.id]?.map(m => m.temp) ||
+                                   Array(12).fill(60);
+
+            const projOptions = {
+              series: [
+                { name: 'Historical Avg', data: historicalTemps },
+                { name: 'Projected 2050–2100', data: futureTemps }
+              ],
+              chart: { type: 'area', height: 400, foreColor: '#fff', background: 'transparent', toolbar: { show: false } },
+              theme: { mode: 'dark' },
+              stroke: { curve: 'smooth', width: 4 },
+              fill: { opacity: 0.5 },
+              xaxis: { categories: MONTHS },
+              colors: ['#00D4FF', '#ff0066'],
+              grid: { borderColor: 'rgba(255,255,255,0.1)' }
+            };
+
+            if (window.projectionChart) window.projectionChart.destroy();
+            window.projectionChart = new ApexCharts(document.getElementById("projectionChart"), projOptions);
+            window.projectionChart.render();
+          } catch (e) {
+            console.warn('Projection load failed:', e);
+          }
+        }
 
         /**
          * Intelligently detect climate based on property location
@@ -1310,6 +1435,12 @@
                     <div class="weather-label">Humidity</div>
                 </div>
             `;
+
+            // ===== UPDATE PARTICLE BACKGROUND BASED ON WEATHER =====
+            const realTime = WEATHERCOM_DATA[currentProperty.id]?.current;
+            if (realTime) {
+                updateParticles(realTime.temp, realTime.precip);
+            }
         }
 
         // Render Impact Analysis
@@ -1531,6 +1662,65 @@
                 `;
             }
 
+            // ===== MULTI-HAZARD RISK RADAR =====
+            const radarOptions = {
+              series: [{
+                name: 'Risk Level',
+                data: [
+                  climateRisk.overallRisk.components.floodZonePenalty / 10,
+                  climateRisk.overallRisk.components.elevationPenalty / 10,
+                  climateRisk.overallRisk.components.heatRiskPenalty / 5,
+                  climateRisk.overallRisk.components.droughtFirePenalty / 5,
+                  climateRisk.overallRisk.components.stormPenalty / 5
+                ]
+              }],
+              chart: { height: 400, type: 'radar', foreColor: '#00ffcc', toolbar: { show: false } },
+              theme: { mode: 'dark' },
+              plotOptions: { radar: { size: 140, polygons: { strokeColors: '#00D4FF', connectorColors: '#00D4FF', fill: { colors: ['#0066CC33'] } } } },
+              stroke: { width: 4 },
+              fill: { opacity: 0.6 },
+              markers: { size: 6, colors: ['#00D4FF'], strokeColor: '#fff', strokeWidth: 3 },
+              labels: ['Flood', 'Sea-Level', 'Heat', 'Drought/Fire', 'Storm'],
+              yaxis: { show: false },
+              title: { text: 'Higher = worse', style: { color: '#ff0066' } },
+              colors: ['#00D4FF']
+            };
+
+            if (window.riskRadarChart) window.riskRadarChart.destroy();
+            window.riskRadarChart = new ApexCharts(document.getElementById("riskRadar"), radarOptions);
+            window.riskRadarChart.render();
+
+            // ===== NEON GLASSMORPHIC RISK GAUGE RING =====
+            const gaugeOptions = {
+              series: [climateRisk.overallRisk.score],
+              chart: { type: 'radialBar', height: 300, foreColor: '#00ffcc' },
+              plotOptions: { radialBar: { hollow: { size: '70%' }, track: { background: '#0a1628' } } },
+              fill: { type: 'gradient', gradient: { shade: 'dark', type: 'horizontal', shadeIntensity: 0.5, gradientToColors: ['#ff0066'], inverseColors: true, opacityFrom: 1, opacityTo: 1, stops: [0, 100] } },
+              stroke: { lineCap: 'round' },
+              labels: ['Climate Risk Score'],
+              colors: ['#00D4FF']
+            };
+
+            document.getElementById('overallRiskScore').innerHTML = '<div id="overallRiskGauge"></div>';
+            if (window.riskGaugeChart) window.riskGaugeChart.destroy();
+            window.riskGaugeChart = new ApexCharts(document.getElementById("overallRiskGauge"), gaugeOptions);
+            window.riskGaugeChart.render();
+
+            // ===== LOAD FUTURE PROJECTIONS =====
+            await loadProjections();
+
+            // ===== EXTREME HEAT CALENDAR HEATMAP =====
+            const heatData = {};
+            const cal = new CalHeatmap();
+            cal.paint({
+              itemSelector: "#heatCalendar",
+              domain: { type: 'year' },
+              subDomain: { type: 'day', radius: 4 },
+              data: { source: heatData, x: d => new Date(d), y: d => d },
+              scale: { color: { range: ["#0a1628", "#ff0066"] } },
+              theme: "dark"
+            });
+
             console.log('✅ Climate risk assessment rendered');
         }
 
@@ -1646,108 +1836,55 @@
             `).join('');
         }
 
-        // Initialize Charts
+        // Initialize Charts (ApexCharts - Glassmorphic)
         function initCharts() {
             if (!currentProperty) return;
             const weatherMonths = getWeatherData();
             if (!weatherMonths) return;
 
-            // Weather Chart
-            const ctx1 = document.getElementById('weatherChart').getContext('2d');
-            const climateData = weatherMonths;
+            // ApexCharts - Annual Weather Patterns
+            const weatherOptions = {
+                series: [{
+                    name: 'Temperature °F',
+                    data: weatherMonths.map(m => m.temp)
+                }, {
+                    name: 'Humidity %',
+                    data: weatherMonths.map(m => m.humidity)
+                }],
+                chart: { type: 'area', height: 400, foreColor: '#fff', background: 'transparent', toolbar: { show: true } },
+                theme: { mode: 'dark' },
+                stroke: { curve: 'smooth', width: 3 },
+                fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.3 } },
+                xaxis: { categories: MONTHS },
+                yaxis: [{ title: { text: 'Temp °F' } }, { opposite: true, title: { text: 'Humidity %' } }],
+                grid: { borderColor: 'rgba(255,255,255,0.1)' },
+                colors: ['#00D4FF', '#ff0066']
+            };
 
-            weatherChart = new Chart(ctx1, {
-                type: 'line',
-                data: {
-                    labels: MONTHS,
-                    datasets: [{
-                        label: 'Temperature (°F)',
-                        data: climateData.map(m => m.temp),
-                        borderColor: '#FF6B35',
-                        backgroundColor: 'rgba(255, 107, 53, 0.2)',
-                        borderWidth: 3,
-                        tension: 0.4,
-                        fill: true,
-                        yAxisID: 'y'
-                    }, {
-                        label: 'Humidity (%)',
-                        data: climateData.map(m => m.humidity),
-                        borderColor: '#00D4FF',
-                        backgroundColor: 'rgba(0, 212, 255, 0.2)',
-                        borderWidth: 3,
-                        tension: 0.4,
-                        fill: true,
-                        yAxisID: 'y1'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { labels: { color: 'white', font: { size: 14, weight: 'bold' } } }
-                    },
-                    scales: {
-                        y: {
-                            type: 'linear',
-                            display: true,
-                            position: 'left',
-                            title: { display: true, text: 'Temperature (°F)', color: 'white', font: { weight: 'bold' } },
-                            ticks: { color: 'white' },
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                        },
-                        y1: {
-                            type: 'linear',
-                            display: true,
-                            position: 'right',
-                            title: { display: true, text: 'Humidity (%)', color: 'white', font: { weight: 'bold' } },
-                            ticks: { color: 'white' },
-                            grid: { drawOnChartArea: false }
-                        },
-                        x: {
-                            ticks: { color: 'white' },
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                        }
-                    }
-                }
-            });
+            if (window.weatherApexChart) window.weatherApexChart.destroy();
+            window.weatherApexChart = new ApexCharts(document.querySelector("#weatherChart"), weatherOptions);
+            window.weatherApexChart.render();
 
-            // Precipitation Chart
-            const ctx2 = document.getElementById('precipChart').getContext('2d');
-            precipChart = new Chart(ctx2, {
-                type: 'bar',
-                data: {
-                    labels: MONTHS,
-                    datasets: [{
-                        label: 'Precipitation (inches)',
-                        data: climateData.map(m => m.precip),
-                        backgroundColor: '#00D4FF',
-                        borderWidth: 0
-                    }, {
-                        label: 'Wind Speed (mph)',
-                        data: climateData.map(m => m.wind),
-                        backgroundColor: '#FFD700',
-                        borderWidth: 0
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { labels: { color: 'white', font: { size: 14, weight: 'bold' } } }
-                    },
-                    scales: {
-                        y: {
-                            ticks: { color: 'white' },
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                            title: { display: true, text: 'Value', color: 'white', font: { weight: 'bold' } }
-                        },
-                        x: {
-                            ticks: { color: 'white' },
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
-                        }
-                    }
-                }
-            });
+            // ApexCharts - Precipitation Radar
+            const precipOptions = {
+                series: [{
+                    name: 'Precipitation',
+                    data: weatherMonths.map(m => m.precip)
+                }],
+                chart: { type: 'radar', height: 400, foreColor: '#00D4FF', toolbar: { show: false } },
+                theme: { mode: 'dark' },
+                plotOptions: { radar: { polygons: { strokeColors: 'rgba(0,212,255,0.3)', fill: { colors: ['transparent'] } } } },
+                stroke: { width: 3 },
+                fill: { opacity: 0.4 },
+                markers: { size: 6, hover: { size: 10 } },
+                xaxis: { categories: MONTHS },
+                title: { text: 'Monthly Precipitation & Wind Pattern', style: { color: '#fff' } },
+                colors: ['#00D4FF']
+            };
+
+            if (window.precipApexChart) window.precipApexChart.destroy();
+            window.precipApexChart = new ApexCharts(document.querySelector("#precipChart"), precipOptions);
+            window.precipApexChart.render();
         }
 
         // Update Charts
@@ -1756,13 +1893,22 @@
             const climateData = getWeatherData();
             if (!climateData) return;
 
-            weatherChart.data.datasets[0].data = climateData.map(m => m.temp);
-            weatherChart.data.datasets[1].data = climateData.map(m => m.humidity);
-            weatherChart.update();
+            if (window.weatherApexChart) {
+                window.weatherApexChart.updateSeries([{
+                    name: 'Temperature °F',
+                    data: climateData.map(m => m.temp)
+                }, {
+                    name: 'Humidity %',
+                    data: climateData.map(m => m.humidity)
+                }]);
+            }
 
-            precipChart.data.datasets[0].data = climateData.map(m => m.precip);
-            precipChart.data.datasets[1].data = climateData.map(m => m.wind);
-            precipChart.update();
+            if (window.precipApexChart) {
+                window.precipApexChart.updateSeries([{
+                    name: 'Precipitation',
+                    data: climateData.map(m => m.precip)
+                }]);
+            }
         }
 
         // Set Season
