@@ -738,7 +738,7 @@ Competitive (8 vars) ──────────┘
 
 **Deployment:**
 - **Supported Platforms:** Web, Android, iOS, Desktop (PWA)
-- **GitHub Repository:** ✅ Live at https://github.com/johndesautels1/-CLUES-Property-Intelligence
+- **GitHub Repository:** ✅ Live at https://github.com/johndesautels1/QuantumIntelligence
 - **Android APK:** ✅ Ready to build (Android Studio installed)
 - **Google Play:** Ready for submission
 - **Total Project Size:** 5.2 MB (excluding node_modules)
@@ -799,7 +799,7 @@ For questions about:
 - **License:** Proprietary
 - **Author:** John Desautels <cluesnomads@gmail.com>
 - **Website:** https://cluesnomad.com
-- **GitHub:** https://github.com/johndesautels1/-CLUES-Property-Intelligence
+- **GitHub:** https://github.com/johndesautels1/QuantumIntelligence
 
 **Lines of Code:** 99,283 (verified)
 **Files:** 225

@@ -302,7 +302,7 @@ Key milestones:
 7. Collapsible toolbar feature
 8. Final polish (legend, panels, descriptions)
 
-All changes pushed to: `https://github.com/johndesautels1/-CLUES-Property-Intelligence.git`
+All changes pushed to: `https://github.com/johndesautels1/QuantumIntelligence.git`
 
 ---
 
