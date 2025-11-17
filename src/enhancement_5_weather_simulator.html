@@ -1421,14 +1421,20 @@
             `;
 
             // Render flood risk
-            document.getElementById('floodRiskContent').innerHTML = `
-                <div class="risk-metric">
-                    <span class="label">FEMA Flood Zone:</span>
-                    <span class="value zone-${climateRisk.floodZone.zone}">${climateRisk.floodZone.zone}</span>
-                </div>
-                <p style="color: rgba(255,255,255,0.9); margin-top: 15px;">${climateRisk.floodZone.message}</p>
-                ${climateRisk.floodZone.staticBFE ? `<p style="color: rgba(255,255,255,0.7); margin-top: 10px;"><strong>Base Flood Elevation:</strong> ${climateRisk.floodZone.staticBFE} ft</p>` : ''}
-            `;
+            if (climateRisk.floodZone && climateRisk.floodZone.zone) {
+                document.getElementById('floodRiskContent').innerHTML = `
+                    <div class="risk-metric">
+                        <span class="label">FEMA Flood Zone:</span>
+                        <span class="value zone-${climateRisk.floodZone.zone}">${climateRisk.floodZone.zone}</span>
+                    </div>
+                    <p style="color: rgba(255,255,255,0.9); margin-top: 15px;">${climateRisk.floodZone.message}</p>
+                    ${climateRisk.floodZone.staticBFE ? `<p style="color: rgba(255,255,255,0.7); margin-top: 10px;"><strong>Base Flood Elevation:</strong> ${climateRisk.floodZone.staticBFE} ft</p>` : ''}
+                `;
+            } else {
+                document.getElementById('floodRiskContent').innerHTML = `
+                    <p class="loading-message">⚠️ Flood zone data not available</p>
+                `;
+            }
 
             // Render elevation and sea level rise
             document.getElementById('elevationContent').innerHTML = `
@@ -1441,7 +1447,13 @@
             `;
 
             // Fetch and render MLS data (if available)
-            const mlsNumber = currentProperty.mls_number || currentProperty.mlsNumber;
+            const mlsNumber = currentProperty.mls_number || currentProperty.mlsNumber || currentProperty.basic?.mlsNumber;
+            console.log('🔍 DEBUG - MLS Number check:', {
+                mls_number: currentProperty.mls_number,
+                mlsNumber: currentProperty.mlsNumber,
+                basicMlsNumber: currentProperty.basic?.mlsNumber,
+                finalMlsNumber: mlsNumber
+            });
             if (mlsNumber) {
                 let mlsData = MLS_DATA[currentProperty.id];
                 if (!mlsData) {
