@@ -239,17 +239,15 @@ class SharedDataAdapter {
                 console.log('🔍 DEBUG - prop.address:', prop.address);
             }
 
-            // Build full address string - CSV stores in prop.address, not prop.location
-            const street = prop.address?.street || prop.basic?.address || '';
-            const city = prop.address?.city || prop.location?.city || '';
-            const state = prop.address?.state || prop.location?.state || '';
+            // Build full address string
+            const street = prop.basic?.address || prop.address?.street || '';
+            const city = prop.location?.city || prop.address?.city || '';
+            const state = prop.location?.state || prop.address?.state || '';
             const fullAddress = [street, city, state].filter(x => x).join(', ');
 
-            // Check ALL possible coordinate locations - CSV stores in prop.address
-            const lat = prop.address?.latitude || prop.location?.latitude || prop.basic?.coordinates?.latitude ||
-                       prop.address?.lat || prop.location?.lat || prop.coordinates?.latitude;
-            const lng = prop.address?.longitude || prop.location?.longitude || prop.basic?.coordinates?.longitude ||
-                       prop.address?.lng || prop.location?.lng || prop.coordinates?.longitude;
+            // Check multiple possible coordinate locations (prioritize location field)
+            const lat = prop.location?.latitude || prop.location?.lat || prop.address?.latitude || prop.basic?.coordinates?.latitude;
+            const lng = prop.location?.longitude || prop.location?.lng || prop.address?.longitude || prop.basic?.coordinates?.longitude;
 
             // DEBUG: Log extracted coordinates
             if (index === 0) {
