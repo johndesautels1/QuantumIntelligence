@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Check Property Coordinates</title>
+</head>
+<body>
+    <h1>Checking Property Coordinates...</h1>
+    <pre id="output"></pre>
+
+    <script type="module">
+        import { dataManager } from './src/core/data-manager.js';
+
+        const output = document.getElementById('output');
+
+        async function checkCoordinates() {
+            try {
+                await dataManager.init();
+                const properties = await dataManager.getAllProperties();
+
+                output.textContent = `Found ${properties.length} properties\n\n`;
+
+                properties.forEach((prop, index) => {
+                    output.textContent += `Property ${index + 1}: ${prop.basic?.address || 'Unknown'}\n`;
+                    output.textContent += `  ID: ${prop.property_id}\n`;
+                    output.textContent += `  location.latitude: ${prop.location?.latitude}\n`;
+                    output.textContent += `  location.longitude: ${prop.location?.longitude}\n`;
+                    output.textContent += `  basic.coordinates.latitude: ${prop.basic?.coordinates?.latitude}\n`;
+                    output.textContent += `  basic.coordinates.longitude: ${prop.basic?.coordinates?.longitude}\n`;
+                    output.textContent += `  address.latitude: ${prop.address?.latitude}\n`;
+                    output.textContent += `  address.longitude: ${prop.address?.longitude}\n`;
+                    output.textContent += `\n`;
+                });
+            } catch (error) {
+                output.textContent = `Error: ${error.message}\n${error.stack}`;
+            }
+        }
+
+        checkCoordinates();
+    </script>
+</body>
+</html>

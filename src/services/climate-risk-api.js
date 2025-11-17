@@ -218,8 +218,12 @@ class ClimateRiskAPI {
             return 'LOW RISK - Not affected by projected sea level rise scenarios';
         }
 
+        if (affected.length === 7) {
+            return 'CRITICAL RISK - Property affected by ALL sea level rise scenarios (0-6ft)';
+        }
+
         const lowestScenario = affected[0];
-        return `RISK - Property could be affected by ${lowestScenario} sea level rise scenario`;
+        return `HIGH RISK - Property affected by ${lowestScenario}ft sea level rise scenario and ${affected.length} total scenarios`;
     }
 
     /**

@@ -230,7 +230,15 @@ class SharedDataAdapter {
     async getPropertiesForWeatherSimulator() {
         const properties = await this.getAllProperties();
 
-        return properties.map(prop => {
+        return properties.map((prop, index) => {
+            // DEBUG: Log first property structure to see where coordinates are
+            if (index === 0) {
+                console.log('🔍 DEBUG - Raw property from database:', prop);
+                console.log('🔍 DEBUG - prop.location:', prop.location);
+                console.log('🔍 DEBUG - prop.basic:', prop.basic);
+                console.log('🔍 DEBUG - prop.address:', prop.address);
+            }
+
             // Build full address string
             const street = prop.basic?.address || '';
             const city = prop.location?.city || '';
@@ -240,6 +248,11 @@ class SharedDataAdapter {
             // Check multiple possible coordinate locations (same as 5D Explorer)
             const lat = prop.location?.latitude || prop.basic?.coordinates?.latitude || prop.address?.latitude;
             const lng = prop.location?.longitude || prop.basic?.coordinates?.longitude || prop.address?.longitude;
+
+            // DEBUG: Log extracted coordinates
+            if (index === 0) {
+                console.log('🔍 DEBUG - Extracted lat:', lat, 'lng:', lng);
+            }
 
             return {
                 id: prop.property_id,

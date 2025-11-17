@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head><title>Test Property Structure</title></head>
+<body>
+<pre id="output"></pre>
+<script src="src/core/data-manager.js"></script>
+<script>
+async function test() {
+    await dataManager.init();
+    const props = await dataManager.getAllProperties();
+    const output = document.getElementById('output');
+    
+    if (props.length > 0) {
+        output.textContent = JSON.stringify(props[0], null, 2);
+    } else {
+        output.textContent = 'No properties found';
+    }
+}
+test();
+</script>
+</body>
+</html>

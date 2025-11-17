@@ -1169,6 +1169,89 @@
         }
 
         // Select Property
+        // ===== GEOCODING FUNCTIONS =====
+
+        // Geocode an address using free Nominatim API (OpenStreetMap)
+        async function geocodeAddress(address) {
+            // Use Nominatim (free, no API key required)
+            const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
+
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'User-Agent': 'CLUES Quantum App Weather Simulator'
+                    }
+                });
+                const data = await response.json();
+
+                if (data.length > 0) {
+                    return {
+                        lat: parseFloat(data[0].lat),
+                        lng: parseFloat(data[0].lon)
+                    };
+                } else {
+                    console.error(`❌ Geocoding failed for ${address}: No results`);
+                    return null;
+                }
+            } catch (error) {
+                console.error(`❌ Geocoding error for ${address}:`, error);
+                return null;
+            }
+        }
+
+        // Ensure all properties have coordinates
+        async function ensureCoordinates() {
+            let geocodedCount = 0;
+            let totalNeeded = 0;
+
+            // Count how many need geocoding
+            PROPERTIES.forEach(property => {
+                const lat = property.location?.latitude || property.location?.lat;
+                const lng = property.location?.longitude || property.location?.lng;
+                if (!lat || !lng || lat === 0 || lng === 0) totalNeeded++;
+            });
+
+            if (totalNeeded === 0) {
+                console.log(`✅ All ${PROPERTIES.length} properties already have coordinates`);
+                return;
+            }
+
+            console.log(`🌍 Geocoding ${totalNeeded} properties using Nominatim API...`);
+
+            const promises = PROPERTIES.map(async (property) => {
+                const lat = property.location?.latitude || property.location?.lat;
+                const lng = property.location?.longitude || property.location?.lng;
+
+                // If property doesn't have coordinates, geocode it
+                if (!lat || !lng || lat === 0 || lng === 0) {
+                    // Build full address
+                    const fullAddress = property.name; // Already contains full address from shared-data-adapter
+
+                    console.log(`🔍 Geocoding: ${fullAddress}`);
+                    const coords = await geocodeAddress(fullAddress);
+
+                    if (coords) {
+                        // Add coordinates to property in all possible locations
+                        if (!property.location) property.location = {};
+                        property.location.latitude = coords.lat;
+                        property.location.longitude = coords.lng;
+                        property.location.lat = coords.lat;
+                        property.location.lng = coords.lng;
+
+                        geocodedCount++;
+                        console.log(`✅ Geocoded: ${fullAddress} → ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`);
+                    } else {
+                        console.error(`❌ Failed to geocode: ${fullAddress}`);
+                    }
+                }
+            });
+
+            await Promise.all(promises);
+            console.log(`📍 Successfully geocoded ${geocodedCount}/${totalNeeded} properties`);
+        }
+
+        // ===== END GEOCODING FUNCTIONS =====
+
         function selectProperty(id) {
             currentProperty = PROPERTIES.find(p => p.id === id);
             renderPropertySelector();
@@ -1288,9 +1371,13 @@
             }
 
             console.log('🌍 Rendering climate risk assessment for:', currentProperty.name);
+            console.log('🔍 DEBUG - Full property object:', currentProperty);
+            console.log('🔍 DEBUG - Property location object:', currentProperty.location);
 
             const lat = currentProperty.location?.lat || currentProperty.location?.latitude;
             const lng = currentProperty.location?.lng || currentProperty.location?.longitude;
+
+            console.log('🔍 DEBUG - Extracted coordinates - lat:', lat, 'lng:', lng);
 
             if (!lat || !lng) {
                 document.getElementById('overallRiskScore').innerHTML = `
@@ -1796,6 +1883,9 @@
                 PROPERTIES = await sharedDataAdapter.getPropertiesForWeatherSimulator();
 
                 console.log(`✅ Loaded ${PROPERTIES.length} properties from database`);
+
+                // Geocode properties that don't have coordinates
+                await ensureCoordinates();
 
                 // Check if we have properties
                 if (PROPERTIES.length === 0) {
