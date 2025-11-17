@@ -785,11 +785,30 @@
             <p class="subtitle">Temporal Weather Analysis & Property Impact Forecasting</p>
         </div>
 
-        <!-- Property Selector -->
+        <!-- Selected Properties Toolbar -->
         <div class="panel">
-            <h2>🏠 Select Property</h2>
-            <div class="property-selector" id="propertySelector">
-                <!-- Populated by JS -->
+            <h2>🏠 Compare Properties (Max 4)</h2>
+            <p class="panel-subtitle" style="color: rgba(255,255,255,0.7); margin-bottom: 15px;">
+                Add up to 4 properties to load real weather data and compare climate patterns
+            </p>
+            <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                <div id="selectedPropertiesToolbar" style="display: flex; gap: 10px; flex-wrap: wrap; flex: 1;">
+                    <!-- Selected properties with trash icons appear here -->
+                </div>
+                <button class="btn primary" id="addPropertyBtn" onclick="showPropertyPicker()" style="white-space: nowrap;">
+                    + Add Property
+                </button>
+            </div>
+
+            <!-- Property Picker Modal (hidden by default) -->
+            <div id="propertyPickerModal" style="display: none; background: rgba(10, 22, 40, 0.95); border: 1px solid rgba(0, 212, 255, 0.3); border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0; color: #00D4FF;">Select a Property</h3>
+                    <button class="btn" onclick="hidePropertyPicker()" style="padding: 5px 15px;">✕ Close</button>
+                </div>
+                <div class="property-selector" id="propertySelector">
+                    <!-- Populated by JS -->
+                </div>
             </div>
         </div>
 
@@ -955,6 +974,9 @@
         let currentMonth = 0;
         let currentSeason = 'spring';
         let weatherChart, precipChart;
+
+        // ===== SELECTED PROPERTIES FOR COMPARISON (MAX 4) =====
+        let SELECTED_PROPERTIES = []; // IDs of up to 4 properties selected for comparison
 
         // Weather Data by Month and Climate
         const WEATHER_DATA = {
@@ -1287,7 +1309,138 @@
             });
         }
 
-        // Render Property Selector
+        // ===== SELECTED PROPERTIES MANAGEMENT =====
+        function showPropertyPicker() {
+            document.getElementById('propertyPickerModal').style.display = 'block';
+        }
+
+        function hidePropertyPicker() {
+            document.getElementById('propertyPickerModal').style.display = 'none';
+        }
+
+        async function addPropertyToSelected(propertyId) {
+            // Check if already selected
+            if (SELECTED_PROPERTIES.includes(propertyId)) {
+                alert('This property is already selected');
+                return;
+            }
+
+            // Check max limit
+            if (SELECTED_PROPERTIES.length >= 4) {
+                alert('Maximum 4 properties allowed. Remove one first.');
+                return;
+            }
+
+            // Add to selected list
+            SELECTED_PROPERTIES.push(propertyId);
+
+            // Fetch data for this property
+            const property = PROPERTIES.find(p => p.id === propertyId);
+            if (property) {
+                console.log(`📡 Fetching data for ${property.name}...`);
+
+                // Fetch with delay to avoid rate limits
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                await fetchRealWeatherData(property);
+
+                await new Promise(resolve => setTimeout(resolve, 500));
+                await fetchWeatherComData(property);
+
+                // Set as current property if first one
+                if (!currentProperty) {
+                    currentProperty = property;
+                    updateDisplay();
+                }
+            }
+
+            // Re-render toolbar
+            renderSelectedPropertiesToolbar();
+            renderPropertySelector(); // Update picker to show selected state
+            hidePropertyPicker();
+        }
+
+        function removePropertyFromSelected(propertyId) {
+            SELECTED_PROPERTIES = SELECTED_PROPERTIES.filter(id => id !== propertyId);
+
+            // If removed property was current, switch to first selected
+            if (currentProperty && currentProperty.id === propertyId) {
+                currentProperty = SELECTED_PROPERTIES.length > 0
+                    ? PROPERTIES.find(p => p.id === SELECTED_PROPERTIES[0])
+                    : null;
+                if (currentProperty) {
+                    updateDisplay();
+                }
+            }
+
+            renderSelectedPropertiesToolbar();
+            renderPropertySelector();
+        }
+
+        function renderSelectedPropertiesToolbar() {
+            const container = document.getElementById('selectedPropertiesToolbar');
+
+            if (SELECTED_PROPERTIES.length === 0) {
+                container.innerHTML = '<p style="color: rgba(255,255,255,0.5); margin: 0;">No properties selected</p>';
+                return;
+            }
+
+            container.innerHTML = SELECTED_PROPERTIES.map(propId => {
+                const property = PROPERTIES.find(p => p.id === propId);
+                if (!property) return '';
+
+                const isActive = currentProperty && currentProperty.id === propId;
+                const hasData = REAL_WEATHER_DATA[propId] !== undefined;
+
+                return `
+                    <div style="
+                        background: ${isActive ? 'rgba(0, 212, 255, 0.2)' : 'rgba(255,255,255,0.1)'};
+                        border: 1px solid ${isActive ? '#00D4FF' : 'rgba(255,255,255,0.2)'};
+                        border-radius: 6px;
+                        padding: 10px 15px;
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        cursor: pointer;
+                    " onclick="selectProperty('${propId}')">
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold; color: #fff;">${property.name}</div>
+                            <div style="font-size: 12px; color: rgba(255,255,255,0.7);">
+                                ${property.location.city}, ${property.location.state}
+                                ${hasData ? '📡' : '⏳'}
+                            </div>
+                        </div>
+                        <button
+                            class="btn"
+                            onclick="event.stopPropagation(); removePropertyFromSelected('${propId}')"
+                            style="
+                                background: rgba(255,0,0,0.2);
+                                border: 1px solid rgba(255,0,0,0.5);
+                                color: #ff4444;
+                                padding: 5px 10px;
+                                font-size: 16px;
+                                cursor: pointer;
+                            "
+                            title="Remove property">
+                            🗑️
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            // Update button state
+            const addBtn = document.getElementById('addPropertyBtn');
+            if (SELECTED_PROPERTIES.length >= 4) {
+                addBtn.disabled = true;
+                addBtn.style.opacity = '0.5';
+                addBtn.style.cursor = 'not-allowed';
+            } else {
+                addBtn.disabled = false;
+                addBtn.style.opacity = '1';
+                addBtn.style.cursor = 'pointer';
+            }
+        }
+
+        // Render Property Selector (for picker modal)
         function renderPropertySelector() {
             const container = document.getElementById('propertySelector');
             container.innerHTML = PROPERTIES.map(p => {
@@ -1311,9 +1464,11 @@
                     dataTooltip = 'Placeholder Data';
                 }
 
+                const isSelected = SELECTED_PROPERTIES.includes(p.id);
+
                 return `
-                    <div class="property-card ${currentProperty && currentProperty.id === p.id ? 'active' : ''}" onclick="selectProperty('${p.id}')">
-                        <div class="property-name">${p.name} <span title="${dataTooltip}">${dataIndicator}</span></div>
+                    <div class="property-card ${isSelected ? 'disabled' : ''}" onclick="${isSelected ? '' : `addPropertyToSelected('${p.id}')`}" style="${isSelected ? 'opacity: 0.5; cursor: not-allowed;' : 'cursor: pointer;'}">
+                        <div class="property-name">${p.name} <span title="${dataTooltip}">${dataIndicator}</span> ${isSelected ? '✓' : ''}</div>
                         <div class="property-location">${p.location.city}, ${p.location.state} • ${p.climate}</div>
                     </div>
                 `;
@@ -2112,28 +2267,15 @@
                     console.log(`📍 Property "${prop.name}" (${prop.location.city}, ${prop.location.state}) → Climate: ${prop.climate}`);
                 });
 
-                // Fetch real weather data for all properties (in parallel)
-                console.log('🌐 Fetching weather data from Open-Meteo...');
+                // DO NOT fetch weather data for all 20 properties automatically
+                // User will add up to 4 properties manually via the toolbar
+                console.log('✨ Weather simulator ready! Click "+ Add Property" to load weather data for up to 4 properties.');
 
-                // Fetch 30-year climate normals from Open-Meteo Archive
-                const climateNormalsPromises = PROPERTIES.map(prop => fetchRealWeatherData(prop));
-                await Promise.allSettled(climateNormalsPromises);
-                const climateNormalsCount = Object.keys(REAL_WEATHER_DATA).length;
-                console.log(`✅ Loaded 30-year climate normals for ${climateNormalsCount}/${PROPERTIES.length} properties`);
-
-                // Fetch current weather + 7-day forecast from Open-Meteo
-                const weatherComPromises = PROPERTIES.map(prop => fetchWeatherComData(prop));
-                await Promise.allSettled(weatherComPromises);
-                const weatherComCount = Object.keys(WEATHERCOM_DATA).length;
-                console.log(`✅ Loaded current weather for ${weatherComCount}/${PROPERTIES.length} properties`);
-
-                // Set first property as current
-                currentProperty = PROPERTIES[0];
-
-                // Initialize the UI
+                // Initialize the UI (without setting a current property)
+                currentProperty = null;
+                renderPropertySelector(); // Populate property picker
+                renderSelectedPropertiesToolbar(); // Show empty toolbar
                 init();
-
-                console.log('✨ Weather simulator ready!');
 
             } catch (error) {
                 console.error('❌ Enhancement initialization failed:', error);
@@ -2157,6 +2299,10 @@
         window.refreshWeather = refreshWeather;
         window.runSimulation = runSimulation;
         window.exportReport = exportReport;
+        window.showPropertyPicker = showPropertyPicker;
+        window.hidePropertyPicker = hidePropertyPicker;
+        window.addPropertyToSelected = addPropertyToSelected;
+        window.removePropertyFromSelected = removePropertyFromSelected;
 
         // Initialize on load
         window.addEventListener('load', () => {
