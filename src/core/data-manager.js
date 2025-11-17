@@ -319,6 +319,10 @@ class DataManager {
         return this.getAll(this.stores.properties);
     }
 
+    async deleteProperty(propertyId) {
+        return this.delete(this.stores.properties, propertyId);
+    }
+
     async getPropertiesByStatus(status) {
         return this.getByIndex(this.stores.properties, 'status', status);
     }
