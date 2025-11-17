@@ -9,12 +9,36 @@ class WeatherComAPI {
     constructor() {
         this.apiKey = API_KEYS.weathercom.apiKey;
         this.baseUrl = API_ENDPOINTS.weathercom.base;
+        // Detect if running on Vercel (use proxy) or localhost (direct)
+        this.useProxy = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
     }
 
     /**
      * Make authenticated request to Weather.com API
      */
     async request(endpoint, params = {}) {
+        // If on Vercel, use serverless proxy to bypass CORS
+        if (this.useProxy) {
+            const proxyUrl = new URL('/api/weather', window.location.origin);
+            proxyUrl.searchParams.append('endpoint', endpoint.replace('/observations/current', 'current')
+                .replace('/forecast/daily/5day', 'forecast')
+                .replace('/forecast/hourly/12hour', 'hourly'));
+
+            // Extract lat/lng from geocode param
+            if (params.geocode) {
+                const [lat, lng] = params.geocode.split(',');
+                proxyUrl.searchParams.append('lat', lat);
+                proxyUrl.searchParams.append('lng', lng);
+            }
+
+            const response = await fetch(proxyUrl);
+            if (!response.ok) {
+                throw new Error(`Weather proxy error: ${response.status}`);
+            }
+            return await response.json();
+        }
+
+        // Direct API call for localhost (will fail on Vercel due to CORS)
         const url = new URL(this.baseUrl + endpoint);
 
         // Add API key to all requests

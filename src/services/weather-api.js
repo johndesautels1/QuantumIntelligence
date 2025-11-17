@@ -9,12 +9,32 @@ class WeatherAPI {
     constructor() {
         this.token = API_KEYS.noaa.token;
         this.baseUrl = API_ENDPOINTS.noaa.base;
+        // Detect if running on Vercel (use proxy) or localhost (direct)
+        this.useProxy = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
     }
 
     /**
      * Make authenticated request to NOAA API
      */
     async request(endpoint, params = {}) {
+        // If on Vercel, use serverless proxy to bypass CORS
+        if (this.useProxy) {
+            const proxyUrl = new URL('/api/noaa', window.location.origin);
+            proxyUrl.searchParams.append('endpoint', endpoint);
+
+            // Add all other params
+            Object.keys(params).forEach(key => {
+                proxyUrl.searchParams.append(key, params[key]);
+            });
+
+            const response = await fetch(proxyUrl);
+            if (!response.ok) {
+                throw new Error(`NOAA proxy error: ${response.status}`);
+            }
+            return await response.json();
+        }
+
+        // Direct API call for localhost (will fail on Vercel due to CORS)
         const url = new URL(this.baseUrl + endpoint);
 
         // Add query parameters
