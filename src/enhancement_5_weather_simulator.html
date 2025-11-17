@@ -519,6 +519,57 @@
         .bottom-navbar.collapsed .nav-item:not(.home-btn) {
             display: none;
         }
+
+        /* Error and Loading Messages */
+        .error-message {
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid rgba(255, 0, 0, 0.5);
+            border-radius: 15px;
+            padding: 30px;
+            color: white;
+            text-align: center;
+            margin: 40px auto;
+            max-width: 600px;
+        }
+
+        .error-message p {
+            margin: 15px 0;
+            font-size: 16px;
+        }
+
+        .error-message strong {
+            font-size: 20px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .error-message .btn {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: rgba(0, 212, 255, 0.3);
+            border: 2px solid rgba(0, 212, 255, 0.6);
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .error-message .btn:hover {
+            background: rgba(0, 212, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .loading-message {
+            background: rgba(0, 212, 255, 0.2);
+            border: 2px solid rgba(0, 212, 255, 0.5);
+            border-radius: 15px;
+            padding: 30px;
+            color: white;
+            text-align: center;
+            margin: 40px auto;
+            max-width: 600px;
+        }
 </style>
 </head>
 <body>
@@ -690,6 +741,48 @@
         const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June',
                         'July', 'August', 'September', 'October', 'November', 'December'];
 
+        /**
+         * Intelligently detect climate based on property location
+         * Maps city/state to one of our 4 climate types
+         */
+        function detectClimate(property) {
+            if (!property || !property.location) return 'Continental'; // Safe default
+
+            const city = (property.location.city || '').toLowerCase();
+            const state = (property.location.state || '').toLowerCase();
+            const locationStr = `${city} ${state}`.trim();
+
+            if (!locationStr) return 'Continental';
+
+            // Mediterranean climates (California coast, Mediterranean regions)
+            if (locationStr.includes('los angeles') || locationStr.includes('la ') ||
+                locationStr.includes('san diego') || locationStr.includes('santa barbara') ||
+                locationStr.includes('malibu') || locationStr.includes('santa monica') ||
+                locationStr.includes('ventura') || locationStr.includes('san luis obispo') ||
+                state === 'ca' && (city.includes('santa') || city.includes('san'))) {
+                return 'Mediterranean';
+            }
+
+            // Alpine climates (Mountain regions)
+            if (locationStr.includes('aspen') || locationStr.includes('vail') ||
+                locationStr.includes('boulder') || locationStr.includes('denver') ||
+                locationStr.includes('breckenridge') || locationStr.includes('telluride') ||
+                state === 'co' || state === 'ut' || state === 'wy') {
+                return 'Alpine';
+            }
+
+            // Arid climates (Desert regions)
+            if (locationStr.includes('phoenix') || locationStr.includes('las vegas') ||
+                locationStr.includes('scottsdale') || locationStr.includes('tucson') ||
+                locationStr.includes('palm springs') || locationStr.includes('mesa') ||
+                state === 'az' || state === 'nv') {
+                return 'Arid';
+            }
+
+            // Default to Continental for most other locations
+            return 'Continental';
+        }
+
         // Initialize
         function init() {
             renderPropertySelector();
@@ -849,6 +942,16 @@
             const data = WEATHER_DATA[currentProperty.climate].months[currentMonth];
 
             const alerts = [];
+
+            // Freeze warning for sub-freezing temperatures
+            if (data.temp < 32) {
+                alerts.push({
+                    type: 'warning',
+                    icon: '❄️',
+                    title: 'Freeze Warning',
+                    message: 'Temperatures below freezing. Protect pipes, outdoor plants, and check heating system.'
+                });
+            }
 
             if (data.temp > 95) {
                 alerts.push({
@@ -1047,49 +1150,105 @@
             }, 500);
         }
 
-        // Export Report
+        /**
+         * Export weather report with comprehensive metadata
+         */
         function exportReport() {
-            if (!currentProperty || !currentProperty.climate || !WEATHER_DATA[currentProperty.climate]) return;
+            if (!currentProperty || !currentProperty.climate || !WEATHER_DATA[currentProperty.climate]) {
+                alert('Cannot export: No valid property climate data');
+                return;
+            }
+
             const report = {
-                property: currentProperty,
+                property: {
+                    id: currentProperty.id,
+                    name: currentProperty.name,
+                    address: currentProperty.address,
+                    location: currentProperty.location,
+                    climate: currentProperty.climate
+                },
                 month: MONTHS[currentMonth],
                 weatherData: WEATHER_DATA[currentProperty.climate].months[currentMonth],
-                exportDate: new Date().toISOString()
+                annualData: WEATHER_DATA[currentProperty.climate].months, // Full year
+                exportDate: new Date().toISOString(),
+                metadata: {
+                    simulator: 'CLUES™ 4D Weather-Impact Simulator',
+                    version: '1.0.0',
+                    dataSource: 'Historical Climate Patterns'
+                }
             };
 
             const dataStr = JSON.stringify(report, null, 2);
             const blob = new Blob([dataStr], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `weather-report-${currentProperty.name.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.json`;
-            link.click();
+
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `weather-report-${currentProperty.name.replace(/[^a-z0-9]/gi, '-')}-${MONTHS[currentMonth]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
             URL.revokeObjectURL(url);
+
+            console.log('✅ Report exported successfully');
         }
 
-        // Initialize Enhancement with REAL Data
+        /**
+         * Initialize Enhancement with REAL Data
+         */
         async function initializeEnhancement() {
             try {
+                console.log('🌦️ Initializing 4D Weather-Impact Simulator...');
+
+                // Check if sharedDataAdapter exists
+                if (typeof sharedDataAdapter === 'undefined') {
+                    console.error('❌ SharedDataAdapter not found');
+
+                    const container = document.getElementById('propertySelector');
+                    container.innerHTML = `
+                        <div class="error-message">
+                            <p><strong>Critical Error:</strong> Data adapter not found</p>
+                            <p>The weather simulator requires the shared data adapter to function.</p>
+                            <button class="btn primary" onclick="window.location.href='../index.html'">
+                                Return to Dashboard
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
                 // Initialize shared data adapter
                 await sharedDataAdapter.init();
 
                 // Load REAL properties from IndexedDB
                 PROPERTIES = await sharedDataAdapter.getPropertiesForWeatherSimulator();
 
-                console.log(`✅ Loaded ${PROPERTIES.length} real properties from database`);
+                console.log(`✅ Loaded ${PROPERTIES.length} properties from database`);
 
                 // Check if we have properties
                 if (PROPERTIES.length === 0) {
-                    alert('No properties found in database. Please import property data from the main dashboard first.');
-                    window.location.href = '/index.html';
+                    const container = document.getElementById('propertySelector');
+                    container.innerHTML = `
+                        <div class="error-message">
+                            <p><strong>No Properties Found</strong></p>
+                            <p>Please import property data from the main dashboard first.</p>
+                            <button class="btn primary" onclick="window.location.href='../index.html'">
+                                Return to Dashboard
+                            </button>
+                        </div>
+                    `;
                     return;
                 }
 
-                // Ensure ALL properties have a climate (default to Mediterranean if missing)
+                // Process properties - detect climate based on location
                 PROPERTIES.forEach(prop => {
-                    if (!prop.climate) {
-                        prop.climate = 'Mediterranean';
-                    }
+                    // Detect climate from location if not already set
+                    const detectedClimate = detectClimate(prop);
+
+                    // Store as simple string (not nested object) to match WEATHER_DATA keys
+                    prop.climate = detectedClimate;
+
+                    console.log(`📍 Property "${prop.name}" (${prop.location.city}, ${prop.location.state}) → Climate: ${prop.climate}`);
                 });
 
                 // Set first property as current
@@ -1098,10 +1257,21 @@
                 // Initialize the UI
                 init();
 
+                console.log('✨ Weather simulator ready!');
+
             } catch (error) {
                 console.error('❌ Enhancement initialization failed:', error);
-                alert(`Initialization error: ${error.message}\n\nClick OK to return to dashboard.`);
-                window.location.href = '/index.html';
+
+                const container = document.getElementById('propertySelector');
+                container.innerHTML = `
+                    <div class="error-message">
+                        <p><strong>Initialization Error:</strong> ${error.message}</p>
+                        <p>Please check the console for details.</p>
+                        <button class="btn primary" onclick="window.location.href='../index.html'">
+                            Return to Dashboard
+                        </button>
+                    </div>
+                `;
             }
         }
 
