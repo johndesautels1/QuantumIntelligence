@@ -956,11 +956,21 @@
         /* Toolbar collapsed state - show only home button */
         .bottom-navbar.collapsed {
             height: 70px;  /* Just enough for home button */
+            display: flex;
+            align-items: center;  /* Vertically center home button */
+            justify-content: center;  /* Horizontally center home button */
         }
 
         .bottom-navbar.collapsed .navbar-grid {
             grid-template-columns: auto;  /* Single column for home button */
             justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .bottom-navbar.collapsed .home-btn {
+            margin-top: -10px;  /* Raise home button slightly when alone */
         }
 
         .bottom-navbar.collapsed .nav-item:not(.home-btn) {
