@@ -1073,50 +1073,77 @@
         };
 
         async function loadProjections() {
-          const lat = currentProperty.location.latitude;
-          const lng = currentProperty.location.longitude;
-          const url = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}&start_date=2015-01-01&end_date=2024-12-31&daily=temperature_2m_mean&temperature_unit=fahrenheit`;
-
-          try {
-            const res = await fetch(url);
-            const data = await res.json();
-
-            // Calculate monthly averages for projection
-            const monthlyTemps = Array.from({ length: 12 }, () => []);
-            data.daily.time.forEach((dateStr, i) => {
-              const month = new Date(dateStr).getMonth();
-              if (data.daily.temperature_2m_mean[i] !== null) {
-                monthlyTemps[month].push(data.daily.temperature_2m_mean[i]);
-              }
-            });
-
-            const futureTemps = monthlyTemps.map(temps =>
-              temps.length > 0 ? Math.round(temps.reduce((a,b) => a+b, 0) / temps.length) + 3 : 60
-            );
-
-            const historicalTemps = REAL_WEATHER_DATA[currentProperty.id]?.map(m => m.temp) ||
-                                   Array(12).fill(60);
-
-            const projOptions = {
-              series: [
-                { name: 'Historical Avg', data: historicalTemps },
-                { name: 'Projected 2050–2100', data: futureTemps }
-              ],
-              chart: { type: 'area', height: 400, foreColor: '#fff', background: 'transparent', toolbar: { show: false } },
-              theme: { mode: 'dark' },
-              stroke: { curve: 'smooth', width: 4 },
-              fill: { opacity: 0.5 },
-              xaxis: { categories: MONTHS },
-              colors: ['#00D4FF', '#ff0066'],
-              grid: { borderColor: 'rgba(255,255,255,0.1)' }
-            };
-
-            if (window.projectionChart) window.projectionChart.destroy();
-            window.projectionChart = new ApexCharts(document.getElementById("projectionChart"), projOptions);
-            window.projectionChart.render();
-          } catch (e) {
-            console.warn('Projection load failed:', e);
+          if (!currentProperty) {
+            console.warn('No property selected for projections');
+            return;
           }
+
+          const lat = currentProperty.location?.latitude || currentProperty.location?.lat;
+          const lng = currentProperty.location?.longitude || currentProperty.location?.lng;
+
+          if (!lat || !lng) {
+            console.warn('No coordinates available for projections');
+            return;
+          }
+
+          // Use cached historical data if available, otherwise use fallback
+          const historicalTemps = REAL_WEATHER_DATA[currentProperty.id]?.map(m => m.temp) ||
+                                 Array(12).fill(60);
+
+          // Calculate future projections based on current scenario
+          const scenarioAdjustment = {
+            'ssp126': 1.5,  // Low emissions: +1.5°F by 2100
+            'ssp245': 3.0,  // Medium emissions: +3°F by 2100 (current path)
+            'ssp585': 5.5   // High emissions: +5.5°F by 2100
+          };
+
+          const tempIncrease = scenarioAdjustment[currentScenario] || 3.0;
+          const futureTemps = historicalTemps.map(temp => Math.round(temp + tempIncrease));
+
+          const projOptions = {
+            series: [
+              { name: 'Historical Avg (1991-2020)', data: historicalTemps },
+              { name: `Projected 2050–2100 (${currentScenario.toUpperCase()})`, data: futureTemps }
+            ],
+            chart: { type: 'area', height: 400, foreColor: '#fff', background: 'transparent', toolbar: { show: false } },
+            theme: { mode: 'dark' },
+            stroke: { curve: 'smooth', width: 4 },
+            fill: {
+              type: 'gradient',
+              gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 0.7,
+                opacityTo: 0.3,
+                stops: [0, 90, 100]
+              }
+            },
+            xaxis: {
+              categories: MONTHS,
+              labels: { style: { colors: '#fff' } }
+            },
+            yaxis: {
+              title: { text: 'Temperature (°F)', style: { color: '#fff' } },
+              labels: { style: { colors: '#fff' } }
+            },
+            colors: ['#00D4FF', '#ff0066'],
+            grid: { borderColor: 'rgba(255,255,255,0.1)' },
+            legend: {
+              labels: { colors: '#fff' },
+              position: 'top'
+            },
+            tooltip: {
+              theme: 'dark',
+              x: { show: true },
+              y: {
+                formatter: (val) => val + '°F'
+              }
+            }
+          };
+
+          if (window.projectionChart) window.projectionChart.destroy();
+          window.projectionChart = new ApexCharts(document.getElementById("projectionChart"), projOptions);
+          window.projectionChart.render();
+          console.log('✅ Climate projections rendered');
         }
 
         /**
