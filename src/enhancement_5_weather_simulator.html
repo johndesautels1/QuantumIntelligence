@@ -1352,7 +1352,9 @@
             }
           };
 
-          if (window.projectionChart) window.projectionChart.destroy();
+          if (window.projectionChart && typeof window.projectionChart.destroy === 'function') {
+            window.projectionChart.destroy();
+          }
           window.projectionChart = new ApexCharts(document.getElementById("projectionChart"), projOptions);
           window.projectionChart.render();
           console.log('✅ Climate projections rendered');
