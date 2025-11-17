@@ -239,15 +239,17 @@ class SharedDataAdapter {
                 console.log('🔍 DEBUG - prop.address:', prop.address);
             }
 
-            // Build full address string
-            const street = prop.basic?.address || '';
-            const city = prop.location?.city || '';
-            const state = prop.location?.state || '';
+            // Build full address string - CSV stores in prop.address, not prop.location
+            const street = prop.address?.street || prop.basic?.address || '';
+            const city = prop.address?.city || prop.location?.city || '';
+            const state = prop.address?.state || prop.location?.state || '';
             const fullAddress = [street, city, state].filter(x => x).join(', ');
 
-            // Check multiple possible coordinate locations (same as 5D Explorer)
-            const lat = prop.location?.latitude || prop.basic?.coordinates?.latitude || prop.address?.latitude;
-            const lng = prop.location?.longitude || prop.basic?.coordinates?.longitude || prop.address?.longitude;
+            // Check ALL possible coordinate locations - CSV stores in prop.address
+            const lat = prop.address?.latitude || prop.location?.latitude || prop.basic?.coordinates?.latitude ||
+                       prop.address?.lat || prop.location?.lat || prop.coordinates?.latitude;
+            const lng = prop.address?.longitude || prop.location?.longitude || prop.basic?.coordinates?.longitude ||
+                       prop.address?.lng || prop.location?.lng || prop.coordinates?.longitude;
 
             // DEBUG: Log extracted coordinates
             if (index === 0) {
