@@ -1542,21 +1542,55 @@
                 }
             }
 
-            // Render overall risk score
+            // Render overall risk score with Neon Glassmorphic Gauge
             const score = climateRisk.overallRisk.score;
             const scoreClass = score >= 70 ? 'good' : score >= 40 ? 'fair' : 'poor';
+
+            // Create gauge first, then add breakdown text
+            const gaugeOptions = {
+              series: [climateRisk.overallRisk.score],
+              chart: { type: 'radialBar', height: 300, foreColor: '#00ffcc' },
+              plotOptions: {
+                radialBar: {
+                  hollow: { size: '70%' },
+                  track: { background: '#0a1628' },
+                  dataLabels: {
+                    name: { fontSize: '16px', color: '#00D4FF' },
+                    value: { fontSize: '30px', color: '#fff', formatter: (val) => val.toFixed(0) }
+                  }
+                }
+              },
+              fill: {
+                type: 'gradient',
+                gradient: {
+                  shade: 'dark',
+                  type: 'horizontal',
+                  shadeIntensity: 0.5,
+                  gradientToColors: ['#ff0066'],
+                  inverseColors: true,
+                  opacityFrom: 1,
+                  opacityTo: 1,
+                  stops: [0, 100]
+                }
+              },
+              stroke: { lineCap: 'round' },
+              labels: [climateRisk.overallRisk.rating],
+              colors: ['#00D4FF']
+            };
+
             document.getElementById('overallRiskScore').innerHTML = `
                 <h3>Overall Climate Risk Score</h3>
-                <div class="score-display ${scoreClass}">
-                    <div class="score-number">${score}</div>
-                    <div class="score-label">${climateRisk.overallRisk.rating}</div>
-                </div>
-                <div class="risk-breakdown">
+                <div id="overallRiskGauge"></div>
+                <div class="risk-breakdown" style="margin-top: 20px;">
                     <p><strong>Flood Zone Penalty:</strong> -${climateRisk.overallRisk.components.floodZonePenalty} points</p>
-                    <p><strong>Property Elevation:</strong> ${climateRisk.overallRisk.components.elevationImpact.toFixed(1)} feet</p>
-                    <p><strong>Sea Level Rise Scenarios:</strong> ${climateRisk.overallRisk.components.seaLevelRiseImpact} affected</p>
+                    <p><strong>Property Elevation:</strong> ${Number(climateRisk.elevation.elevationFeet).toFixed(1)} feet</p>
+                    <p><strong>Sea Level Rise Impact:</strong> ${climateRisk.overallRisk.components.seaLevelRiseImpact}</p>
                 </div>
             `;
+
+            if (window.riskGaugeChart) window.riskGaugeChart.destroy();
+            window.riskGaugeChart = new ApexCharts(document.getElementById("overallRiskGauge"), gaugeOptions);
+            window.riskGaugeChart.render();
 
             // Render flood risk
             if (climateRisk.floodZone && climateRisk.floodZone.zone) {
@@ -1580,8 +1614,15 @@
                     <span class="label">Elevation:</span>
                     <span class="value">${Number(climateRisk.elevation.elevationFeet).toFixed(1)} feet</span>
                 </div>
-                <p style="color: rgba(255,255,255,0.9); margin-top: 15px;">${climateRisk.elevation.riskLevel}</p>
-                <p style="color: rgba(255,255,255,0.9); margin-top: 15px;"><strong>Sea Level Rise Risk:</strong><br/>${climateRisk.seaLevelRise.riskSummary}</p>
+                <p style="color: rgba(255,255,255,0.9); margin-top: 15px;"><strong>Risk Level:</strong> ${climateRisk.elevation.riskLevel}</p>
+                <p style="color: rgba(255,255,255,0.9); margin-top: 15px;"><strong>Sea Level Rise Impact:</strong> ${climateRisk.overallRisk.components.seaLevelRiseImpact}</p>
+                <p style="color: rgba(255,255,255,0.7); margin-top: 10px;"><strong>Future Projections:</strong><br/>
+                   Temperature: +${climateRisk.projections.tempIncrease2050}<br/>
+                   Precipitation: ${climateRisk.projections.precipChange2050}<br/>
+                   Heat Risk: ${climateRisk.projections.heatRisk}<br/>
+                   Fire Risk: ${climateRisk.projections.fireRisk}<br/>
+                   Storm Risk: ${climateRisk.projections.stormRisk}
+                </p>
             `;
 
             // Fetch and render MLS data (if available)
@@ -1688,22 +1729,6 @@
             if (window.riskRadarChart) window.riskRadarChart.destroy();
             window.riskRadarChart = new ApexCharts(document.getElementById("riskRadar"), radarOptions);
             window.riskRadarChart.render();
-
-            // ===== NEON GLASSMORPHIC RISK GAUGE RING =====
-            const gaugeOptions = {
-              series: [climateRisk.overallRisk.score],
-              chart: { type: 'radialBar', height: 300, foreColor: '#00ffcc' },
-              plotOptions: { radialBar: { hollow: { size: '70%' }, track: { background: '#0a1628' } } },
-              fill: { type: 'gradient', gradient: { shade: 'dark', type: 'horizontal', shadeIntensity: 0.5, gradientToColors: ['#ff0066'], inverseColors: true, opacityFrom: 1, opacityTo: 1, stops: [0, 100] } },
-              stroke: { lineCap: 'round' },
-              labels: ['Climate Risk Score'],
-              colors: ['#00D4FF']
-            };
-
-            document.getElementById('overallRiskScore').innerHTML = '<div id="overallRiskGauge"></div>';
-            if (window.riskGaugeChart) window.riskGaugeChart.destroy();
-            window.riskGaugeChart = new ApexCharts(document.getElementById("overallRiskGauge"), gaugeOptions);
-            window.riskGaugeChart.render();
 
             // ===== LOAD FUTURE PROJECTIONS =====
             await loadProjections();
