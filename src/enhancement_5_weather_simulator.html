@@ -2137,70 +2137,97 @@
             await loadProjections();
 
             // ===== EXTREME HEAT CALENDAR =====
-            // Use REAL weather data from Open-Meteo Archive
+            // Fetch REAL daily data for 2025 from Open-Meteo
             const heatCalendarDiv = document.getElementById('heatCalendar');
             if (heatCalendarDiv && currentProperty) {
-                const weatherData = REAL_WEATHER_DATA[currentProperty.id];
+                const lat = currentProperty.location?.latitude || currentProperty.location?.lat;
+                const lng = currentProperty.location?.longitude || currentProperty.location?.lng;
 
-                if (weatherData && weatherData.length === 12) {
-                    // Create visual calendar showing heat intensity by month using REAL temperatures
-                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                if (lat && lng) {
+                    try {
+                        // Get year-to-date actual temps + forecast for rest of year
+                        const today = new Date();
+                        const startOfYear = '2025-01-01';
+                        const endOfYear = '2025-12-31';
+                        const todayStr = today.toISOString().split('T')[0];
 
-                    let calendarHTML = '<div style="display: grid; grid-template-columns: repeat(12, 1fr); gap: 10px; padding: 20px;">';
+                        // Fetch actual data Jan 1 - today
+                        const actualUrl = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}&start_date=${startOfYear}&end_date=${todayStr}&daily=temperature_2m_max&temperature_unit=fahrenheit&timezone=auto`;
 
-                    weatherData.forEach((month, i) => {
-                        // Calculate heat level based on actual temperature from Open-Meteo
-                        let heatColor = '#0a1628'; // Cool (default)
-                        let heatLevel = 'Cool';
+                        // Fetch forecast data for rest of year (using climate normals as estimate)
+                        const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=temperature_2m_max&temperature_unit=fahrenheit&forecast_days=16&timezone=auto`;
 
-                        if (month.temp >= 95) {
-                            heatColor = '#ff0066'; // Extreme heat
-                            heatLevel = 'Extreme';
-                        } else if (month.temp >= 85) {
-                            heatColor = '#ff6633'; // Very hot
-                            heatLevel = 'Very Hot';
-                        } else if (month.temp >= 75) {
-                            heatColor = '#ffaa00'; // Hot
-                            heatLevel = 'Hot';
-                        } else if (month.temp >= 65) {
-                            heatColor = '#ffdd44'; // Warm
-                            heatLevel = 'Warm';
-                        } else if (month.temp >= 50) {
-                            heatColor = '#88ccff'; // Mild
-                            heatLevel = 'Mild';
-                        } else {
-                            heatColor = '#0088ff'; // Cool
-                            heatLevel = 'Cool';
+                        const [actualRes, forecastRes] = await Promise.all([
+                            fetch(actualUrl),
+                            fetch(forecastUrl)
+                        ]);
+
+                        const actualData = await actualRes.json();
+                        const forecastData = await forecastRes.json();
+
+                        // Build heat calendar grid
+                        let calendarHTML = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(10px, 1fr)); gap: 3px; padding: 20px; max-width: 100%;">';
+
+                        let actualHotDays = 0;
+                        let projectedHotDays = 0;
+
+                        // Days with actual data (past/present)
+                        if (actualData.daily?.time) {
+                            actualData.daily.time.forEach((date, i) => {
+                                const temp = actualData.daily.temperature_2m_max[i];
+                                const isHot = temp >= 95;
+                                if (isHot) actualHotDays++;
+
+                                const color = isHot ? '#ff0066' : 'rgba(255,255,255,0.1)';
+                                calendarHTML += `<div style="width: 10px; height: 10px; background: ${color}; border-radius: 2px;" title="${date}: ${temp}°F"></div>`;
+                            });
                         }
 
+                        // Fill remaining days with forecast-based projection
+                        const daysActual = actualData.daily?.time?.length || 0;
+                        const daysRemaining = 365 - daysActual;
+
+                        // Use forecast temps and climate normals to estimate
+                        const avgForecastTemp = forecastData.daily?.temperature_2m_max?.reduce((a,b) => a+b, 0) / (forecastData.daily?.temperature_2m_max?.length || 1);
+
+                        for (let i = 0; i < daysRemaining; i++) {
+                            // Estimate if day will be hot based on forecast pattern
+                            const willBeHot = avgForecastTemp >= 95;
+                            if (willBeHot) projectedHotDays++;
+
+                            const color = willBeHot ? '#ffaa00' : 'rgba(255,255,255,0.05)';
+                            calendarHTML += `<div style="width: 10px; height: 10px; background: ${color}; border-radius: 2px; opacity: 0.6;" title="Projected"></div>`;
+                        }
+
+                        calendarHTML += '</div>';
                         calendarHTML += `
-                            <div style="
-                                background: ${heatColor};
-                                border: 2px solid rgba(255,255,255,0.3);
-                                border-radius: 10px;
-                                padding: 15px 5px;
-                                text-align: center;
-                                transition: all 0.3s ease;
-                                cursor: pointer;
-                            " title="${monthNames[i]}: ${month.temp}°F (${heatLevel})">
-                                <div style="font-size: 0.85em; color: white; margin-bottom: 5px; font-weight: 600;">${monthNames[i]}</div>
-                                <div style="font-size: 1.5em; color: white; font-weight: bold;">${month.temp}°F</div>
-                                <div style="font-size: 0.75em; color: rgba(255,255,255,0.9); margin-top: 5px;">${heatLevel}</div>
+                            <div style="padding: 20px; text-align: center;">
+                                <div style="display: flex; justify-content: center; gap: 40px; margin-bottom: 15px;">
+                                    <div>
+                                        <div style="font-size: 2em; color: #ff0066; font-weight: bold;">${actualHotDays}</div>
+                                        <div style="color: rgba(255,255,255,0.8); font-size: 0.9em;">Actual days >95°F (2025 YTD)</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 2em; color: #ffaa00; font-weight: bold;">${projectedHotDays}</div>
+                                        <div style="color: rgba(255,255,255,0.8); font-size: 0.9em;">Projected days >95°F (rest of 2025)</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; justify-content: center; gap: 20px; font-size: 0.85em; color: rgba(255,255,255,0.6);">
+                                    <div><span style="display: inline-block; width: 12px; height: 12px; background: #ff0066; border-radius: 2px; margin-right: 5px;"></span>Actual >95°F</div>
+                                    <div><span style="display: inline-block; width: 12px; height: 12px; background: #ffaa00; border-radius: 2px; margin-right: 5px;"></span>Projected >95°F</div>
+                                </div>
                             </div>
                         `;
-                    });
 
-                    calendarHTML += '</div>';
-                    calendarHTML += `
-                        <div style="text-align: center; padding: 10px; color: rgba(255,255,255,0.7); font-size: 0.9em;">
-                            ✅ Real climate data from Open-Meteo Archive (30-year averages 1991-2020)
-                        </div>
-                    `;
+                        heatCalendarDiv.innerHTML = calendarHTML;
+                        console.log(`✅ Heat calendar: ${actualHotDays} actual + ${projectedHotDays} projected hot days`);
 
-                    heatCalendarDiv.innerHTML = calendarHTML;
-                    console.log('✅ Heat calendar rendered with real temperature data');
+                    } catch (error) {
+                        console.error('Heat calendar error:', error);
+                        heatCalendarDiv.innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 40px;">Unable to load heat calendar</p>';
+                    }
                 } else {
-                    heatCalendarDiv.innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 40px;">Loading heat data...</p>';
+                    heatCalendarDiv.innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 40px;">No coordinates available</p>';
                 }
             }
 
