@@ -53,7 +53,7 @@ export default {
       }
     } catch (e) {}
 
-    // ── 3. CLIMATE PROJECTIONS (Open-Meteo CMIP6 SSP2-4.5) ─────────────────
+    // ── 3. CLIMATE PROJECTIONS (Open-Meteo EC_Earth3P_HR model SSP2-4.5) ───
     let projections = {
       tempIncreaseC: 0,
       precipChangePercent: 0,
@@ -61,26 +61,28 @@ export default {
     };
 
     try {
-      const projUrl = `https://climate-api.open-meteo.com/v1/climate?latitude=${lat}&longitude=${lng}&models=CMIP6&scenario=ssp245&monthly=temperature_2m_mean,precipitation_sum,wind_speed_10m_max&start=2041&end=2060`;
+      const projUrl = `https://climate-api.open-meteo.com/v1/climate?latitude=${lat}&longitude=${lng}&models=EC_Earth3P_HR&start_date=2041-01-01&end_date=2060-12-31&monthly=temperature_2m_mean,precipitation_sum,wind_speed_10m_max`;
       const projRes = await fetch(projUrl);
       const projData = await projRes.json();
 
-      // Historical baseline (1991–2020) – we already have this from weather-api.js, but re-fetch quickly for consistency
-      const histUrl = `https://climate-api.open-meteo.com/v1/climate?latitude=${lat}&longitude=${lng}&models=CMIP6&monthly=temperature_2m_mean,precipitation_sum,wind_speed_10m_max&start=1991&end=2020`;
+      // Historical baseline (1991–2020)
+      const histUrl = `https://climate-api.open-meteo.com/v1/climate?latitude=${lat}&longitude=${lng}&models=EC_Earth3P_HR&start_date=1991-01-01&end_date=2020-12-31&monthly=temperature_2m_mean,precipitation_sum,wind_speed_10m_max`;
       const histRes = await fetch(histUrl);
       const histData = await histRes.json();
 
-      const futureTemp = projData.monthly.temperature_2m_mean.reduce((a, b) => a + b, 0) / 12;
-      const histTemp = histData.monthly.temperature_2m_mean.reduce((a, b) => a + b, 0) / 12;
-      projections.tempIncreaseC = futureTemp - histTemp;
+      if (projData.monthly && histData.monthly) {
+        const futureTemp = projData.monthly.temperature_2m_mean.reduce((a, b) => a + b, 0) / projData.monthly.temperature_2m_mean.length;
+        const histTemp = histData.monthly.temperature_2m_mean.reduce((a, b) => a + b, 0) / histData.monthly.temperature_2m_mean.length;
+        projections.tempIncreaseC = futureTemp - histTemp;
 
-      const futurePrecip = projData.monthly.precipitation_sum.reduce((a, b) => a + b, 0);
-      const histPrecip = histData.monthly.precipitation_sum.reduce((a, b) => a + b, 0);
-      projections.precipChangePercent = histPrecip > 0 ? ((futurePrecip - histPrecip) / histPrecip) * 100 : 0;
+        const futurePrecip = projData.monthly.precipitation_sum.reduce((a, b) => a + b, 0);
+        const histPrecip = histData.monthly.precipitation_sum.reduce((a, b) => a + b, 0);
+        projections.precipChangePercent = histPrecip > 0 ? ((futurePrecip - histPrecip) / histPrecip) * 100 : 0;
 
-      const futureWind = Math.max(...projData.monthly.wind_speed_10m_max);
-      const histWind = Math.max(...histData.monthly.wind_speed_10m_max);
-      projections.windExtremeIncrease = ((futureWind - histWind) / histWind) * 100;
+        const futureWind = Math.max(...projData.monthly.wind_speed_10m_max);
+        const histWind = Math.max(...histData.monthly.wind_speed_10m_max);
+        projections.windExtremeIncrease = histWind > 0 ? ((futureWind - histWind) / histWind) * 100 : 0;
+      }
     } catch (e) {
       console.warn('Climate projection fetch failed – using conservative defaults');
     }
@@ -128,7 +130,7 @@ export default {
           stormPenalty: (inHurricaneBelt ? 25 : 0) + (projections.windExtremeIncrease > 15 ? 20 : 0),
           seaLevelRiseImpact: elevationFeet < 5 ? 'High' : elevationFeet < 15 ? 'Moderate' : 'Low'
         },
-        penaltyBreakdown: penalties.join(', ')
+        penaltyBreakdown: penalties.length > 0 ? penalties.join(', ') : 'No significant penalties'
       },
       floodZone,
       elevation: { elevationFeet, riskLevel: elevationFeet > 50 ? 'Very low' : 'Monitor' },

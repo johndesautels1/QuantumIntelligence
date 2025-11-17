@@ -11,7 +11,7 @@ export default {
     if (!lat || !lng) throw new Error('Missing coordinates');
 
     // Official Open-Meteo climate normals (1991–2020 average) – one call, 12 perfect monthly values
-    const url = `https://climate-api.open-meteo.com/v1/climate?latitude=${lat}&longitude=${lng}&models=CMIP6&monthly=temperature_2m_mean,precipitation_sum&temperature_unit=fahrenheit&precipitation_unit=inch`;
+    const url = `https://climate-api.open-meteo.com/v1/climate?latitude=${lat}&longitude=${lng}&models=EC_Earth3P_HR&monthly=temperature_2m_mean,precipitation_sum&temperature_unit=fahrenheit&precipitation_unit=inch`;
 
     const response = await fetch(url);
     if (!response.ok) throw new Error('Climate normals API failed');
