@@ -40,37 +40,53 @@ export default {
     // ── 2. FEMA FLOOD ZONE (US only) ───────────────────────────────────────
     let floodZone = { zone: 'Unknown', staticBFE: null, message: 'Checking flood zone...' };
 
-    try {
-      // Try primary FEMA NFHL ArcGIS service with longer timeout
-      const floodUrl = `https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer/28/query?f=json&geometry=${lng},${lat}&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&returnGeometry=false&outFields=FLD_ZONE,STATIC_BFE,ZONE_SUBTY`;
+    // Try multiple FEMA endpoints
+    const endpoints = [
+      // Alternative Map Service Center endpoint
+      `https://msc.fema.gov/arcgis/rest/services/fg/NFHL/MapServer/28/query?f=json&geometry=${lng},${lat}&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&returnGeometry=false&outFields=FLD_ZONE,STATIC_BFE,ZONE_SUBTY`,
+      // Primary hazards endpoint
+      `https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer/28/query?f=json&geometry=${lng},${lat}&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&returnGeometry=false&outFields=FLD_ZONE,STATIC_BFE,ZONE_SUBTY`,
+      // ArcGIS Online backup
+      `https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/NFHL_Flood_Zones/FeatureServer/0/query?f=json&geometry=${lng},${lat}&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&returnGeometry=false&outFields=FLD_ZONE,STATIC_BFE,ZONE_SUBTY`
+    ];
 
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    for (const floodUrl of endpoints) {
+      try {
+        console.log(`🌊 Trying FEMA flood zone lookup...`);
 
-      const floodRes = await fetch(floodUrl, { signal: controller.signal });
-      clearTimeout(timeout);
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000); // 8 second timeout
 
-      if (floodRes.ok) {
-        const floodData = await floodRes.json();
-        if (floodData.features?.length > 0) {
-          const a = floodData.features[0].attributes;
-          floodZone = {
-            zone: a.FLD_ZONE || 'X',
-            staticBFE: a.STATIC_BFE && a.STATIC_BFE > 0 ? Number(a.STATIC_BFE).toFixed(1) : null,
-            message: a.ZONE_SUBTY ? `${a.FLD_ZONE} – ${a.ZONE_SUBTY}` : (a.FLD_ZONE || 'Zone X')
-          };
-          console.log(`✅ FEMA flood zone found: ${floodZone.zone}`);
-        } else {
-          // No features = not in mapped flood hazard area
-          floodZone = { zone: 'X', staticBFE: null, message: 'Minimal flood hazard (Zone X)' };
-          console.log('✅ Property not in FEMA flood hazard area (Zone X)');
+        const floodRes = await fetch(floodUrl, { signal: controller.signal });
+        clearTimeout(timeout);
+
+        if (floodRes.ok) {
+          const floodData = await floodRes.json();
+          if (floodData.features?.length > 0) {
+            const a = floodData.features[0].attributes;
+            floodZone = {
+              zone: a.FLD_ZONE || 'X',
+              staticBFE: a.STATIC_BFE && a.STATIC_BFE > 0 ? Number(a.STATIC_BFE).toFixed(1) : null,
+              message: a.ZONE_SUBTY ? `${a.FLD_ZONE} – ${a.ZONE_SUBTY}` : (a.FLD_ZONE || 'Zone X')
+            };
+            console.log(`✅ FEMA flood zone found: ${floodZone.zone}`);
+            break; // Success, stop trying other endpoints
+          } else {
+            // No features = not in mapped flood hazard area
+            floodZone = { zone: 'X', staticBFE: null, message: 'Minimal flood hazard (Zone X)' };
+            console.log('✅ Property not in FEMA flood hazard area (Zone X)');
+            break;
+          }
         }
-      } else {
-        throw new Error(`FEMA API returned ${floodRes.status}`);
+      } catch (e) {
+        console.warn('⚠️ FEMA endpoint failed, trying next...', e.message);
+        // Continue to next endpoint
       }
-    } catch (e) {
-      console.warn('⚠️ FEMA flood zone lookup failed:', e.message);
-      // When FEMA API fails, mark as unknown rather than defaulting to X
+    }
+
+    // If all endpoints failed
+    if (floodZone.zone === 'Unknown') {
+      console.warn('⚠️ All FEMA flood zone endpoints failed');
       floodZone = { zone: 'Unknown', staticBFE: null, message: 'Flood zone data unavailable' };
     }
 
