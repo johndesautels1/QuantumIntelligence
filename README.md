@@ -6,36 +6,70 @@ Version 1.0.0 | Progressive Web App (PWA) | Offline-Capable | Production-Ready
 
 ---
 
-## ⚠️ CRITICAL FIX - MANIFEST DISABLED (Nov 17, 2024)
+## ⚠️ CRITICAL - SERVICE WORKER DISABLED FOR DEVELOPMENT (Nov 17, 2024)
 
-**Issue:** Browser was blocking page loads due to missing icon files referenced in manifest.json
+### 🚨 START EVERY SESSION BY CHECKING THIS STATUS 🚨
 
-**Files Modified:**
-- `index.html` - Lines 11-16
+**SERVICE WORKER STATUS:** ❌ **DISABLED** (file renamed to `service-worker.js.disabled`)
 
-**Changes Made:**
-```html
-<!-- PWA Manifest - Disabled to prevent icon loading errors -->
-<!-- <link rel="manifest" href="manifest.json"> -->
+**WHY DISABLED:**
+- Service worker caches ALL files (HTML, CSS, JS) on first load
+- Cached files are served BEFORE page JavaScript executes
+- Code updates don't load even after browser refresh
+- Cache cannot be cleared before service worker intercepts requests
+- This prevents ALL development work from being visible in browser
 
-<!-- Icons -->
-<!-- <link rel="icon" type="image/png" sizes="192x192" href="src/assets/icons/icon-192x192.png"> -->
-<!-- <link rel="apple-touch-icon" href="src/assets/icons/icon-192x192.png"> -->
+**IMPACT:**
+- ✅ **BENEFIT:** All code changes load immediately (no cache issues)
+- ✅ **BENEFIT:** Bug fixes are visible right away
+- ✅ **BENEFIT:** Development can proceed normally
+- ⚠️ **DOWNSIDE:** No offline functionality (requires internet)
+- ⚠️ **DOWNSIDE:** No PWA install prompts
+- ⚠️ **DOWNSIDE:** No caching performance boost
+
+**WHEN TO RE-ENABLE:**
+- ✅ After ALL development work is complete
+- ✅ When ready for production deployment
+- ✅ When testing PWA features (install, offline, etc.)
+- ✅ Before submitting to app stores
+
+**HOW TO RE-ENABLE SERVICE WORKER:**
+```bash
+# Rename file back to original name
+mv service-worker.js.disabled service-worker.js
+
+# Commit the change
+git add service-worker.js service-worker.js.disabled
+git commit -m "Re-enable service worker for production"
 ```
 
-**Reason:**
-- The manifest.json referenced icon files at `src/assets/icons/` that don't exist
-- Browser attempted to download these icons and threw 404 errors
-- This prevented JavaScript from fully executing and blocked page initialization
-- Commenting out manifest link allows pages to load without resource errors
+**HOW TO DISABLE AGAIN (if issues occur):**
+```bash
+# Rename to disable
+mv service-worker.js service-worker.js.disabled
+
+# Manually clear in browser DevTools:
+# 1. F12 → Application → Service Workers → Unregister
+# 2. Application → Storage → Clear site data
+# 3. Hard reload (Ctrl+Shift+R)
+```
+
+**CURRENT DEVELOPMENT SETUP:**
+- File location: `service-worker.js.disabled` (inactive)
+- Browser cache clearing: Automatic on index.html load
+- Status: Safe for active development
+
+---
+
+## ⚠️ MANIFEST DISABLED (Nov 17, 2024)
+
+**Issue:** Browser was blocking page loads due to missing icon files
 
 **Impact:**
-- ✅ Pages now load without blocking
-- ✅ All JavaScript executes properly
-- ⚠️ No PWA install prompt (acceptable tradeoff)
-- ⚠️ No custom app icons (can be re-enabled after creating icons)
+- ✅ Pages load without blocking
+- ⚠️ No PWA install prompt (acceptable during development)
 
-**To Re-enable:** Create the missing icon files in `src/assets/icons/` directory, then uncomment the lines.
+**To Re-enable:** Create icon files in `src/assets/icons/`, then uncomment manifest link in index.html
 
 ---
 
