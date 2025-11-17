@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Export Properties to JSON</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        pre {
+            background: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            max-height: 400px;
+        }
+        .stats {
+            background: #10b981;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Export Properties from IndexedDB</h1>
+    <p>This will export all properties from your local database to a JSON file that can be committed to GitHub.</p>
+
+    <button onclick="exportProperties()">Export Properties to JSON</button>
+    <button onclick="viewProperties()">View Properties in Browser</button>
+
+    <div id="stats"></div>
+    <pre id="output"></pre>
+
+    <script type="module">
+        import { dataManager } from './src/core/data-manager.js';
+
+        window.exportProperties = async function() {
+            try {
+                await dataManager.init();
+                const properties = await dataManager.getAllProperties();
+
+                document.getElementById('stats').innerHTML = `
+                    <div class="stats">
+                        ✅ Found ${properties.length} properties in database
+                    </div>
+                `;
+
+                // Create JSON file
+                const json = JSON.stringify(properties, null, 2);
+                const blob = new Blob([json], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'properties-export.json';
+                a.click();
+
+                document.getElementById('output').textContent = `Exported ${properties.length} properties to properties-export.json\n\nSave this file to: src/data/properties.json`;
+
+            } catch (error) {
+                document.getElementById('output').textContent = `Error: ${error.message}\n${error.stack}`;
+            }
+        };
+
+        window.viewProperties = async function() {
+            try {
+                await dataManager.init();
+                const properties = await dataManager.getAllProperties();
+
+                document.getElementById('stats').innerHTML = `
+                    <div class="stats">
+                        ✅ Found ${properties.length} properties
+                    </div>
+                `;
+
+                document.getElementById('output').textContent = JSON.stringify(properties, null, 2);
+
+            } catch (error) {
+                document.getElementById('output').textContent = `Error: ${error.message}\n${error.stack}`;
+            }
+        };
+    </script>
+</body>
+</html>
