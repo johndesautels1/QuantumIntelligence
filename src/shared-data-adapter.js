@@ -237,14 +237,18 @@ class SharedDataAdapter {
             const state = prop.location?.state || '';
             const fullAddress = [street, city, state].filter(x => x).join(', ');
 
+            // Check multiple possible coordinate locations (same as 5D Explorer)
+            const lat = prop.location?.latitude || prop.basic?.coordinates?.latitude || prop.address?.latitude || 0;
+            const lng = prop.location?.longitude || prop.basic?.coordinates?.longitude || prop.address?.longitude || 0;
+
             return {
                 id: prop.property_id,
                 name: fullAddress || 'Unknown Property',
                 address: street,
                 price: prop.price?.current || 0,
                 location: {
-                    lat: prop.basic?.coordinates?.latitude || 0,
-                    lng: prop.basic?.coordinates?.longitude || 0,
+                    lat: lat,
+                    lng: lng,
                     city: city,
                     state: state
                 },
