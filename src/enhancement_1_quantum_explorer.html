@@ -97,7 +97,7 @@
             border: 2px solid rgba(0, 212, 255, 0.6);
             box-shadow: 0 8px 32px rgba(0, 212, 255, 0.3);
             position: absolute;
-            top: 0;
+            top: 48px;  /* Lowered 0.5 inches (48px) */
             left: 50%;
             transform: translateX(-50%);
             pointer-events: all;
@@ -124,7 +124,7 @@
         .control-panel {
             position: absolute;
             right: 82px;
-            top: 20px;  /* Aligned with header */
+            top: 68px;  /* Aligned with lowered header (48px + 20px margin) */
             background: rgba(0, 212, 255, 0.15);
             backdrop-filter: blur(20px);
             border-radius: 20px;
@@ -236,7 +236,7 @@
         .properties-list {
             position: absolute;
             left: 20px;
-            top: 20px;  /* Aligned with header - parallel to top frame */
+            top: 68px;  /* Aligned with lowered header (48px + 20px margin) */
             background: rgba(0, 212, 255, 0.15);
             backdrop-filter: blur(20px);
             border-radius: 20px;
