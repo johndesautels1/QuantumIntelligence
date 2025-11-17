@@ -1464,6 +1464,13 @@
             }
         }
 
+        // Expose functions to global scope for onclick handlers
+        window.setSeason = setSeason;
+        window.selectProperty = selectProperty;
+        window.refreshWeather = refreshWeather;
+        window.runSimulation = runSimulation;
+        window.exportReport = exportReport;
+
         // Initialize on load
         window.addEventListener('load', () => {
             initializeEnhancement();
