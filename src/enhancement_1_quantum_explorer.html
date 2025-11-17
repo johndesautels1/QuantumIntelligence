@@ -42,7 +42,7 @@
             width: 100vw;
             height: 100vh;
             position: relative;
-            padding-bottom: 170px;  /* Space for taller toolbar */
+            padding-bottom: 178px;  /* Space for taller toolbar */
         }
 
         #map-container {
@@ -870,7 +870,7 @@
             z-index: 1000;
             padding: 10px 12px;
             pointer-events: all;
-            height: 160px;  /* Prevent bottom row cutoff */
+            height: 168px;  /* Extra padding to prevent any cutoff */
         }
 
         .navbar-grid {
@@ -3175,7 +3175,7 @@ function animate() {
             if (navbar.classList.contains('collapsed')) {
                 container.style.paddingBottom = '80px';  // Less padding when collapsed
             } else {
-                container.style.paddingBottom = '170px';  // Full padding when expanded
+                container.style.paddingBottom = '178px';  // Full padding when expanded
             }
         }
 
