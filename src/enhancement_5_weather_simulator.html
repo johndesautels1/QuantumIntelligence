@@ -2332,7 +2332,7 @@
         }
 
         // Set Season
-        function setSeason(season, buttonElement) {
+        window.setSeason = function(season, buttonElement) {
             const seasonMap = { spring: 3, summer: 6, fall: 9, winter: 0 };
             currentMonth = seasonMap[season];
             currentSeason = season;
@@ -2344,18 +2344,18 @@
             }
 
             updateDisplay();
-        }
+        };
 
         // Refresh Weather
-        function refreshWeather() {
+        window.refreshWeather = function() {
             renderWeatherMetrics();
             renderImpactAnalysis();
             renderForecast();
             renderAlerts();
-        }
+        };
 
         // Run Simulation
-        function runSimulation() {
+        window.runSimulation = function() {
             let month = 0;
             const interval = setInterval(() => {
                 currentMonth = month;
@@ -2364,12 +2364,12 @@
                 month++;
                 if (month >= 12) clearInterval(interval);
             }, 500);
-        }
+        };
 
         /**
          * Export weather report with comprehensive metadata
          */
-        function exportReport() {
+        window.exportReport = function() {
             if (!currentProperty) {
                 alert('Cannot export: No property selected');
                 return;
@@ -2418,7 +2418,7 @@
             URL.revokeObjectURL(url);
 
             console.log('✅ Report exported successfully');
-        }
+        };
 
         /**
          * Initialize Enhancement with REAL Data
