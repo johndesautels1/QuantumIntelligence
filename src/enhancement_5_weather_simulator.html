@@ -2136,27 +2136,72 @@
             // ===== LOAD FUTURE PROJECTIONS =====
             await loadProjections();
 
-            // ===== EXTREME HEAT CALENDAR HEATMAP =====
-            // Cal-Heatmap v3 API
-            if (typeof CalHeatMap !== 'undefined') {
-                const cal = new CalHeatMap();
-                cal.init({
-                  itemSelector: "#heatCalendar",
-                  domain: "month",
-                  subDomain: "day",
-                  start: new Date(new Date().getFullYear(), 0),
-                  cellSize: 12,
-                  range: 12,
-                  legend: [20, 40, 60, 80],
-                  displayLegend: true,
-                  itemName: ["day over 95°F", "days over 95°F"],
-                  subDomainTextFormat: "%d",
-                  domainLabelFormat: "%b",
-                  tooltip: true
-                });
-            } else {
-                console.warn('⚠️ CalHeatMap library not loaded');
-                document.getElementById('heatCalendar').innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 40px;">Heat calendar unavailable</p>';
+            // ===== EXTREME HEAT CALENDAR =====
+            // Use REAL weather data from Open-Meteo Archive
+            const heatCalendarDiv = document.getElementById('heatCalendar');
+            if (heatCalendarDiv && currentProperty) {
+                const weatherData = REAL_WEATHER_DATA[currentProperty.id];
+
+                if (weatherData && weatherData.length === 12) {
+                    // Create visual calendar showing heat intensity by month using REAL temperatures
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+                    let calendarHTML = '<div style="display: grid; grid-template-columns: repeat(12, 1fr); gap: 10px; padding: 20px;">';
+
+                    weatherData.forEach((month, i) => {
+                        // Calculate heat level based on actual temperature from Open-Meteo
+                        let heatColor = '#0a1628'; // Cool (default)
+                        let heatLevel = 'Cool';
+
+                        if (month.temp >= 95) {
+                            heatColor = '#ff0066'; // Extreme heat
+                            heatLevel = 'Extreme';
+                        } else if (month.temp >= 85) {
+                            heatColor = '#ff6633'; // Very hot
+                            heatLevel = 'Very Hot';
+                        } else if (month.temp >= 75) {
+                            heatColor = '#ffaa00'; // Hot
+                            heatLevel = 'Hot';
+                        } else if (month.temp >= 65) {
+                            heatColor = '#ffdd44'; // Warm
+                            heatLevel = 'Warm';
+                        } else if (month.temp >= 50) {
+                            heatColor = '#88ccff'; // Mild
+                            heatLevel = 'Mild';
+                        } else {
+                            heatColor = '#0088ff'; // Cool
+                            heatLevel = 'Cool';
+                        }
+
+                        calendarHTML += `
+                            <div style="
+                                background: ${heatColor};
+                                border: 2px solid rgba(255,255,255,0.3);
+                                border-radius: 10px;
+                                padding: 15px 5px;
+                                text-align: center;
+                                transition: all 0.3s ease;
+                                cursor: pointer;
+                            " title="${monthNames[i]}: ${month.temp}°F (${heatLevel})">
+                                <div style="font-size: 0.85em; color: white; margin-bottom: 5px; font-weight: 600;">${monthNames[i]}</div>
+                                <div style="font-size: 1.5em; color: white; font-weight: bold;">${month.temp}°F</div>
+                                <div style="font-size: 0.75em; color: rgba(255,255,255,0.9); margin-top: 5px;">${heatLevel}</div>
+                            </div>
+                        `;
+                    });
+
+                    calendarHTML += '</div>';
+                    calendarHTML += `
+                        <div style="text-align: center; padding: 10px; color: rgba(255,255,255,0.7); font-size: 0.9em;">
+                            ✅ Real climate data from Open-Meteo Archive (30-year averages 1991-2020)
+                        </div>
+                    `;
+
+                    heatCalendarDiv.innerHTML = calendarHTML;
+                    console.log('✅ Heat calendar rendered with real temperature data');
+                } else {
+                    heatCalendarDiv.innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 40px;">Loading heat data...</p>';
+                }
             }
 
             console.log('✅ Climate risk assessment rendered');
