@@ -1774,7 +1774,14 @@
             currentProperty = PROPERTIES.find(p => p.id === id);
             renderSelectedPropertiesToolbar(); // Update toolbar to show active property
             updateDisplay();
-            updateCharts();
+
+            // If charts don't exist yet, create them; otherwise update them
+            if (!window.weatherApexChart || !window.precipApexChart) {
+                initCharts();
+            } else {
+                updateCharts();
+            }
+
             renderClimateRisk(); // Add climate risk assessment
         };
 
