@@ -570,6 +570,207 @@
             margin: 40px auto;
             max-width: 600px;
         }
+
+        /* Climate Risk Assessment Styles */
+        .panel-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9em;
+            margin-bottom: 25px;
+        }
+
+        .risk-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .risk-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 15px 0;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: all 0.3s ease;
+        }
+
+        .risk-card:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .risk-card h3 {
+            color: white;
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .risk-metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 12px 0;
+            padding: 12px 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            color: white;
+        }
+
+        .risk-metric .label {
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        .risk-metric .value {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        /* FEMA Flood Zone Colors */
+        .zone-V, .zone-VE {
+            color: #ef4444;
+            font-weight: bold;
+            padding: 4px 12px;
+            background: rgba(239, 68, 68, 0.2);
+            border-radius: 6px;
+        }
+
+        .zone-A, .zone-AE, .zone-AH, .zone-AO {
+            color: #f59e0b;
+            font-weight: bold;
+            padding: 4px 12px;
+            background: rgba(245, 158, 11, 0.2);
+            border-radius: 6px;
+        }
+
+        .zone-X, .zone-X500 {
+            color: #10b981;
+            font-weight: bold;
+            padding: 4px 12px;
+            background: rgba(16, 185, 129, 0.2);
+            border-radius: 6px;
+        }
+
+        .zone-D {
+            color: #94a3b8;
+            font-weight: bold;
+            padding: 4px 12px;
+            background: rgba(148, 163, 184, 0.2);
+            border-radius: 6px;
+        }
+
+        /* Overall Score Card */
+        .overall-score-card {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(59, 130, 246, 0.15));
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .score-display {
+            text-align: center;
+            padding: 40px;
+            border-radius: 20px;
+            margin: 20px 0;
+        }
+
+        .score-display.good {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .score-display.fair {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .score-display.poor {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .score-number {
+            font-size: 96px;
+            font-weight: bold;
+            line-height: 1;
+            margin-bottom: 15px;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .score-label {
+            font-size: 24px;
+            opacity: 0.95;
+            font-weight: 600;
+        }
+
+        .risk-breakdown {
+            text-align: left;
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .risk-breakdown p {
+            margin: 8px 0;
+            font-size: 1.05em;
+        }
+
+        /* Property Images */
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+            margin-top: 15px;
+        }
+
+        .image-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            overflow: hidden;
+        }
+
+        .image-card h4 {
+            color: white;
+            margin-bottom: 12px;
+            font-size: 1.1em;
+        }
+
+        .image-card img {
+            width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .image-card img:hover {
+            transform: scale(1.02);
+        }
+
+        .loading-message {
+            color: rgba(255, 255, 255, 0.6);
+            text-align: center;
+            padding: 30px;
+            font-style: italic;
+        }
+
+        .error-message {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+
+        .success-message {
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
 </style>
 </head>
 <body>
@@ -623,6 +824,45 @@
             </div>
         </div>
 
+        <!-- Climate Risk Assessment -->
+        <div class="panel">
+            <h2>🌊 Climate Risk & Property Intelligence</h2>
+            <p class="panel-subtitle">FEMA flood zones, elevation data, sea level rise projections, and structural analysis</p>
+
+            <!-- Overall Risk Score Card -->
+            <div class="risk-card overall-score-card" id="overallRiskScore">
+                <h3>Overall Climate Risk Score</h3>
+                <div class="loading-message">Select a property to view climate risk assessment...</div>
+            </div>
+
+            <!-- Risk Details Grid -->
+            <div class="risk-grid">
+                <!-- Flood Risk Card -->
+                <div class="risk-card">
+                    <h3>🌊 Flood Risk Assessment</h3>
+                    <div id="floodRiskContent" class="loading-message">Loading...</div>
+                </div>
+
+                <!-- Elevation & Sea Level -->
+                <div class="risk-card">
+                    <h3>📏 Elevation & Sea Level Rise</h3>
+                    <div id="elevationContent" class="loading-message">Loading...</div>
+                </div>
+
+                <!-- Property Structure -->
+                <div class="risk-card">
+                    <h3>🏠 Property Structural Data</h3>
+                    <div id="structuralContent" class="loading-message">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Property Images Grid -->
+            <div class="risk-card">
+                <h3>📸 Property Imagery</h3>
+                <div id="propertyImages" class="loading-message">Loading...</div>
+            </div>
+        </div>
+
         <!-- Charts -->
         <div class="panel">
             <h2>📈 Annual Weather Patterns</h2>
@@ -665,11 +905,18 @@
         import weatherAPI from './services/weather-api.js';
         import weatherComAPI from './services/weathercom-api.js';
 
+        // Import climate risk & property intelligence APIs
+        import climateRiskAPI from './services/climate-risk-api.js';
+        import mlsAPI from './services/mls-api.js';
+        import googleMapsAPI from './services/google-maps-api.js';
+
         // ===== REAL PROPERTY DATA FROM DATABASE =====
         // NO HARDCODED FAKE DATA - Loads from IndexedDB
         let PROPERTIES = [];
         let REAL_WEATHER_DATA = {}; // Cache for real NOAA historical data by property ID
         let WEATHERCOM_DATA = {}; // Cache for Weather.com current/forecast data by property ID
+        let CLIMATE_RISK_DATA = {}; // Cache for climate risk assessments
+        let MLS_DATA = {}; // Cache for MLS property details
 
         let currentProperty = null;
         let currentMonth = 0;
@@ -927,6 +1174,7 @@
             renderPropertySelector();
             updateDisplay();
             updateCharts();
+            renderClimateRisk(); // Add climate risk assessment
         }
 
         // Update Display
@@ -1027,6 +1275,156 @@
                     </div>
                 </div>
             `).join('');
+        }
+
+        // Render Climate Risk Assessment
+        async function renderClimateRisk() {
+            if (!currentProperty) {
+                document.getElementById('overallRiskScore').innerHTML = `
+                    <h3>Overall Climate Risk Score</h3>
+                    <div class="loading-message">Select a property to view climate risk assessment...</div>
+                `;
+                return;
+            }
+
+            console.log('🌍 Rendering climate risk assessment for:', currentProperty.name);
+
+            const lat = currentProperty.location?.lat || currentProperty.location?.latitude;
+            const lng = currentProperty.location?.lng || currentProperty.location?.longitude;
+
+            if (!lat || !lng) {
+                document.getElementById('overallRiskScore').innerHTML = `
+                    <h3>Overall Climate Risk Score</h3>
+                    <div class="error-message">⚠️ No coordinates available for this property</div>
+                `;
+                return;
+            }
+
+            // Fetch climate risk data
+            let climateRisk = CLIMATE_RISK_DATA[currentProperty.id];
+            if (!climateRisk) {
+                console.log(`📡 Fetching climate risk data for ${currentProperty.name}...`);
+                try {
+                    climateRisk = await climateRiskAPI.getComprehensiveRisk(lat, lng);
+                    CLIMATE_RISK_DATA[currentProperty.id] = climateRisk;
+                } catch (error) {
+                    console.error('Error fetching climate risk:', error);
+                    document.getElementById('overallRiskScore').innerHTML = `
+                        <h3>Overall Climate Risk Score</h3>
+                        <div class="error-message">❌ Error loading climate risk data: ${error.message}</div>
+                    `;
+                    return;
+                }
+            }
+
+            // Render overall risk score
+            const score = climateRisk.overallRisk.score;
+            const scoreClass = score >= 70 ? 'good' : score >= 40 ? 'fair' : 'poor';
+            document.getElementById('overallRiskScore').innerHTML = `
+                <h3>Overall Climate Risk Score</h3>
+                <div class="score-display ${scoreClass}">
+                    <div class="score-number">${score}</div>
+                    <div class="score-label">${climateRisk.overallRisk.rating}</div>
+                </div>
+                <div class="risk-breakdown">
+                    <p><strong>Flood Zone Penalty:</strong> -${climateRisk.overallRisk.components.floodZonePenalty} points</p>
+                    <p><strong>Property Elevation:</strong> ${climateRisk.overallRisk.components.elevationImpact.toFixed(1)} feet</p>
+                    <p><strong>Sea Level Rise Scenarios:</strong> ${climateRisk.overallRisk.components.seaLevelRiseImpact} affected</p>
+                </div>
+            `;
+
+            // Render flood risk
+            document.getElementById('floodRiskContent').innerHTML = `
+                <div class="risk-metric">
+                    <span class="label">FEMA Flood Zone:</span>
+                    <span class="value zone-${climateRisk.floodZone.zone}">${climateRisk.floodZone.zone}</span>
+                </div>
+                <p style="color: rgba(255,255,255,0.9); margin-top: 15px;">${climateRisk.floodZone.message}</p>
+                ${climateRisk.floodZone.staticBFE ? `<p style="color: rgba(255,255,255,0.7); margin-top: 10px;"><strong>Base Flood Elevation:</strong> ${climateRisk.floodZone.staticBFE} ft</p>` : ''}
+            `;
+
+            // Render elevation and sea level rise
+            document.getElementById('elevationContent').innerHTML = `
+                <div class="risk-metric">
+                    <span class="label">Elevation:</span>
+                    <span class="value">${climateRisk.elevation.elevationFeet.toFixed(1)} feet</span>
+                </div>
+                <p style="color: rgba(255,255,255,0.9); margin-top: 15px;">${climateRisk.elevation.riskLevel}</p>
+                <p style="color: rgba(255,255,255,0.9); margin-top: 15px;"><strong>Sea Level Rise Risk:</strong><br/>${climateRisk.seaLevelRise.riskSummary}</p>
+            `;
+
+            // Fetch and render MLS data (if available)
+            const mlsNumber = currentProperty.mls_number || currentProperty.mlsNumber;
+            if (mlsNumber) {
+                let mlsData = MLS_DATA[currentProperty.id];
+                if (!mlsData) {
+                    console.log(`🏠 Fetching MLS data for ${mlsNumber}...`);
+                    try {
+                        mlsData = await mlsAPI.getPropertyDetails(mlsNumber);
+                        MLS_DATA[currentProperty.id] = mlsData;
+                    } catch (error) {
+                        console.warn('MLS data not available:', error);
+                    }
+                }
+
+                if (mlsData && mlsData.roofAge) {
+                    const condition = mlsAPI.getRoofCondition(mlsData.roofAge, mlsData.roofType);
+                    const structuralRisk = mlsAPI.calculateStructuralRisk(mlsData);
+
+                    document.getElementById('structuralContent').innerHTML = `
+                        <div class="risk-metric">
+                            <span class="label">Roof Age:</span>
+                            <span class="value">${mlsData.roofAge} years</span>
+                        </div>
+                        <div class="risk-metric">
+                            <span class="label">Roof Type:</span>
+                            <span class="value">${mlsData.roofType}</span>
+                        </div>
+                        <p style="color: rgba(255,255,255,0.9); margin-top: 15px;"><strong>Condition:</strong> ${condition}</p>
+                        <p style="color: rgba(255,255,255,0.9);"><strong>Year Built:</strong> ${mlsData.yearBuilt}</p>
+                        <p style="color: rgba(255,255,255,0.9);"><strong>Foundation:</strong> ${mlsData.foundationType}</p>
+                        ${structuralRisk.recommendations.length > 0 ? `
+                            <p style="color: rgba(255,255,255,0.7); margin-top: 15px;"><strong>Recommendations:</strong></p>
+                            <ul style="color: rgba(255,255,255,0.7); margin-left: 20px; margin-top: 8px;">
+                                ${structuralRisk.recommendations.map(r => `<li>${r}</li>`).join('')}
+                            </ul>
+                        ` : ''}
+                    `;
+                } else {
+                    document.getElementById('structuralContent').innerHTML = `
+                        <p class="loading-message">⚠️ MLS data not available.<br/>Configure MLS API in config.js or waiting for MLS board API access.</p>
+                    `;
+                }
+            } else {
+                document.getElementById('structuralContent').innerHTML = `
+                    <p class="loading-message">⚠️ No MLS number available for this property</p>
+                `;
+            }
+
+            // Render property images
+            if (googleMapsAPI.isConfigured()) {
+                const satelliteUrl = googleMapsAPI.getSatelliteImageUrl(lat, lng, { zoom: 20 });
+                const streetViewUrl = googleMapsAPI.getStreetViewImageUrl(lat, lng);
+
+                document.getElementById('propertyImages').innerHTML = `
+                    <div class="image-grid">
+                        <div class="image-card">
+                            <h4>🛰️ Satellite View</h4>
+                            <img src="${satelliteUrl}" alt="Satellite View" loading="lazy" />
+                        </div>
+                        <div class="image-card">
+                            <h4>📸 Street View</h4>
+                            <img src="${streetViewUrl}" alt="Street View" loading="lazy" />
+                        </div>
+                    </div>
+                `;
+            } else {
+                document.getElementById('propertyImages').innerHTML = `
+                    <div class="error-message">⚠️ Google Maps API not configured</div>
+                `;
+            }
+
+            console.log('✅ Climate risk assessment rendered');
         }
 
         // Render 7-Day Forecast
