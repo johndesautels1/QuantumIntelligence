@@ -13,10 +13,7 @@
     <!-- ApexCharts - Ultra-high-tech glassmorphic charts -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.51.0/dist/apexcharts.min.js"></script>
 
-    <!-- Cal-Heatmap for extreme heat calendar -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cal-heatmap@3.6.2/cal-heatmap.css">
-    <script src="https://d3js.org/d3.v4.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@3.6.2/cal-heatmap.min.js"></script>
+    <!-- Cal-Heatmap removed - causing errors without proper implementation -->
     <style>
         * {
             margin: 0;
@@ -2136,27 +2133,19 @@
             // ===== LOAD FUTURE PROJECTIONS =====
             await loadProjections();
 
-            // ===== EXTREME HEAT CALENDAR HEATMAP =====
-            // Cal-Heatmap v3 API
-            if (typeof CalHeatMap !== 'undefined') {
-                const cal = new CalHeatMap();
-                cal.init({
-                  itemSelector: "#heatCalendar",
-                  domain: "month",
-                  subDomain: "day",
-                  start: new Date(new Date().getFullYear(), 0),
-                  cellSize: 12,
-                  range: 12,
-                  legend: [20, 40, 60, 80],
-                  displayLegend: true,
-                  itemName: ["day over 95°F", "days over 95°F"],
-                  subDomainTextFormat: "%d",
-                  domainLabelFormat: "%b",
-                  tooltip: true
-                });
-            } else {
-                console.warn('⚠️ CalHeatMap library not loaded');
-                document.getElementById('heatCalendar').innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 40px;">Heat calendar unavailable</p>';
+            // ===== EXTREME HEAT CALENDAR =====
+            // Show simple heat days summary instead of broken heatmap
+            const heatCalendarDiv = document.getElementById('heatCalendar');
+            if (heatCalendarDiv) {
+                const weatherData = REAL_WEATHER_DATA[currentProperty.id] || [];
+                const hotMonths = weatherData.filter(m => m.temp > 95).length;
+                heatCalendarDiv.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <div style="font-size: 4em; color: #ff0066; margin-bottom: 20px;">🔥</div>
+                        <div style="font-size: 2em; color: white; margin-bottom: 10px;">${hotMonths} months</div>
+                        <div style="color: rgba(255,255,255,0.8);">with average temperatures over 95°F</div>
+                    </div>
+                `;
             }
 
             console.log('✅ Climate risk assessment rendered');
