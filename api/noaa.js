@@ -23,12 +23,15 @@ export default async function handler(req, res) {
     try {
         const baseUrl = 'https://www.ncdc.noaa.gov/cdo-web/api/v2';
 
-        // Decode the endpoint parameter (comes as %2Fstations, need /stations)
-        const decodedEndpoint = decodeURIComponent(endpoint);
+        // Vercel auto-decodes req.query, so endpoint should already be decoded
+        // If it starts with /, use it directly; otherwise decode it
+        const finalEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
 
         // Build query string
         const queryString = new URLSearchParams(params).toString();
-        const url = `${baseUrl}${decodedEndpoint}${queryString ? '?' + queryString : ''}`;
+        const url = `${baseUrl}${finalEndpoint}${queryString ? '?' + queryString : ''}`;
+
+        console.log('NOAA API call:', url);
 
         const response = await fetch(url, {
             headers: {
