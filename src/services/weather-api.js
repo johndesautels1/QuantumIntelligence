@@ -20,31 +20,10 @@ export default {
     // Add 1-second delay before API call
     await delay(1000);
 
-    // PRIMARY: Try Vercel proxy → WeatherAPI.com first
-    try {
-      console.log(`🌐 Attempting WeatherAPI.com via Vercel proxy for ${lat},${lng}...`);
+    // NOTE: WeatherAPI.com history endpoint requires PAID PLAN (free tier = 7 days only)
+    // So we use Open-Meteo Archive directly for historical climate data
 
-      // WeatherAPI.com requires specific date format, fetch year of data
-      const response = await fetch(`/api/weather?endpoint=history&lat=${lat}&lng=${lng}&date=2020-01-01&end_date=2020-12-31`);
-
-      if (response.ok) {
-        const data = await response.json();
-
-        // Parse WeatherAPI.com response into monthly averages
-        if (data.forecast?.forecastday) {
-          const result = parseWeatherAPIData(data.forecast.forecastday);
-          cache.set(cacheKey, result);
-          console.log(`✅ Successfully loaded data from WeatherAPI.com for ${lat},${lng}`);
-          return result;
-        }
-      }
-
-      console.warn(`⚠️ WeatherAPI.com returned no data, trying fallback...`);
-    } catch (error) {
-      console.warn(`⚠️ WeatherAPI.com failed (${error.message}), trying fallback...`);
-    }
-
-    // FALLBACK: Use Open-Meteo Archive API
+    // Use Open-Meteo Archive API for 30-year climate normals
     try {
       console.log(`🌐 Attempting Open-Meteo Archive fallback for ${lat},${lng}...`);
 
@@ -82,39 +61,8 @@ export default {
       return result;
 
     } catch (error) {
-      console.error(`❌ Both APIs failed for ${lat},${lng}:`, error.message);
+      console.error(`❌ Open-Meteo Archive failed for ${lat},${lng}:`, error.message);
       throw error;
     }
   }
 };
-
-/**
- * Parse WeatherAPI.com forecast data into monthly averages
- * WeatherAPI.com provides: temp_f, humidity, precip_in, wind_mph
- */
-function parseWeatherAPIData(forecastDays) {
-  const monthlyData = Array.from({ length: 12 }, () => ({
-    temps: [],
-    humidity: [],
-    precips: [],
-    winds: []
-  }));
-
-  forecastDays.forEach(day => {
-    const month = new Date(day.date).getMonth(); // 0-11
-
-    if (day.day) {
-      monthlyData[month].temps.push(day.day.avgtemp_f || day.day.maxtemp_f);
-      monthlyData[month].humidity.push(day.day.avghumidity);
-      monthlyData[month].precips.push(day.day.totalprecip_in);
-      monthlyData[month].winds.push(day.day.maxwind_mph);
-    }
-  });
-
-  return monthlyData.map(m => ({
-    temp: m.temps.length > 0 ? Math.round(m.temps.reduce((a, b) => a + b, 0) / m.temps.length) : 60,
-    precip: m.precips.length > 0 ? Number((m.precips.reduce((a, b) => a + b, 0) / m.precips.length).toFixed(1)) : 2.0,
-    humidity: m.humidity.length > 0 ? Math.round(m.humidity.reduce((a, b) => a + b, 0) / m.humidity.length) : 65,
-    wind: m.winds.length > 0 ? Math.round(m.winds.reduce((a, b) => a + b, 0) / m.winds.length) : 12
-  }));
-}
