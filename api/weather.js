@@ -38,6 +38,12 @@ export default async function handler(req, res) {
             case 'hourly':
                 url = `${baseUrl}/forecast.json?key=${apiKey}&q=${lat},${lng}&days=1`;
                 break;
+            case 'history':
+                // WeatherAPI.com history endpoint for climate normals
+                // Note: Free tier limited to past 7 days, paid tier gets full historical
+                const days = req.query.days || 365;
+                url = `${baseUrl}/history.json?key=${apiKey}&q=${lat},${lng}&dt=${req.query.date || '2020-01-01'}&end_dt=${req.query.end_date || '2020-12-31'}`;
+                break;
             default:
                 return res.status(400).json({ error: 'Invalid endpoint' });
         }
