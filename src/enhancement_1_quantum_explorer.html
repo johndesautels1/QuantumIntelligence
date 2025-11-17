@@ -42,7 +42,7 @@
             width: 100vw;
             height: 100vh;
             position: relative;
-            padding-bottom: 160px;  /* Space for taller toolbar */
+            padding-bottom: 170px;  /* Space for taller toolbar */
         }
 
         #map-container {
@@ -870,7 +870,7 @@
             z-index: 1000;
             padding: 10px 12px;
             pointer-events: all;
-            height: 150px;  /* Increased for larger fonts */
+            height: 160px;  /* Prevent bottom row cutoff */
         }
 
         .navbar-grid {
@@ -951,6 +951,46 @@
         .navbar-grid::-webkit-scrollbar-thumb {
             background: rgba(0, 212, 255, 0.4);
             border-radius: 2px;
+        }
+
+        /* Toolbar collapsed state - show only home button */
+        .bottom-navbar.collapsed {
+            height: 70px;  /* Just enough for home button */
+        }
+
+        .bottom-navbar.collapsed .navbar-grid {
+            grid-template-columns: auto;  /* Single column for home button */
+            justify-content: center;
+        }
+
+        .bottom-navbar.collapsed .nav-item:not(.home-btn) {
+            display: none;  /* Hide all except home button */
+        }
+
+        .bottom-navbar.collapsed .navbar-toggle {
+            transform: rotate(180deg);  /* Flip arrow */
+        }
+
+        /* Toolbar toggle button */
+        .navbar-toggle {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            background: rgba(0, 212, 255, 0.3);
+            border: 1px solid rgba(0, 212, 255, 0.6);
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            padding: 6px 12px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .navbar-toggle:hover {
+            background: rgba(0, 212, 255, 0.5);
+            transform: translateY(-2px);
         }
 </style>
 </head>
@@ -3124,7 +3164,22 @@ function animate() {
 
         // ===== END GEOCODING FUNCTIONS =====
 
-        // Initialize Enhancement with REAL Data
+        
+        // Toggle navbar visibility (collapse to just home button)
+        function toggleNavbar() {
+            const navbar = document.querySelector('.bottom-navbar');
+            navbar.classList.toggle('collapsed');
+
+            // Update container padding based on state
+            const container = document.querySelector('.container');
+            if (navbar.classList.contains('collapsed')) {
+                container.style.paddingBottom = '80px';  // Less padding when collapsed
+            } else {
+                container.style.paddingBottom = '170px';  // Full padding when expanded
+            }
+        }
+
+// Initialize Enhancement with REAL Data
         async function initializeEnhancement() {
             try {
                 // Show loading
@@ -3203,6 +3258,7 @@ function animate() {
 
     <!-- Ultra-Modern Bottom Navigation Toolbar -->
     <div class="bottom-navbar">
+        <button class="navbar-toggle" onclick="toggleNavbar()" title="Toggle Navigation">▼</button>
         <div class="navbar-grid">
             <a href="../index.html" class="nav-item home-btn">
                 <div class="nav-icon">🏠</div>
