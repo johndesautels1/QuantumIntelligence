@@ -40,18 +40,20 @@ export default {
     // ── 2. FEMA FLOOD ZONE (US only) - OFFICIAL NFHL DATA ─────────────────
     let floodZone = { zone: 'Unknown', staticBFE: null, message: 'Checking flood zone...', inSFHA: false, subtype: '' };
 
-    // Try FEMA API directly first (they may have enabled CORS)
+    // Use cors.eu.org proxy - reliable CORS proxy service
     const femaUrl = `https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer/28/query?f=json&geometry=${lng},${lat}&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&returnGeometry=false&outFields=FLD_ZONE,STATIC_BFE,ZONE_SUBTY,SFHA_TF`;
+    const proxyUrl = `https://cors.eu.org/${femaUrl}`;
 
     try {
-      console.log(`🌊 Fetching official FEMA flood zone data...`);
+      console.log(`🌊 Fetching official FEMA flood zone data via CORS proxy...`);
       console.log(`   Coordinates: ${lat}, ${lng}`);
       console.log(`   FEMA URL: ${femaUrl}`);
+      console.log(`   Proxy URL: ${proxyUrl}`);
 
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 15000); // 15 second timeout
 
-      const floodRes = await fetch(femaUrl, { signal: controller.signal });
+      const floodRes = await fetch(proxyUrl, { signal: controller.signal });
       clearTimeout(timeout);
 
       console.log(`   Response status: ${floodRes.status} ${floodRes.statusText}`);
