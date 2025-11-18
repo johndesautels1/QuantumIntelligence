@@ -684,11 +684,15 @@
             document.head.appendChild(script);
         }
 
-        // Initialize Google Map
+        // Initialize Google Map (matches OpenStreetMap initialization exactly)
         function initGoogleMap() {
+            console.log('✅ Google Maps initialized');
             googleMap = new google.maps.Map(document.getElementById('google-map'), {
-                center: { lat: 39.7392, lng: -104.9903 },
-                zoom: 10
+                center: { lat: 39.7392, lng: -104.9903 }, // Same Denver coords as OSM
+                zoom: 10,
+                mapTypeControl: true,
+                streetViewControl: true,
+                fullscreenControl: true
             });
         }
 
@@ -1570,10 +1574,13 @@
             if (googleMap && typeof google !== 'undefined') {
                 try {
                     googleMap.setCenter({ lat: location.lat, lng: location.lon });
+                    googleMap.setZoom(14); // Match OSM zoom level
                     new google.maps.Marker({
                         position: { lat: location.lat, lng: location.lon },
-                        map: googleMap
+                        map: googleMap,
+                        title: address
                     });
+                    console.log('✅ Google Maps updated to:', address);
                 } catch (error) {
                     console.error('Error updating Google map:', error);
                 }
