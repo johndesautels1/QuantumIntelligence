@@ -376,7 +376,9 @@
                 PROPERTIES.forEach((prop, index) => {
                     const option = document.createElement('option');
                     option.value = index;
-                    option.textContent = `${prop.name} - $${(prop.price || 0).toLocaleString()}`;
+                    const name = prop.basic?.address || `${prop.location?.city}, ${prop.location?.state}` || 'Unknown Property';
+                    const price = prop.financial?.listingPrice || prop.price?.current || 0;
+                    option.textContent = `${name} - $${price.toLocaleString()}`;
                     select.appendChild(option);
                 });
             });
