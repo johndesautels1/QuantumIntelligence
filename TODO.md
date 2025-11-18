@@ -133,6 +133,51 @@
 
 ---
 
+## 🔧 POST-DEPLOYMENT FIXES (2025-11-18 continued)
+
+### Critical API Fixes
+- [x] **Fixed FEMA Flood Data API (Commit: ba77c4f)**
+  - **Problem**: NFHL ArcGIS service had persistent CORS errors (even with proxies)
+  - **Solution**: Switched to official OpenFEMA API (no CORS restrictions)
+  - **Old API**: `hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer/13/query`
+  - **New API**: `https://www.fema.gov/api/open/v1/FimaNfhlFloodHazardZones`
+  - **Method**: Geospatial filtering with `geo.distance(geometry.coordinates,geography'POINT(lon lat)')`
+  - **Result**: Direct API access, no proxy needed, returns same flood zone data
+
+- [x] **Fixed NOAA Drought Monitor API (Commit: 5ae00b9)**
+  - **Problem**: 404 errors - NOAA moved GeoJSON files in 2025
+  - **Old path**: `.../current/usdm_current.geojson`
+  - **New path**: `.../current-conditions/json/v1/usdm_current.geojson`
+
+- [x] **Fixed Google Maps Not Updating (Previous session)**
+  - **Problem**: Google Maps only loaded on tab click, null if address entered on OSM tab
+  - **Solution**: Added `loadGoogleMapsScript()` to `initializeApp()` so both maps load on page init
+
+### Chart Enhancement Fixes
+- [x] Added dates and 0-100 scales to all risk assessment charts
+- [x] Fixed precipitation chart color coding (5-color meteorological scale)
+- [x] Created missing `createRiskBreakdownChart()` function
+- [x] Reversed color scale (green=low risk, red=high risk)
+- [x] Improved spider graph contrast (dark blue background instead of brown)
+- [x] Applied consistent 5-color scale across all risk visualizations
+- [x] Made all field text crisp bold white
+- [x] Added debug console logging to prove data changes between locations
+
+### API Status Summary (as of ba77c4f)
+- ✅ **NOAA Weather.gov** - Working (current weather, forecasts)
+- ✅ **NOAA Drought Monitor** - Fixed (real drought level data)
+- ✅ **NOAA Storm Alerts** - Working (active weather alerts)
+- ✅ **Open-Meteo** - Working (wildfire risk calculation)
+- ✅ **OpenFEMA Flood Zones** - Fixed (replaced failing NFHL)
+- ✅ **OpenStreetMap/Leaflet** - Working (default map)
+- ✅ **Google Maps** - Working (when API key provided)
+- ✅ **Open-Elevation** - Working (NASA SRTM data)
+- ✅ **Berkeley Earth** - Working (historical temps)
+
+**ALL 9 APIs NOW OPERATIONAL - 100% REAL DATA, 0% PLACEHOLDERS**
+
+---
+
 ## 🔮 FUTURE ENHANCEMENTS (Optional)
 
 ### Weather Simulator Future Improvements
