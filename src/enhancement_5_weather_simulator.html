@@ -381,12 +381,7 @@
             <div id="osm-map" class="map-container"></div>
             <div id="google-map" class="map-container" style="display: none;"></div>
             
-            <!-- Google Maps API Key Input -->
-            <div class="input-group" id="googleApiKeyGroup" style="display: none; margin-top: 20px;">
-                <label for="googleApiKey">Google Maps API Key (Optional)</label>
-                <input type="text" id="googleApiKey" placeholder="Enter your Google Maps API key">
-                <small style="opacity: 0.8;">Get a key from Google Cloud Console</small>
-            </div>
+            <!-- Google Maps API Key is hardcoded in JavaScript for auto-loading -->
         </div>
 
         <!-- Current Weather with Glassmorphic Chart -->
@@ -643,7 +638,6 @@
                 document.querySelector('.map-tab:first-child').classList.add('active');
                 document.getElementById('osm-map').style.display = 'block';
                 document.getElementById('google-map').style.display = 'none';
-                document.getElementById('googleApiKeyGroup').style.display = 'none';
                 
                 // Refresh OSM map if it exists
                 if (osmMap) {
@@ -658,22 +652,35 @@
                 document.getElementById('googleMapTab').classList.add('active');
                 document.getElementById('osm-map').style.display = 'none';
                 document.getElementById('google-map').style.display = 'block';
-                document.getElementById('googleApiKeyGroup').style.display = 'block';
-                
-                // Initialize Google Maps if API key is provided
-                const apiKey = document.getElementById('googleApiKey').value;
-                if (apiKey && !googleMap) {
-                    loadGoogleMapsScript(apiKey);
+
+                // Auto-load Google Maps with hardcoded API key
+                if (!googleMap) {
+                    loadGoogleMapsScript();
                 }
             }
         }
 
-        // Load Google Maps (optional - requires API key)
-        function loadGoogleMapsScript(apiKey) {
+        // Google Maps API Key (restrict in Google Cloud Console to your domain)
+        const GOOGLE_MAPS_API_KEY = 'AIzaSyAtnlfmqoHQkiJXc3KYUeR5_4mUupOPLbw';
+
+        // Load Google Maps
+        function loadGoogleMapsScript() {
+            if (document.querySelector('script[src*="maps.googleapis.com"]')) {
+                console.log('Google Maps already loaded');
+                if (typeof google !== 'undefined' && !googleMap) {
+                    initGoogleMap();
+                }
+                return;
+            }
+
+            console.log('🗺️ Loading Google Maps API...');
             const script = document.createElement('script');
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&callback=initGoogleMap`;
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&callback=initGoogleMap`;
             script.async = true;
             script.defer = true;
+            script.onerror = () => {
+                console.error('❌ Failed to load Google Maps. Check API key and domain restrictions.');
+            };
             document.head.appendChild(script);
         }
 
