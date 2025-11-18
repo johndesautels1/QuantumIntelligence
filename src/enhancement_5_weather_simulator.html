@@ -1290,6 +1290,66 @@
             charts.riskRadar.render();
         }
 
+        // Create risk breakdown horizontal bar chart
+        function createRiskBreakdownChart(data) {
+            const options = {
+                series: [{
+                    name: 'Risk Score',
+                    data: [data.flood, data.heat, data.drought, data.storm, data.wildfire]
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 350,
+                    background: 'transparent',
+                    toolbar: { show: false }
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: true,
+                        borderRadius: 8,
+                        barHeight: '70%'
+                    }
+                },
+                colors: ['#00D4FF'],
+                dataLabels: {
+                    enabled: true,
+                    style: {
+                        colors: ['#FFFFFF'],
+                        fontWeight: 700
+                    }
+                },
+                xaxis: {
+                    categories: ['Flood Risk', 'Heat Risk', 'Drought Risk', 'Storm Risk', 'Wildfire Risk'],
+                    labels: {
+                        style: { colors: '#ffffff' }
+                    },
+                    max: 100
+                },
+                yaxis: {
+                    labels: {
+                        style: {
+                            colors: '#ffffff',
+                            fontWeight: 700
+                        }
+                    }
+                },
+                theme: { mode: 'dark' },
+                grid: {
+                    borderColor: 'rgba(255, 255, 255, 0.1)'
+                },
+                tooltip: {
+                    theme: 'dark',
+                    y: {
+                        formatter: (val) => `${val}/100`
+                    }
+                }
+            };
+
+            if (charts.riskBreakdown) charts.riskBreakdown.destroy();
+            charts.riskBreakdown = new ApexCharts(document.querySelector("#riskBreakdownChart"), options);
+            charts.riskBreakdown.render();
+        }
+
         // Display FEMA data
         function displayFEMAData(data) {
             const container = document.getElementById('femaDataContainer');
@@ -1666,14 +1726,16 @@
             
             // Calculate and display risk scores
             const riskScore = calculateRiskScore(fema, elevation, weather);
-            createRiskGaugeChart(riskScore);
-            createRiskRadarChart({
+            const riskData = {
                 flood: fema ? (fema.FLD_ZONE?.startsWith('A') ? 80 : 30) : 0,
                 heat: weather ? (weather.current.temperature_2m > 35 ? 70 : 40) : 0,
                 drought: 45, // Would need additional API
                 storm: 55,   // Would need NOAA severe weather API
                 wildfire: 35  // Would need USFS API
-            });
+            };
+            createRiskGaugeChart(riskScore);
+            createRiskRadarChart(riskData);
+            createRiskBreakdownChart(riskData);
             
             document.getElementById('riskScore').innerHTML = `${riskScore}<span class="data-unit">/100</span>`;
             document.getElementById('heatRisk').innerHTML = weather && weather.current.temperature_2m > 35 ? 'High' : 'Moderate';
