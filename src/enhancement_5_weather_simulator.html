@@ -1422,13 +1422,13 @@
             charts.riskGauge.render();
         }
 
-        // Get color based on risk score (standard 5-color scale)
+        // Get color based on risk score (standard 5-color scale - CORRECTED)
         function getRiskColor(value) {
-            if (value <= 20) return '#ef4444';      // Red (really bad)
-            if (value <= 40) return '#f59e0b';      // Orange (bad)
+            if (value <= 20) return '#10b981';      // Green (excellent/low risk)
+            if (value <= 40) return '#3b82f6';      // Blue (good)
             if (value <= 60) return '#eab308';      // Yellow (caution)
-            if (value <= 80) return '#3b82f6';      // Blue (good)
-            return '#10b981';                        // Green (excellent)
+            if (value <= 80) return '#f59e0b';      // Orange (bad)
+            return '#ef4444';                        // Red (really bad/high risk)
         }
 
         // Create risk radar chart
@@ -1485,16 +1485,30 @@
                     }
                 },
                 fill: {
-                    opacity: 0.3,
+                    opacity: 0.5,
                     colors: [radarColor]
                 },
                 stroke: {
-                    width: 2,
+                    width: 3,
                     colors: [radarColor]
                 },
                 markers: {
-                    size: 4,
-                    colors: [radarColor]
+                    size: 6,
+                    colors: [radarColor],
+                    strokeColors: '#FFFFFF',
+                    strokeWidth: 2
+                },
+                plotOptions: {
+                    radar: {
+                        polygons: {
+                            strokeColors: 'rgba(255, 255, 255, 0.4)',
+                            strokeWidth: 1,
+                            connectorColors: 'rgba(255, 255, 255, 0.4)',
+                            fill: {
+                                colors: ['rgba(10, 22, 40, 0.3)', 'rgba(10, 22, 40, 0.2)']
+                            }
+                        }
+                    }
                 },
                 theme: { mode: 'dark' }
             };
