@@ -763,95 +763,113 @@
             }
         }
 
-        // Fetch NOAA Climate Data Online (Official US Gov Data + Historical)
+        // Fetch NOAA Climate Data Online (Official US Gov Data)
         async function fetchNOAAData(lat, lon) {
             updateAPIStatus('noaa-cdo-status', 'loading');
 
             try {
-                console.log('🏛️ Fetching NOAA CDO historical data for:', lat, lon);
+                console.log('🏛️ Fetching NOAA Weather.gov data for:', lat, lon);
 
-                // NOAA CDO API - Official climate data with your token
-                const TOKEN = 'pgLwHCIovnmuIoZeVzarJyxjRWLHZjUd';
-                const BASE_URL = 'https://www.ncdc.noaa.gov/cdo-web/api/v2';
+                // Use NOAA Weather.gov API (browser-friendly, no CORS issues)
+                const pointsResponse = await fetch(
+                    `https://api.weather.gov/points/${lat.toFixed(4)},${lon.toFixed(4)}`,
+                    {
+                        headers: {
+                            'User-Agent': 'CLUES Weather App (cluesnomads@gmail.com)',
+                            'Accept': 'application/geo+json'
+                        }
+                    }
+                );
 
-                // Find nearest station using bounding box
-                const extent = `${lon - 0.5},${lat - 0.5},${lon + 0.5},${lat + 0.5}`;
-                const stationsUrl = `${BASE_URL}/stations?datasetid=GHCND&extent=${extent}&limit=5`;
+                if (!pointsResponse.ok) {
+                    throw new Error(`Weather.gov points API failed: ${pointsResponse.status}`);
+                }
 
-                const stationsResponse = await fetch(stationsUrl, {
+                const pointsData = await pointsResponse.json();
+                const properties = pointsData.properties;
+
+                console.log(`✅ Grid location: ${properties.gridId} (${properties.gridX}, ${properties.gridY})`);
+                console.log(`✅ Forecast office: ${properties.cwa}`);
+
+                // Get observation stations
+                const stationsResponse = await fetch(properties.observationStations, {
                     headers: {
-                        'token': TOKEN,
-                        'Accept': 'application/json'
+                        'User-Agent': 'CLUES Weather App (cluesnomads@gmail.com)',
+                        'Accept': 'application/geo+json'
                     }
                 });
 
                 if (!stationsResponse.ok) {
-                    throw new Error(`NOAA stations API failed: ${stationsResponse.status}`);
+                    throw new Error(`Stations API failed: ${stationsResponse.status}`);
                 }
 
                 const stationsData = await stationsResponse.json();
+                const stations = stationsData.features;
 
-                if (!stationsData.results || stationsData.results.length === 0) {
-                    throw new Error('No NOAA weather stations found nearby');
+                if (!stations || stations.length === 0) {
+                    throw new Error('No observation stations found');
                 }
 
-                const station = stationsData.results[0];
-                console.log(`✅ Using NOAA station: ${station.name} (${station.id})`);
+                const stationId = stations[0].properties.stationIdentifier;
+                const stationName = stations[0].properties.name;
 
-                // Get last 12 months of temperature and precipitation data
-                const endDate = new Date();
-                const startDate = new Date();
-                startDate.setFullYear(endDate.getFullYear() - 1);
+                console.log(`✅ Using station: ${stationName} (${stationId})`);
 
-                const startDateStr = startDate.toISOString().split('T')[0];
-                const endDateStr = endDate.toISOString().split('T')[0];
-
-                const dataUrl = `${BASE_URL}/data?` +
-                    `datasetid=GHCND&` +
-                    `stationid=${station.id}&` +
-                    `startdate=${startDateStr}&` +
-                    `enddate=${endDateStr}&` +
-                    `datatypeid=TMAX,TMIN,PRCP&` +
-                    `units=standard&` +
-                    `limit=1000`;
-
-                console.log('🔄 Fetching 12 months of TMAX, TMIN, PRCP data...');
-
-                const dataResponse = await fetch(dataUrl, {
-                    headers: {
-                        'token': TOKEN,
-                        'Accept': 'application/json'
+                // Get latest observations from the station
+                const obsResponse = await fetch(
+                    `https://api.weather.gov/stations/${stationId}/observations/latest`,
+                    {
+                        headers: {
+                            'User-Agent': 'CLUES Weather App (cluesnomads@gmail.com)',
+                            'Accept': 'application/geo+json'
+                        }
                     }
-                });
+                );
 
-                if (!dataResponse.ok) {
-                    throw new Error(`NOAA data API failed: ${dataResponse.status}`);
+                if (!obsResponse.ok) {
+                    throw new Error(`Observations API failed: ${obsResponse.status}`);
                 }
 
-                const climateData = await dataResponse.json();
+                const obsData = await obsResponse.json();
+                const obs = obsData.properties;
 
-                console.log(`✅ Retrieved ${climateData.results?.length || 0} climate records from NOAA CDO`);
+                console.log(`✅ Retrieved latest observation data from ${stationName}`);
 
                 updateAPIStatus('noaa-cdo-status', 'success');
 
                 return {
                     station: {
-                        id: station.id,
-                        name: station.name,
-                        elevation: station.elevation || 0,
-                        mindate: station.mindate,
-                        maxdate: station.maxdate
+                        id: stationId,
+                        name: stationName,
+                        elevation: stations[0].properties.elevation?.value || 0
                     },
-                    climateData: climateData.results || [],
-                    source: 'NOAA Climate Data Online (Official US Government)',
-                    token: '***ZjUd',
-                    period: `${startDateStr} to ${endDateStr}`,
-                    type: 'historical-climate-data'
+                    observation: {
+                        timestamp: obs.timestamp,
+                        temperature: obs.temperature?.value, // Celsius
+                        dewpoint: obs.dewpoint?.value,
+                        windSpeed: obs.windSpeed?.value,
+                        windDirection: obs.windDirection?.value,
+                        barometricPressure: obs.barometricPressure?.value,
+                        visibility: obs.visibility?.value,
+                        relativeHumidity: obs.relativeHumidity?.value,
+                        heatIndex: obs.heatIndex?.value,
+                        windChill: obs.windChill?.value
+                    },
+                    forecast: {
+                        gridId: properties.gridId,
+                        gridX: properties.gridX,
+                        gridY: properties.gridY,
+                        forecastOffice: properties.cwa,
+                        forecastUrl: properties.forecast,
+                        forecastHourlyUrl: properties.forecastHourly
+                    },
+                    source: 'NOAA Weather.gov API (Official US Government)',
+                    type: 'real-time-observation'
                 };
 
             } catch (error) {
                 updateAPIStatus('noaa-cdo-status', 'error');
-                console.error('❌ NOAA CDO error:', error);
+                console.error('❌ NOAA Weather.gov error:', error);
                 return null;
             }
         }
@@ -1749,7 +1767,7 @@
             document.getElementById('floodZone').innerHTML = zone;
         }
         
-        // Display NOAA Climate Data Online
+        // Display NOAA Weather.gov Data
         function displayNOAAData(data) {
             const container = document.getElementById('noaaDataContainer');
 
@@ -1760,26 +1778,47 @@
                 return;
             }
 
+            const obs = data.observation || {};
+            const tempC = obs.temperature;
+            const tempF = tempC ? (tempC * 9/5 + 32).toFixed(1) : 'N/A';
+            const humidity = obs.relativeHumidity ? obs.relativeHumidity.toFixed(0) : 'N/A';
+            const windSpeed = obs.windSpeed ? (obs.windSpeed * 2.237).toFixed(1) : 'N/A'; // m/s to mph
+            const pressure = obs.barometricPressure ? (obs.barometricPressure / 100).toFixed(1) : 'N/A'; // Pa to mb
             const elevation = data.station.elevation ? (data.station.elevation * 3.28084).toFixed(0) : 'N/A'; // m to ft
-            const recordCount = data.climateData?.length || 0;
 
-            // Display station information
+            // Display station information and current observations
             container.innerHTML = `
                 <div class="data-card">
-                    <h4>📍 NOAA Climate Station: ${data.station.name}</h4>
+                    <h4>📍 NOAA Weather Station: ${data.station.name}</h4>
                     <p style="opacity: 0.8;">Station ID: ${data.station.id}</p>
                     <p style="opacity: 0.8;">Elevation: ${elevation} ft</p>
-                    <p style="opacity: 0.8;">Data Period: ${data.period}</p>
+
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.2);">
+                        <h5 style="margin-bottom: 15px;">Current Observations</h5>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                            <div>
+                                <p style="opacity: 0.7; font-size: 0.9em;">Temperature</p>
+                                <p style="font-size: 1.3em; color: #FFFFFF; font-weight: 700;">${tempF}°F</p>
+                            </div>
+                            <div>
+                                <p style="opacity: 0.7; font-size: 0.9em;">Humidity</p>
+                                <p style="font-size: 1.3em; color: #FFFFFF; font-weight: 700;">${humidity}%</p>
+                            </div>
+                            <div>
+                                <p style="opacity: 0.7; font-size: 0.9em;">Wind Speed</p>
+                                <p style="font-size: 1.3em; color: #FFFFFF; font-weight: 700;">${windSpeed} mph</p>
+                            </div>
+                            <div>
+                                <p style="opacity: 0.7; font-size: 0.9em;">Pressure</p>
+                                <p style="font-size: 1.3em; color: #FFFFFF; font-weight: 700;">${pressure} mb</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <p style="margin-top: 15px; color: #10b981; font-size: 0.95em;">✅ ${data.source}</p>
-                    <p style="opacity: 0.6; font-size: 0.9em;">Retrieved ${recordCount} climate records</p>
-                    <p style="opacity: 0.6; font-size: 0.9em;">Token: ${data.token} ✅ Active</p>
+                    <p style="opacity: 0.6; font-size: 0.9em;">Last updated: ${obs.timestamp ? new Date(obs.timestamp).toLocaleString() : 'N/A'}</p>
                 </div>
             `;
-
-            // Create the temperature and precipitation charts with REAL data
-            if (data.climateData && data.climateData.length > 0) {
-                createNOAACharts(data.climateData);
-            }
         }
         
         // Create NOAA temperature and precipitation charts
