@@ -1056,6 +1056,15 @@
 
         // Create glassmorphic temperature chart
         function createTemperatureChart(data) {
+            // Format dates as "Mon 1/15"
+            const dateLabels = data.daily.time.slice(0, 7).map(dateStr => {
+                const date = new Date(dateStr);
+                const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
+                const month = date.getMonth() + 1;
+                const day = date.getDate();
+                return `${dayName} ${month}/${day}`;
+            });
+
             const options = {
                 series: [{
                     name: 'High',
@@ -1085,7 +1094,7 @@
                     }
                 },
                 xaxis: {
-                    categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    categories: dateLabels,
                     labels: { style: { colors: '#ffffff' } }
                 },
                 yaxis: {
@@ -1119,6 +1128,15 @@
 
         // Create precipitation chart
         function createPrecipitationChart(data) {
+            // Format dates as "Mon 1/15"
+            const dateLabels = data.daily.time.slice(0, 7).map(dateStr => {
+                const date = new Date(dateStr);
+                const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
+                const month = date.getMonth() + 1;
+                const day = date.getDate();
+                return `${dayName} ${month}/${day}`;
+            });
+
             const options = {
                 series: [{
                     name: 'Precipitation',
@@ -1139,7 +1157,7 @@
                 colors: ['#60a5fa'],
                 dataLabels: { enabled: false },
                 xaxis: {
-                    categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    categories: dateLabels,
                     labels: { style: { colors: '#ffffff' } }
                 },
                 yaxis: {
