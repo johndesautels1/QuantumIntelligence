@@ -425,8 +425,8 @@
             const group = new THREE.Group();
 
             // Calculate average score
-            const metrics = Object.values(property.metrics);
-            const avgScore = metrics.reduce((a, b) => a + b) / metrics.length;
+            const metrics = Object.values(property.dimensions || property.metrics || {});
+            const avgScore = metrics.length > 0 ? metrics.reduce((a, b) => a + b) / metrics.length : 50;
 
             // Outer holographic shell
             const shellGeometry = new THREE.SphereGeometry(2, 32, 32);
