@@ -2367,6 +2367,127 @@
             }
         }
 
+        // Premium line chart styling - 5D glassmorphic fighter pilot HUD aesthetic
+        function getPremiumLineChartStyle() {
+            return {
+                stroke: {
+                    curve: 'smooth',
+                    width: 4,
+                    lineCap: 'round'
+                },
+                fill: {
+                    type: 'gradient',
+                    gradient: {
+                        shade: 'dark',
+                        type: 'vertical',
+                        shadeIntensity: 0.5,
+                        gradientToColors: undefined,
+                        inverseColors: false,
+                        opacityFrom: 0.7,
+                        opacityTo: 0.05,
+                        stops: [0, 90, 100]
+                    }
+                },
+                markers: {
+                    size: 6,
+                    colors: undefined,
+                    strokeColors: '#0a1628',
+                    strokeWidth: 3,
+                    strokeOpacity: 1,
+                    fillOpacity: 1,
+                    discrete: [],
+                    shape: 'circle',
+                    hover: {
+                        size: 9,
+                        sizeOffset: 3
+                    }
+                },
+                grid: {
+                    borderColor: 'rgba(0, 212, 255, 0.15)',
+                    strokeDashArray: 4,
+                    position: 'back',
+                    xaxis: {
+                        lines: { show: true }
+                    },
+                    yaxis: {
+                        lines: { show: true }
+                    }
+                },
+                xaxis: {
+                    labels: {
+                        style: {
+                            colors: '#00d4ff',
+                            fontSize: '12px',
+                            fontFamily: 'inherit',
+                            fontWeight: 600,
+                            cssClass: 'apexcharts-xaxis-label'
+                        }
+                    },
+                    axisBorder: {
+                        show: true,
+                        color: 'rgba(0, 212, 255, 0.3)',
+                        height: 1,
+                        width: '100%',
+                        offsetX: 0,
+                        offsetY: 0
+                    },
+                    axisTicks: {
+                        show: true,
+                        borderType: 'solid',
+                        color: 'rgba(0, 212, 255, 0.5)',
+                        height: 6,
+                        offsetX: 0,
+                        offsetY: 0
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        style: {
+                            colors: '#00d4ff',
+                            fontSize: '12px',
+                            fontFamily: 'inherit',
+                            fontWeight: 600
+                        }
+                    }
+                },
+                legend: {
+                    labels: {
+                        colors: '#ffffff',
+                        useSeriesColors: false
+                    },
+                    fontSize: '13px',
+                    fontFamily: 'inherit',
+                    fontWeight: 600,
+                    markers: {
+                        width: 14,
+                        height: 14,
+                        strokeWidth: 2,
+                        strokeColor: '#0a1628',
+                        radius: 3
+                    },
+                    itemMargin: {
+                        horizontal: 10,
+                        vertical: 5
+                    }
+                },
+                tooltip: {
+                    theme: 'dark',
+                    x: {
+                        show: true
+                    },
+                    y: {
+                        title: {
+                            formatter: (seriesName) => seriesName + ':'
+                        }
+                    },
+                    style: {
+                        fontSize: '13px',
+                        fontFamily: 'inherit'
+                    }
+                }
+            };
+        }
+
         // Create climate projection charts
         function createClimateProjectionCharts(projections) {
             if (!projections) return;
@@ -2377,7 +2498,8 @@
             const years = projections.years || [2030, 2040, 2050, 2060, 2070];
             const tempBaseline = projections.tempBaseline || 0;
 
-            // Temperature projections
+            // Temperature projections with premium styling
+            const premiumStyle = getPremiumLineChartStyle();
             const tempOptions = {
                 series: [{
                     name: 'Low Emissions (RCP 2.6)',
@@ -2390,36 +2512,33 @@
                     data: tempData.rcp85.map((v, i) => ({ x: years[i], y: parseFloat((v - tempBaseline).toFixed(2)) }))
                 }],
                 chart: {
-                    type: 'line',
+                    type: 'area',
                     height: 350,
                     background: 'transparent',
-                    toolbar: { show: false }
+                    toolbar: { show: false },
+                    dropShadow: {
+                        enabled: true,
+                        color: '#000',
+                        top: 18,
+                        left: 7,
+                        blur: 10,
+                        opacity: 0.2
+                    }
                 },
                 colors: ['#10b981', '#f59e0b', '#ef4444'],
-                stroke: {
-                    curve: 'smooth',
-                    width: 3
-                },
+                ...premiumStyle,
                 xaxis: {
-                    type: 'numeric',
-                    labels: { style: { colors: '#ffffff' } }
+                    ...premiumStyle.xaxis,
+                    type: 'numeric'
                 },
                 yaxis: {
-                    labels: { 
-                        style: { colors: '#ffffff' },
+                    ...premiumStyle.yaxis,
+                    labels: {
+                        ...premiumStyle.yaxis.labels,
                         formatter: (val) => `+${val}°C`
                     }
                 },
-                theme: { mode: 'dark' },
-                grid: {
-                    borderColor: 'rgba(255, 255, 255, 0.1)'
-                },
-                legend: {
-                    labels: { colors: '#ffffff' }
-                },
-                tooltip: {
-                    theme: 'dark'
-                }
+                theme: { mode: 'dark' }
             };
             
             if (charts.tempProjection) charts.tempProjection.destroy();
