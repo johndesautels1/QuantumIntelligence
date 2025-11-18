@@ -1078,6 +1078,8 @@
         let currentMonth = 0;
         let currentSeason = 'spring';
         let currentScenario = 'ssp245';
+        let currentCalendarMonth = new Date().getMonth(); // 0-11 for heat calendar navigation
+        let heatCalendarData = null; // Store fetched YTD data
 
         // Charts
         let weatherApexChart = null;
@@ -2037,6 +2039,23 @@
             console.log('✅ Climate risk assessment rendered');
         }
 
+        // Navigation functions for heat calendar
+        window.prevCalendarMonth = function() {
+            if (currentCalendarMonth > 0) {
+                currentCalendarMonth--;
+                renderSingleMonthCalendar();
+            }
+        };
+
+        window.nextCalendarMonth = function() {
+            const today = new Date();
+            const currentRealMonth = today.getMonth();
+            if (currentCalendarMonth < currentRealMonth) {
+                currentCalendarMonth++;
+                renderSingleMonthCalendar();
+            }
+        };
+
         async function renderHeatCalendar(lat, lng) {
             const heatCalendarDiv = document.getElementById('heatCalendar');
             if (!heatCalendarDiv) return;
@@ -2052,7 +2071,7 @@
 
             try {
                 const startOfYear = `${year}-01-01`;
-                const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+                const todayStr = today.toISOString().split('T')[0];
 
                 // Fetch YTD data with temperature AND humidity for heat index calculation
                 const url =
@@ -2069,165 +2088,13 @@
                     return;
                 }
 
-                // Calculate heat index for each day (simplified formula)
-                // Heat Index = -42.379 + 2.04901523*T + 10.14333127*RH - 0.22475541*T*RH - 0.00683783*T^2 - 0.05481717*RH^2 + 0.00122874*T^2*RH + 0.00085282*T*RH^2 - 0.00000199*T^2*RH^2
-                function calculateHeatIndex(temp, humidity) {
-                    const T = temp;
-                    const RH = humidity;
+                // Store data globally for month navigation
+                heatCalendarData = data;
 
-                    if (T < 80) return T; // Heat index not applicable below 80°F
+                // Render current month
+                renderSingleMonthCalendar();
 
-                    const HI = -42.379 +
-                               2.04901523 * T +
-                               10.14333127 * RH -
-                               0.22475541 * T * RH -
-                               0.00683783 * T * T -
-                               0.05481717 * RH * RH +
-                               0.00122874 * T * T * RH +
-                               0.00085282 * T * RH * RH -
-                               0.00000199 * T * T * RH * RH;
-
-                    return Math.round(HI);
-                }
-
-                // Build calendar structure
-                const firstDay = new Date(year, 0, 1);
-                const startDayOfWeek = firstDay.getDay(); // 0 = Sunday
-
-                let daysAbove95 = 0;
-                let daysHeatIndexAbove100 = 0;
-
-                // Create map of dates to data
-                const dateMap = {};
-                for (let i = 0; i < data.daily.time.length; i++) {
-                    const dateStr = data.daily.time[i];
-                    const temp = data.daily.temperature_2m_max[i];
-                    const humidity = data.daily.relative_humidity_2m_mean[i] || 50;
-                    const heatIndex = calculateHeatIndex(temp, humidity);
-
-                    if (temp >= 95) daysAbove95++;
-                    if (heatIndex >= 100) daysHeatIndexAbove100++;
-
-                    dateMap[dateStr] = { temp, humidity, heatIndex };
-                }
-
-                // Build calendar HTML
-                let calendarHTML = `
-                    <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 25px; max-width: 1200px; margin: 0 auto;">
-                        <div style="text-align: center; margin-bottom: 20px;">
-                            <h3 style="color: white; font-size: 1.5em; margin-bottom: 10px;">${year} Year-to-Date Heat Analysis</h3>
-                            <p style="color: rgba(255,255,255,0.7); font-size: 0.95em;">Tracking extreme heat days through ${todayStr}</p>
-                        </div>
-
-                        <!-- Calendar Grid -->
-                        <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin-bottom: 25px;">
-                            <!-- Day headers -->
-                            <div style="text-align: center; color: rgba(255,255,255,0.9); font-weight: 600; padding: 8px; font-size: 0.9em;">Sun</div>
-                            <div style="text-align: center; color: rgba(255,255,255,0.9); font-weight: 600; padding: 8px; font-size: 0.9em;">Mon</div>
-                            <div style="text-align: center; color: rgba(255,255,255,0.9); font-weight: 600; padding: 8px; font-size: 0.9em;">Tue</div>
-                            <div style="text-align: center; color: rgba(255,255,255,0.9); font-weight: 600; padding: 8px; font-size: 0.9em;">Wed</div>
-                            <div style="text-align: center; color: rgba(255,255,255,0.9); font-weight: 600; padding: 8px; font-size: 0.9em;">Thu</div>
-                            <div style="text-align: center; color: rgba(255,255,255,0.9); font-weight: 600; padding: 8px; font-size: 0.9em;">Fri</div>
-                            <div style="text-align: center; color: rgba(255,255,255,0.9); font-weight: 600; padding: 8px; font-size: 0.9em;">Sat</div>
-                `;
-
-                // Add empty cells for days before start of year
-                for (let i = 0; i < startDayOfWeek; i++) {
-                    calendarHTML += '<div style="padding: 12px;"></div>';
-                }
-
-                // Add each day of the year (YTD only)
-                const daysInYear = Math.floor((today - firstDay) / (1000 * 60 * 60 * 24)) + 1;
-
-                for (let dayNum = 1; dayNum <= daysInYear; dayNum++) {
-                    const currentDate = new Date(year, 0, dayNum);
-                    const dateStr = currentDate.toISOString().split('T')[0];
-                    const dayData = dateMap[dateStr];
-
-                    let bgColor = 'rgba(255,255,255,0.05)';
-                    let borderColor = 'rgba(255,255,255,0.1)';
-                    let dayText = dayNum;
-                    let tooltip = dateStr;
-
-                    if (dayData) {
-                        const { temp, heatIndex } = dayData;
-                        tooltip = `${dateStr}\nHigh: ${temp}°F\nHeat Index: ${heatIndex}°F`;
-
-                        // Color coding based on severity
-                        if (heatIndex >= 100) {
-                            bgColor = '#ff0000'; // Bright red for heat index ≥ 100
-                            borderColor = '#ff6666';
-                        } else if (temp >= 95) {
-                            bgColor = '#ff6600'; // Orange-red for temp ≥ 95
-                            borderColor = '#ff9944';
-                        } else if (temp >= 90) {
-                            bgColor = '#ff9900'; // Orange for temp ≥ 90
-                            borderColor = '#ffbb44';
-                        } else if (temp >= 85) {
-                            bgColor = '#ffcc00'; // Yellow for temp ≥ 85
-                            borderColor = '#ffdd66';
-                        }
-                    }
-
-                    calendarHTML += `
-                        <div title="${tooltip}" style="
-                            background: ${bgColor};
-                            border: 1px solid ${borderColor};
-                            border-radius: 6px;
-                            padding: 12px;
-                            text-align: center;
-                            color: white;
-                            font-weight: 600;
-                            font-size: 0.95em;
-                            cursor: pointer;
-                            transition: transform 0.2s ease;
-                        " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
-                            ${dayText}
-                        </div>
-                    `;
-                }
-
-                calendarHTML += `
-                        </div>
-
-                        <!-- Legend -->
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px;">
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <div style="width: 20px; height: 20px; background: #ff0000; border-radius: 4px;"></div>
-                                <span style="color: rgba(255,255,255,0.9); font-size: 0.9em;">Heat Index ≥ 100°F</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <div style="width: 20px; height: 20px; background: #ff6600; border-radius: 4px;"></div>
-                                <span style="color: rgba(255,255,255,0.9); font-size: 0.9em;">Temp ≥ 95°F</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <div style="width: 20px; height: 20px; background: #ff9900; border-radius: 4px;"></div>
-                                <span style="color: rgba(255,255,255,0.9); font-size: 0.9em;">Temp ≥ 90°F</span>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <div style="width: 20px; height: 20px; background: #ffcc00; border-radius: 4px;"></div>
-                                <span style="color: rgba(255,255,255,0.9); font-size: 0.9em;">Temp ≥ 85°F</span>
-                            </div>
-                        </div>
-
-                        <!-- Summary Stats -->
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; padding: 20px; background: rgba(0,0,0,0.4); border-radius: 10px;">
-                            <div style="text-align: center;">
-                                <div style="font-size: 3em; color: #ff6600; font-weight: bold; text-shadow: 0 2px 10px rgba(255,102,0,0.5);">${daysAbove95}</div>
-                                <div style="color: rgba(255,255,255,0.9); font-size: 1.1em; margin-top: 8px;">Days with High Temp ≥ 95°F</div>
-                                <div style="color: rgba(255,255,255,0.6); font-size: 0.9em; margin-top: 4px;">Year-to-Date ${year}</div>
-                            </div>
-                            <div style="text-align: center;">
-                                <div style="font-size: 3em; color: #ff0000; font-weight: bold; text-shadow: 0 2px 10px rgba(255,0,0,0.5);">${daysHeatIndexAbove100}</div>
-                                <div style="color: rgba(255,255,255,0.9); font-size: 1.1em; margin-top: 8px;">Days with Heat Index ≥ 100°F</div>
-                                <div style="color: rgba(255,255,255,0.6); font-size: 0.9em; margin-top: 4px;">Extreme Heat Risk Days</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                heatCalendarDiv.innerHTML = calendarHTML;
-                console.log(`✅ Heat calendar: ${daysAbove95} days ≥95°F, ${daysHeatIndexAbove100} days heat index ≥100°F`);
+                console.log(`✅ Heat calendar data loaded for YTD ${year}`);
             } catch (error) {
                 console.error('Heat calendar error:', error);
                 heatCalendarDiv.innerHTML =
@@ -2235,6 +2102,223 @@
                         Unable to load heat calendar. Error: ${error.message}
                     </p>`;
             }
+        }
+
+        function renderSingleMonthCalendar() {
+            const heatCalendarDiv = document.getElementById('heatCalendar');
+            if (!heatCalendarDiv || !heatCalendarData) return;
+
+            const year = new Date().getFullYear();
+            const today = new Date();
+            const currentRealMonth = today.getMonth();
+
+            // Calculate heat index for each day
+            function calculateHeatIndex(temp, humidity) {
+                const T = temp;
+                const RH = humidity;
+
+                if (T < 80) return T;
+
+                const HI = -42.379 +
+                           2.04901523 * T +
+                           10.14333127 * RH -
+                           0.22475541 * T * RH -
+                           0.00683783 * T * T -
+                           0.05481717 * RH * RH +
+                           0.00122874 * T * T * RH +
+                           0.00085282 * T * RH * RH -
+                           0.00000199 * T * T * RH * RH;
+
+                return Math.round(HI);
+            }
+
+            // Create date map for all YTD data
+            const dateMap = {};
+            let ytdDaysAbove95 = 0;
+            let ytdDaysHeatIndexAbove100 = 0;
+
+            for (let i = 0; i < heatCalendarData.daily.time.length; i++) {
+                const dateStr = heatCalendarData.daily.time[i];
+                const temp = heatCalendarData.daily.temperature_2m_max[i];
+                const humidity = heatCalendarData.daily.relative_humidity_2m_mean[i] || 50;
+                const heatIndex = calculateHeatIndex(temp, humidity);
+
+                if (temp >= 95) ytdDaysAbove95++;
+                if (heatIndex >= 100) ytdDaysHeatIndexAbove100++;
+
+                dateMap[dateStr] = { temp, humidity, heatIndex };
+            }
+
+            // Get first day of the month and total days in month
+            const firstDayOfMonth = new Date(year, currentCalendarMonth, 1);
+            const lastDayOfMonth = new Date(year, currentCalendarMonth + 1, 0);
+            const daysInMonth = lastDayOfMonth.getDate();
+            const startDayOfWeek = firstDayOfMonth.getDay();
+
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                               'July', 'August', 'September', 'October', 'November', 'December'];
+
+            // Count heat days for THIS month only
+            let monthDaysAbove95 = 0;
+            let monthDaysHeatIndexAbove100 = 0;
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(currentCalendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayData = dateMap[dateStr];
+                if (dayData) {
+                    if (dayData.temp >= 95) monthDaysAbove95++;
+                    if (dayData.heatIndex >= 100) monthDaysHeatIndexAbove100++;
+                }
+            }
+
+            // Build calendar HTML
+            let calendarHTML = `
+                <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 25px; max-width: 800px; margin: 0 auto;">
+                    <!-- Month Navigation -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <button onclick="prevCalendarMonth()" ${currentCalendarMonth === 0 ? 'disabled' : ''}
+                            style="background: linear-gradient(135deg, #0066CC, #00D4FF); border: none; color: white;
+                                   padding: 12px 20px; border-radius: 10px; font-size: 1.2em; cursor: pointer;
+                                   font-weight: bold; transition: all 0.3s ease; ${currentCalendarMonth === 0 ? 'opacity: 0.3; cursor: not-allowed;' : ''}"
+                            ${currentCalendarMonth === 0 ? '' : 'onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'"'}>
+                            ◀
+                        </button>
+                        <h3 style="color: white; font-size: 1.8em; margin: 0;">${monthNames[currentCalendarMonth]} ${year}</h3>
+                        <button onclick="nextCalendarMonth()" ${currentCalendarMonth === currentRealMonth ? 'disabled' : ''}
+                            style="background: linear-gradient(135deg, #0066CC, #00D4FF); border: none; color: white;
+                                   padding: 12px 20px; border-radius: 10px; font-size: 1.2em; cursor: pointer;
+                                   font-weight: bold; transition: all 0.3s ease; ${currentCalendarMonth === currentRealMonth ? 'opacity: 0.3; cursor: not-allowed;' : ''}"
+                            ${currentCalendarMonth === currentRealMonth ? '' : 'onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'"'}>
+                            ▶
+                        </button>
+                    </div>
+
+                    <!-- Calendar Grid -->
+                    <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 20px;">
+                        <!-- Day headers -->
+                        <div style="text-align: center; color: rgba(255,255,255,0.9); font-weight: 600; padding: 8px; font-size: 0.85em;">Sun</div>
+                        <div style="text-align: center; color: rgba(255,255,255,0.9); font-weight: 600; padding: 8px; font-size: 0.85em;">Mon</div>
+                        <div style="text-align: center; color: rgba(255,255,255,0.9); font-weight: 600; padding: 8px; font-size: 0.85em;">Tue</div>
+                        <div style="text-align: center; color: rgba(255,255,255,0.9); font-weight: 600; padding: 8px; font-size: 0.85em;">Wed</div>
+                        <div style="text-align: center; color: rgba(255,255,255,0.9); font-weight: 600; padding: 8px; font-size: 0.85em;">Thu</div>
+                        <div style="text-align: center; color: rgba(255,255,255,0.9); font-weight: 600; padding: 8px; font-size: 0.85em;">Fri</div>
+                        <div style="text-align: center; color: rgba(255,255,255,0.9); font-weight: 600; padding: 8px; font-size: 0.85em;">Sat</div>
+            `;
+
+            // Add empty cells for days before start of month
+            for (let i = 0; i < startDayOfWeek; i++) {
+                calendarHTML += '<div style="padding: 15px;"></div>';
+            }
+
+            // Add each day of the month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(currentCalendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayData = dateMap[dateStr];
+
+                let bgColor = 'rgba(255,255,255,0.05)';
+                let borderColor = 'rgba(255,255,255,0.1)';
+                let tooltip = dateStr;
+
+                if (dayData) {
+                    const { temp, heatIndex } = dayData;
+                    tooltip = `${dateStr}\nHigh: ${temp}°F\nHeat Index: ${heatIndex}°F`;
+
+                    if (heatIndex >= 100) {
+                        bgColor = '#ff0000';
+                        borderColor = '#ff6666';
+                    } else if (temp >= 95) {
+                        bgColor = '#ff6600';
+                        borderColor = '#ff9944';
+                    } else if (temp >= 90) {
+                        bgColor = '#ff9900';
+                        borderColor = '#ffbb44';
+                    } else if (temp >= 85) {
+                        bgColor = '#ffcc00';
+                        borderColor = '#ffdd66';
+                    }
+                }
+
+                calendarHTML += `
+                    <div title="${tooltip}" style="
+                        background: ${bgColor};
+                        border: 1px solid ${borderColor};
+                        border-radius: 6px;
+                        padding: 15px 10px;
+                        text-align: center;
+                        color: white;
+                        font-weight: 600;
+                        font-size: 1.1em;
+                        cursor: pointer;
+                        transition: transform 0.2s ease;
+                        min-height: 40px;
+                    " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                        ${day}
+                    </div>
+                `;
+            }
+
+            calendarHTML += `
+                    </div>
+
+                    <!-- Month Summary -->
+                    <div style="background: rgba(0,0,0,0.4); border-radius: 10px; padding: 15px; margin-bottom: 15px;">
+                        <div style="text-align: center; color: rgba(255,255,255,0.9); font-size: 1.1em; margin-bottom: 10px;">
+                            ${monthNames[currentCalendarMonth]} Heat Summary
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 2.5em; color: #ff6600; font-weight: bold;">${monthDaysAbove95}</div>
+                                <div style="color: rgba(255,255,255,0.8); font-size: 0.9em;">Days ≥ 95°F</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 2.5em; color: #ff0000; font-weight: bold;">${monthDaysHeatIndexAbove100}</div>
+                                <div style="color: rgba(255,255,255,0.8); font-size: 0.9em;">Heat Index ≥ 100°F</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Legend -->
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 18px; height: 18px; background: #ff0000; border-radius: 4px;"></div>
+                            <span style="color: rgba(255,255,255,0.9); font-size: 0.85em;">Heat Index ≥ 100°F</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 18px; height: 18px; background: #ff6600; border-radius: 4px;"></div>
+                            <span style="color: rgba(255,255,255,0.9); font-size: 0.85em;">Temp ≥ 95°F</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 18px; height: 18px; background: #ff9900; border-radius: 4px;"></div>
+                            <span style="color: rgba(255,255,255,0.9); font-size: 0.85em;">Temp ≥ 90°F</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 18px; height: 18px; background: #ffcc00; border-radius: 4px;"></div>
+                            <span style="color: rgba(255,255,255,0.9); font-size: 0.85em;">Temp ≥ 85°F</span>
+                        </div>
+                    </div>
+
+                    <!-- YTD Summary (separate panel) -->
+                    <div style="background: rgba(0,100,200,0.2); border: 2px solid rgba(0,212,255,0.4); border-radius: 10px; padding: 20px;">
+                        <div style="text-align: center; color: #00D4FF; font-size: 1.2em; font-weight: bold; margin-bottom: 15px;">
+                            ${year} Year-to-Date Totals
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div style="text-align: center;">
+                                <div style="font-size: 3em; color: #ff6600; font-weight: bold; text-shadow: 0 2px 10px rgba(255,102,0,0.5);">${ytdDaysAbove95}</div>
+                                <div style="color: rgba(255,255,255,0.9); font-size: 1em; margin-top: 8px;">Total Days ≥ 95°F</div>
+                                <div style="color: rgba(255,255,255,0.6); font-size: 0.85em; margin-top: 4px;">Jan-${monthNames[currentRealMonth].substring(0,3)}</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-size: 3em; color: #ff0000; font-weight: bold; text-shadow: 0 2px 10px rgba(255,0,0,0.5);">${ytdDaysHeatIndexAbove100}</div>
+                                <div style="color: rgba(255,255,255,0.9); font-size: 1em; margin-top: 8px;">Total Heat Index ≥ 100°F</div>
+                                <div style="color: rgba(255,255,255,0.6); font-size: 0.85em; margin-top: 4px;">Extreme Heat Risk</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            heatCalendarDiv.innerHTML = calendarHTML;
         }
 
         function renderForecast() {
