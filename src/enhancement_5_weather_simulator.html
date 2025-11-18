@@ -1188,6 +1188,7 @@
 
         // Create risk gauge chart
         function createRiskGaugeChart(score) {
+            const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
             const options = {
                 series: [score],
                 chart: {
@@ -1213,15 +1214,17 @@
                             name: {
                                 offsetY: -10,
                                 show: true,
-                                color: '#fff',
-                                fontSize: '17px'
+                                color: '#FFFFFF',
+                                fontSize: '17px',
+                                fontWeight: 700
                             },
                             value: {
                                 formatter: function(val) {
-                                    return parseInt(val);
+                                    return parseInt(val) + '/100';
                                 },
-                                color: '#fff',
+                                color: '#FFFFFF',
                                 fontSize: '36px',
+                                fontWeight: 700,
                                 show: true
                             }
                         }
@@ -1242,7 +1245,7 @@
                 stroke: {
                     lineCap: 'round'
                 },
-                labels: ['Risk Score']
+                labels: [`Risk Score - ${today}`]
             };
             
             if (charts.riskGauge) charts.riskGauge.destroy();
@@ -1252,9 +1255,10 @@
 
         // Create risk radar chart
         function createRiskRadarChart(data) {
+            const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
             const options = {
                 series: [{
-                    name: 'Risk Level',
+                    name: 'Risk Level (0-100)',
                     data: [data.flood, data.heat, data.drought, data.storm, data.wildfire]
                 }],
                 chart: {
@@ -1263,24 +1267,50 @@
                     background: 'transparent',
                     toolbar: { show: false }
                 },
+                title: {
+                    text: today,
+                    align: 'center',
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: 700,
+                        color: '#FFFFFF'
+                    }
+                },
                 xaxis: {
                     categories: ['Flood', 'Heat', 'Drought', 'Storm', 'Wildfire'],
-                    labels: { style: { colors: '#ffffff' } }
+                    labels: {
+                        style: {
+                            colors: ['#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF'],
+                            fontSize: '14px',
+                            fontWeight: 700
+                        }
+                    }
                 },
                 yaxis: {
-                    show: false
+                    show: true,
+                    min: 0,
+                    max: 100,
+                    tickAmount: 5,
+                    labels: {
+                        style: {
+                            colors: '#FFFFFF',
+                            fontSize: '12px',
+                            fontWeight: 700
+                        },
+                        formatter: (val) => val.toFixed(0)
+                    }
                 },
                 fill: {
                     opacity: 0.3,
-                    colors: ['#f59e0b']
+                    colors: ['#00D4FF']
                 },
                 stroke: {
                     width: 2,
-                    colors: ['#f59e0b']
+                    colors: ['#00D4FF']
                 },
                 markers: {
                     size: 4,
-                    colors: ['#f59e0b']
+                    colors: ['#00D4FF']
                 },
                 theme: { mode: 'dark' }
             };
@@ -1292,6 +1322,7 @@
 
         // Create risk breakdown horizontal bar chart
         function createRiskBreakdownChart(data) {
+            const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
             const options = {
                 series: [{
                     name: 'Risk Score',
@@ -1303,6 +1334,15 @@
                     background: 'transparent',
                     toolbar: { show: false }
                 },
+                title: {
+                    text: `Scale: 0-100 (${today})`,
+                    align: 'center',
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: 700,
+                        color: '#FFFFFF'
+                    }
+                },
                 plotOptions: {
                     bar: {
                         horizontal: true,
@@ -1313,29 +1353,43 @@
                 colors: ['#00D4FF'],
                 dataLabels: {
                     enabled: true,
+                    formatter: (val) => `${val}/100`,
                     style: {
                         colors: ['#FFFFFF'],
+                        fontSize: '12px',
                         fontWeight: 700
                     }
                 },
                 xaxis: {
                     categories: ['Flood Risk', 'Heat Risk', 'Drought Risk', 'Storm Risk', 'Wildfire Risk'],
                     labels: {
-                        style: { colors: '#ffffff' }
+                        style: {
+                            colors: '#FFFFFF',
+                            fontSize: '12px',
+                            fontWeight: 700
+                        }
                     },
-                    max: 100
+                    min: 0,
+                    max: 100,
+                    tickAmount: 5
                 },
                 yaxis: {
                     labels: {
                         style: {
-                            colors: '#ffffff',
+                            colors: '#FFFFFF',
+                            fontSize: '13px',
                             fontWeight: 700
                         }
                     }
                 },
                 theme: { mode: 'dark' },
                 grid: {
-                    borderColor: 'rgba(255, 255, 255, 0.1)'
+                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    xaxis: {
+                        lines: {
+                            show: true
+                        }
+                    }
                 },
                 tooltip: {
                     theme: 'dark',
