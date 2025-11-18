@@ -1449,6 +1449,10 @@
 
                 console.log(`✅ Found ${earthquakes.length} earthquakes (M3.0+) in last 50 years within 200km`);
 
+                // Find most recent earthquake
+                const sortedByDate = [...earthquakes].sort((a, b) => b.properties.time - a.properties.time);
+                const mostRecent = sortedByDate[0];
+
                 return {
                     total: earthquakes.length,
                     counts: counts,
@@ -1459,6 +1463,19 @@
                         depth: e.geometry.coordinates[2],
                         distance: calculateDistance(lat, lon, e.geometry.coordinates[1], e.geometry.coordinates[0])
                     })),
+                    mostRecent: mostRecent ? {
+                        magnitude: mostRecent.properties.mag,
+                        location: mostRecent.properties.place,
+                        date: new Date(mostRecent.properties.time).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        }),
+                        depth: mostRecent.geometry.coordinates[2],
+                        distance: calculateDistance(lat, lon, mostRecent.geometry.coordinates[1], mostRecent.geometry.coordinates[0]),
+                        lat: mostRecent.geometry.coordinates[1],
+                        lon: mostRecent.geometry.coordinates[0]
+                    } : null,
                     source: 'USGS Earthquake Hazards Program',
                     timeRange: '50 years'
                 };
@@ -2805,7 +2822,30 @@
             charts.earthquake = new ApexCharts(document.querySelector("#earthquakeChart"), options);
             charts.earthquake.render();
 
-            console.log('✅ Earthquake history chart rendered');
+            // Add most recent earthquake info below chart
+            if (earthquakeData.mostRecent) {
+                const chartContainer = document.getElementById('earthquakeChart').parentElement;
+                const existingInfo = chartContainer.querySelector('.earthquake-recent-info');
+                if (existingInfo) existingInfo.remove();
+
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'earthquake-recent-info';
+                infoDiv.style.cssText = 'margin-top: 15px; padding: 15px; background: rgba(239, 68, 68, 0.1); border-left: 4px solid #ef4444; border-radius: 8px;';
+                infoDiv.innerHTML = `
+                    <div style="font-size: 0.95em; line-height: 1.6; color: #ffffff;">
+                        <strong style="color: #ef4444;">📍 Most Recent Earthquake:</strong><br>
+                        <strong>Date:</strong> ${earthquakeData.mostRecent.date}<br>
+                        <strong>Magnitude:</strong> M${earthquakeData.mostRecent.magnitude.toFixed(1)}<br>
+                        <strong>Epicenter:</strong> ${earthquakeData.mostRecent.location}<br>
+                        <strong>Coordinates:</strong> ${earthquakeData.mostRecent.lat.toFixed(4)}°, ${earthquakeData.mostRecent.lon.toFixed(4)}°<br>
+                        <strong>Distance:</strong> ${earthquakeData.mostRecent.distance}km from location<br>
+                        <strong>Depth:</strong> ${earthquakeData.mostRecent.depth.toFixed(1)}km
+                    </div>
+                `;
+                chartContainer.appendChild(infoDiv);
+            }
+
+            console.log('✅ Earthquake history chart rendered with recent event info');
         }
 
         // Create Sea Level Rise Projection chart
