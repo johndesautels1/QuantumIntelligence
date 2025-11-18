@@ -873,7 +873,75 @@
                 return null;
             }
         }
-        
+
+        // Fetch NOAA CDO historical climate data for charts
+        async function fetchNOAAHistoricalData(lat, lon) {
+            try {
+                console.log('📊 Fetching NOAA CDO historical data for charts...');
+
+                const TOKEN = 'pgLwHCIovnmuIoZeVzarJyxjRWLHZjUd';
+                const BASE_URL = 'https://www.ncdc.noaa.gov/cdo-web/api/v2';
+
+                // Find nearest station
+                const extent = `${lon - 0.5},${lat - 0.5},${lon + 0.5},${lat + 0.5}`;
+                const stationsUrl = `${BASE_URL}/stations?datasetid=GHCND&extent=${extent}&limit=5`;
+
+                const stationsResponse = await fetch(stationsUrl, {
+                    headers: { 'token': TOKEN }
+                });
+
+                if (!stationsResponse.ok) {
+                    console.log('⚠️ NOAA CDO stations API failed, charts will remain empty');
+                    return null;
+                }
+
+                const stationsData = await stationsResponse.json();
+                if (!stationsData.results || stationsData.results.length === 0) {
+                    console.log('⚠️ No NOAA CDO stations found, charts will remain empty');
+                    return null;
+                }
+
+                const station = stationsData.results[0];
+
+                // Get 12 months of data
+                const endDate = new Date();
+                const startDate = new Date();
+                startDate.setFullYear(endDate.getFullYear() - 1);
+
+                const dataUrl = `${BASE_URL}/data?` +
+                    `datasetid=GHCND&` +
+                    `stationid=${station.id}&` +
+                    `startdate=${startDate.toISOString().split('T')[0]}&` +
+                    `enddate=${endDate.toISOString().split('T')[0]}&` +
+                    `datatypeid=TMAX,TMIN,PRCP&` +
+                    `units=standard&` +
+                    `limit=1000`;
+
+                const dataResponse = await fetch(dataUrl, {
+                    headers: { 'token': TOKEN }
+                });
+
+                if (!dataResponse.ok) {
+                    console.log('⚠️ NOAA CDO data API failed, charts will remain empty');
+                    return null;
+                }
+
+                const climateData = await dataResponse.json();
+                console.log(`✅ Retrieved ${climateData.results?.length || 0} NOAA CDO records for charts`);
+
+                // Populate the charts
+                if (climateData.results && climateData.results.length > 0) {
+                    createNOAACharts(climateData.results);
+                }
+
+                return climateData.results;
+
+            } catch (error) {
+                console.error('❌ NOAA CDO historical data error:', error);
+                return null;
+            }
+        }
+
         // Fetch current weather from Open-Meteo
         async function fetchCurrentWeather(lat, lon) {
             updateAPIStatus('openmeteo-status', 'loading');
@@ -2056,6 +2124,9 @@
                 fetchStormAlerts(location.lat, location.lon),
                 fetchWildfireRisk(location.lat, location.lon)
             ]);
+
+            // Fetch NOAA historical data for charts (separate, doesn't block main data)
+            fetchNOAAHistoricalData(location.lat, location.lon);
             
             // Update UI with real data
             if (weather) {
