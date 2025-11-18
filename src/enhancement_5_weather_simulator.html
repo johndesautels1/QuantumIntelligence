@@ -523,6 +523,12 @@
                     <div id="earthquakeChart"></div>
                 </div>
                 <div class="chart-container">
+                    <h3>Hurricane History (Recent Years)</h3>
+                    <div id="hurricaneChart"></div>
+                </div>
+            </div>
+            <div class="grid-2" style="margin-top: 20px;">
+                <div class="chart-container">
                     <h3>Sea Level Rise Projections (2025-2100)</h3>
                     <div id="seaLevelChart"></div>
                 </div>
@@ -1485,34 +1491,172 @@
             }
         }
 
-        // Fetch historical hurricane data from NOAA
+        // Fetch historical hurricane data from NOAA IBTrACS
         async function fetchHurricaneHistory(lat, lon) {
             try {
-                console.log('🌀 Fetching historical hurricane data from NOAA...');
+                console.log('🌀 Fetching historical hurricane data from NOAA IBTrACS...');
 
-                // Use NOAA Historical Hurricane Tracks data
-                // For now, we'll use a simplified approach to count hurricanes that passed within range
-                // NOAA's HURDAT2 database could be parsed, but we'll use available web services
+                // Use NOAA IBTrACS via ERDDAP - International Best Track Archive for Climate Stewardship
+                // This contains all tropical cyclone best track data from 1842-present
+                // Data includes: storm name, date, lat/lon, wind speed, pressure, Saffir-Simpson category
 
-                // This is a placeholder for the actual NOAA hurricane API integration
-                // The actual implementation would query the NOAA MapServer API
-                // mapservices.weather.noaa.gov/tropical/rest/services/tropical/NHC_tropical_weather/MapServer
+                // Define search box (10-degree radius around property)
+                const latMin = lat - 10;
+                const latMax = lat + 10;
+                const lonMin = lon - 10;
+                const lonMax = lon + 10;
 
-                console.log('⚠️ Hurricane data integration in progress - using placeholder');
+                // Calculate date range for 50 years of data
+                const endDate = new Date();
+                const startDate = new Date();
+                startDate.setFullYear(endDate.getFullYear() - 50);
+
+                const startISO = startDate.toISOString().split('T')[0];
+                const endISO = endDate.toISOString().split('T')[0];
+
+                // NOAA IBTrACS ERDDAP endpoint
+                // Note: Using last3years endpoint for now - full historical dataset requires different approach
+                const url = `https://erddap.aoml.noaa.gov/hdb/erddap/tabledap/IBTRACS_last3years.json?` +
+                    `time,lat,lon,name,usa_wind,usa_sshs&` +
+                    `time>=${startISO}T00:00:00Z&` +
+                    `time<=${endISO}T23:59:59Z&` +
+                    `lat>=${latMin}&lat<=${latMax}&` +
+                    `lon>=${lonMin}&lon<=${lonMax}&` +
+                    `usa_wind>0`;
+
+                console.log(`📍 Searching for hurricanes within 10° of ${lat}, ${lon}`);
+
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    console.warn(`NOAA IBTrACS API returned ${response.status}`);
+                    return {
+                        total: 0,
+                        category1: 0,
+                        category2: 0,
+                        category3: 0,
+                        category4: 0,
+                        category5: 0,
+                        events: [],
+                        mostRecent: null,
+                        source: 'NOAA IBTrACS (International Best Track Archive)',
+                        timeRange: '3 years (recent)',
+                        status: 'No data available'
+                    };
+                }
+
+                const data = await response.json();
+
+                // Parse ERDDAP JSON format
+                // data.table.rows contains array of arrays: [time, lat, lon, name, wind_speed, category]
+                const rows = data.table.rows || [];
+
+                console.log(`✅ Found ${rows.length} hurricane data points from NOAA IBTrACS`);
+
+                // Group by storm (same name + approximate time period)
+                const storms = {};
+
+                rows.forEach(row => {
+                    const [timeStr, stormLat, stormLon, stormName, windSpeed, category] = row;
+
+                    if (!stormName || stormName === 'UNNAMED') return;
+
+                    const stormKey = stormName + '_' + new Date(timeStr).getFullYear();
+
+                    if (!storms[stormKey]) {
+                        storms[stormKey] = {
+                            name: stormName,
+                            year: new Date(timeStr).getFullYear(),
+                            date: new Date(timeStr),
+                            maxWind: windSpeed || 0,
+                            maxCategory: category || 0,
+                            lat: stormLat,
+                            lon: stormLon,
+                            distance: calculateDistance(lat, lon, stormLat, stormLon)
+                        };
+                    } else {
+                        // Update with stronger measurements if found
+                        if (windSpeed > storms[stormKey].maxWind) {
+                            storms[stormKey].maxWind = windSpeed;
+                            storms[stormKey].maxCategory = category || 0;
+                            storms[stormKey].lat = stormLat;
+                            storms[stormKey].lon = stormLon;
+                            storms[stormKey].distance = calculateDistance(lat, lon, stormLat, stormLon);
+                        }
+                    }
+                });
+
+                const stormList = Object.values(storms);
+
+                // Count by Saffir-Simpson category
+                const categoryCounts = {
+                    category1: 0,  // 64-82 kt
+                    category2: 0,  // 83-95 kt
+                    category3: 0,  // 96-112 kt
+                    category4: 0,  // 113-136 kt
+                    category5: 0   // 137+ kt
+                };
+
+                stormList.forEach(storm => {
+                    const cat = Math.floor(storm.maxCategory);
+                    if (cat === 1) categoryCounts.category1++;
+                    else if (cat === 2) categoryCounts.category2++;
+                    else if (cat === 3) categoryCounts.category3++;
+                    else if (cat === 4) categoryCounts.category4++;
+                    else if (cat === 5) categoryCounts.category5++;
+                });
+
+                // Sort by date to find most recent
+                stormList.sort((a, b) => b.date - a.date);
+                const mostRecent = stormList[0] || null;
 
                 return {
-                    total: 0,
-                    category5: 0,
-                    category4: 0,
-                    category3: 0,
-                    events: [],
-                    source: 'NOAA National Hurricane Center',
-                    timeRange: '100 years',
-                    status: 'API integration pending'
+                    total: stormList.length,
+                    category1: categoryCounts.category1,
+                    category2: categoryCounts.category2,
+                    category3: categoryCounts.category3,
+                    category4: categoryCounts.category4,
+                    category5: categoryCounts.category5,
+                    events: stormList.slice(0, 10).map(s => ({
+                        name: s.name,
+                        year: s.year,
+                        category: Math.floor(s.maxCategory),
+                        windSpeed: Math.round(s.maxWind),
+                        distance: s.distance
+                    })),
+                    mostRecent: mostRecent ? {
+                        name: mostRecent.name,
+                        date: mostRecent.date.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        }),
+                        year: mostRecent.year,
+                        category: Math.floor(mostRecent.maxCategory),
+                        windSpeed: Math.round(mostRecent.maxWind),
+                        distance: mostRecent.distance,
+                        lat: mostRecent.lat,
+                        lon: mostRecent.lon
+                    } : null,
+                    source: 'NOAA IBTrACS (International Best Track Archive)',
+                    timeRange: '3 years (recent)',
+                    status: 'Real data'
                 };
             } catch (error) {
                 console.error('❌ Hurricane data error:', error);
-                return null;
+                return {
+                    total: 0,
+                    category1: 0,
+                    category2: 0,
+                    category3: 0,
+                    category4: 0,
+                    category5: 0,
+                    events: [],
+                    mostRecent: null,
+                    source: 'NOAA IBTrACS',
+                    timeRange: '3 years',
+                    status: 'Error: ' + error.message
+                };
             }
         }
 
@@ -2963,6 +3107,102 @@
             console.log('✅ Earthquake history chart rendered with recent event info');
         }
 
+        // Create Hurricane History chart
+        function createHurricaneChart(hurricaneData) {
+            if (!hurricaneData || hurricaneData.total === 0) {
+                document.getElementById('hurricaneChart').innerHTML = '<div style="padding: 40px; text-align: center; color: #10b981;">✅ No hurricanes detected within 10° radius in dataset timeframe</div>';
+                return;
+            }
+
+            const options = {
+                series: [{
+                    name: 'Hurricanes',
+                    data: [
+                        hurricaneData.category5 || 0,
+                        hurricaneData.category4 || 0,
+                        hurricaneData.category3 || 0,
+                        hurricaneData.category2 || 0,
+                        hurricaneData.category1 || 0
+                    ]
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 350,
+                    background: 'transparent',
+                    toolbar: { show: false }
+                },
+                colors: ['#8b5cf6'],
+                plotOptions: {
+                    bar: {
+                        horizontal: true,
+                        borderRadius: 5,
+                        dataLabels: {
+                            position: 'right'
+                        }
+                    }
+                },
+                xaxis: {
+                    categories: [
+                        'Category 5 (157+ mph)',
+                        'Category 4 (130-156 mph)',
+                        'Category 3 (111-129 mph)',
+                        'Category 2 (96-110 mph)',
+                        'Category 1 (74-95 mph)'
+                    ],
+                    labels: { style: { colors: '#ffffff' } }
+                },
+                yaxis: {
+                    labels: { style: { colors: '#ffffff' } }
+                },
+                theme: { mode: 'dark' },
+                grid: { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                dataLabels: {
+                    enabled: true,
+                    style: { colors: ['#ffffff'] }
+                },
+                tooltip: {
+                    theme: 'dark',
+                    y: {
+                        formatter: (val) => `${val} hurricanes`
+                    }
+                },
+                title: {
+                    text: `Total: ${hurricaneData.total} hurricanes within 10° radius (${hurricaneData.timeRange})`,
+                    align: 'center',
+                    style: { color: '#FFFFFF', fontSize: '13px', fontWeight: 700 }
+                }
+            };
+
+            if (charts.hurricane) charts.hurricane.destroy();
+            charts.hurricane = new ApexCharts(document.querySelector("#hurricaneChart"), options);
+            charts.hurricane.render();
+
+            // Add most recent hurricane info below chart
+            if (hurricaneData.mostRecent) {
+                const chartContainer = document.getElementById('hurricaneChart').parentElement;
+                const existingInfo = chartContainer.querySelector('.hurricane-recent-info');
+                if (existingInfo) existingInfo.remove();
+
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'hurricane-recent-info';
+                infoDiv.style.cssText = 'margin-top: 15px; padding: 15px; background: rgba(139, 92, 246, 0.1); border-left: 4px solid #8b5cf6; border-radius: 8px;';
+                infoDiv.innerHTML = `
+                    <div style="font-size: 0.95em; line-height: 1.6; color: #ffffff;">
+                        <strong style="color: #8b5cf6;">🌀 Most Recent Hurricane:</strong><br>
+                        <strong>Name:</strong> ${hurricaneData.mostRecent.name}<br>
+                        <strong>Date:</strong> ${hurricaneData.mostRecent.date}<br>
+                        <strong>Category:</strong> ${hurricaneData.mostRecent.category} (Saffir-Simpson Scale)<br>
+                        <strong>Max Wind Speed:</strong> ${hurricaneData.mostRecent.windSpeed} knots<br>
+                        <strong>Coordinates:</strong> ${hurricaneData.mostRecent.lat.toFixed(4)}°, ${hurricaneData.mostRecent.lon.toFixed(4)}°<br>
+                        <strong>Distance:</strong> ${hurricaneData.mostRecent.distance}km from location
+                    </div>
+                `;
+                chartContainer.appendChild(infoDiv);
+            }
+
+            console.log('✅ Hurricane history chart rendered with recent storm info');
+        }
+
         // Create Sea Level Rise Projection chart
         function createSeaLevelChart(lat, lon) {
             const premiumStyle = getPremiumLineChartStyle();
@@ -3265,8 +3505,9 @@
                 console.error('Error processing 30-year historical data:', error);
             });
 
-            // Create earthquake and sea level charts (outside async callbacks)
+            // Create earthquake, hurricane, and sea level charts (outside async callbacks)
             createEarthquakeChart(earthquakes);
+            createHurricaneChart(hurricanes);
             createSeaLevelChart(location.lat, location.lon);
             displayDisasterSummary(earthquakes, hurricanes);
             console.log('✅ Natural disaster and sea level rise charts created');
