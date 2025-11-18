@@ -523,6 +523,8 @@
         // Global variables
         let osmMap = null;
         let googleMap = null;
+        let osmMarker = null;
+        let googleMarker = null;
         let currentLocation = null;
         let charts = {};
         let initializationComplete = false;
@@ -1562,20 +1564,33 @@
             // Update maps
             if (osmMap) {
                 try {
+                    // Clear old marker
+                    if (osmMarker) {
+                        osmMap.removeLayer(osmMarker);
+                    }
+                    // Update map view and add new marker
                     osmMap.setView([location.lat, location.lon], 14);
-                    L.marker([location.lat, location.lon]).addTo(osmMap);
+                    osmMarker = L.marker([location.lat, location.lon])
+                        .bindPopup(address)
+                        .addTo(osmMap);
+                    console.log('✅ OpenStreetMap updated to:', address);
                 } catch (error) {
                     console.error('Error updating OSM map:', error);
                 }
             } else {
                 console.warn('OpenStreetMap not initialized yet');
             }
-            
+
             if (googleMap && typeof google !== 'undefined') {
                 try {
+                    // Clear old marker
+                    if (googleMarker) {
+                        googleMarker.setMap(null);
+                    }
+                    // Update map view and add new marker
                     googleMap.setCenter({ lat: location.lat, lng: location.lon });
-                    googleMap.setZoom(14); // Match OSM zoom level
-                    new google.maps.Marker({
+                    googleMap.setZoom(14);
+                    googleMarker = new google.maps.Marker({
                         position: { lat: location.lat, lng: location.lon },
                         map: googleMap,
                         title: address
