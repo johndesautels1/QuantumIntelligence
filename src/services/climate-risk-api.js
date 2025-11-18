@@ -47,18 +47,26 @@ export default {
 
     try {
       console.log(`🌊 Fetching official FEMA flood zone data via CORS proxy...`);
+      console.log(`   Coordinates: ${lat}, ${lng}`);
+      console.log(`   FEMA URL: ${femaUrl}`);
+      console.log(`   Proxy URL: ${proxy}${encodeURIComponent(femaUrl)}`);
 
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      const timeout = setTimeout(() => controller.abort(), 15000); // 15 second timeout (increased)
 
       const floodRes = await fetch(proxy + encodeURIComponent(femaUrl), { signal: controller.signal });
       clearTimeout(timeout);
 
+      console.log(`   Response status: ${floodRes.status} ${floodRes.statusText}`);
+
       if (floodRes.ok) {
         const floodData = await floodRes.json();
+        console.log(`   FEMA API Response:`, floodData);
 
         if (floodData.features?.length > 0) {
           const a = floodData.features[0].attributes;
+          console.log(`   Attributes:`, a);
+
           floodZone = {
             zone: a.FLD_ZONE || 'X',
             staticBFE: a.STATIC_BFE && a.STATIC_BFE > 0 ? Number(a.STATIC_BFE).toFixed(1) : null,
@@ -69,6 +77,7 @@ export default {
           console.log(`✅ FEMA flood zone found: ${floodZone.zone}${floodZone.inSFHA ? ' (SFHA)' : ''}`);
         } else {
           // No features = not in mapped flood hazard area (Zone X - minimal risk)
+          console.log(`   No features in response - defaulting to Zone X`);
           floodZone = {
             zone: 'X',
             staticBFE: null,
@@ -79,16 +88,20 @@ export default {
           console.log('✅ Property not in FEMA flood hazard area (Zone X)');
         }
       } else {
-        throw new Error(`CORS proxy returned ${floodRes.status}`);
+        const errorText = await floodRes.text();
+        console.error(`   HTTP Error Response:`, errorText);
+        throw new Error(`CORS proxy returned ${floodRes.status}: ${errorText}`);
       }
     } catch (e) {
-      console.warn('⚠️ FEMA flood zone lookup failed:', e.message);
+      console.error('❌ FEMA flood zone lookup FAILED:');
+      console.error('   Error:', e.message);
+      console.error('   Stack:', e.stack);
       floodZone = {
         zone: 'Unknown',
         staticBFE: null,
         subtype: 'Data unavailable',
         inSFHA: false,
-        message: 'Flood zone data unavailable - FEMA service may be temporarily offline'
+        message: `Flood zone data unavailable - ${e.message}`
       };
     }
 
