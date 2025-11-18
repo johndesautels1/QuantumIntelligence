@@ -2235,17 +2235,23 @@
         function createClimateProjectionCharts(projections) {
             if (!projections) return;
 
+            // Handle both old and new data structures
+            const tempData = projections.temperature || projections;
+            const precipData = projections.precipitation;
+            const years = projections.years || [2030, 2040, 2050, 2060, 2070];
+            const tempBaseline = projections.tempBaseline || 0;
+
             // Temperature projections
             const tempOptions = {
                 series: [{
                     name: 'Low Emissions (RCP 2.6)',
-                    data: projections.temperature.rcp26.map((v, i) => ({ x: projections.years[i], y: (v - projections.tempBaseline).toFixed(2) }))
+                    data: tempData.rcp26.map((v, i) => ({ x: years[i], y: parseFloat((v - tempBaseline).toFixed(2)) }))
                 }, {
                     name: 'Medium Emissions (RCP 4.5)',
-                    data: projections.temperature.rcp45.map((v, i) => ({ x: projections.years[i], y: (v - projections.tempBaseline).toFixed(2) }))
+                    data: tempData.rcp45.map((v, i) => ({ x: years[i], y: parseFloat((v - tempBaseline).toFixed(2)) }))
                 }, {
                     name: 'High Emissions (RCP 8.5)',
-                    data: projections.temperature.rcp85.map((v, i) => ({ x: projections.years[i], y: (v - projections.tempBaseline).toFixed(2) }))
+                    data: tempData.rcp85.map((v, i) => ({ x: years[i], y: parseFloat((v - tempBaseline).toFixed(2)) }))
                 }],
                 chart: {
                     type: 'line',
@@ -2284,27 +2290,28 @@
             charts.tempProjection = new ApexCharts(document.querySelector("#tempProjectionChart"), tempOptions);
             charts.tempProjection.render();
 
-            // Precipitation projections
-            const precipOptions = {
-                series: [{
-                    name: 'Low Emissions (RCP 2.6)',
-                    data: projections.precipitation.rcp26.map((v, i) => ({
-                        x: projections.years[i],
-                        y: ((v / projections.precipBaseline) * 100).toFixed(1)
-                    }))
-                }, {
-                    name: 'Medium Emissions (RCP 4.5)',
-                    data: projections.precipitation.rcp45.map((v, i) => ({
-                        x: projections.years[i],
-                        y: ((v / projections.precipBaseline) * 100).toFixed(1)
-                    }))
-                }, {
-                    name: 'High Emissions (RCP 8.5)',
-                    data: projections.precipitation.rcp85.map((v, i) => ({
-                        x: projections.years[i],
-                        y: ((v / projections.precipBaseline) * 100).toFixed(1)
-                    }))
-                }],
+            // Precipitation projections (only if precipitation data exists)
+            if (precipData && projections.precipBaseline) {
+                const precipOptions = {
+                    series: [{
+                        name: 'Low Emissions (RCP 2.6)',
+                        data: precipData.rcp26.map((v, i) => ({
+                            x: years[i],
+                            y: parseFloat(((v / projections.precipBaseline) * 100).toFixed(1))
+                        }))
+                    }, {
+                        name: 'Medium Emissions (RCP 4.5)',
+                        data: precipData.rcp45.map((v, i) => ({
+                            x: years[i],
+                            y: parseFloat(((v / projections.precipBaseline) * 100).toFixed(1))
+                        }))
+                    }, {
+                        name: 'High Emissions (RCP 8.5)',
+                        data: precipData.rcp85.map((v, i) => ({
+                            x: years[i],
+                            y: parseFloat(((v / projections.precipBaseline) * 100).toFixed(1))
+                        }))
+                    }],
                 chart: {
                     type: 'line',
                     height: 350,
@@ -2349,11 +2356,14 @@
                 }
             };
 
-            if (charts.precipProjection) charts.precipProjection.destroy();
-            charts.precipProjection = new ApexCharts(document.querySelector("#precipProjectionChart"), precipOptions);
-            charts.precipProjection.render();
+                if (charts.precipProjection) charts.precipProjection.destroy();
+                charts.precipProjection = new ApexCharts(document.querySelector("#precipProjectionChart"), precipOptions);
+                charts.precipProjection.render();
 
-            console.log('✅ Climate projection charts rendered (Temperature & Precipitation)');
+                console.log('✅ Climate projection charts rendered (Temperature & Precipitation)');
+            } else {
+                console.log('⚠️ Precipitation projection data not available');
+            }
         }
 
         // Create 30-Year Climate Normals chart
