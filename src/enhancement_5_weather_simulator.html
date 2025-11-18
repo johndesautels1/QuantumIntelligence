@@ -1140,7 +1140,7 @@
             const options = {
                 series: [{
                     name: 'Precipitation',
-                    data: data.daily.precipitation_sum.slice(0, 7).map(p => (p * 0.0393701).toFixed(2))
+                    data: data.daily.precipitation_sum.slice(0, 7).map(p => parseFloat((p * 0.0393701).toFixed(2)))
                 }],
                 chart: {
                     type: 'bar',
