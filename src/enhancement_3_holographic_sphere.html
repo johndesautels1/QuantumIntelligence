@@ -665,9 +665,17 @@
             html += '</div>';
 
             // Overall winner
-            const scoreA = Object.values(propertyA.metrics).reduce((a, b) => a + b) / Object.keys(propertyA.metrics).length;
-            const scoreB = Object.values(propertyB.metrics).reduce((a, b) => a + b) / Object.keys(propertyB.metrics).length;
-            const scoreC = propertyC ? Object.values(propertyC.metrics).reduce((a, b) => a + b) / Object.keys(propertyC.metrics).length : 0;
+            const metricsA = propertyA.dimensions || propertyA.metrics || {};
+            const metricsB = propertyB.dimensions || propertyB.metrics || {};
+            const metricsC = propertyC ? (propertyC.dimensions || propertyC.metrics || {}) : {};
+
+            const valuesA = Object.values(metricsA);
+            const valuesB = Object.values(metricsB);
+            const valuesC = Object.values(metricsC);
+
+            const scoreA = valuesA.length > 0 ? valuesA.reduce((a, b) => a + b) / valuesA.length : 0;
+            const scoreB = valuesB.length > 0 ? valuesB.reduce((a, b) => a + b) / valuesB.length : 0;
+            const scoreC = valuesC.length > 0 ? valuesC.reduce((a, b) => a + b) / valuesC.length : 0;
 
             const maxScore = Math.max(scoreA, scoreB, scoreC);
             let winner = '';
