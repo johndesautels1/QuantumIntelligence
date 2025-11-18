@@ -1053,8 +1053,8 @@
             try {
                 console.log('🌵 Fetching NOAA Drought Monitor data for:', lat, lon);
 
-                // NOAA Drought Monitor GeoJSON - point query
-                const url = `https://storage.googleapis.com/noaa-nidis-drought-gov-data/current/usdm_current.geojson`;
+                // NOAA Drought Monitor GeoJSON - correct 2025 URL
+                const url = `https://storage.googleapis.com/noaa-nidis-drought-gov-data/current-conditions/json/v1/usdm_current.geojson`;
 
                 const response = await fetch(url);
                 const data = await response.json();
