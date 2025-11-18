@@ -381,7 +381,7 @@
                 </div>
                 <div class="api-badge success">
                     <span class="status-dot"></span>
-                    <span>NOAA IBTrACS Hurricanes</span>
+                    <span>NOAA HURDAT2 Hurricanes</span>
                 </div>
             </div>
         </div>
@@ -1495,45 +1495,23 @@
             }
         }
 
-        // Fetch historical hurricane data from NOAA IBTrACS
+        // Fetch historical hurricane data from NOAA HURDAT2
         async function fetchHurricaneHistory(lat, lon) {
             try {
-                console.log('🌀 Fetching historical hurricane data from NOAA IBTrACS...');
+                console.log('🌀 Fetching historical hurricane data from NOAA HURDAT2...');
 
-                // Use NOAA IBTrACS via ERDDAP - International Best Track Archive for Climate Stewardship
-                // This contains all tropical cyclone best track data from 1842-present
-                // Data includes: storm name, date, lat/lon, wind speed, pressure, Saffir-Simpson category
+                // Use NOAA HURDAT2 - Atlantic Hurricane Database (1851-2024)
+                // Format: CSV with header lines (AL[ID][YEAR], NAME, [count]) followed by data lines
+                // Data lines: Date,Time,Record,Status,Lat,Lon,MaxWind,MinPressure,...
 
-                // Define search box (10-degree radius around property)
-                const latMin = lat - 10;
-                const latMax = lat + 10;
-                const lonMin = lon - 10;
-                const lonMax = lon + 10;
+                const url = 'https://www.nhc.noaa.gov/data/hurdat/hurdat2-1851-2024-040425.txt';
 
-                // Calculate date range for 50 years of data
-                const endDate = new Date();
-                const startDate = new Date();
-                startDate.setFullYear(endDate.getFullYear() - 50);
-
-                const startISO = startDate.toISOString().split('T')[0];
-                const endISO = endDate.toISOString().split('T')[0];
-
-                // NOAA IBTrACS ERDDAP endpoint
-                // Note: Using last3years endpoint for now - full historical dataset requires different approach
-                const url = `https://erddap.aoml.noaa.gov/hdb/erddap/tabledap/IBTRACS_last3years.json?` +
-                    `time,latitude,longitude,name,usa_wind,usa_sshs&` +
-                    `time>=${startISO}T00:00:00Z&` +
-                    `time<=${endISO}T23:59:59Z&` +
-                    `latitude>=${latMin}&latitude<=${latMax}&` +
-                    `longitude>=${lonMin}&longitude<=${lonMax}&` +
-                    `usa_wind>0`;
-
-                console.log(`📍 Searching for hurricanes within 10° of ${lat}, ${lon}`);
+                console.log(`📍 Downloading HURDAT2 database and filtering for ${lat}, ${lon}...`);
 
                 const response = await fetch(url);
 
                 if (!response.ok) {
-                    console.warn(`NOAA IBTrACS API returned ${response.status}`);
+                    console.warn(`NOAA HURDAT2 returned ${response.status}`);
                     return {
                         total: 0,
                         category1: 0,
@@ -1543,54 +1521,110 @@
                         category5: 0,
                         events: [],
                         mostRecent: null,
-                        source: 'NOAA IBTrACS (International Best Track Archive)',
-                        timeRange: '3 years (recent)',
+                        source: 'NOAA HURDAT2 (Atlantic Hurricane Database)',
+                        timeRange: '50 years',
                         status: 'No data available'
                     };
                 }
 
-                const data = await response.json();
+                const text = await response.text();
+                const lines = text.split('\n');
 
-                // Parse ERDDAP JSON format
-                // data.table.rows contains array of arrays: [time, lat, lon, name, wind_speed, category]
-                const rows = data.table.rows || [];
+                console.log(`✅ Downloaded HURDAT2 database (${lines.length} lines)`);
 
-                console.log(`✅ Found ${rows.length} hurricane data points from NOAA IBTrACS`);
-
-                // Group by storm (same name + approximate time period)
+                // Parse HURDAT2 format and find storms within range
                 const storms = {};
+                let currentStorm = null;
 
-                rows.forEach(row => {
-                    const [timeStr, stormLat, stormLon, stormName, windSpeed, category] = row;
+                // Filter for last 50 years
+                const cutoffYear = new Date().getFullYear() - 50;
 
-                    if (!stormName || stormName === 'UNNAMED') return;
+                lines.forEach(line => {
+                    if (!line.trim()) return;
 
-                    const stormKey = stormName + '_' + new Date(timeStr).getFullYear();
+                    // Header line: AL012024,              ALBERTO,     27,
+                    if (line.match(/^[A-Z]{2}\d{6}/)) {
+                        const parts = line.split(',').map(s => s.trim());
+                        const stormId = parts[0];
+                        const stormName = parts[1];
+                        const year = parseInt(stormId.substring(4, 8));
 
-                    if (!storms[stormKey]) {
-                        storms[stormKey] = {
-                            name: stormName,
-                            year: new Date(timeStr).getFullYear(),
-                            date: new Date(timeStr),
-                            maxWind: windSpeed || 0,
-                            maxCategory: category || 0,
-                            lat: stormLat,
-                            lon: stormLon,
-                            distance: calculateDistance(lat, lon, stormLat, stormLon)
-                        };
-                    } else {
-                        // Update with stronger measurements if found
-                        if (windSpeed > storms[stormKey].maxWind) {
-                            storms[stormKey].maxWind = windSpeed;
-                            storms[stormKey].maxCategory = category || 0;
-                            storms[stormKey].lat = stormLat;
-                            storms[stormKey].lon = stormLon;
-                            storms[stormKey].distance = calculateDistance(lat, lon, stormLat, stormLon);
+                        if (year >= cutoffYear && stormName !== 'UNNAMED') {
+                            currentStorm = {
+                                id: stormId,
+                                name: stormName,
+                                year: year,
+                                maxWind: 0,
+                                maxCategory: 0,
+                                closestLat: null,
+                                closestLon: null,
+                                closestDistance: 999999,
+                                closestDate: null
+                            };
+                        } else {
+                            currentStorm = null;
+                        }
+                    }
+                    // Data line: 20240618, 1200,  , TS, 18.5N,  91.2W,  35, 1005,...
+                    else if (currentStorm && line.match(/^\d{8}/)) {
+                        const parts = line.split(',').map(s => s.trim());
+                        const dateStr = parts[0];
+                        const timeStr = parts[1];
+                        const status = parts[3]; // TD, TS, HU, etc.
+                        const latStr = parts[4];
+                        const lonStr = parts[5];
+                        const windSpeed = parseInt(parts[6]) || 0;
+
+                        // Parse coordinates (e.g., "18.5N" -> 18.5, "91.2W" -> -91.2)
+                        if (!latStr || !lonStr) return;
+
+                        const stormLat = parseFloat(latStr) * (latStr.includes('S') ? -1 : 1);
+                        const stormLon = parseFloat(lonStr) * (lonStr.includes('W') ? -1 : 1);
+
+                        // Calculate distance to property
+                        const distance = calculateDistance(lat, lon, stormLat, stormLon);
+
+                        // Only consider storms within 500km
+                        if (distance <= 500) {
+                            // Update max wind speed for this storm
+                            if (windSpeed > currentStorm.maxWind) {
+                                currentStorm.maxWind = windSpeed;
+
+                                // Calculate Saffir-Simpson category from wind speed (knots)
+                                if (windSpeed >= 137) currentStorm.maxCategory = 5;
+                                else if (windSpeed >= 113) currentStorm.maxCategory = 4;
+                                else if (windSpeed >= 96) currentStorm.maxCategory = 3;
+                                else if (windSpeed >= 83) currentStorm.maxCategory = 2;
+                                else if (windSpeed >= 64) currentStorm.maxCategory = 1;
+                                else currentStorm.maxCategory = 0;
+                            }
+
+                            // Track closest approach
+                            if (distance < currentStorm.closestDistance) {
+                                currentStorm.closestDistance = distance;
+                                currentStorm.closestLat = stormLat;
+                                currentStorm.closestLon = stormLon;
+                                currentStorm.closestDate = new Date(
+                                    dateStr.substring(0, 4) + '-' +
+                                    dateStr.substring(4, 6) + '-' +
+                                    dateStr.substring(6, 8)
+                                );
+                            }
+
+                            // Store storm if it passed within range and was a hurricane (Cat 1+)
+                            if (currentStorm.maxCategory > 0) {
+                                const stormKey = currentStorm.id;
+                                if (!storms[stormKey] || windSpeed > storms[stormKey].maxWind) {
+                                    storms[stormKey] = { ...currentStorm };
+                                }
+                            }
                         }
                     }
                 });
 
                 const stormList = Object.values(storms);
+
+                console.log(`✅ Found ${stormList.length} hurricanes within 500km in last 50 years`);
 
                 // Count by Saffir-Simpson category
                 const categoryCounts = {
@@ -1602,7 +1636,7 @@
                 };
 
                 stormList.forEach(storm => {
-                    const cat = Math.floor(storm.maxCategory);
+                    const cat = storm.maxCategory;
                     if (cat === 1) categoryCounts.category1++;
                     else if (cat === 2) categoryCounts.category2++;
                     else if (cat === 3) categoryCounts.category3++;
@@ -1611,7 +1645,7 @@
                 });
 
                 // Sort by date to find most recent
-                stormList.sort((a, b) => b.date - a.date);
+                stormList.sort((a, b) => b.closestDate - a.closestDate);
                 const mostRecent = stormList[0] || null;
 
                 return {
@@ -1624,26 +1658,26 @@
                     events: stormList.slice(0, 10).map(s => ({
                         name: s.name,
                         year: s.year,
-                        category: Math.floor(s.maxCategory),
-                        windSpeed: Math.round(s.maxWind),
-                        distance: s.distance
+                        category: s.maxCategory,
+                        windSpeed: s.maxWind,
+                        distance: Math.round(s.closestDistance)
                     })),
                     mostRecent: mostRecent ? {
                         name: mostRecent.name,
-                        date: mostRecent.date.toLocaleDateString('en-US', {
+                        date: mostRecent.closestDate.toLocaleDateString('en-US', {
                             year: 'numeric',
                             month: 'long',
                             day: 'numeric'
                         }),
                         year: mostRecent.year,
-                        category: Math.floor(mostRecent.maxCategory),
-                        windSpeed: Math.round(mostRecent.maxWind),
-                        distance: mostRecent.distance,
-                        lat: mostRecent.lat,
-                        lon: mostRecent.lon
+                        category: mostRecent.maxCategory,
+                        windSpeed: mostRecent.maxWind,
+                        distance: Math.round(mostRecent.closestDistance),
+                        lat: mostRecent.closestLat,
+                        lon: mostRecent.closestLon
                     } : null,
-                    source: 'NOAA IBTrACS (International Best Track Archive)',
-                    timeRange: '3 years (recent)',
+                    source: 'NOAA HURDAT2 (Atlantic Hurricane Database 1851-2024)',
+                    timeRange: '50 years',
                     status: 'Real data'
                 };
             } catch (error) {
@@ -1657,8 +1691,8 @@
                     category5: 0,
                     events: [],
                     mostRecent: null,
-                    source: 'NOAA IBTrACS',
-                    timeRange: '3 years',
+                    source: 'NOAA HURDAT2',
+                    timeRange: '50 years',
                     status: 'Error: ' + error.message
                 };
             }
