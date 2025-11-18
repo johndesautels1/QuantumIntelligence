@@ -2724,6 +2724,17 @@
             // Display NOAA CDO data
             if (noaa) {
                 displayNOAAData(noaa);
+            } else {
+                // Show error message when NOAA data fails
+                const container = document.getElementById('noaaDataContainer');
+                if (container) {
+                    container.innerHTML = `
+                        <div style="padding: 20px; color: #ef4444; text-align: center;">
+                            ⚠️ NOAA Weather.gov API temporarily unavailable<br>
+                            <span style="font-size: 0.9em; opacity: 0.7;">This may be due to CORS restrictions on localhost. Data will work on deployed site.</span>
+                        </div>
+                    `;
+                }
             }
             
             // Display elevation
