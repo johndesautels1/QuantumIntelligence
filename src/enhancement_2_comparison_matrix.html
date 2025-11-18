@@ -20,8 +20,11 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0066CC 0%, #00D4FF 50%, #9D4EDD 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+            background: #0a1628;  /* Deep midnight cobalt - matches 5D Quantum */
             min-height: 100vh;
             padding: 20px;
         }
@@ -32,34 +35,36 @@
         }
 
         .header {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(0, 212, 255, 0.15);
             backdrop-filter: blur(20px);
             border-radius: 20px;
             padding: 30px;
             margin-bottom: 30px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(0, 212, 255, 0.5);
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.2);
         }
 
         .header h1 {
-            color: white;
+            color: #00D4FF;
             font-size: 2.5em;
             margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.8);
+            font-weight: 700;
         }
 
         .header .subtitle {
-            color: rgba(255, 255, 255, 0.9);
+            color: #FFFFFF;
             font-size: 1.2em;
+            font-weight: 600;
         }
 
         .controls {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(0, 212, 255, 0.1);
             backdrop-filter: blur(20px);
             border-radius: 15px;
             padding: 20px;
             margin-bottom: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(0, 212, 255, 0.3);
         }
 
         .property-selectors {
@@ -70,26 +75,29 @@
         }
 
         .selector-group {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 212, 255, 0.05);
             padding: 15px;
             border-radius: 10px;
+            border: 1px solid rgba(0, 212, 255, 0.2);
         }
 
         .selector-group label {
-            color: white;
-            font-weight: 600;
+            color: #00D4FF;
+            font-weight: 700;
             display: block;
             margin-bottom: 8px;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
         }
 
         .selector-group select {
             width: 100%;
             padding: 10px;
             border-radius: 8px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
+            border: 2px solid rgba(0, 212, 255, 0.4);
+            background: rgba(10, 22, 40, 0.8);
+            color: #FFFFFF;
             font-size: 14px;
+            font-weight: 600;
         }
 
         .selector-group select option {
@@ -136,17 +144,19 @@
         }
 
         .property-card {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(0, 212, 255, 0.1);
             backdrop-filter: blur(20px);
             border-radius: 15px;
             padding: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 2px solid rgba(0, 212, 255, 0.3);
             position: relative;
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.1);
         }
 
         .property-card.winner {
-            border: 2px solid #00d4ff;
-            box-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+            border: 3px solid #00d4ff;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.6);
+            background: rgba(0, 212, 255, 0.15);
         }
 
         .winner-badge {
@@ -163,22 +173,24 @@
         }
 
         .property-header {
-            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
             padding-bottom: 15px;
             margin-bottom: 15px;
         }
 
         .property-name {
-            color: white;
+            color: #FFFFFF;
             font-size: 1.3em;
             font-weight: 700;
             margin-bottom: 5px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
         }
 
         .property-price {
             color: #00d4ff;
             font-size: 1.5em;
             font-weight: 700;
+            text-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
         }
 
         .comparison-row {
@@ -194,19 +206,21 @@
         }
 
         .metric-label {
-            color: rgba(255, 255, 255, 0.8);
+            color: #00D4FF;
             font-size: 14px;
+            font-weight: 600;
         }
 
         .metric-value {
-            color: white;
-            font-weight: 600;
+            color: #FFFFFF;
+            font-weight: 700;
             font-size: 16px;
         }
 
         .metric-value.best {
             color: #00d4ff;
             font-weight: 700;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.8);
         }
 
         .score-bar {
