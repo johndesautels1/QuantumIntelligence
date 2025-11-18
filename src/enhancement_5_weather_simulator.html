@@ -471,9 +471,169 @@
         body {
             padding-bottom: 178px;
         }
+
+        /* Saved Properties Dropdown - Horizontal Style */
+        .saved-properties-dropdown {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 999;
+            max-width: 400px;
+        }
+
+        .saved-properties-toggle {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(0, 102, 204, 0.3));
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(0, 212, 255, 0.6);
+            border-radius: 12px;
+            padding: 12px 20px;
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .saved-properties-toggle:hover {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.4), rgba(0, 102, 204, 0.4));
+            border-color: rgba(0, 212, 255, 0.9);
+            box-shadow: 0 6px 30px rgba(0, 212, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .properties-panel {
+            position: absolute;
+            top: 60px;
+            right: 0;
+            background: rgba(10, 22, 40, 0.95);
+            backdrop-filter: blur(25px);
+            border: 2px solid rgba(0, 212, 255, 0.5);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
+            max-height: 500px;
+            overflow-y: auto;
+            width: 380px;
+            display: none;
+        }
+
+        .properties-panel.open {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .properties-panel h3 {
+            color: #00d4ff;
+            font-size: 16px;
+            margin-bottom: 15px;
+            font-weight: 700;
+            border-bottom: 2px solid rgba(0, 212, 255, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .property-item {
+            background: rgba(15, 30, 50, 0.6);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .property-item:hover {
+            background: rgba(0, 212, 255, 0.15);
+            border-color: rgba(0, 212, 255, 0.6);
+            transform: translateX(-3px);
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);
+        }
+
+        .property-item-name {
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 5px;
+        }
+
+        .property-item-address {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 11px;
+        }
+
+        .property-item-price {
+            color: #00d4ff;
+            font-weight: 600;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .properties-panel::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .properties-panel::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+
+        .properties-panel::-webkit-scrollbar-thumb {
+            background: rgba(0, 212, 255, 0.5);
+            border-radius: 3px;
+        }
+
+        .properties-panel::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 212, 255, 0.7);
+        }
+
+        .no-properties-msg {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 13px;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .property-count-badge {
+            background: rgba(0, 212, 255, 0.3);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
+    <!-- Saved Properties Dropdown -->
+    <div class="saved-properties-dropdown">
+        <div class="saved-properties-toggle" onclick="togglePropertiesPanel()">
+            <span>🏠</span>
+            <span>Saved Properties</span>
+            <span class="property-count-badge" id="propertyCount">0</span>
+            <span>▼</span>
+        </div>
+        <div class="properties-panel" id="propertiesPanel">
+            <h3>📍 Select Property for Weather Analysis</h3>
+            <div id="propertiesList">
+                <!-- Populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <!-- Header -->
         <div class="panel">
@@ -3747,6 +3907,103 @@
             const navbar = document.querySelector('.bottom-navbar');
             navbar.classList.toggle('collapsed');
         }
+
+        // Toggle properties panel
+        function togglePropertiesPanel() {
+            const panel = document.getElementById('propertiesPanel');
+            panel.classList.toggle('open');
+        }
+
+        // Load saved properties from IndexedDB
+        async function loadSavedProperties() {
+            try {
+                // Open IndexedDB
+                const dbRequest = indexedDB.open('CLUESPropertyDB', 1);
+
+                dbRequest.onsuccess = (event) => {
+                    const db = event.target.result;
+
+                    if (!db.objectStoreNames.contains('properties')) {
+                        console.log('No properties store found');
+                        displayNoProperties();
+                        return;
+                    }
+
+                    const transaction = db.transaction(['properties'], 'readonly');
+                    const store = transaction.objectStore('properties');
+                    const getAllRequest = store.getAll();
+
+                    getAllRequest.onsuccess = () => {
+                        const properties = getAllRequest.result || [];
+                        console.log(`Loaded ${properties.length} saved properties`);
+                        displayProperties(properties);
+                        document.getElementById('propertyCount').textContent = properties.length;
+                    };
+
+                    getAllRequest.onerror = () => {
+                        console.error('Error loading properties');
+                        displayNoProperties();
+                    };
+                };
+
+                dbRequest.onerror = () => {
+                    console.error('Error opening database');
+                    displayNoProperties();
+                };
+            } catch (error) {
+                console.error('Error accessing IndexedDB:', error);
+                displayNoProperties();
+            }
+        }
+
+        // Display properties in dropdown
+        function displayProperties(properties) {
+            const container = document.getElementById('propertiesList');
+
+            if (!properties || properties.length === 0) {
+                displayNoProperties();
+                return;
+            }
+
+            container.innerHTML = properties.map(property => `
+                <div class="property-item" onclick="selectPropertyForAnalysis('${property.address}', '${property.name}')">
+                    <div class="property-item-name">${property.name || 'Unnamed Property'}</div>
+                    <div class="property-item-address">${property.address}</div>
+                    ${property.price ? `<div class="property-item-price">$${property.price.toLocaleString()}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // Display no properties message
+        function displayNoProperties() {
+            const container = document.getElementById('propertiesList');
+            container.innerHTML = `
+                <div class="no-properties-msg">
+                    <p>No saved properties found.</p>
+                    <p style="font-size: 11px; margin-top: 10px;">Import properties from the main dashboard or enter an address manually below.</p>
+                </div>
+            `;
+            document.getElementById('propertyCount').textContent = '0';
+        }
+
+        // Select property for weather analysis
+        function selectPropertyForAnalysis(address, name) {
+            console.log(`Selected property: ${name} at ${address}`);
+
+            // Close the panel
+            document.getElementById('propertiesPanel').classList.remove('open');
+
+            // Fill the address field
+            document.getElementById('address').value = address;
+
+            // Auto-run the analysis
+            loadAllData();
+        }
+
+        // Load properties on page load
+        window.addEventListener('load', () => {
+            loadSavedProperties();
+        });
     </script>
 
     <!-- Ultra-Modern Bottom Navigation Toolbar -->
