@@ -1521,11 +1521,11 @@
                 // NOAA IBTrACS ERDDAP endpoint
                 // Note: Using last3years endpoint for now - full historical dataset requires different approach
                 const url = `https://erddap.aoml.noaa.gov/hdb/erddap/tabledap/IBTRACS_last3years.json?` +
-                    `time,lat,lon,name,usa_wind,usa_sshs&` +
+                    `time,latitude,longitude,name,usa_wind,usa_sshs&` +
                     `time>=${startISO}T00:00:00Z&` +
                     `time<=${endISO}T23:59:59Z&` +
-                    `lat>=${latMin}&lat<=${latMax}&` +
-                    `lon>=${lonMin}&lon<=${lonMax}&` +
+                    `latitude>=${latMin}&latitude<=${latMax}&` +
+                    `longitude>=${lonMin}&longitude<=${lonMax}&` +
                     `usa_wind>0`;
 
                 console.log(`📍 Searching for hurricanes within 10° of ${lat}, ${lon}`);
