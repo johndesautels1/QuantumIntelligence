@@ -23,32 +23,21 @@ export default {
     // NOTE: WeatherAPI.com history endpoint requires PAID PLAN (free tier = 7 days only)
     // So we use Open-Meteo Archive directly for historical climate data
 
-    // Get REAL 2025 year-to-date data + 16-day forecast
+    // Use Open-Meteo Archive API for 30-year climate normals
     try {
-      console.log(`🌐 Fetching 2025 YTD + forecast data for ${lat},${lng}...`);
+      console.log(`🌐 Fetching climate data with humidity/wind for ${lat},${lng}...`);
 
-      const today = new Date();
-      const startOfYear = '2025-01-01';
-      const todayStr = today.toISOString().split('T')[0];
+      // Fetch temperature and precipitation from Archive (1991-2020)
+      const archiveUrl = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}&start_date=1991-01-01&end_date=2020-12-31&daily=temperature_2m_mean,precipitation_sum,relative_humidity_2m,wind_speed_10m&temperature_unit=fahrenheit&precipitation_unit=inch&wind_speed_unit=mph&timezone=auto`;
 
-      // Fetch actual 2025 year-to-date data
-      const ytdUrl = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}&start_date=${startOfYear}&end_date=${todayStr}&daily=temperature_2m_mean,precipitation_sum,relative_humidity_2m,wind_speed_10m&temperature_unit=fahrenheit&precipitation_unit=inch&wind_speed_unit=mph&timezone=auto`;
+      const response = await fetch(archiveUrl);
+      if (!response.ok) throw new Error(`Open-Meteo returned ${response.status}`);
 
-      // Fetch 16-day forecast
-      const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=temperature_2m_mean,precipitation_sum,relative_humidity_2m,wind_speed_10m_max&temperature_unit=fahrenheit&precipitation_unit=inch&wind_speed_unit=mph&forecast_days=16&timezone=auto`;
+      const data = await response.json();
 
-      const [ytdRes, forecastRes] = await Promise.all([
-        fetch(ytdUrl),
-        fetch(forecastUrl)
-      ]);
+      if (!data.daily) throw new Error('No daily data returned');
 
-      if (!ytdRes.ok) throw new Error(`YTD data failed: ${ytdRes.status}`);
-      if (!forecastRes.ok) throw new Error(`Forecast failed: ${forecastRes.status}`);
-
-      const ytdData = await ytdRes.json();
-      const forecastData = await forecastRes.json();
-
-      // Combine YTD actual + forecast into monthly averages
+      // Calculate monthly averages from daily data (30 years: 1991-2020)
       const monthlyData = Array.from({ length: 12 }, () => ({
         temps: [],
         precips: [],
@@ -56,46 +45,24 @@ export default {
         winds: []
       }));
 
-      // Add YTD actual data
-      if (ytdData.daily?.time) {
-        ytdData.daily.time.forEach((dateStr, i) => {
-          const month = new Date(dateStr).getMonth();
-          if (ytdData.daily.temperature_2m_mean[i] !== null) {
-            monthlyData[month].temps.push(ytdData.daily.temperature_2m_mean[i]);
-          }
-          if (ytdData.daily.precipitation_sum[i] !== null) {
-            monthlyData[month].precips.push(ytdData.daily.precipitation_sum[i]);
-          }
-          if (ytdData.daily.relative_humidity_2m?.[i] !== null) {
-            monthlyData[month].humidity.push(ytdData.daily.relative_humidity_2m[i]);
-          }
-          if (ytdData.daily.wind_speed_10m?.[i] !== null) {
-            monthlyData[month].winds.push(ytdData.daily.wind_speed_10m[i]);
-          }
-        });
-      }
+      data.daily.time.forEach((dateStr, i) => {
+        const month = new Date(dateStr).getMonth(); // 0-11
 
-      // Add next 16 days forecast
-      if (forecastData.daily?.time) {
-        forecastData.daily.time.forEach((dateStr, i) => {
-          const month = new Date(dateStr).getMonth();
-          if (forecastData.daily.temperature_2m_mean?.[i] !== null) {
-            monthlyData[month].temps.push(forecastData.daily.temperature_2m_mean[i]);
-          }
-          if (forecastData.daily.precipitation_sum?.[i] !== null) {
-            monthlyData[month].precips.push(forecastData.daily.precipitation_sum[i]);
-          }
-          if (forecastData.daily.relative_humidity_2m?.[i] !== null) {
-            monthlyData[month].humidity.push(forecastData.daily.relative_humidity_2m[i]);
-          }
-          if (forecastData.daily.wind_speed_10m_max?.[i] !== null) {
-            monthlyData[month].winds.push(forecastData.daily.wind_speed_10m_max[i]);
-          }
-        });
-      }
+        if (data.daily.temperature_2m_mean[i] !== null) {
+          monthlyData[month].temps.push(data.daily.temperature_2m_mean[i]);
+        }
+        if (data.daily.precipitation_sum[i] !== null) {
+          monthlyData[month].precips.push(data.daily.precipitation_sum[i]);
+        }
+        if (data.daily.relative_humidity_2m?.[i] !== null) {
+          monthlyData[month].humidity.push(data.daily.relative_humidity_2m[i]);
+        }
+        if (data.daily.wind_speed_10m?.[i] !== null) {
+          monthlyData[month].winds.push(data.daily.wind_speed_10m[i]);
+        }
+      });
 
-      // Calculate monthly averages
-      const result = monthlyData.map((m, monthIndex) => ({
+      const result = monthlyData.map(m => ({
         temp: m.temps.length > 0 ? Math.round(m.temps.reduce((a, b) => a + b, 0) / m.temps.length) : 60,
         precip: m.precips.length > 0 ? Number((m.precips.reduce((a, b) => a + b, 0) / m.precips.length).toFixed(1)) : 2.0,
         humidity: m.humidity.length > 0 ? Math.round(m.humidity.reduce((a, b) => a + b, 0) / m.humidity.length) : 65,
@@ -103,11 +70,11 @@ export default {
       }));
 
       cache.set(cacheKey, result);
-      console.log(`✅ Loaded 2025 YTD + forecast data with REAL humidity/wind for ${lat},${lng}`);
+      console.log(`✅ Successfully loaded climate data with REAL humidity/wind for ${lat},${lng}`);
       return result;
 
     } catch (error) {
-      console.error(`❌ Weather data fetch failed for ${lat},${lng}:`, error.message);
+      console.error(`❌ Open-Meteo Archive failed for ${lat},${lng}:`, error.message);
       throw error;
     }
   }
