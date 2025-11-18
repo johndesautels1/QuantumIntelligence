@@ -2061,6 +2061,8 @@
             }
             
             // Calculate and display risk scores with REAL API data
+            console.log('📊 RAW API RETURNS - drought:', drought, 'storm:', storm, 'wildfire:', wildfire);
+
             const riskScore = calculateRiskScore(fema, elevation, weather);
             const riskData = {
                 flood: fema ? (fema.FLD_ZONE?.startsWith('A') ? 80 : 30) : 0,
@@ -2069,6 +2071,10 @@
                 storm: storm || 0,       // NOAA Weather.gov active alerts (real data)
                 wildfire: wildfire || 0  // Calculated from weather conditions (real data)
             };
+
+            console.log('📊 FINAL RISK DATA SENT TO CHARTS:', JSON.stringify(riskData, null, 2));
+            console.log('📊 Overall Risk Score:', riskScore);
+
             createRiskGaugeChart(riskScore);
             createRiskRadarChart(riskData);
             createRiskBreakdownChart(riskData);
