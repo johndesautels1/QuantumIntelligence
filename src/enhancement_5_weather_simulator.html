@@ -3917,14 +3917,15 @@
         // Load saved properties from IndexedDB
         async function loadSavedProperties() {
             try {
-                // Open IndexedDB
-                const dbRequest = indexedDB.open('CLUESPropertyDB', 1);
+                // Open the CLUES Quantum DB (main app database)
+                const dbRequest = indexedDB.open('CLUES_Quantum_DB', 1);
 
                 dbRequest.onsuccess = (event) => {
                     const db = event.target.result;
+                    console.log('✅ Connected to CLUES_Quantum_DB');
 
                     if (!db.objectStoreNames.contains('properties')) {
-                        console.log('No properties store found');
+                        console.log('⚠️ No properties store found in database');
                         displayNoProperties();
                         return;
                     }
@@ -3935,23 +3936,28 @@
 
                     getAllRequest.onsuccess = () => {
                         const properties = getAllRequest.result || [];
-                        console.log(`Loaded ${properties.length} saved properties`);
+                        console.log(`✅ Loaded ${properties.length} saved properties from CLUES_Quantum_DB`);
+
+                        if (properties.length > 0) {
+                            console.log('📍 First property:', properties[0]);
+                        }
+
                         displayProperties(properties);
                         document.getElementById('propertyCount').textContent = properties.length;
                     };
 
                     getAllRequest.onerror = () => {
-                        console.error('Error loading properties');
+                        console.error('❌ Error loading properties from store');
                         displayNoProperties();
                     };
                 };
 
-                dbRequest.onerror = () => {
-                    console.error('Error opening database');
+                dbRequest.onerror = (event) => {
+                    console.error('❌ Error opening CLUES_Quantum_DB:', event.target.error);
                     displayNoProperties();
                 };
             } catch (error) {
-                console.error('Error accessing IndexedDB:', error);
+                console.error('❌ Error accessing IndexedDB:', error);
                 displayNoProperties();
             }
         }
@@ -3965,13 +3971,28 @@
                 return;
             }
 
-            container.innerHTML = properties.map(property => `
-                <div class="property-item" onclick="selectPropertyForAnalysis('${property.address}', '${property.name}')">
-                    <div class="property-item-name">${property.name || 'Unnamed Property'}</div>
-                    <div class="property-item-address">${property.address}</div>
-                    ${property.price ? `<div class="property-item-price">$${property.price.toLocaleString()}</div>` : ''}
-                </div>
-            `).join('');
+            container.innerHTML = properties.map(property => {
+                // Build full address from schema
+                const street = property.address?.street || '';
+                const city = property.address?.city || '';
+                const state = property.address?.state || '';
+                const zip = property.address?.zip || '';
+                const fullAddress = `${street}, ${city}, ${state} ${zip}`.replace(/, ,/g, ',').trim();
+
+                // Get property display name (MLS or street address)
+                const displayName = property.mls_number || street || 'Unnamed Property';
+
+                // Get price
+                const price = property.price?.current || property.price || 0;
+
+                return `
+                    <div class="property-item" onclick='selectPropertyForAnalysis(${JSON.stringify(fullAddress)}, ${JSON.stringify(displayName)})'>
+                        <div class="property-item-name">${displayName}</div>
+                        <div class="property-item-address">${fullAddress}</div>
+                        ${price > 0 ? `<div class="property-item-price">$${price.toLocaleString()}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
         }
 
         // Display no properties message
