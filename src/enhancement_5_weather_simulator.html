@@ -3914,31 +3914,25 @@
             panel.classList.toggle('open');
         }
 
-        // Load saved properties using DataManager
+        // Load saved properties using shared data adapter (EXACT SAME METHOD AS 5D QUANTUM EXPLORER)
         async function loadSavedProperties() {
             try {
-                // Check if DataManager is available
-                if (typeof DataManager === 'undefined') {
-                    console.error('❌ DataManager class not loaded');
-                    displayNoProperties();
-                    return;
+                console.log('🔄 Loading properties using sharedDataAdapter...');
+
+                // Initialize shared data adapter (SAME AS 5D QUANTUM EXPLORER LINE 3209)
+                await sharedDataAdapter.init();
+                console.log('✅ sharedDataAdapter initialized');
+
+                // Load REAL properties from IndexedDB (SAME AS 5D QUANTUM EXPLORER LINE 3212)
+                const loadedProperties = await sharedDataAdapter.getPropertiesFor5DExplorer('balanced');
+                console.log(`✅ Loaded ${loadedProperties.length} properties from sharedDataAdapter`);
+
+                if (loadedProperties.length > 0) {
+                    console.log('📍 First property:', loadedProperties[0]);
                 }
 
-                // Initialize DataManager
-                const dataManager = new DataManager();
-                await dataManager.init();
-                console.log('✅ DataManager initialized');
-
-                // Get all properties using DataManager
-                const properties = await dataManager.getAllProperties();
-                console.log(`✅ Loaded ${properties.length} properties from DataManager`);
-
-                if (properties.length > 0) {
-                    console.log('📍 First property structure:', properties[0]);
-                }
-
-                displayProperties(properties);
-                document.getElementById('propertyCount').textContent = properties.length;
+                displayProperties(loadedProperties);
+                document.getElementById('propertyCount').textContent = loadedProperties.length;
 
             } catch (error) {
                 console.error('❌ Error loading properties:', error);
@@ -3946,7 +3940,7 @@
             }
         }
 
-        // Display properties in dropdown
+        // Display properties in dropdown (EXACT SAME FIELDS AS 5D QUANTUM EXPLORER)
         function displayProperties(properties) {
             const container = document.getElementById('propertiesList');
 
@@ -3955,25 +3949,16 @@
                 return;
             }
 
-            container.innerHTML = properties.map(property => {
-                // Build full address from schema
-                const street = property.address?.street || '';
-                const city = property.address?.city || '';
-                const state = property.address?.state || '';
-                const zip = property.address?.zip || '';
-                const fullAddress = `${street}, ${city}, ${state} ${zip}`.replace(/, ,/g, ',').trim();
-
-                // Get property display name (MLS or street address)
-                const displayName = property.mls_number || street || 'Unnamed Property';
-
-                // Get price
-                const price = property.price?.current || property.price || 0;
+            container.innerHTML = properties.map(p => {
+                // Use fields returned by sharedDataAdapter.getPropertiesFor5DExplorer()
+                // p.id - Property ID
+                // p.name - Full address string
+                // p.price - Listing price (number)
 
                 return `
-                    <div class="property-item" onclick='selectPropertyForAnalysis(${JSON.stringify(fullAddress)}, ${JSON.stringify(displayName)})'>
-                        <div class="property-item-name">${displayName}</div>
-                        <div class="property-item-address">${fullAddress}</div>
-                        ${price > 0 ? `<div class="property-item-price">$${price.toLocaleString()}</div>` : ''}
+                    <div class="property-item" onclick='selectPropertyForAnalysis(${JSON.stringify(p.name)}, ${JSON.stringify(p.name)})'>
+                        <div class="property-item-name">${p.name}</div>
+                        ${p.price > 0 ? `<div class="property-item-price">$${p.price.toLocaleString()}</div>` : ''}
                     </div>
                 `;
             }).join('');
