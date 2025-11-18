@@ -40,21 +40,21 @@ export default {
     // ── 2. FEMA FLOOD ZONE (US only) - OFFICIAL NFHL DATA ─────────────────
     let floodZone = { zone: 'Unknown', staticBFE: null, message: 'Checking flood zone...', inSFHA: false, subtype: '' };
 
-    // Use CORS proxy with official FEMA NFHL endpoint (tested November 2025)
-    // corsproxy.io is free and reliable for handling CORS issues
-    const proxy = 'https://corsproxy.io/?';
+    // Use AllOrigins CORS proxy with official FEMA NFHL endpoint
+    // allorigins.win handles SSL properly unlike corsproxy.io
     const femaUrl = `https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer/28/query?f=json&geometry=${lng},${lat}&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&returnGeometry=false&outFields=FLD_ZONE,STATIC_BFE,ZONE_SUBTY,SFHA_TF`;
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(femaUrl)}`;
 
     try {
-      console.log(`🌊 Fetching official FEMA flood zone data via CORS proxy...`);
+      console.log(`🌊 Fetching official FEMA flood zone data via AllOrigins proxy...`);
       console.log(`   Coordinates: ${lat}, ${lng}`);
       console.log(`   FEMA URL: ${femaUrl}`);
-      console.log(`   Proxy URL: ${proxy}${encodeURIComponent(femaUrl)}`);
+      console.log(`   Proxy URL: ${proxyUrl}`);
 
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000); // 15 second timeout (increased)
+      const timeout = setTimeout(() => controller.abort(), 15000); // 15 second timeout
 
-      const floodRes = await fetch(proxy + encodeURIComponent(femaUrl), { signal: controller.signal });
+      const floodRes = await fetch(proxyUrl, { signal: controller.signal });
       clearTimeout(timeout);
 
       console.log(`   Response status: ${floodRes.status} ${floodRes.statusText}`);
