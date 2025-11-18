@@ -2165,10 +2165,12 @@
             
             // Precipitation chart
             if (precipData.length > 0) {
-                const precipSeries = precipData.map(record => ({
-                    x: new Date(record.date),
-                    y: (record.value / 254).toFixed(2) // Convert from tenths of mm to inches
-                }));
+                const precipSeries = precipData
+                    .filter(record => record.value > 0) // Only show days with precipitation
+                    .map(record => ({
+                        x: new Date(record.date),
+                        y: (record.value / 254).toFixed(2) // Convert from tenths of mm to inches
+                    }));
                 
                 const precipOptions = {
                     series: [{
