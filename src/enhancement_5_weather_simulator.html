@@ -1435,16 +1435,19 @@
         function createRiskRadarChart(data) {
             const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-            // Calculate average color for the radar fill
+            // Create separate series for each risk category with individual colors
             const values = [data.flood, data.heat, data.drought, data.storm, data.wildfire];
-            const avgValue = values.reduce((a, b) => a + b, 0) / values.length;
-            const radarColor = getRiskColor(avgValue);
+            const colors = values.map(v => getRiskColor(v));
+            const categories = ['Flood', 'Heat', 'Drought', 'Storm', 'Wildfire'];
+
+            // Create one series per category so each gets its own color
+            const series = categories.map((cat, i) => ({
+                name: cat,
+                data: values.map((v, idx) => idx === i ? v : 0)
+            }));
 
             const options = {
-                series: [{
-                    name: 'Risk Level (0-100)',
-                    data: values
-                }],
+                series: series,
                 chart: {
                     type: 'radar',
                     height: 350,
@@ -1461,7 +1464,7 @@
                     }
                 },
                 xaxis: {
-                    categories: ['Flood', 'Heat', 'Drought', 'Storm', 'Wildfire'],
+                    categories: categories,
                     labels: {
                         style: {
                             colors: ['#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF', '#FFFFFF'],
@@ -1486,15 +1489,16 @@
                 },
                 fill: {
                     opacity: 0.5,
-                    colors: [radarColor]
+                    colors: colors
                 },
                 stroke: {
+                    show: true,
                     width: 3,
-                    colors: [radarColor]
+                    colors: colors
                 },
                 markers: {
                     size: 6,
-                    colors: [radarColor],
+                    colors: colors,
                     strokeColors: '#FFFFFF',
                     strokeWidth: 2
                 },
@@ -1509,6 +1513,9 @@
                             }
                         }
                     }
+                },
+                legend: {
+                    show: false
                 },
                 theme: { mode: 'dark' }
             };
