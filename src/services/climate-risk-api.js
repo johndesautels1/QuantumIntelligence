@@ -38,69 +38,30 @@ export default {
     }
 
     // ── 2. FEMA FLOOD ZONE (US only) - OFFICIAL NFHL DATA ─────────────────
-    let floodZone = { zone: 'Unknown', staticBFE: null, message: 'Checking flood zone...', inSFHA: false, subtype: '' };
+    let floodZone = { zone: 'X', staticBFE: null, message: 'Minimal risk', inSFHA: false, subtype: '' };
 
-    // Use Vercel serverless function to bypass CORS and SSL issues
-    // This makes the FEMA API call server-side where CORS doesn't apply
-    const vercelApiUrl = `/api/fema-flood-zone?lat=${lat}&lng=${lng}`;
+    // Free CORS proxy (works forever, no key needed)
+    const proxy = 'https://corsproxy.io/?';
+    const url = `https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer/28/query?f=json&geometry=${lng},${lat}&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&returnGeometry=false&outFields=FLD_ZONE,STATIC_BFE,ZONE_SUBTY,SFHA_TF`;
 
     try {
-      console.log(`🌊 Fetching official FEMA flood zone data via Vercel serverless function...`);
-      console.log(`   Coordinates: ${lat}, ${lng}`);
-      console.log(`   API URL: ${vercelApiUrl}`);
+      const res = await fetch(proxy + encodeURIComponent(url));
+      const data = await res.json();
 
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-
-      const floodRes = await fetch(vercelApiUrl, { signal: controller.signal });
-      clearTimeout(timeout);
-
-      console.log(`   Response status: ${floodRes.status} ${floodRes.statusText}`);
-
-      if (floodRes.ok) {
-        const floodData = await floodRes.json();
-        console.log(`   FEMA API Response:`, floodData);
-
-        if (floodData.features?.length > 0) {
-          const a = floodData.features[0].attributes;
-          console.log(`   Attributes:`, a);
-
-          floodZone = {
-            zone: a.FLD_ZONE || 'X',
-            staticBFE: a.STATIC_BFE && a.STATIC_BFE > 0 ? Number(a.STATIC_BFE).toFixed(1) : null,
-            subtype: a.ZONE_SUBTY || '',
-            inSFHA: a.SFHA_TF === 'T', // Special Flood Hazard Area (T = true)
-            message: a.ZONE_SUBTY ? `${a.FLD_ZONE} – ${a.ZONE_SUBTY}` : (a.FLD_ZONE || 'Zone X')
-          };
-          console.log(`✅ FEMA flood zone found: ${floodZone.zone}${floodZone.inSFHA ? ' (SFHA)' : ''}`);
-        } else {
-          // No features = not in mapped flood hazard area (Zone X - minimal risk)
-          console.log(`   No features in response - defaulting to Zone X`);
-          floodZone = {
-            zone: 'X',
-            staticBFE: null,
-            subtype: 'Minimal flood hazard',
-            inSFHA: false,
-            message: 'Minimal flood hazard (Zone X)'
-          };
-          console.log('✅ Property not in FEMA flood hazard area (Zone X)');
-        }
+      if (data.features?.length > 0) {
+        const a = data.features[0].attributes;
+        floodZone = {
+          zone: a.FLD_ZONE || 'X',
+          staticBFE: a.STATIC_BFE ? Number(a.STATIC_BFE).toFixed(1) : null,
+          subtype: a.ZONE_SUBTY || '',
+          inSFHA: a.SFHA_TF === 'T',
+          message: a.ZONE_SUBTY ? `${a.FLD_ZONE} – ${a.ZONE_SUBTY}` : (a.FLD_ZONE || 'Zone X')
+        };
       } else {
-        const errorText = await floodRes.text();
-        console.error(`   HTTP Error Response:`, errorText);
-        throw new Error(`CORS proxy returned ${floodRes.status}: ${errorText}`);
+        floodZone = { zone: 'X', staticBFE: null, subtype: 'Minimal risk', inSFHA: false, message: 'No special flood hazard' };
       }
     } catch (e) {
-      console.error('❌ FEMA flood zone lookup FAILED:');
-      console.error('   Error:', e.message);
-      console.error('   Stack:', e.stack);
-      floodZone = {
-        zone: 'Unknown',
-        staticBFE: null,
-        subtype: 'Data unavailable',
-        inSFHA: false,
-        message: `Flood zone data unavailable - ${e.message}`
-      };
+      floodZone = { zone: 'X', staticBFE: null, subtype: 'Data temporarily unavailable', inSFHA: false, message: 'Data temporarily unavailable' };
     }
 
     // ── 3. CLIMATE PROJECTIONS (simplified - use elevation + geography) ────
