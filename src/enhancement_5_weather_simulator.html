@@ -969,67 +969,88 @@
             }
         }
 
-        // Fetch flood risk data using elevation and proximity to water
+        // Fetch REAL FEMA flood data using OpenFEMA API
         async function fetchFEMAFloodData(lat, lon) {
             updateAPIStatus('fema-status', 'loading');
 
             try {
-                console.log('🌊 Calculating flood risk for:', lat, lon);
+                console.log('🌊 Fetching REAL FEMA flood zone data for:', lat, lon);
 
-                // Get elevation first
-                const elevResponse = await fetch(
-                    `https://api.open-elevation.com/api/v1/lookup?locations=${lat},${lon}`
-                );
-                const elevData = await elevResponse.json();
-                const elevation = elevData.results[0].elevation; // meters
+                // OpenFEMA API - FimaNfhlFloodHazardZones dataset
+                // No API key needed, searches within 0.01 degree radius (~1 km)
+                const radius = 0.01;
+                const minLat = lat - radius;
+                const maxLat = lat + radius;
+                const minLon = lon - radius;
+                const maxLon = lon + radius;
 
-                // Get nearby water features from OpenStreetMap Overpass API
-                const waterQuery = `[out:json];(way["natural"="water"](around:1000,${lat},${lon}););out body;`;
-                const overpassUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(waterQuery)}`;
+                // Use $where query to find flood zones containing this point
+                const url = `https://www.fema.gov/api/open/v2/FimaNfhlFloodHazardZones?` +
+                    `$inlinecount=allpages&` +
+                    `$select=fldZone,zoneSubty,staticBfe,dfirmId,vDatum,state,countyFips&` +
+                    `$top=1&` +
+                    `$filter=latitude le ${maxLat} and latitude ge ${minLat} and longitude le ${maxLon} and longitude ge ${minLon}`;
 
-                let nearWater = false;
-                try {
-                    const waterResponse = await fetch(overpassUrl);
-                    const waterData = await waterResponse.json();
-                    nearWater = waterData.elements && waterData.elements.length > 0;
-                } catch (e) {
-                    console.log('⚠️ Water feature check failed, using elevation only');
+                console.log('🔄 Querying OpenFEMA flood zones...');
+
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(`OpenFEMA API failed: ${response.status}`);
                 }
 
-                // Calculate flood zone based on elevation and water proximity
-                let floodZone = 'X'; // Minimal flood hazard
-                let floodRisk = 0;
+                const data = await response.json();
 
-                if (elevation < 3) {
-                    floodZone = 'AE'; // High risk
-                    floodRisk = 90;
-                } else if (elevation < 5) {
-                    floodZone = 'A'; // Moderate-high risk
-                    floodRisk = 70;
-                } else if (elevation < 10) {
-                    floodZone = nearWater ? 'A' : 'X500'; // Moderate risk if near water
-                    floodRisk = nearWater ? 50 : 30;
-                } else if (elevation < 20) {
-                    floodZone = nearWater ? 'X500' : 'X';
-                    floodRisk = nearWater ? 30 : 15;
+                console.log('OpenFEMA response:', data);
+
+                if (data.FimaNfhlFloodHazardZones && data.FimaNfhlFloodHazardZones.length > 0) {
+                    const zone = data.FimaNfhlFloodHazardZones[0];
+
+                    // Calculate flood risk from REAL FEMA zone
+                    let floodRisk = 0;
+                    const zoneCode = zone.fldZone || 'X';
+
+                    // FEMA flood zone risk mapping
+                    if (zoneCode.startsWith('V')) floodRisk = 100; // Velocity zones (coastal)
+                    else if (zoneCode.startsWith('A')) floodRisk = 80; // High risk zones
+                    else if (zoneCode === 'X500' || zoneCode === 'B') floodRisk = 30; // Moderate
+                    else if (zoneCode === 'X' || zoneCode === 'C') floodRisk = 10; // Minimal
+                    else if (zoneCode === 'D') floodRisk = 5; // Undetermined
+                    else floodRisk = 15; // Unknown zones
+
+                    console.log(`✅ REAL FEMA flood zone: ${zoneCode} (Risk: ${floodRisk}/100)`);
+                    updateAPIStatus('fema-status', 'success');
+
+                    return {
+                        FLD_ZONE: zoneCode,
+                        ZONE_SUBTY: zone.zoneSubty || 'N/A',
+                        STATIC_BFE: zone.staticBfe || 'Not specified',
+                        V_DATUM: zone.vDatum || 'N/A',
+                        STATE: zone.state || '',
+                        COUNTY_FIPS: zone.countyFips || '',
+                        FLOOD_RISK: floodRisk,
+                        SOURCE: 'FEMA NFHL (Official)'
+                    };
                 } else {
-                    floodZone = 'X'; // Minimal risk
-                    floodRisk = 10;
+                    console.log('ℹ️ No FEMA flood zone data for this location');
+                    updateAPIStatus('fema-status', 'success');
+                    return {
+                        FLD_ZONE: 'Not Mapped',
+                        ZONE_SUBTY: 'N/A',
+                        STATIC_BFE: 'Not specified',
+                        FLOOD_RISK: 0,
+                        SOURCE: 'Outside FEMA mapped area'
+                    };
                 }
 
-                console.log(`✅ Flood risk: ${floodRisk}/100 (Zone: ${floodZone}, Elevation: ${elevation}m, Near water: ${nearWater})`);
-                updateAPIStatus('fema-status', 'success');
-
-                return {
-                    FLD_ZONE: floodZone,
-                    ELEVATION: elevation,
-                    NEAR_WATER: nearWater,
-                    FLOOD_RISK: floodRisk
-                };
             } catch (error) {
                 updateAPIStatus('fema-status', 'error');
-                console.error('❌ Flood risk calculation error:', error);
-                return { FLD_ZONE: 'X', FLOOD_RISK: 0 };
+                console.error('❌ OpenFEMA API error:', error);
+                return {
+                    FLD_ZONE: 'Error',
+                    FLOOD_RISK: 0,
+                    SOURCE: 'API Error'
+                };
             }
         }
 
@@ -1781,15 +1802,15 @@
             charts.riskBreakdown.render();
         }
 
-        // Display FEMA data
+        // Display REAL FEMA OpenFEMA data
         function displayFEMAData(data) {
             const container = document.getElementById('femaDataContainer');
 
-            if (!data) {
+            if (!data || data.FLD_ZONE === 'Error') {
                 container.innerHTML = `
-                    <p style="color: #ef4444;">❌ Unable to retrieve FEMA flood data (API error)</p>
+                    <p style="color: #ef4444;">❌ Unable to retrieve FEMA flood data</p>
                     <p style="color: #9ca3af; font-size: 0.9em; margin-top: 10px;">
-                        This could be due to network issues or CORS restrictions.
+                        ${data?.SOURCE || 'API error or network issue'}
                     </p>
                 `;
                 return;
@@ -1799,42 +1820,50 @@
             let riskLevel = 'Unknown';
             let riskColor = '#6b7280';
 
-            if (zone === 'UNMAPPED') {
+            if (zone === 'Not Mapped') {
                 container.innerHTML = `
                     <p style="color: #3b82f6;">ℹ️ Area Not Mapped by FEMA</p>
                     <p style="color: #9ca3af; font-size: 0.9em; margin-top: 10px;">
-                        ${data.message || 'This location is outside FEMA flood mapping coverage.'}
+                        This location is outside FEMA's National Flood Hazard Layer coverage.
                     </p>
                     <p style="color: #9ca3af; font-size: 0.9em; margin-top: 5px;">
                         This does not mean there is no flood risk - consult local authorities.
                     </p>
                 `;
+                document.getElementById('floodZone').innerHTML = 'Not Mapped';
                 return;
             }
 
-            if (zone.startsWith('A') || zone.startsWith('V')) {
-                riskLevel = 'High Risk (1% annual chance)';
+            // Determine risk level from REAL FEMA zone codes
+            if (zone.startsWith('V')) {
+                riskLevel = 'Very High Risk - Coastal Velocity Zone (1% annual chance + wave action)';
+                riskColor = '#dc2626';
+            } else if (zone.startsWith('A')) {
+                riskLevel = 'High Risk - Special Flood Hazard Area (1% annual chance)';
                 riskColor = '#ef4444';
-            } else if (zone === 'X' || zone === 'B') {
+            } else if (zone === 'X500' || zone === 'B') {
                 riskLevel = 'Moderate Risk (0.2% annual chance)';
                 riskColor = '#f59e0b';
-            } else if (zone === 'C') {
-                riskLevel = 'Low Risk';
+            } else if (zone === 'X' || zone === 'C') {
+                riskLevel = 'Minimal Risk (less than 0.2% annual chance)';
                 riskColor = '#10b981';
+            } else if (zone === 'D') {
+                riskLevel = 'Undetermined Risk';
+                riskColor = '#9ca3af';
             }
-            
+
             container.innerHTML = `
                 <div class="data-card">
                     <h4>FEMA Flood Zone: ${zone}</h4>
-                    <p style="color: ${riskColor}; font-size: 1.2em; margin: 10px 0; font-weight: 700;">${riskLevel}</p>
-                    <p style="color: #FFFFFF; font-weight: 700;">Base Flood Elevation: ${data.STATIC_BFE || 'Not specified'}</p>
-                    <p style="color: #FFFFFF; font-weight: 700;">Zone Subtype: ${data.ZONE_SUBTY || 'N/A'}</p>
-                    ${data.DEPTH ? `<p style="color: #FFFFFF; font-weight: 700;">Depth: ${data.DEPTH} feet</p>` : ''}
-                    ${data.VELOCITY ? `<p style="color: #FFFFFF; font-weight: 700;">Velocity: ${data.VELOCITY} ft/s</p>` : ''}
-                    <p style="margin-top: 15px; opacity: 0.7;">✅ Official FEMA NFHL Data</p>
+                    <p style="color: ${riskColor}; font-size: 1.1em; margin: 10px 0; font-weight: 700;">${riskLevel}</p>
+                    <p style="color: #FFFFFF; font-weight: 700;">Base Flood Elevation: ${data.STATIC_BFE}</p>
+                    <p style="color: #FFFFFF; font-weight: 700;">Zone Subtype: ${data.ZONE_SUBTY}</p>
+                    ${data.V_DATUM && data.V_DATUM !== 'N/A' ? `<p style="color: #FFFFFF; font-weight: 700;">Vertical Datum: ${data.V_DATUM}</p>` : ''}
+                    ${data.STATE ? `<p style="color: #FFFFFF; font-weight: 700;">State: ${data.STATE}</p>` : ''}
+                    <p style="margin-top: 15px; color: #10b981; font-size: 0.95em;">✅ ${data.SOURCE}</p>
                 </div>
             `;
-            
+
             // Update summary card
             document.getElementById('floodZone').innerHTML = zone;
         }
