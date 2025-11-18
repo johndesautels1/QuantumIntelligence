@@ -1422,13 +1422,28 @@
             charts.riskGauge.render();
         }
 
+        // Get color based on risk score (standard 5-color scale)
+        function getRiskColor(value) {
+            if (value <= 20) return '#ef4444';      // Red (really bad)
+            if (value <= 40) return '#f59e0b';      // Orange (bad)
+            if (value <= 60) return '#eab308';      // Yellow (caution)
+            if (value <= 80) return '#3b82f6';      // Blue (good)
+            return '#10b981';                        // Green (excellent)
+        }
+
         // Create risk radar chart
         function createRiskRadarChart(data) {
             const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+            // Calculate average color for the radar fill
+            const values = [data.flood, data.heat, data.drought, data.storm, data.wildfire];
+            const avgValue = values.reduce((a, b) => a + b, 0) / values.length;
+            const radarColor = getRiskColor(avgValue);
+
             const options = {
                 series: [{
                     name: 'Risk Level (0-100)',
-                    data: [data.flood, data.heat, data.drought, data.storm, data.wildfire]
+                    data: values
                 }],
                 chart: {
                     type: 'radar',
@@ -1471,15 +1486,15 @@
                 },
                 fill: {
                     opacity: 0.3,
-                    colors: ['#00D4FF']
+                    colors: [radarColor]
                 },
                 stroke: {
                     width: 2,
-                    colors: ['#00D4FF']
+                    colors: [radarColor]
                 },
                 markers: {
                     size: 4,
-                    colors: ['#00D4FF']
+                    colors: [radarColor]
                 },
                 theme: { mode: 'dark' }
             };
@@ -1492,10 +1507,15 @@
         // Create risk breakdown horizontal bar chart
         function createRiskBreakdownChart(data) {
             const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+            // Create data array with values and colors based on standard 5-color scale
+            const values = [data.flood, data.heat, data.drought, data.storm, data.wildfire];
+            const barColors = values.map(v => getRiskColor(v));
+
             const options = {
                 series: [{
                     name: 'Risk Score',
-                    data: [data.flood, data.heat, data.drought, data.storm, data.wildfire]
+                    data: values
                 }],
                 chart: {
                     type: 'bar',
@@ -1504,7 +1524,7 @@
                     toolbar: { show: false }
                 },
                 title: {
-                    text: `Scale: 0-100 (${today})`,
+                    text: `${today}`,
                     align: 'center',
                     style: {
                         fontSize: '14px',
@@ -1516,13 +1536,14 @@
                     bar: {
                         horizontal: true,
                         borderRadius: 8,
-                        barHeight: '70%'
+                        barHeight: '70%',
+                        distributed: true
                     }
                 },
-                colors: ['#00D4FF'],
+                colors: barColors,
                 dataLabels: {
                     enabled: true,
-                    formatter: (val) => `${val}/100`,
+                    formatter: (val) => `${val}`,
                     style: {
                         colors: ['#FFFFFF'],
                         fontSize: '12px',
@@ -1540,7 +1561,15 @@
                     },
                     min: 0,
                     max: 100,
-                    tickAmount: 5
+                    tickAmount: 5,
+                    title: {
+                        text: 'Scale: 0-100',
+                        style: {
+                            color: '#FFFFFF',
+                            fontSize: '12px',
+                            fontWeight: 700
+                        }
+                    }
                 },
                 yaxis: {
                     labels: {
@@ -1550,6 +1579,9 @@
                             fontWeight: 700
                         }
                     }
+                },
+                legend: {
+                    show: false
                 },
                 theme: { mode: 'dark' },
                 grid: {
