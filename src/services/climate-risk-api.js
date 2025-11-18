@@ -37,57 +37,59 @@ export default {
       } catch (e) {}
     }
 
-    // ── 2. FEMA FLOOD ZONE (US only) ───────────────────────────────────────
-    let floodZone = { zone: 'Unknown', staticBFE: null, message: 'Checking flood zone...' };
+    // ── 2. FEMA FLOOD ZONE (US only) - OFFICIAL NFHL DATA ─────────────────
+    let floodZone = { zone: 'Unknown', staticBFE: null, message: 'Checking flood zone...', inSFHA: false, subtype: '' };
 
-    // Try multiple FEMA endpoints
-    const endpoints = [
-      // Alternative Map Service Center endpoint
-      `https://msc.fema.gov/arcgis/rest/services/fg/NFHL/MapServer/28/query?f=json&geometry=${lng},${lat}&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&returnGeometry=false&outFields=FLD_ZONE,STATIC_BFE,ZONE_SUBTY`,
-      // Primary hazards endpoint
-      `https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer/28/query?f=json&geometry=${lng},${lat}&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&returnGeometry=false&outFields=FLD_ZONE,STATIC_BFE,ZONE_SUBTY`,
-      // ArcGIS Online backup
-      `https://services.arcgis.com/P3ePLMYs2RVChkJx/arcgis/rest/services/NFHL_Flood_Zones/FeatureServer/0/query?f=json&geometry=${lng},${lat}&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&returnGeometry=false&outFields=FLD_ZONE,STATIC_BFE,ZONE_SUBTY`
-    ];
+    // Use CORS proxy with official FEMA NFHL endpoint (tested November 2025)
+    // corsproxy.io is free and reliable for handling CORS issues
+    const proxy = 'https://corsproxy.io/?';
+    const femaUrl = `https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer/28/query?f=json&geometry=${lng},${lat}&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&returnGeometry=false&outFields=FLD_ZONE,STATIC_BFE,ZONE_SUBTY,SFHA_TF`;
 
-    for (const floodUrl of endpoints) {
-      try {
-        console.log(`🌊 Trying FEMA flood zone lookup...`);
+    try {
+      console.log(`🌊 Fetching official FEMA flood zone data via CORS proxy...`);
 
-        const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-        const floodRes = await fetch(floodUrl, { signal: controller.signal });
-        clearTimeout(timeout);
+      const floodRes = await fetch(proxy + encodeURIComponent(femaUrl), { signal: controller.signal });
+      clearTimeout(timeout);
 
-        if (floodRes.ok) {
-          const floodData = await floodRes.json();
-          if (floodData.features?.length > 0) {
-            const a = floodData.features[0].attributes;
-            floodZone = {
-              zone: a.FLD_ZONE || 'X',
-              staticBFE: a.STATIC_BFE && a.STATIC_BFE > 0 ? Number(a.STATIC_BFE).toFixed(1) : null,
-              message: a.ZONE_SUBTY ? `${a.FLD_ZONE} – ${a.ZONE_SUBTY}` : (a.FLD_ZONE || 'Zone X')
-            };
-            console.log(`✅ FEMA flood zone found: ${floodZone.zone}`);
-            break; // Success, stop trying other endpoints
-          } else {
-            // No features = not in mapped flood hazard area
-            floodZone = { zone: 'X', staticBFE: null, message: 'Minimal flood hazard (Zone X)' };
-            console.log('✅ Property not in FEMA flood hazard area (Zone X)');
-            break;
-          }
+      if (floodRes.ok) {
+        const floodData = await floodRes.json();
+
+        if (floodData.features?.length > 0) {
+          const a = floodData.features[0].attributes;
+          floodZone = {
+            zone: a.FLD_ZONE || 'X',
+            staticBFE: a.STATIC_BFE && a.STATIC_BFE > 0 ? Number(a.STATIC_BFE).toFixed(1) : null,
+            subtype: a.ZONE_SUBTY || '',
+            inSFHA: a.SFHA_TF === 'T', // Special Flood Hazard Area (T = true)
+            message: a.ZONE_SUBTY ? `${a.FLD_ZONE} – ${a.ZONE_SUBTY}` : (a.FLD_ZONE || 'Zone X')
+          };
+          console.log(`✅ FEMA flood zone found: ${floodZone.zone}${floodZone.inSFHA ? ' (SFHA)' : ''}`);
+        } else {
+          // No features = not in mapped flood hazard area (Zone X - minimal risk)
+          floodZone = {
+            zone: 'X',
+            staticBFE: null,
+            subtype: 'Minimal flood hazard',
+            inSFHA: false,
+            message: 'Minimal flood hazard (Zone X)'
+          };
+          console.log('✅ Property not in FEMA flood hazard area (Zone X)');
         }
-      } catch (e) {
-        console.warn('⚠️ FEMA endpoint failed, trying next...', e.message);
-        // Continue to next endpoint
+      } else {
+        throw new Error(`CORS proxy returned ${floodRes.status}`);
       }
-    }
-
-    // If all endpoints failed
-    if (floodZone.zone === 'Unknown') {
-      console.warn('⚠️ All FEMA flood zone endpoints failed');
-      floodZone = { zone: 'Unknown', staticBFE: null, message: 'Flood zone data unavailable' };
+    } catch (e) {
+      console.warn('⚠️ FEMA flood zone lookup failed:', e.message);
+      floodZone = {
+        zone: 'Unknown',
+        staticBFE: null,
+        subtype: 'Data unavailable',
+        inSFHA: false,
+        message: 'Flood zone data unavailable - FEMA service may be temporarily offline'
+      };
     }
 
     // ── 3. CLIMATE PROJECTIONS (simplified - use elevation + geography) ────

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FEMA Flood Zone API Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #0a1628;
+            color: white;
+            padding: 40px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .test-container {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        button {
+            background: linear-gradient(135deg, #0066CC, #00D4FF);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1em;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 212, 255, 0.4);
+        }
+        .result {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+        }
+        .success {
+            color: #10b981;
+        }
+        .error {
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌊 FEMA Flood Zone API Test</h1>
+
+    <div class="test-container">
+        <h2>Test FEMA NFHL API with CORS Proxy</h2>
+        <p>Testing official FEMA endpoint: <code>hazards.fema.gov</code> via <code>corsproxy.io</code></p>
+
+        <button onclick="testMiami()">Test Miami Beach (VE Zone)</button>
+        <button onclick="testHouston()">Test Houston (AE Zone)</button>
+        <button onclick="testPhoenix()">Test Phoenix (X Zone)</button>
+        <button onclick="testNewOrleans()">Test New Orleans (A/AE Zone)</button>
+
+        <div id="result" class="result">Click a button to test...</div>
+    </div>
+
+    <script type="module">
+        async function getFemaFloodZone(lat, lng, locationName) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `Testing ${locationName}...\nLat: ${lat}, Lng: ${lng}\n\n`;
+
+            const proxy = 'https://corsproxy.io/?';
+            const femaUrl = `https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer/28/query?f=json&geometry=${lng},${lat}&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&returnGeometry=false&outFields=FLD_ZONE,STATIC_BFE,ZONE_SUBTY,SFHA_TF`;
+
+            try {
+                const startTime = Date.now();
+                resultDiv.innerHTML += `Fetching from FEMA via CORS proxy...\n`;
+
+                const res = await fetch(proxy + encodeURIComponent(femaUrl));
+                const data = await res.json();
+                const elapsed = Date.now() - startTime;
+
+                resultDiv.innerHTML += `Response received in ${elapsed}ms\n\n`;
+
+                if (data.features?.length > 0) {
+                    const a = data.features[0].attributes;
+                    const result = {
+                        zone: a.FLD_ZONE || 'X',
+                        bfe: a.STATIC_BFE ? Number(a.STATIC_BFE).toFixed(1) : null,
+                        subtype: a.ZONE_SUBTY || '',
+                        inSFHA: a.SFHA_TF === 'T'
+                    };
+
+                    resultDiv.innerHTML += `<span class="success">✅ SUCCESS!</span>\n\n`;
+                    resultDiv.innerHTML += `Flood Zone: ${result.zone}\n`;
+                    resultDiv.innerHTML += `Base Flood Elevation: ${result.bfe || 'N/A'} ft\n`;
+                    resultDiv.innerHTML += `Subtype: ${result.subtype || 'None'}\n`;
+                    resultDiv.innerHTML += `In SFHA: ${result.inSFHA ? 'YES (flood insurance required)' : 'NO'}\n\n`;
+                    resultDiv.innerHTML += `Raw API Response:\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    resultDiv.innerHTML += `<span class="success">✅ Zone X (Minimal Risk)</span>\n\n`;
+                    resultDiv.innerHTML += `No flood hazard features found.\n`;
+                    resultDiv.innerHTML += `This property is in Zone X - minimal flood hazard.\n\n`;
+                    resultDiv.innerHTML += `Raw API Response:\n${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (e) {
+                resultDiv.innerHTML += `<span class="error">❌ ERROR</span>\n\n`;
+                resultDiv.innerHTML += `${e.message}\n\n`;
+                resultDiv.innerHTML += `Stack trace:\n${e.stack}`;
+            }
+        }
+
+        window.testMiami = () => getFemaFloodZone(25.7826, -80.1341, 'Miami Beach, FL');
+        window.testHouston = () => getFemaFloodZone(29.7604, -95.3698, 'Houston, TX');
+        window.testPhoenix = () => getFemaFloodZone(33.4484, -112.0740, 'Phoenix, AZ');
+        window.testNewOrleans = () => getFemaFloodZone(29.9584, -90.0644, 'New Orleans, LA');
+    </script>
+</body>
+</html>

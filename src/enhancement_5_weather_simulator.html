@@ -1889,13 +1889,19 @@
 
             // Flood risk
             if (floodZone.zone) {
+                const sfhaIndicator = floodZone.inSFHA
+                    ? '<span style="background: rgba(239,68,68,0.3); color: #ff6666; padding: 4px 10px; border-radius: 6px; font-size: 0.85em; font-weight: bold; margin-left: 10px;">SFHA</span>'
+                    : '';
+
                 floodEl.innerHTML = `
                     <div class="risk-metric">
                         <span class="label">FEMA Flood Zone:</span>
-                        <span class="value zone-${floodZone.zone}">${floodZone.zone}</span>
+                        <span class="value zone-${floodZone.zone}">${floodZone.zone}${sfhaIndicator}</span>
                     </div>
                     <p style="color: rgba(255,255,255,0.9); margin-top: 15px;">${floodZone.message || ''}</p>
-                    ${floodZone.staticBFE ? `<p style="color: rgba(255,255,255,0.7); margin-top: 10px;"><strong>Base Flood Elevation:</strong> ${floodZone.staticBFE} ft</p>` : ''}
+                    ${floodZone.staticBFE ? `<p style="color: rgba(255,255,255,0.7); margin-top: 10px;"><strong>Base Flood Elevation (BFE):</strong> ${floodZone.staticBFE} ft</p>` : ''}
+                    ${floodZone.inSFHA ? `<p style="color: #ff6666; margin-top: 10px; font-weight: 600;">⚠️ Property is in Special Flood Hazard Area (SFHA) - Flood insurance required</p>` : ''}
+                    ${floodZone.subtype ? `<p style="color: rgba(255,255,255,0.6); margin-top: 8px; font-size: 0.9em;"><strong>Zone Details:</strong> ${floodZone.subtype}</p>` : ''}
                 `;
             } else {
                 floodEl.innerHTML = '<p class="loading-message">⚠️ Flood zone data not available.</p>';
