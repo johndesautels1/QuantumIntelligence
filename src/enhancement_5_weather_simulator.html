@@ -1301,6 +1301,21 @@
             charts.temperature.render();
         }
 
+        // Get precipitation color based on amount (5-color scale)
+        function getPrecipColor(precipInches) {
+            // Scale based on typical daily precipitation ranges
+            // 0-0.1" = very little (green)
+            // 0.1-0.3" = light (blue)
+            // 0.3-0.6" = moderate (yellow)
+            // 0.6-1.0" = heavy (orange)
+            // 1.0+" = very heavy (red)
+            if (precipInches <= 0.1) return '#10b981';      // Green (very little)
+            if (precipInches <= 0.3) return '#3b82f6';      // Blue (light)
+            if (precipInches <= 0.6) return '#eab308';      // Yellow (moderate)
+            if (precipInches <= 1.0) return '#f59e0b';      // Orange (heavy)
+            return '#ef4444';                                // Red (very heavy)
+        }
+
         // Create precipitation chart
         function createPrecipitationChart(data) {
             // Format dates as "Mon 1/15"
@@ -1312,10 +1327,14 @@
                 return `${dayName} ${month}/${day}`;
             });
 
+            // Convert to inches and get colors for each bar
+            const precipValues = data.daily.precipitation_sum.slice(0, 7).map(p => parseFloat((p * 0.0393701).toFixed(2)));
+            const barColors = precipValues.map(p => getPrecipColor(p));
+
             const options = {
                 series: [{
                     name: 'Precipitation',
-                    data: data.daily.precipitation_sum.slice(0, 7).map(p => parseFloat((p * 0.0393701).toFixed(2)))
+                    data: precipValues
                 }],
                 chart: {
                     type: 'bar',
@@ -1326,27 +1345,65 @@
                 plotOptions: {
                     bar: {
                         borderRadius: 10,
-                        columnWidth: '50%'
+                        columnWidth: '50%',
+                        distributed: true
                     }
                 },
-                colors: ['#60a5fa'],
-                dataLabels: { enabled: false },
+                colors: barColors,
+                dataLabels: {
+                    enabled: true,
+                    formatter: (val) => val > 0 ? `${val}"` : '',
+                    style: {
+                        colors: ['#FFFFFF'],
+                        fontSize: '11px',
+                        fontWeight: 700
+                    },
+                    offsetY: -5
+                },
                 xaxis: {
                     categories: dateLabels,
-                    labels: { style: { colors: '#ffffff' } }
+                    labels: {
+                        style: {
+                            colors: '#ffffff',
+                            fontWeight: 700
+                        }
+                    }
                 },
                 yaxis: {
-                    labels: { 
-                        style: { colors: '#ffffff' },
-                        formatter: (val) => `${val} in`
+                    labels: {
+                        style: {
+                            colors: '#ffffff',
+                            fontWeight: 700
+                        },
+                        formatter: (val) => `${val.toFixed(1)} in`
+                    },
+                    title: {
+                        text: 'Daily Precipitation',
+                        style: {
+                            color: '#FFFFFF',
+                            fontSize: '12px',
+                            fontWeight: 700
+                        }
                     }
+                },
+                legend: {
+                    show: false
                 },
                 theme: { mode: 'dark' },
                 grid: {
                     borderColor: 'rgba(255, 255, 255, 0.1)'
                 },
                 tooltip: {
-                    theme: 'dark'
+                    theme: 'dark',
+                    y: {
+                        formatter: (val) => {
+                            if (val <= 0.1) return `${val}" (Very Light)`;
+                            if (val <= 0.3) return `${val}" (Light)`;
+                            if (val <= 0.6) return `${val}" (Moderate)`;
+                            if (val <= 1.0) return `${val}" (Heavy)`;
+                            return `${val}" (Very Heavy)`;
+                        }
+                    }
                 }
             };
             
