@@ -897,37 +897,42 @@
             }
         }
 
-        // Fetch FEMA flood data
+        // Fetch FEMA flood data using OpenFEMA API
         async function fetchFEMAFloodData(lat, lon) {
             updateAPIStatus('fema-status', 'loading');
 
             try {
-                const point = `${lon},${lat}`;
-                const url = `https://hazards.fema.gov/gis/nfhl/rest/services/public/NFHL/MapServer/13/query?` +
-                    `geometry=${point}&` +
-                    `geometryType=esriGeometryPoint&` +
-                    `returnGeometry=false&` +
-                    `outFields=FLD_ZONE,ZONE_SUBTY,STATIC_BFE,DEPTH,VELOCITY,AR_REVERT&` +
-                    `f=json`;
+                console.log('🌊 Fetching OpenFEMA data for:', lat, lon);
 
-                console.log('🌊 Fetching FEMA data for:', lat, lon);
+                // OpenFEMA API endpoint - no CORS issues, no proxy needed
+                // Using geospatial filter to find flood zones at this location
+                // API documentation: https://www.fema.gov/about/openfema/api
+                const url = `https://www.fema.gov/api/open/v1/FimaNfhlFloodHazardZones?` +
+                    `$filter=geo.distance(geometry.coordinates,geography'POINT(${lon} ${lat})')<0.01&` +
+                    `$select=fldZone,zoneSubty,staticBfe,depth,velocity&` +
+                    `$top=1`;
 
-                // Use AllOrigins proxy (more reliable than corsproxy.io)
-                const corsProxy = 'https://api.allorigins.win/raw?url=';
-                const response = await fetch(corsProxy + encodeURIComponent(url));
+                const response = await fetch(url);
 
                 if (!response.ok) {
-                    throw new Error(`FEMA API request failed: ${response.status}`);
+                    throw new Error(`OpenFEMA API request failed: ${response.status}`);
                 }
 
                 const data = await response.json();
 
-                console.log('FEMA response:', data);
+                console.log('OpenFEMA response:', data);
 
-                if (data && data.features && data.features.length > 0) {
+                if (data && data.FimaNfhlFloodHazardZones && data.FimaNfhlFloodHazardZones.length > 0) {
+                    const zone = data.FimaNfhlFloodHazardZones[0];
                     updateAPIStatus('fema-status', 'success');
-                    console.log('✅ FEMA flood zone found:', data.features[0].attributes.FLD_ZONE);
-                    return data.features[0].attributes;
+                    console.log('✅ FEMA flood zone found:', zone.fldZone);
+                    return {
+                        FLD_ZONE: zone.fldZone,
+                        ZONE_SUBTY: zone.zoneSubty,
+                        STATIC_BFE: zone.staticBfe,
+                        DEPTH: zone.depth,
+                        VELOCITY: zone.velocity
+                    };
                 }
 
                 // No flood zone data, but API call succeeded
@@ -936,7 +941,7 @@
                 return { FLD_ZONE: 'UNMAPPED', message: 'Area not in FEMA flood mapping program' };
             } catch (error) {
                 updateAPIStatus('fema-status', 'error');
-                console.error('❌ FEMA API error:', error);
+                console.error('❌ OpenFEMA API error:', error);
                 return null;
             }
         }
