@@ -2113,6 +2113,11 @@
                         tempSeries.TMIN.push({ x: date, y: value });
                     }
                 });
+
+                // Debug: Log actual temperature values
+                if (tempSeries.TMAX.length > 0) {
+                    console.log(`📊 Temperature Trends chart data - First TMAX: ${tempSeries.TMAX[0].y}°F, Last TMAX: ${tempSeries.TMAX[tempSeries.TMAX.length-1].y}°F`);
+                }
                 
                 const tempOptions = {
                     series: [{
