@@ -647,9 +647,13 @@
             metrics.forEach(metric => {
                 html += `<div class="metric-label">${metric.label}</div>`;
 
-                const valueA = propertyA.metrics[metric.key];
-                const valueB = propertyB.metrics[metric.key];
-                const valueC = propertyC ? propertyC.metrics[metric.key] : 0;
+                const metricsA = propertyA.dimensions || propertyA.metrics || {};
+                const metricsB = propertyB.dimensions || propertyB.metrics || {};
+                const metricsC = propertyC ? (propertyC.dimensions || propertyC.metrics || {}) : {};
+
+                const valueA = metricsA[metric.key] || 0;
+                const valueB = metricsB[metric.key] || 0;
+                const valueC = propertyC ? (metricsC[metric.key] || 0) : 0;
 
                 const maxValue = Math.max(valueA, valueB, valueC || 0);
 
