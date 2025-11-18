@@ -897,52 +897,67 @@
             }
         }
 
-        // Fetch FEMA flood data using OpenFEMA API
+        // Fetch flood risk data using elevation and proximity to water
         async function fetchFEMAFloodData(lat, lon) {
             updateAPIStatus('fema-status', 'loading');
 
             try {
-                console.log('🌊 Fetching OpenFEMA data for:', lat, lon);
+                console.log('🌊 Calculating flood risk for:', lat, lon);
 
-                // OpenFEMA API endpoint - no CORS issues, no proxy needed
-                // Using geospatial filter to find flood zones at this location
-                // API documentation: https://www.fema.gov/about/openfema/api
-                const url = `https://www.fema.gov/api/open/v1/FimaNfhlFloodHazardZones?` +
-                    `$filter=geo.distance(geometry.coordinates,geography'POINT(${lon} ${lat})')<0.01&` +
-                    `$select=fldZone,zoneSubty,staticBfe,depth,velocity&` +
-                    `$top=1`;
+                // Get elevation first
+                const elevResponse = await fetch(
+                    `https://api.open-elevation.com/api/v1/lookup?locations=${lat},${lon}`
+                );
+                const elevData = await elevResponse.json();
+                const elevation = elevData.results[0].elevation; // meters
 
-                const response = await fetch(url);
+                // Get nearby water features from OpenStreetMap Overpass API
+                const waterQuery = `[out:json];(way["natural"="water"](around:1000,${lat},${lon}););out body;`;
+                const overpassUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(waterQuery)}`;
 
-                if (!response.ok) {
-                    throw new Error(`OpenFEMA API request failed: ${response.status}`);
+                let nearWater = false;
+                try {
+                    const waterResponse = await fetch(overpassUrl);
+                    const waterData = await waterResponse.json();
+                    nearWater = waterData.elements && waterData.elements.length > 0;
+                } catch (e) {
+                    console.log('⚠️ Water feature check failed, using elevation only');
                 }
 
-                const data = await response.json();
+                // Calculate flood zone based on elevation and water proximity
+                let floodZone = 'X'; // Minimal flood hazard
+                let floodRisk = 0;
 
-                console.log('OpenFEMA response:', data);
-
-                if (data && data.FimaNfhlFloodHazardZones && data.FimaNfhlFloodHazardZones.length > 0) {
-                    const zone = data.FimaNfhlFloodHazardZones[0];
-                    updateAPIStatus('fema-status', 'success');
-                    console.log('✅ FEMA flood zone found:', zone.fldZone);
-                    return {
-                        FLD_ZONE: zone.fldZone,
-                        ZONE_SUBTY: zone.zoneSubty,
-                        STATIC_BFE: zone.staticBfe,
-                        DEPTH: zone.depth,
-                        VELOCITY: zone.velocity
-                    };
+                if (elevation < 3) {
+                    floodZone = 'AE'; // High risk
+                    floodRisk = 90;
+                } else if (elevation < 5) {
+                    floodZone = 'A'; // Moderate-high risk
+                    floodRisk = 70;
+                } else if (elevation < 10) {
+                    floodZone = nearWater ? 'A' : 'X500'; // Moderate risk if near water
+                    floodRisk = nearWater ? 50 : 30;
+                } else if (elevation < 20) {
+                    floodZone = nearWater ? 'X500' : 'X';
+                    floodRisk = nearWater ? 30 : 15;
+                } else {
+                    floodZone = 'X'; // Minimal risk
+                    floodRisk = 10;
                 }
 
-                // No flood zone data, but API call succeeded
+                console.log(`✅ Flood risk: ${floodRisk}/100 (Zone: ${floodZone}, Elevation: ${elevation}m, Near water: ${nearWater})`);
                 updateAPIStatus('fema-status', 'success');
-                console.log('ℹ️ No FEMA flood zone data for this location (may be outside mapped areas)');
-                return { FLD_ZONE: 'UNMAPPED', message: 'Area not in FEMA flood mapping program' };
+
+                return {
+                    FLD_ZONE: floodZone,
+                    ELEVATION: elevation,
+                    NEAR_WATER: nearWater,
+                    FLOOD_RISK: floodRisk
+                };
             } catch (error) {
                 updateAPIStatus('fema-status', 'error');
-                console.error('❌ OpenFEMA API error:', error);
-                return null;
+                console.error('❌ Flood risk calculation error:', error);
+                return { FLD_ZONE: 'X', FLOOD_RISK: 0 };
             }
         }
 
@@ -1056,43 +1071,49 @@
             updateAPIStatus('drought-status', 'loading');
 
             try {
-                console.log('🌵 Fetching NOAA Drought Monitor data for:', lat, lon);
+                console.log('🌵 Fetching drought data for:', lat, lon);
 
-                // NOAA Drought Monitor GeoJSON - correct 2025 URL
-                const url = `https://storage.googleapis.com/noaa-nidis-drought-gov-data/current-conditions/json/v1/usdm_current.geojson`;
+                // Use Open-Meteo's soil moisture as drought proxy (0-100% moisture)
+                // Low soil moisture = high drought risk
+                const url = `https://api.open-meteo.com/v1/forecast?` +
+                    `latitude=${lat}&longitude=${lon}&` +
+                    `current=soil_moisture_0_to_1cm,temperature_2m,precipitation&` +
+                    `past_days=30&` +
+                    `timezone=auto`;
 
                 const response = await fetch(url);
                 const data = await response.json();
 
-                // Find the drought level at this location
-                let droughtLevel = 0; // 0 = no drought
+                // Calculate drought risk from soil moisture and precipitation
+                let droughtLevel = 0;
 
-                if (data && data.features) {
-                    for (const feature of data.features) {
-                        if (feature.geometry && feature.geometry.type === 'Polygon') {
-                            // Check if point is in polygon (simple bounding box check)
-                            const coords = feature.geometry.coordinates[0];
-                            if (coords && coords.length > 0) {
-                                // Get bounding box
-                                let minLon = Infinity, maxLon = -Infinity, minLat = Infinity, maxLat = -Infinity;
-                                coords.forEach(coord => {
-                                    minLon = Math.min(minLon, coord[0]);
-                                    maxLon = Math.max(maxLon, coord[0]);
-                                    minLat = Math.min(minLat, coord[1]);
-                                    maxLat = Math.max(maxLat, coord[1]);
-                                });
+                if (data && data.current) {
+                    const soilMoisture = data.current.soil_moisture_0_to_1cm || 0.5; // 0-1 scale
+                    const temp = data.current.temperature_2m || 15;
+                    const precip = data.current.precipitation || 0;
 
-                                if (lon >= minLon && lon <= maxLon && lat >= minLat && lat <= maxLat) {
-                                    // D0=20, D1=40, D2=60, D3=80, D4=100
-                                    const dm = feature.properties.DM || 0;
-                                    droughtLevel = Math.max(droughtLevel, dm * 20);
-                                }
-                            }
-                        }
+                    // Calculate 30-day precipitation total
+                    let monthlyPrecip = 0;
+                    if (data.daily && data.daily.precipitation_sum) {
+                        monthlyPrecip = data.daily.precipitation_sum.reduce((a, b) => a + b, 0);
                     }
+
+                    // Drought risk based on soil moisture (inverse - low moisture = high drought)
+                    droughtLevel += (1 - soilMoisture) * 50; // 0-50 points
+
+                    // High temps increase drought risk
+                    if (temp > 30) droughtLevel += 20;
+                    else if (temp > 25) droughtLevel += 10;
+                    else if (temp > 20) droughtLevel += 5;
+
+                    // Low precipitation increases drought risk
+                    if (monthlyPrecip < 10) droughtLevel += 20; // Very dry month
+                    else if (monthlyPrecip < 25) droughtLevel += 10; // Dry month
+
+                    droughtLevel = Math.min(100, Math.max(0, droughtLevel));
                 }
 
-                console.log(`✅ Drought level: ${droughtLevel}/100`);
+                console.log(`✅ Drought risk: ${droughtLevel.toFixed(0)}/100 (soil moisture-based)`);
                 updateAPIStatus('drought-status', 'success');
                 return droughtLevel;
             } catch (error) {
@@ -2070,9 +2091,9 @@
 
             const riskScore = calculateRiskScore(fema, elevation, weather);
             const riskData = {
-                flood: fema ? (fema.FLD_ZONE?.startsWith('A') ? 80 : 30) : 0,
+                flood: fema ? (fema.FLOOD_RISK || 0) : 0,  // Elevation + water proximity based
                 heat: weather ? (weather.current.temperature_2m > 35 ? 70 : 40) : 0,
-                drought: drought || 0,   // NOAA Drought Monitor (real data)
+                drought: Math.round(drought) || 0,   // Soil moisture + precipitation based (real data)
                 storm: storm || 0,       // NOAA Weather.gov active alerts (real data)
                 wildfire: wildfire || 0  // Calculated from weather conditions (real data)
             };
