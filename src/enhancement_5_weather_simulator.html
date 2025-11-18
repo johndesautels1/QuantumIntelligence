@@ -596,10 +596,11 @@
             }
             
             console.log('🚀 Initializing application...');
-            
-            // Initialize map
+
+            // Initialize both maps on page load
             initOSMMap();
-            
+            loadGoogleMapsScript();
+
             // Initialize API status indicators
             updateAPIStatus('noaa-cdo-status', 'loading');
             updateAPIStatus('openmeteo-status', 'loading');
