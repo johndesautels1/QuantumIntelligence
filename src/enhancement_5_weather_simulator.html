@@ -985,18 +985,35 @@
                 const elevFeet = elevation * 3.28084;
 
                 // Query USGS for nearby streamgages to assess flood proximity
-                const bbox = `${lon-0.1},${lat-0.1},${lon+0.1},${lat+0.1}`;
-                const usgsUrl = `https://waterservices.usgs.gov/nwis/site/?format=json&bBox=${bbox}&siteType=ST&siteStatus=all`;
+                // bBox format: west,south,east,north (minLon,minLat,maxLon,maxLat)
+                // USGS requires max 6 decimal places to avoid 400 errors
+                const minLon = (lon - 0.1).toFixed(6);
+                const minLat = (lat - 0.1).toFixed(6);
+                const maxLon = (lon + 0.1).toFixed(6);
+                const maxLat = (lat + 0.1).toFixed(6);
+                const bbox = `${minLon},${minLat},${maxLon},${maxLat}`;
+                const usgsUrl = `https://waterservices.usgs.gov/nwis/site/?format=rdb&bBox=${bbox}&siteType=ST&siteStatus=all`;
 
                 let nearMajorRiver = false;
+                let riverCount = 0;
                 try {
                     const usgsResponse = await fetch(usgsUrl);
-                    const usgsData = await usgsResponse.json();
-                    if (usgsData.value && usgsData.value.timeSeries && usgsData.value.timeSeries.length > 0) {
-                        nearMajorRiver = true;
+                    if (usgsResponse.ok) {
+                        const usgsText = await usgsResponse.text();
+                        // RDB format: count lines that start with "USGS" (actual data rows)
+                        const dataLines = usgsText.split('\n').filter(line => line.startsWith('USGS'));
+                        riverCount = dataLines.length;
+                        if (riverCount > 0) {
+                            nearMajorRiver = true;
+                            console.log(`✅ USGS found ${riverCount} streams/rivers nearby`);
+                        } else {
+                            console.log('ℹ️ No USGS streams found in area');
+                        }
+                    } else {
+                        console.log(`⚠️ USGS API returned ${usgsResponse.status}`);
                     }
                 } catch (e) {
-                    console.log('⚠️ USGS stream check skipped');
+                    console.log('⚠️ USGS stream check failed:', e.message);
                 }
 
                 // Scientifically determine flood zone using FEMA methodology
@@ -1059,8 +1076,9 @@
                     ELEVATION: elevation,
                     ANNUAL_CHANCE: annualChance,
                     NEAR_WATERWAY: nearMajorRiver,
+                    RIVER_COUNT: riverCount,
                     FLOOD_RISK: floodRisk,
-                    SOURCE: 'USGS + Elevation Analysis'
+                    SOURCE: 'USGS Water Services + NASA SRTM Elevation'
                 };
 
             } catch (error) {
@@ -1882,6 +1900,7 @@
                     <p style="color: #FFFFFF; font-weight: 700;">Base Flood Elevation: ${data.STATIC_BFE}</p>
                     <p style="color: #FFFFFF; font-weight: 700;">Zone Classification: ${data.ZONE_SUBTY}</p>
                     ${data.NEAR_WATERWAY !== undefined ? `<p style="color: #FFFFFF; font-weight: 700;">Near Major Waterway: ${data.NEAR_WATERWAY ? 'Yes' : 'No'}</p>` : ''}
+                    ${data.RIVER_COUNT !== undefined ? `<p style="color: #FFFFFF; font-weight: 700;">USGS Rivers/Streams Nearby: ${data.RIVER_COUNT}</p>` : ''}
                     <p style="margin-top: 15px; color: #10b981; font-size: 0.95em;">✅ ${data.SOURCE}</p>
                 </div>
             `;
