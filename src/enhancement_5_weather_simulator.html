@@ -874,70 +874,82 @@
             }
         }
 
-        // Fetch NOAA CDO historical climate data for charts
+        // Fetch historical climate data for charts using Open-Meteo Archive (FREE, no token needed)
         async function fetchNOAAHistoricalData(lat, lon) {
             try {
-                console.log('📊 Fetching NOAA CDO historical data for charts...');
+                console.log('📊 Fetching historical weather data from Open-Meteo Archive...');
 
-                const TOKEN = 'pgLwHCIovnmuIoZeVzarJyxjRWLHZjUd';
-                const BASE_URL = 'https://www.ncdc.noaa.gov/cdo-web/api/v2';
-
-                // Find nearest station
-                const extent = `${lon - 0.5},${lat - 0.5},${lon + 0.5},${lat + 0.5}`;
-                const stationsUrl = `${BASE_URL}/stations?datasetid=GHCND&extent=${extent}&limit=5`;
-
-                const stationsResponse = await fetch(stationsUrl, {
-                    headers: { 'token': TOKEN }
-                });
-
-                if (!stationsResponse.ok) {
-                    console.log('⚠️ NOAA CDO stations API failed, charts will remain empty');
-                    return null;
-                }
-
-                const stationsData = await stationsResponse.json();
-                if (!stationsData.results || stationsData.results.length === 0) {
-                    console.log('⚠️ No NOAA CDO stations found, charts will remain empty');
-                    return null;
-                }
-
-                const station = stationsData.results[0];
-
-                // Get 12 months of data
+                // Get last 12 months of data
                 const endDate = new Date();
                 const startDate = new Date();
                 startDate.setFullYear(endDate.getFullYear() - 1);
 
-                const dataUrl = `${BASE_URL}/data?` +
-                    `datasetid=GHCND&` +
-                    `stationid=${station.id}&` +
-                    `startdate=${startDate.toISOString().split('T')[0]}&` +
-                    `enddate=${endDate.toISOString().split('T')[0]}&` +
-                    `datatypeid=TMAX,TMIN,PRCP&` +
-                    `units=standard&` +
-                    `limit=1000`;
+                const startDateStr = startDate.toISOString().split('T')[0];
+                const endDateStr = endDate.toISOString().split('T')[0];
 
-                const dataResponse = await fetch(dataUrl, {
-                    headers: { 'token': TOKEN }
-                });
+                // Open-Meteo Archive API - FREE, reliable, no token needed
+                const url = `https://archive-api.open-meteo.com/v1/archive?` +
+                    `latitude=${lat}&` +
+                    `longitude=${lon}&` +
+                    `start_date=${startDateStr}&` +
+                    `end_date=${endDateStr}&` +
+                    `daily=temperature_2m_max,temperature_2m_min,precipitation_sum&` +
+                    `temperature_unit=fahrenheit&` +
+                    `precipitation_unit=inch&` +
+                    `timezone=auto`;
 
-                if (!dataResponse.ok) {
-                    console.log('⚠️ NOAA CDO data API failed, charts will remain empty');
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    console.log('⚠️ Open-Meteo Archive API failed, charts will remain empty');
                     return null;
                 }
 
-                const climateData = await dataResponse.json();
-                console.log(`✅ Retrieved ${climateData.results?.length || 0} NOAA CDO records for charts`);
+                const data = await response.json();
 
-                // Populate the charts
-                if (climateData.results && climateData.results.length > 0) {
-                    createNOAACharts(climateData.results);
+                // Convert Open-Meteo format to NOAA CDO format for createNOAACharts
+                const records = [];
+
+                if (data.daily) {
+                    for (let i = 0; i < data.daily.time.length; i++) {
+                        // TMAX records
+                        if (data.daily.temperature_2m_max[i] !== null) {
+                            records.push({
+                                date: data.daily.time[i],
+                                datatype: 'TMAX',
+                                value: data.daily.temperature_2m_max[i] * 10 // Convert to tenths for compatibility
+                            });
+                        }
+                        // TMIN records
+                        if (data.daily.temperature_2m_min[i] !== null) {
+                            records.push({
+                                date: data.daily.time[i],
+                                datatype: 'TMIN',
+                                value: data.daily.temperature_2m_min[i] * 10
+                            });
+                        }
+                        // PRCP records
+                        if (data.daily.precipitation_sum[i] !== null) {
+                            records.push({
+                                date: data.daily.time[i],
+                                datatype: 'PRCP',
+                                value: data.daily.precipitation_sum[i] * 254 // Convert inches to tenths of mm
+                            });
+                        }
+                    }
                 }
 
-                return climateData.results;
+                console.log(`✅ Retrieved ${records.length} historical weather records from Open-Meteo`);
+
+                // Populate the charts
+                if (records.length > 0) {
+                    createNOAACharts(records);
+                }
+
+                return records;
 
             } catch (error) {
-                console.error('❌ NOAA CDO historical data error:', error);
+                console.error('❌ Historical weather data error:', error);
                 return null;
             }
         }
