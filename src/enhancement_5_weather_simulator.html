@@ -1504,11 +1504,10 @@
                 // Format: CSV with header lines (AL[ID][YEAR], NAME, [count]) followed by data lines
                 // Data lines: Date,Time,Record,Status,Lat,Lon,MaxWind,MinPressure,...
 
-                // NOAA blocks CORS, so we use a CORS proxy
-                const hurdat2Url = 'https://www.nhc.noaa.gov/data/hurdat/hurdat2-1851-2024-040425.txt';
-                const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(hurdat2Url)}`;
+                // NOAA blocks CORS, so we use corsproxy.io
+                const url = 'https://corsproxy.io/?https://www.nhc.noaa.gov/data/hurdat/hurdat2-1851-2024-040425.txt';
 
-                console.log(`📍 Downloading HURDAT2 database and filtering for ${lat}, ${lon}...`);
+                console.log(`📍 Downloading HURDAT2 database via CORS proxy for ${lat}, ${lon}...`);
 
                 const response = await fetch(url);
 
