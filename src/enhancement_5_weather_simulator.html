@@ -1166,27 +1166,50 @@
                     rcp85: []   // High emissions scenario
                 };
 
-                // Calculate baseline from current data
-                const baseline = climateData.daily?.temperature_2m_mean?.slice(0, 365).reduce((a, b) => a + b, 0) / 365 || 15;
+                // Calculate temperature baseline from current data
+                const tempBaseline = climateData.daily?.temperature_2m_mean?.slice(0, 365).reduce((a, b) => a + b, 0) / 365 || 15;
+
+                // Calculate precipitation baseline (annual total in mm)
+                const precipBaseline = climateData.daily?.precipitation_sum?.slice(0, 365).reduce((a, b) => a + b, 0) || 500;
+
+                // Precipitation projections (separate from temperature)
+                const precipProjections = {
+                    rcp26: [],  // Low emissions scenario
+                    rcp45: [],  // Medium emissions scenario
+                    rcp85: []   // High emissions scenario
+                };
 
                 // Generate realistic projections based on IPCC scenarios
                 years.forEach((year, i) => {
                     const yearsFromNow = year - 2024;
+
+                    // Temperature projections
                     // RCP 2.6: +0.3-1.7°C by 2100
-                    projections.rcp26.push(baseline + (0.02 * yearsFromNow));
+                    projections.rcp26.push(tempBaseline + (0.02 * yearsFromNow));
                     // RCP 4.5: +1.1-2.6°C by 2100
-                    projections.rcp45.push(baseline + (0.03 * yearsFromNow));
+                    projections.rcp45.push(tempBaseline + (0.03 * yearsFromNow));
                     // RCP 8.5: +2.6-4.8°C by 2100
-                    projections.rcp85.push(baseline + (0.05 * yearsFromNow));
+                    projections.rcp85.push(tempBaseline + (0.05 * yearsFromNow));
+
+                    // Precipitation projections (% change from baseline)
+                    // RCP 2.6: +2-5% by 2100
+                    precipProjections.rcp26.push(((0.06 * yearsFromNow) / 100) * precipBaseline);
+                    // RCP 4.5: +3-8% by 2100
+                    precipProjections.rcp45.push(((0.10 * yearsFromNow) / 100) * precipBaseline);
+                    // RCP 8.5: +5-15% by 2100
+                    precipProjections.rcp85.push(((0.18 * yearsFromNow) / 100) * precipBaseline);
                 });
 
                 console.log('✅ Climate projections calculated from Open-Meteo data');
+                console.log(`📊 Temperature baseline: ${tempBaseline.toFixed(1)}°C, Precipitation baseline: ${precipBaseline.toFixed(0)}mm/year`);
 
                 updateAPIStatus('berkeley-status', 'success');
                 return {
-                    ...projections,
+                    temperature: projections,
+                    precipitation: precipProjections,
                     years: years,
-                    baseline: baseline,
+                    tempBaseline: tempBaseline,
+                    precipBaseline: precipBaseline,
                     source: 'Open-Meteo Climate API (EC-Earth3P-HR model)'
                 };
             } catch (error) {
@@ -2211,18 +2234,18 @@
         // Create climate projection charts
         function createClimateProjectionCharts(projections) {
             if (!projections) return;
-            
+
             // Temperature projections
             const tempOptions = {
                 series: [{
                     name: 'Low Emissions (RCP 2.6)',
-                    data: projections.rcp26.map((v, i) => ({ x: 2030 + i * 10, y: v }))
+                    data: projections.temperature.rcp26.map((v, i) => ({ x: projections.years[i], y: (v - projections.tempBaseline).toFixed(2) }))
                 }, {
                     name: 'Medium Emissions (RCP 4.5)',
-                    data: projections.rcp45.map((v, i) => ({ x: 2030 + i * 10, y: v }))
+                    data: projections.temperature.rcp45.map((v, i) => ({ x: projections.years[i], y: (v - projections.tempBaseline).toFixed(2) }))
                 }, {
                     name: 'High Emissions (RCP 8.5)',
-                    data: projections.rcp85.map((v, i) => ({ x: 2030 + i * 10, y: v }))
+                    data: projections.temperature.rcp85.map((v, i) => ({ x: projections.years[i], y: (v - projections.tempBaseline).toFixed(2) }))
                 }],
                 chart: {
                     type: 'line',
@@ -2260,6 +2283,77 @@
             if (charts.tempProjection) charts.tempProjection.destroy();
             charts.tempProjection = new ApexCharts(document.querySelector("#tempProjectionChart"), tempOptions);
             charts.tempProjection.render();
+
+            // Precipitation projections
+            const precipOptions = {
+                series: [{
+                    name: 'Low Emissions (RCP 2.6)',
+                    data: projections.precipitation.rcp26.map((v, i) => ({
+                        x: projections.years[i],
+                        y: ((v / projections.precipBaseline) * 100).toFixed(1)
+                    }))
+                }, {
+                    name: 'Medium Emissions (RCP 4.5)',
+                    data: projections.precipitation.rcp45.map((v, i) => ({
+                        x: projections.years[i],
+                        y: ((v / projections.precipBaseline) * 100).toFixed(1)
+                    }))
+                }, {
+                    name: 'High Emissions (RCP 8.5)',
+                    data: projections.precipitation.rcp85.map((v, i) => ({
+                        x: projections.years[i],
+                        y: ((v / projections.precipBaseline) * 100).toFixed(1)
+                    }))
+                }],
+                chart: {
+                    type: 'line',
+                    height: 350,
+                    background: 'transparent',
+                    toolbar: { show: false }
+                },
+                colors: ['#10b981', '#f59e0b', '#ef4444'],
+                stroke: {
+                    curve: 'smooth',
+                    width: 3
+                },
+                xaxis: {
+                    type: 'numeric',
+                    title: {
+                        text: 'Year',
+                        style: { color: '#ffffff', fontSize: '13px', fontWeight: 700 }
+                    },
+                    labels: { style: { colors: '#ffffff' } }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Change from Baseline (%)',
+                        style: { color: '#ffffff', fontSize: '13px', fontWeight: 700 }
+                    },
+                    labels: {
+                        style: { colors: '#ffffff' },
+                        formatter: (val) => `+${val}%`
+                    }
+                },
+                theme: { mode: 'dark' },
+                grid: {
+                    borderColor: 'rgba(255, 255, 255, 0.1)'
+                },
+                legend: {
+                    labels: { colors: '#ffffff' }
+                },
+                tooltip: {
+                    theme: 'dark',
+                    y: {
+                        formatter: (val) => `+${val}% change`
+                    }
+                }
+            };
+
+            if (charts.precipProjection) charts.precipProjection.destroy();
+            charts.precipProjection = new ApexCharts(document.querySelector("#precipProjectionChart"), precipOptions);
+            charts.precipProjection.render();
+
+            console.log('✅ Climate projection charts rendered (Temperature & Precipitation)');
         }
 
         // Create 30-Year Climate Normals chart
