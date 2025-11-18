@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elevation API Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #0a1628;
+            color: white;
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-container {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+        }
+        button {
+            background: linear-gradient(135deg, #0066CC, #00D4FF);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1em;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .result {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+    </style>
+</head>
+<body>
+    <h1>📏 Triple Fallback Elevation API Test</h1>
+
+    <div class="test-container">
+        <h2>Test All 3 Elevation Endpoints</h2>
+        <p>Testing the exact code from climate-risk-api.js lines 3-38</p>
+
+        <button onclick="testAllAPIs(29.7604, -95.3698, 'Houston, TX')">Test Houston</button>
+        <button onclick="testAllAPIs(33.4484, -112.0740, 'Phoenix, AZ')">Test Phoenix</button>
+        <button onclick="testAllAPIs(39.7392, -104.9903, 'Denver, CO (high elevation)')">Test Denver</button>
+        <button onclick="testAllAPIs(29.9584, -90.0644, 'New Orleans, LA (below sea level)')">Test New Orleans</button>
+
+        <div id="result" class="result">Click a button to test all 3 elevation APIs...</div>
+    </div>
+
+    <script>
+        async function testAllAPIs(lat, lng, locationName) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `Testing ${locationName}\nLat: ${lat}, Lng: ${lng}\n\n`;
+
+            let elevationFeet = 0;
+            const results = [];
+
+            // ── 1. OPENTOPODATA (SRTM 30m) ──
+            try {
+                resultDiv.innerHTML += `[1/3] Testing OpenTopoData API...\n`;
+                const startTime = Date.now();
+
+                const topoRes = await fetch(\`https://api.opentopodata.org/v1/srtm30m?locations=\${lat},\${lng}\`, {
+                    signal: AbortSignal.timeout(8000)
+                });
+
+                const elapsed = Date.now() - startTime;
+
+                if (topoRes.ok) {
+                    const topoData = await topoRes.json();
+                    if (topoData.results?.[0]?.elevation !== null) {
+                        elevationFeet = Math.round(topoData.results[0].elevation * 3.28084);
+                        results.push(\`<span class="success">✅ OpenTopoData: \${elevationFeet} ft (\${elapsed}ms)</span>\`);
+                        resultDiv.innerHTML += \`   SUCCESS: \${elevationFeet} ft in \${elapsed}ms\n\n\`;
+                    } else {
+                        results.push(\`<span class="warning">⚠️ OpenTopoData: No data returned</span>\`);
+                        resultDiv.innerHTML += \`   No elevation data in response\n\n\`;
+                    }
+                } else {
+                    results.push(\`<span class="error">❌ OpenTopoData: HTTP \${topoRes.status}</span>\`);
+                    resultDiv.innerHTML += \`   HTTP \${topoRes.status}\n\n\`;
+                }
+            } catch (e) {
+                results.push(\`<span class="error">❌ OpenTopoData: \${e.message}</span>\`);
+                resultDiv.innerHTML += \`   ERROR: \${e.message}\n\n\`;
+            }
+
+            // ── 2. OPEN-ELEVATION ──
+            if (elevationFeet === 0) {
+                try {
+                    resultDiv.innerHTML += \`[2/3] Testing Open-Elevation API (fallback)...\n\`;
+                    const startTime = Date.now();
+
+                    const openRes = await fetch(\`https://api.open-elevation.com/api/v1/lookup?locations=\${lat},\${lng}\`, {
+                        signal: AbortSignal.timeout(8000)
+                    });
+
+                    const elapsed = Date.now() - startTime;
+
+                    if (openRes.ok) {
+                        const openData = await openRes.json();
+                        if (openData.results?.[0]?.elevation !== undefined) {
+                            elevationFeet = Math.round(openData.results[0].elevation * 3.28084);
+                            results.push(\`<span class="success">✅ Open-Elevation: \${elevationFeet} ft (\${elapsed}ms)</span>\`);
+                            resultDiv.innerHTML += \`   SUCCESS: \${elevationFeet} ft in \${elapsed}ms\n\n\`;
+                        } else {
+                            results.push(\`<span class="warning">⚠️ Open-Elevation: No data returned</span>\`);
+                            resultDiv.innerHTML += \`   No elevation data in response\n\n\`;
+                        }
+                    } else {
+                        results.push(\`<span class="error">❌ Open-Elevation: HTTP \${openRes.status}</span>\`);
+                        resultDiv.innerHTML += \`   HTTP \${openRes.status}\n\n\`;
+                    }
+                } catch (e) {
+                    results.push(\`<span class="error">❌ Open-Elevation: \${e.message}</span>\`);
+                    resultDiv.innerHTML += \`   ERROR: \${e.message}\n\n\`;
+                }
+            }
+
+            // ── 3. MAPBOX ──
+            if (elevationFeet === 0) {
+                try {
+                    resultDiv.innerHTML += \`[3/3] Testing Mapbox API (final fallback)...\n\`;
+                    const startTime = Date.now();
+
+                    const mapboxRes = await fetch(\`https://api.mapbox.com/v4/mapbox.mapbox-terrain-v2/tilequery/\${lng},\${lat}.json?access_token=pk.eyJ1Ijoib3Blbi1lbGV2YXRpb24iLCJhIjoiY2ticDQ3bW9xMDd2czJ4cXFqMmxqa3N2NSJ9.gCyn8OHysqJXuQ8hY2U5ZQ\`);
+
+                    const elapsed = Date.now() - startTime;
+
+                    if (mapboxRes.ok) {
+                        const mbData = await mapboxRes.json();
+                        if (mbData.features?.[0]?.properties?.elevation) {
+                            elevationFeet = Math.round(mbData.features[0].properties.elevation * 3.28084);
+                            results.push(\`<span class="success">✅ Mapbox: \${elevationFeet} ft (\${elapsed}ms)</span>\`);
+                            resultDiv.innerHTML += \`   SUCCESS: \${elevationFeet} ft in \${elapsed}ms\n\n\`;
+                        } else {
+                            results.push(\`<span class="warning">⚠️ Mapbox: No data returned</span>\`);
+                            resultDiv.innerHTML += \`   No elevation data in response\n\n\`;
+                        }
+                    } else {
+                        results.push(\`<span class="error">❌ Mapbox: HTTP \${mapboxRes.status}</span>\`);
+                        resultDiv.innerHTML += \`   HTTP \${mapboxRes.status}\n\n\`;
+                    }
+                } catch (e) {
+                    results.push(\`<span class="error">❌ Mapbox: \${e.message}</span>\`);
+                    resultDiv.innerHTML += \`   ERROR: \${e.message}\n\n\`;
+                }
+            }
+
+            // ── SUMMARY ──
+            resultDiv.innerHTML += \`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\`;
+            resultDiv.innerHTML += \`FINAL RESULT: \${elevationFeet > 0 ? '<span class="success">' + elevationFeet + ' feet</span>' : '<span class="error">FAILED - All APIs returned 0</span>'}\n\n\`;
+            resultDiv.innerHTML += \`API Results:\n\`;
+            results.forEach(r => resultDiv.innerHTML += r + '\n');
+
+            if (elevationFeet > 0) {
+                resultDiv.innerHTML += \`\n<span class="success">✅ Triple fallback system working correctly!</span>\`;
+            } else {
+                resultDiv.innerHTML += \`\n<span class="error">❌ All elevation APIs failed - needs investigation</span>\`;
+            }
+        }
+
+        window.testAllAPIs = testAllAPIs;
+    </script>
+</body>
+</html>

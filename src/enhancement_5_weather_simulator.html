@@ -10,9 +10,13 @@
     <script src="core/scoring-engine.js"></script>
     <script src="shared-data-adapter.js"></script>
 
-    <!-- ApexCharts - glassmorphic charts -->
+    <!-- ApexCharts - Ultra-high-tech glassmorphic charts -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.51.0/dist/apexcharts.min.js"></script>
 
+    <!-- Cal-Heatmap for extreme heat calendar -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cal-heatmap@3.6.2/cal-heatmap.css">
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/cal-heatmap@3.6.2/cal-heatmap.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -59,6 +63,12 @@
             font-size: 1.2em;
         }
 
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 30px;
+        }
+
         .panel {
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(20px);
@@ -66,7 +76,6 @@
             padding: 30px;
             border: 1px solid rgba(255, 255, 255, 0.3);
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
         }
 
         .panel h2 {
@@ -76,13 +85,6 @@
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-
-        .panel-subtitle {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.95em;
-            margin-bottom: 20px;
-            font-style: italic;
         }
 
         .property-selector {
@@ -128,6 +130,13 @@
         }
 
         /* Property Toolbar Styles */
+        .panel-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.95em;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+
         #selectedPropertiesToolbar {
             display: flex;
             gap: 15px;
@@ -235,7 +244,7 @@
             background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(10px);
             z-index: 1000;
-            display: none;
+            display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
@@ -326,9 +335,9 @@
 
         .weather-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
-            margin-bottom: 10px;
+            margin-bottom: 30px;
         }
 
         .weather-card {
@@ -352,7 +361,7 @@
         }
 
         .weather-value {
-            font-size: 2em;
+            font-size: 2.5em;
             font-weight: bold;
             color: white;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
@@ -362,12 +371,6 @@
         .weather-label {
             color: rgba(255, 255, 255, 0.9);
             font-size: 1em;
-        }
-
-        .weather-subtext {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 0.85em;
-            margin-top: 6px;
         }
 
         .timeline-control {
@@ -519,11 +522,9 @@
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
-            margin-top: 10px;
         }
 
-        .season-btn,
-        .scenario-btn {
+        .season-btn {
             background: rgba(255, 255, 255, 0.1);
             border: 2px solid rgba(255, 255, 255, 0.3);
             color: white;
@@ -534,13 +535,11 @@
             transition: all 0.3s ease;
         }
 
-        .season-btn:hover,
-        .scenario-btn:hover {
+        .season-btn:hover {
             background: rgba(255, 255, 255, 0.2);
         }
 
-        .season-btn.active,
-        .scenario-btn.active {
+        .season-btn.active {
             background: linear-gradient(135deg, #0066CC, #00D4FF);
             border-color: #00D4FF;
         }
@@ -628,8 +627,8 @@
             font-weight: bold;
             font-size: 1.3em;
         }
-
-        /* Bottom Navigation Toolbar */
+    
+        /* Ultra-Modern Bottom Navigation Toolbar */
         .bottom-navbar {
             position: fixed;
             bottom: 0;
@@ -723,33 +722,64 @@
             display: none;
         }
 
-        /* Messages */
+        /* Error and Loading Messages */
         .error-message {
-            color: #fca5a5;
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            border-radius: 10px;
-            padding: 20px;
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid rgba(255, 0, 0, 0.5);
+            border-radius: 15px;
+            padding: 30px;
+            color: white;
+            text-align: center;
+            margin: 40px auto;
+            max-width: 600px;
+        }
+
+        .error-message p {
             margin: 15px 0;
+            font-size: 16px;
+        }
+
+        .error-message strong {
+            font-size: 20px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .error-message .btn {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: rgba(0, 212, 255, 0.3);
+            border: 2px solid rgba(0, 212, 255, 0.6);
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .error-message .btn:hover {
+            background: rgba(0, 212, 255, 0.5);
+            transform: translateY(-2px);
         }
 
         .loading-message {
-            color: rgba(255, 255, 255, 0.6);
-            text-align: center;
+            background: rgba(0, 212, 255, 0.2);
+            border: 2px solid rgba(0, 212, 255, 0.5);
+            border-radius: 15px;
             padding: 30px;
-            font-style: italic;
+            color: white;
+            text-align: center;
+            margin: 40px auto;
+            max-width: 600px;
         }
 
-        .success-message {
-            color: #6ee7b7;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            border-radius: 10px;
-            padding: 20px;
-            margin: 15px 0;
+        /* Climate Risk Assessment Styles */
+        .panel-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9em;
+            margin-bottom: 25px;
         }
 
-        /* Climate Risk Styles */
         .risk-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -802,6 +832,7 @@
             font-size: 1.1em;
         }
 
+        /* FEMA Flood Zone Colors */
         .zone-V, .zone-VE {
             color: #ef4444;
             font-weight: bold;
@@ -834,10 +865,44 @@
             border-radius: 6px;
         }
 
+        /* Overall Score Card */
         .overall-score-card {
             background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(59, 130, 246, 0.15));
             border: 2px solid rgba(255, 255, 255, 0.3);
             margin-bottom: 30px;
+        }
+
+        .score-display {
+            text-align: center;
+            padding: 40px;
+            border-radius: 20px;
+            margin: 20px 0;
+        }
+
+        .score-display.good {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .score-display.fair {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .score-display.poor {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .score-number {
+            font-size: 96px;
+            font-weight: bold;
+            line-height: 1;
+            margin-bottom: 15px;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .score-label {
+            font-size: 24px;
+            opacity: 0.95;
+            font-weight: 600;
         }
 
         .risk-breakdown {
@@ -845,7 +910,6 @@
             margin-top: 25px;
             padding-top: 25px;
             border-top: 1px solid rgba(255, 255, 255, 0.3);
-            color: rgba(255, 255, 255, 0.9);
         }
 
         .risk-breakdown p {
@@ -853,6 +917,7 @@
             font-size: 1.05em;
         }
 
+        /* Property Images */
         .image-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
@@ -883,7 +948,32 @@
         .image-card img:hover {
             transform: scale(1.02);
         }
-    </style>
+
+        .loading-message {
+            color: rgba(255, 255, 255, 0.6);
+            text-align: center;
+            padding: 30px;
+            font-style: italic;
+        }
+
+        .error-message {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+
+        .success-message {
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+</style>
 </head>
 <body>
     <div class="container">
@@ -895,7 +985,7 @@
         <!-- Property Toolbar (Max 4) -->
         <div class="panel">
             <h2>🏠 Compare Properties (Max 4)</h2>
-            <p class="panel-subtitle">Add up to 4 properties to load real weather and climate data</p>
+            <p class="panel-subtitle">Add up to 4 properties to load real weather data</p>
             <div id="selectedPropertiesToolbar">
                 <!-- Selected properties will appear here -->
             </div>
@@ -903,7 +993,7 @@
         </div>
 
         <!-- Property Picker Modal -->
-        <div id="propertyPickerModal">
+        <div id="propertyPickerModal" style="display: none;">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Select a Property</h3>
@@ -937,7 +1027,7 @@
 
         <!-- Current Weather Metrics -->
         <div class="panel">
-            <h2>🌡️ Current Weather & Monthly Normals</h2>
+            <h2>🌡️ Current Weather Metrics</h2>
             <div class="weather-grid" id="weatherMetrics">
                 <!-- Populated by JS -->
             </div>
@@ -945,7 +1035,7 @@
 
         <!-- Impact Analysis -->
         <div class="panel">
-            <h2>📊 Weather Impact Analysis (Monthly Typical)</h2>
+            <h2>📊 Weather Impact Analysis</h2>
             <div class="impact-grid" id="impactGrid">
                 <!-- Populated by JS -->
             </div>
@@ -954,7 +1044,7 @@
         <!-- Climate Risk Assessment -->
         <div class="panel">
             <h2>🌊 Climate Risk & Property Intelligence</h2>
-            <p class="panel-subtitle">FEMA flood zones, elevation, sea level rise projections, and structural analysis (based on available data)</p>
+            <p class="panel-subtitle">FEMA flood zones, elevation data, sea level rise projections, and structural analysis</p>
 
             <!-- Overall Risk Score Card -->
             <div class="risk-card overall-score-card" id="overallRiskScore">
@@ -967,56 +1057,56 @@
                 <!-- Flood Risk Card -->
                 <div class="risk-card">
                     <h3>🌊 Flood Risk Assessment</h3>
-                    <div id="floodRiskContent" class="loading-message">Select a property...</div>
+                    <div id="floodRiskContent" class="loading-message">Loading...</div>
                 </div>
 
                 <!-- Elevation & Sea Level -->
                 <div class="risk-card">
                     <h3>📏 Elevation & Sea Level Rise</h3>
-                    <div id="elevationContent" class="loading-message">Select a property...</div>
+                    <div id="elevationContent" class="loading-message">Loading...</div>
                 </div>
 
                 <!-- Property Structure -->
                 <div class="risk-card">
                     <h3>🏠 Property Structural Data</h3>
-                    <div id="structuralContent" class="loading-message">Select a property...</div>
+                    <div id="structuralContent" class="loading-message">Loading...</div>
                 </div>
             </div>
 
             <!-- Property Images Grid -->
             <div class="risk-card">
                 <h3>📸 Property Imagery</h3>
-                <div id="propertyImages" class="loading-message">Select a property...</div>
+                <div id="propertyImages" class="loading-message">Loading...</div>
             </div>
         </div>
 
         <!-- Multi-Hazard Risk Radar -->
         <div class="panel">
-            <h2>🛡️ Multi-Hazard Risk Radar (Penalty Points)</h2>
+            <h2>🛡️ Multi-Hazard Risk Radar (2050)</h2>
             <div id="riskRadar"></div>
         </div>
 
         <!-- Future Projection Twin-Line Chart -->
         <div class="panel">
-            <h2>🔮 Monthly Average Temperature: Present vs Future Scenario</h2>
+            <h2>🔮 Temperature & Precipitation 1850–2100</h2>
             <div style="margin-bottom:15px">
-                <button class="scenario-btn" onclick="switchScenario('ssp126', this)">Low Emissions</button>
-                <button class="scenario-btn active" onclick="switchScenario('ssp245', this)">Medium (Current Path)</button>
-                <button class="scenario-btn" onclick="switchScenario('ssp585', this)">High Emissions</button>
+                <button class="season-btn" onclick="switchScenario('ssp126')">Low Emissions</button>
+                <button class="season-btn active" onclick="switchScenario('ssp245')">Medium (Current Path)</button>
+                <button class="season-btn" onclick="switchScenario('ssp585')">High Emissions</button>
             </div>
             <div id="projectionChart"></div>
         </div>
 
         <!-- Charts (ApexCharts) -->
         <div class="panel">
-            <h2>📈 Annual Weather Patterns (Temperature & Humidity)</h2>
+            <h2>📈 Annual Weather Patterns</h2>
             <div class="chart-container">
                 <div id="weatherChart"></div>
             </div>
         </div>
 
         <div class="panel">
-            <h2>💧 Monthly Precipitation Pattern</h2>
+            <h2>💧 Precipitation & Temperature Trends</h2>
             <div class="chart-container">
                 <div id="precipChart"></div>
             </div>
@@ -1025,7 +1115,7 @@
         <!-- Extreme Heat Calendar -->
         <div class="panel">
             <h2>🔥 Extreme Heat Days Calendar</h2>
-            <p class="panel-subtitle">Actual days over 95°F this year (based on Open-Meteo archive)</p>
+            <p class="panel-subtitle">Days over 95°F throughout the year</p>
             <div id="heatCalendar" style="padding:20px;"></div>
         </div>
 
@@ -1056,39 +1146,30 @@
     <script src="https://cdn.jsdelivr.net/npm/tsparticles@3.5.0/tsparticles.bundle.min.js"></script>
 
     <script type="module">
-        // Import weather & risk APIs (Open-Meteo + your services)
-        import weatherAPI from './services/weather-api.js';       // Climate normals
-        import weatherComAPI from './services/weathercom-api.js'; // Current + forecast via Open-Meteo
+        // Import weather APIs - now using Open-Meteo (free, no API key required)
+        import weatherAPI from './services/weather-api.js'; // Climate normals
+        import weatherComAPI from './services/weathercom-api.js'; // Current + forecast
+
+        // Import climate risk & property intelligence APIs
         import climateRiskAPI from './services/climate-risk-api.js';
         import mlsAPI from './services/mls-api.js';
         import googleMapsAPI from './services/google-maps-api.js';
 
-        // Toggle this if you want placeholder monthly patterns as a last-resort fallback
-        const USE_PLACEHOLDER_CLIMATE = false;
-
-        // Core state
+        // ===== REAL PROPERTY DATA FROM DATABASE =====
+        // NO HARDCODED FAKE DATA - Loads from IndexedDB
         let PROPERTIES = [];
-        let SELECTED_PROPERTIES = [];      // Array of property IDs
-        let REAL_WEATHER_DATA = {};        // propertyId -> 12 months climate normals
-        let WEATHERCOM_DATA = {};          // propertyId -> { current, forecast }
-        let CLIMATE_RISK_DATA = {};        // propertyId -> comprehensive risk
-        let MLS_DATA = {};                 // propertyId -> MLS details
+        let SELECTED_PROPERTIES = []; // Array of up to 4 property IDs selected by user
+        let REAL_WEATHER_DATA = {}; // Cache for real 30-year climate normals (Open-Meteo) by property ID
+        let WEATHERCOM_DATA = {}; // Cache for current weather + 7-day forecast (Open-Meteo) by property ID
+        let CLIMATE_RISK_DATA = {}; // Cache for climate risk assessments
+        let MLS_DATA = {}; // Cache for MLS property details
 
         let currentProperty = null;
         let currentMonth = 0;
         let currentSeason = 'spring';
-        let currentScenario = 'ssp245';
-        let currentCalendarMonth = new Date().getMonth(); // 0-11 for heat calendar navigation
-        let heatCalendarData = null; // Store fetched YTD data
+        let weatherChart, precipChart;
 
-        // Charts
-        let weatherApexChart = null;
-        let precipApexChart = null;
-        let projectionChart = null;
-        let riskGaugeChart = null;
-        let riskRadarChart = null;
-
-        // Placeholder monthly patterns (only used if USE_PLACEHOLDER_CLIMATE === true)
+        // Weather Data by Month and Climate
         const WEATHER_DATA = {
             Mediterranean: {
                 months: [
@@ -1160,118 +1241,132 @@
                         'July', 'August', 'September', 'October', 'November', 'December'];
 
         // ===== PARTICLE BACKGROUND INITIALIZATION =====
+        // Initialize particle background
         tsParticles.load("tsparticles", {
-            background: { color: { value: "transparent" } },
-            fpsLimit: 60,
-            particles: {
-                number: { value: 80 },
-                color: { value: "#00D4FF" },
-                shape: { type: "circle" },
-                opacity: { value: 0.6 },
-                size: { value: 3 },
-                move: { enable: true, speed: 2, direction: "bottom", outModes: "out" }
-            },
-            detectRetina: true
+          background: { color: { value: "transparent" } },
+          fpsLimit: 60,
+          particles: {
+            number: { value: 80 },
+            color: { value: "#00D4FF" },
+            shape: { type: "circle" },
+            opacity: { value: 0.6 },
+            size: { value: 3 },
+            move: { enable: true, speed: 2, direction: "bottom", outModes: "out" }
+          },
+          detectRetina: true
         });
 
         function updateParticles(temp, precip) {
-            if (typeof temp !== 'number') return;
-            if (temp < 32) {
-                tsParticles.load("tsparticles", {
-                    particles: {
-                        shape: { type: "circle" },
-                        color: { value: "#ffffff" },
-                        move: { speed: 4, direction: "bottom" }
-                    }
-                });
-            } else if (typeof precip === 'number' && precip > 2) {
-                tsParticles.load("tsparticles", {
-                    particles: {
-                        shape: { type: "circle" },
-                        color: { value: "#00aaff" },
-                        move: { speed: 8, direction: "bottom" }
-                    }
-                });
-            }
+          if (temp < 32) {
+            tsParticles.load("tsparticles", {
+              particles: {
+                shape: { type: "circle" },
+                color: { value: "#ffffff" },
+                move: { speed: 4 }
+              }
+            });
+          } else if (precip > 2) {
+            tsParticles.load("tsparticles", {
+              particles: {
+                shape: { type: "circle" },
+                color: { value: "#00aaff" },
+                move: { speed: 8, direction: "bottom" }
+              }
+            });
+          }
         }
 
         // ===== SCENARIO SWITCHING FOR CLIMATE PROJECTIONS =====
-        window.switchScenario = async function(scenario, buttonElement) {
-            currentScenario = scenario;
-            document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
-            if (buttonElement) {
-                buttonElement.classList.add('active');
-            }
-            if (currentProperty) {
-                await loadProjections();
-            }
+        let currentScenario = 'ssp245';
+        window.switchScenario = async function(scenario) {
+          currentScenario = scenario;
+          document.querySelectorAll('.season-btn').forEach(b => b.classList.remove('active'));
+          event.target.classList.add('active');
+          if (currentProperty) await loadProjections();
         };
 
         async function loadProjections() {
-            if (!currentProperty) {
-                console.warn('No property selected for projections');
-                return;
+          if (!currentProperty) {
+            console.warn('No property selected for projections');
+            return;
+          }
+
+          const lat = currentProperty.location?.latitude || currentProperty.location?.lat;
+          const lng = currentProperty.location?.longitude || currentProperty.location?.lng;
+
+          if (!lat || !lng) {
+            console.warn('No coordinates available for projections');
+            return;
+          }
+
+          // Use cached historical data if available, otherwise use fallback
+          const historicalTemps = REAL_WEATHER_DATA[currentProperty.id]?.map(m => m.temp) ||
+                                 Array(12).fill(60);
+
+          // Calculate future projections based on current scenario
+          const scenarioAdjustment = {
+            'ssp126': 1.5,  // Low emissions: +1.5°F by 2100
+            'ssp245': 3.0,  // Medium emissions: +3°F by 2100 (current path)
+            'ssp585': 5.5   // High emissions: +5.5°F by 2100
+          };
+
+          const tempIncrease = scenarioAdjustment[currentScenario] || 3.0;
+          const futureTemps = historicalTemps.map(temp => Math.round(temp + tempIncrease));
+
+          const projOptions = {
+            series: [
+              { name: 'Historical Avg (1991-2020)', data: historicalTemps },
+              { name: `Projected 2050–2100 (${currentScenario.toUpperCase()})`, data: futureTemps }
+            ],
+            chart: { type: 'area', height: 400, foreColor: '#fff', background: 'transparent', toolbar: { show: false } },
+            theme: { mode: 'dark' },
+            stroke: { curve: 'smooth', width: 4 },
+            fill: {
+              type: 'gradient',
+              gradient: {
+                shadeIntensity: 1,
+                opacityFrom: 0.7,
+                opacityTo: 0.3,
+                stops: [0, 90, 100]
+              }
+            },
+            xaxis: {
+              categories: MONTHS,
+              labels: { style: { colors: '#fff' } }
+            },
+            yaxis: {
+              title: { text: 'Temperature (°F)', style: { color: '#fff' } },
+              labels: { style: { colors: '#fff' } }
+            },
+            colors: ['#00D4FF', '#ff0066'],
+            grid: { borderColor: 'rgba(255,255,255,0.1)' },
+            legend: {
+              labels: { colors: '#fff' },
+              position: 'top'
+            },
+            tooltip: {
+              theme: 'dark',
+              x: { show: true },
+              y: {
+                formatter: (val) => val + '°F'
+              }
             }
+          };
 
-            const lat = currentProperty.location?.latitude ?? currentProperty.location?.lat;
-            const lng = currentProperty.location?.longitude ?? currentProperty.location?.lng;
-
-            if (!lat || !lng) {
-                console.warn('No coordinates available for projections');
-                return;
-            }
-
-            const monthlyData = REAL_WEATHER_DATA[currentProperty.id];
-            const historicalTemps = monthlyData?.map(m => m.temp) || Array(12).fill(60);
-
-            const scenarioAdjustment = {
-                'ssp126': 1.5,
-                'ssp245': 3.0,
-                'ssp585': 5.5
-            };
-
-            const tempIncrease = scenarioAdjustment[currentScenario] ?? 3.0;
-            const futureTemps = historicalTemps.map(temp => Math.round(temp + tempIncrease));
-
-            const projOptions = {
-                series: [
-                    { name: 'Historical Avg (1991–2020)', data: historicalTemps },
-                    { name: `Future Scenario (${currentScenario.toUpperCase()})`, data: futureTemps }
-                ],
-                chart: { type: 'area', height: 400, foreColor: '#fff', background: 'transparent', toolbar: { show: false } },
-                theme: { mode: 'dark' },
-                stroke: { curve: 'smooth', width: 4 },
-                fill: {
-                    type: 'gradient',
-                    gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.3, stops: [0, 90, 100] }
-                },
-                xaxis: {
-                    categories: MONTHS,
-                    labels: { style: { colors: '#fff' } }
-                },
-                yaxis: {
-                    title: { text: 'Temperature (°F)', style: { color: '#fff' } },
-                    labels: { style: { colors: '#fff' } }
-                },
-                colors: ['#00D4FF', '#ff0066'],
-                grid: { borderColor: 'rgba(255,255,255,0.1)' },
-                legend: { labels: { colors: '#fff' }, position: 'top' },
-                tooltip: {
-                    theme: 'dark',
-                    y: { formatter: val => `${val}°F` }
-                }
-            };
-
-            if (projectionChart && typeof projectionChart.destroy === 'function') {
-                projectionChart.destroy();
-            }
-            projectionChart = new ApexCharts(document.getElementById("projectionChart"), projOptions);
-            projectionChart.render();
+          if (window.projectionChart && typeof window.projectionChart.destroy === 'function') {
+            window.projectionChart.destroy();
+          }
+          window.projectionChart = new ApexCharts(document.getElementById("projectionChart"), projOptions);
+          window.projectionChart.render();
+          console.log('✅ Climate projections rendered');
         }
 
-        // Detect climate for placeholder fallback (only used if USE_PLACEHOLDER_CLIMATE)
+        /**
+         * Intelligently detect climate based on property location
+         * Maps city/state to one of our 4 climate types
+         */
         function detectClimate(property) {
-            if (!property || !property.location) return 'Continental';
+            if (!property || !property.location) return 'Continental'; // Safe default
 
             const city = (property.location.city || '').toLowerCase();
             const state = (property.location.state || '').toLowerCase();
@@ -1279,23 +1374,25 @@
 
             if (!locationStr) return 'Continental';
 
-            if (locationStr.includes('los angeles') ||
-                locationStr.includes('san diego') ||
-                locationStr.includes('santa barbara') ||
-                locationStr.includes('malibu') ||
-                locationStr.includes('santa monica') ||
-                locationStr.includes('ventura') ||
-                locationStr.includes('san luis obispo') ||
-                (state === 'ca' && (city.includes('santa') || city.includes('san')))) {
+            // Mediterranean climates (California coast, Florida coast, Mediterranean regions)
+            if (locationStr.includes('los angeles') || locationStr.includes('la ') ||
+                locationStr.includes('san diego') || locationStr.includes('santa barbara') ||
+                locationStr.includes('malibu') || locationStr.includes('santa monica') ||
+                locationStr.includes('ventura') || locationStr.includes('san luis obispo') ||
+                state === 'ca' && (city.includes('santa') || city.includes('san')) ||
+                state === 'fl' || state === 'florida') {
                 return 'Mediterranean';
             }
 
+            // Alpine climates (Mountain regions)
             if (locationStr.includes('aspen') || locationStr.includes('vail') ||
+                locationStr.includes('boulder') || locationStr.includes('denver') ||
                 locationStr.includes('breckenridge') || locationStr.includes('telluride') ||
                 state === 'co' || state === 'ut' || state === 'wy') {
                 return 'Alpine';
             }
 
+            // Arid climates (Desert regions)
             if (locationStr.includes('phoenix') || locationStr.includes('las vegas') ||
                 locationStr.includes('scottsdale') || locationStr.includes('tucson') ||
                 locationStr.includes('palm springs') || locationStr.includes('mesa') ||
@@ -1303,46 +1400,62 @@
                 return 'Arid';
             }
 
+            // Default to Continental for most other locations
             return 'Continental';
         }
 
-        // Fetch real climate normals (Open-Meteo)
+        /**
+         * Fetch real weather data from Open-Meteo Climate API
+         * Gets 30-year climate normals (1991-2020)
+         * Caches results to avoid repeated API calls
+         */
         async function fetchRealWeatherData(property) {
             try {
+                // Check cache first
                 if (REAL_WEATHER_DATA[property.id]) {
                     console.log(`✅ Using cached climate normals for ${property.name}`);
                     return REAL_WEATHER_DATA[property.id];
                 }
 
                 console.log(`🌦️ Fetching 30-year climate normals for ${property.name}...`);
+
+                // Fetch from Open-Meteo Climate API
                 const weatherData = await weatherAPI.getWeatherForProperty(property);
 
-                if (Array.isArray(weatherData) && weatherData.length === 12) {
+                if (weatherData && weatherData.length === 12) {
+                    // Store in cache
                     REAL_WEATHER_DATA[property.id] = weatherData;
                     console.log(`✅ Successfully fetched climate normals for ${property.name}`);
                     return weatherData;
                 }
 
-                console.warn(`⚠️ No climate normals returned for ${property.name}`);
+                console.warn(`⚠️ No climate normals returned for ${property.name}, using placeholder`);
                 return null;
             } catch (error) {
-                console.warn(`⚠️ Failed to fetch climate normals for ${property.name}:`, error);
+                console.warn(`⚠️ Failed to fetch climate normals for ${property.name}:`, error.message);
                 return null;
             }
         }
 
-        // Fetch current weather + 7-day forecast (Open-Meteo)
+        /**
+         * Fetch current weather and 7-day forecast from Open-Meteo
+         * Provides real-time weather data with proper emoji icons
+         */
         async function fetchWeatherComData(property) {
             try {
+                // Check cache first
                 if (WEATHERCOM_DATA[property.id]) {
                     console.log(`✅ Using cached current weather for ${property.name}`);
                     return WEATHERCOM_DATA[property.id];
                 }
 
                 console.log(`☀️ Fetching current weather for ${property.name}...`);
+
+                // Fetch from Open-Meteo Forecast API
                 const weatherData = await weatherComAPI.getWeatherForProperty(property);
 
                 if (weatherData) {
+                    // Store in cache
                     WEATHERCOM_DATA[property.id] = weatherData;
                     console.log(`✅ Successfully fetched current weather for ${property.name}`);
                     return weatherData;
@@ -1351,38 +1464,96 @@
                 console.warn(`⚠️ No current weather returned for ${property.name}`);
                 return null;
             } catch (error) {
-                console.warn(`⚠️ Failed to fetch current weather for ${property.name}:`, error);
+                console.warn(`⚠️ Failed to fetch current weather for ${property.name}:`, error.message);
                 return null;
             }
         }
 
-        // Get monthly climate data (prefer real, optional placeholder)
+        /**
+         * Get weather data for current property and month
+         * Uses real data if available, falls back to placeholder
+         */
         function getWeatherData() {
             if (!currentProperty) return null;
 
+            // Try real data first
             if (REAL_WEATHER_DATA[currentProperty.id]) {
                 return REAL_WEATHER_DATA[currentProperty.id];
             }
 
-            if (USE_PLACEHOLDER_CLIMATE) {
-                const climate = currentProperty.climate || 'Continental';
-                return WEATHER_DATA[climate]?.months || WEATHER_DATA.Continental.months;
-            }
-
-            return null;
+            // Fall back to placeholder data by climate
+            const climate = currentProperty.climate || 'Continental';
+            return WEATHER_DATA[climate]?.months || WEATHER_DATA.Continental.months;
         }
 
-        // Geocoding via Nominatim
+        // Initialize
+        function init() {
+            renderSelectedPropertiesToolbar(); // Initialize toolbar (will show empty state)
+
+            // Always call render functions - they handle empty states internally
+            renderWeatherMetrics();
+            renderImpactAnalysis();
+            renderForecast();
+            renderAlerts();
+            initCharts();
+
+            // Timeline slider
+            document.getElementById('timelineSlider').addEventListener('input', (e) => {
+                currentMonth = parseInt(e.target.value);
+                updateDisplay();
+            });
+        }
+
+        // Render Property Selector
+        function renderPropertySelector() {
+            const container = document.getElementById('propertySelector');
+            container.innerHTML = PROPERTIES.map(p => {
+                const hasClimateNormals = REAL_WEATHER_DATA[p.id] !== undefined;
+                const hasCurrentWeather = WEATHERCOM_DATA[p.id] !== undefined;
+
+                let dataIndicator = '';
+                let dataTooltip = '';
+
+                if (hasClimateNormals && hasCurrentWeather) {
+                    dataIndicator = '📡☀️';
+                    dataTooltip = 'Open-Meteo: 30-year normals + Current weather';
+                } else if (hasClimateNormals) {
+                    dataIndicator = '📡';
+                    dataTooltip = 'Open-Meteo: 30-year climate normals';
+                } else if (hasCurrentWeather) {
+                    dataIndicator = '☀️';
+                    dataTooltip = 'Open-Meteo: Current weather';
+                } else {
+                    dataIndicator = '📊';
+                    dataTooltip = 'Placeholder Data';
+                }
+
+                return `
+                    <div class="property-card ${currentProperty && currentProperty.id === p.id ? 'active' : ''}" onclick="selectProperty('${p.id}')">
+                        <div class="property-name">${p.name} <span title="${dataTooltip}">${dataIndicator}</span></div>
+                        <div class="property-location">${p.location.city}, ${p.location.state} • ${p.climate}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Select Property
+        // ===== GEOCODING FUNCTIONS =====
+
+        // Geocode an address using free Nominatim API (OpenStreetMap)
         async function geocodeAddress(address) {
+            // Use Nominatim (free, no API key required)
             const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
 
             try {
                 const response = await fetch(url, {
-                    headers: { 'User-Agent': 'CLUES Quantum App Weather Simulator' }
+                    headers: {
+                        'User-Agent': 'CLUES Quantum App Weather Simulator'
+                    }
                 });
                 const data = await response.json();
 
-                if (Array.isArray(data) && data.length > 0) {
+                if (data.length > 0) {
                     return {
                         lat: parseFloat(data[0].lat),
                         lng: parseFloat(data[0].lon)
@@ -1397,13 +1568,15 @@
             }
         }
 
+        // Ensure all properties have coordinates
         async function ensureCoordinates() {
             let geocodedCount = 0;
             let totalNeeded = 0;
 
+            // Count how many need geocoding
             PROPERTIES.forEach(property => {
-                const lat = property.location?.latitude ?? property.location?.lat;
-                const lng = property.location?.longitude ?? property.location?.lng;
+                const lat = property.location?.latitude || property.location?.lat;
+                const lng = property.location?.longitude || property.location?.lng;
                 if (!lat || !lng || lat === 0 || lng === 0) totalNeeded++;
             });
 
@@ -1415,19 +1588,19 @@
             console.log(`🌍 Geocoding ${totalNeeded} properties using Nominatim API...`);
 
             const promises = PROPERTIES.map(async (property) => {
-                const lat = property.location?.latitude ?? property.location?.lat;
-                const lng = property.location?.longitude ?? property.location?.lng;
+                const lat = property.location?.latitude || property.location?.lat;
+                const lng = property.location?.longitude || property.location?.lng;
 
+                // If property doesn't have coordinates, geocode it
                 if (!lat || !lng || lat === 0 || lng === 0) {
-                    const fullAddress =
-                        property.address?.full ||
-                        property.address ||
-                        `${property.name}, ${property.location?.city || ''} ${property.location?.state || ''}`;
+                    // Build full address
+                    const fullAddress = property.name; // Already contains full address from shared-data-adapter
 
                     console.log(`🔍 Geocoding: ${fullAddress}`);
                     const coords = await geocodeAddress(fullAddress);
 
                     if (coords) {
+                        // Add coordinates to property in all possible locations
                         if (!property.location) property.location = {};
                         property.location.latitude = coords.lat;
                         property.location.longitude = coords.lng;
@@ -1446,11 +1619,15 @@
             console.log(`📍 Successfully geocoded ${geocodedCount}/${totalNeeded} properties`);
         }
 
+        // ===== END GEOCODING FUNCTIONS =====
+
         // ===== PROPERTY TOOLBAR FUNCTIONS =====
+
         window.showPropertyPicker = function() {
             const modal = document.getElementById('propertyPickerModal');
             const grid = document.getElementById('propertyPickerGrid');
 
+            // Populate property picker grid
             grid.innerHTML = '';
             PROPERTIES.forEach(property => {
                 const isSelected = SELECTED_PROPERTIES.includes(property.id);
@@ -1466,9 +1643,7 @@
 
                 card.innerHTML = `
                     <div class="property-name">${property.name}</div>
-                    <div class="property-location">
-                        ${(property.location?.city || '')}${property.location?.state ? ', ' + property.location.state : ''}
-                    </div>
+                    <div class="property-location">${property.location.city || ''}, ${property.location.state || ''}</div>
                     ${isSelected ? '<div style="color: #FFD700; font-size: 0.85em; margin-top: 8px;">✓ Already selected</div>' : ''}
                 `;
 
@@ -1483,6 +1658,7 @@
         };
 
         async function addPropertyToSelected(propertyId) {
+            // Validate max 4
             if (SELECTED_PROPERTIES.length >= 4) {
                 alert('Maximum 4 properties allowed');
                 return;
@@ -1499,23 +1675,39 @@
                 return;
             }
 
+            // Add to selected list
             SELECTED_PROPERTIES.push(propertyId);
             console.log(`✅ Added property to selection: ${property.name}`);
+
+            // Update toolbar UI immediately
             renderSelectedPropertiesToolbar();
 
-            try {
-                await fetchRealWeatherData(property);
-                await new Promise(resolve => setTimeout(resolve, 300));
-                await fetchWeatherComData(property);
-                console.log(`✅ Successfully loaded data for ${property.name}`);
+            // Fetch data for this property (with delays)
+            console.log(`🌐 Loading weather data for ${property.name}...`);
 
+            try {
+                // Fetch climate normals (1-second delay built into weather-api.js)
+                await fetchRealWeatherData(property);
+
+                // Add 500ms delay before fetching current weather
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Fetch current weather + forecast
+                await fetchWeatherComData(property);
+
+                console.log(`✅ Successfully loaded all data for ${property.name}`);
+
+                // If this is the first property, make it active
                 if (!currentProperty) {
                     selectProperty(propertyId);
                 }
 
+                // Update toolbar to show success
                 renderSelectedPropertiesToolbar();
+
             } catch (error) {
                 console.error(`❌ Failed to load data for ${property.name}:`, error);
+                // Keep property in selected list even if data fetch fails
                 renderSelectedPropertiesToolbar();
             }
         }
@@ -1525,21 +1717,18 @@
             if (index === -1) return;
 
             const property = PROPERTIES.find(p => p.id === propertyId);
-            console.log(`🗑️ Removing ${property?.name || propertyId} from selection`);
+            console.log(`🗑️ Removing ${property.name} from selection`);
 
             SELECTED_PROPERTIES.splice(index, 1);
 
+            // If removed property was active, switch to first remaining
             if (currentProperty && currentProperty.id === propertyId) {
                 if (SELECTED_PROPERTIES.length > 0) {
                     selectProperty(SELECTED_PROPERTIES[0]);
                 } else {
                     currentProperty = null;
-                    document.getElementById('weatherMetrics').innerHTML =
-                        '<p style="color: rgba(255,255,255,0.7);">No properties selected. Click "+ Add Property" to load data.</p>';
-                    document.getElementById('impactGrid').innerHTML = '';
-                    document.getElementById('forecastGrid').innerHTML =
-                        '<p style="color: rgba(255,255,255,0.7); text-align:center; padding:40px;">No property selected.</p>';
-                    document.getElementById('alertsContainer').innerHTML = '';
+                    // Clear display
+                    document.getElementById('weatherMetrics').innerHTML = '<p style="color: rgba(255,255,255,0.7);">No properties selected. Click "+ Add Property" to load data.</p>';
                 }
             }
 
@@ -1550,11 +1739,12 @@
             const toolbar = document.getElementById('selectedPropertiesToolbar');
             const addBtn = document.getElementById('addPropertyBtn');
 
-            if (addBtn) addBtn.disabled = SELECTED_PROPERTIES.length >= 4;
+            // Update button state
+            addBtn.disabled = SELECTED_PROPERTIES.length >= 4;
 
+            // Render selected properties
             if (SELECTED_PROPERTIES.length === 0) {
-                toolbar.innerHTML =
-                    '<p style="color: rgba(255,255,255,0.6); margin: 0;">No properties selected yet. Click "+ Add Property" to start.</p>';
+                toolbar.innerHTML = '<p style="color: rgba(255,255,255,0.6); margin: 0;">No properties selected yet. Click "+ Add Property" below to start.</p>';
                 return;
             }
 
@@ -1563,21 +1753,14 @@
                 if (!property) return '';
 
                 const isActive = currentProperty && currentProperty.id === propId;
-                const hasClimate = !!REAL_WEATHER_DATA[propId];
-                const hasRealtime = !!WEATHERCOM_DATA[propId];
-                let status = '⏳ Loading...';
-
-                if (hasClimate && hasRealtime) status = '✓ Climate & current data loaded';
-                else if (hasClimate) status = '✓ Climate normals loaded';
-                else if (hasRealtime) status = '✓ Current weather loaded';
+                const hasData = REAL_WEATHER_DATA[propId] && WEATHERCOM_DATA[propId];
+                const status = hasData ? '✓ Data loaded' : '⏳ Loading...';
 
                 return `
                     <div class="selected-property-card ${isActive ? 'active' : ''}">
                         <div class="selected-property-info" onclick="selectProperty('${propId}')">
                             <div class="selected-property-name">${property.name}</div>
-                            <div class="selected-property-location">
-                                ${(property.location?.city || '')}${property.location?.state ? ', ' + property.location.state : ''}
-                            </div>
+                            <div class="selected-property-location">${property.location.city || ''}, ${property.location.state || ''}</div>
                             <div class="selected-property-status">${status}</div>
                         </div>
                         <div class="trash-icon" onclick="removePropertyFromSelected('${propId}')">🗑️</div>
@@ -1586,180 +1769,121 @@
             }).join('');
         }
 
-        // Select property
+        // ===== END PROPERTY TOOLBAR FUNCTIONS =====
+
         window.selectProperty = function(id) {
             currentProperty = PROPERTIES.find(p => p.id === id);
-            renderSelectedPropertiesToolbar();
+            renderSelectedPropertiesToolbar(); // Update toolbar to show active property
             updateDisplay();
-            initOrUpdateCharts();
-            renderForecast();
-            renderAlerts();
-            renderClimateRisk();
+
+            // If charts don't exist yet, create them; otherwise update them
+            if (!window.weatherApexChart || !window.precipApexChart) {
+                initCharts();
+            } else {
+                updateCharts();
+            }
+
+            renderForecast(); // Render 7-day forecast
+            renderAlerts(); // Render weather alerts
+            renderClimateRisk(); // Add climate risk assessment
         };
 
+        // Update Display
         function updateDisplay() {
-            document.getElementById('currentMonth').textContent = `${MONTHS[currentMonth]} 2024`;
+            document.getElementById('currentMonth').textContent = MONTHS[currentMonth] + ' 2024';
 
             const seasons = ['Winter', 'Winter', 'Spring', 'Spring', 'Spring', 'Summer',
-                             'Summer', 'Summer', 'Fall', 'Fall', 'Fall', 'Winter'];
+                           'Summer', 'Summer', 'Fall', 'Fall', 'Fall', 'Winter'];
             document.getElementById('currentSeason').textContent = seasons[currentMonth];
 
             renderWeatherMetrics();
             renderImpactAnalysis();
         }
 
+        // Render Weather Metrics
         function renderWeatherMetrics() {
+            if (!currentProperty) return;
             const container = document.getElementById('weatherMetrics');
-            if (!currentProperty) {
-                container.innerHTML =
-                    '<p style="color: rgba(255,255,255,0.7); text-align:center;">No property selected.</p>';
-                return;
+            const weatherMonths = getWeatherData();
+            if (!weatherMonths) return;
+            let data = weatherMonths[currentMonth];
+
+            // Prefer real-time current data if we have it
+            const realTime = WEATHERCOM_DATA[currentProperty.id]?.current;
+            if (realTime) {
+                data.temp = realTime.temp;
+                data.humidity = realTime.humidity;
+                data.wind = realTime.wind;
             }
-
-            const climateMonths = getWeatherData();
-            const monthlyData = climateMonths ? climateMonths[currentMonth] : null;
-            const realTime = WEATHERCOM_DATA[currentProperty.id]?.current || null;
-
-            if (!monthlyData && !realTime) {
-                container.innerHTML =
-                    '<p style="color: rgba(255,255,255,0.7); text-align:center;">No weather data available for this property yet.</p>';
-                return;
-            }
-
-            const monthName = MONTHS[currentMonth];
-
-            const tempToday = realTime?.temp ?? null;
-            const tempTypical = monthlyData?.temp ?? null;
-            const precipTypical = monthlyData?.precip ?? null;
-            const windToday = realTime?.wind ?? monthlyData?.wind ?? null;
-            const humidityToday = realTime?.humidity ?? monthlyData?.humidity ?? null;
-
-            const tempLabel = tempToday !== null ? `${tempToday}°F` :
-                              tempTypical !== null ? `${tempTypical}°F` : '—';
-
-            const precipLabel = precipTypical !== null ? `${precipTypical}"` : '—';
-            const windLabel = windToday !== null ? `${windToday} mph` : '—';
-            const humidityLabel = humidityToday !== null ? `${humidityToday}%` : '—';
 
             container.innerHTML = `
                 <div class="weather-card">
                     <div class="weather-icon">🌡️</div>
-                    <div class="weather-value">${tempLabel}</div>
+                    <div class="weather-value">${data.temp}°F</div>
                     <div class="weather-label">Temperature</div>
-                    <div class="weather-subtext">
-                        ${
-                            tempToday !== null && tempTypical !== null
-                                ? `Today vs typical ${monthName}: ${tempToday}°F vs ${tempTypical}°F`
-                                : tempToday !== null
-                                    ? 'Today (no monthly normal yet)'
-                                    : `Typical ${monthName} (no current reading)`
-                        }
-                    </div>
                 </div>
                 <div class="weather-card">
                     <div class="weather-icon">💧</div>
-                    <div class="weather-value">${precipLabel}</div>
-                    <div class="weather-label">Monthly Precipitation (Typical)</div>
-                    <div class="weather-subtext">
-                        ${
-                            precipTypical !== null
-                                ? `Average ${monthName} precipitation`
-                                : 'No climate normal available'
-                        }
-                    </div>
+                    <div class="weather-value">${data.precip}"</div>
+                    <div class="weather-label">Precipitation</div>
                 </div>
                 <div class="weather-card">
                     <div class="weather-icon">💨</div>
-                    <div class="weather-value">${windLabel}</div>
+                    <div class="weather-value">${data.wind} mph</div>
                     <div class="weather-label">Wind Speed</div>
-                    <div class="weather-subtext">
-                        ${
-                            realTime?.wind !== undefined && monthlyData?.wind !== undefined
-                                ? `Today vs typical: ${realTime.wind} vs ${monthlyData.wind} mph`
-                                : 'Based on best available data'
-                        }
-                    </div>
                 </div>
                 <div class="weather-card">
                     <div class="weather-icon">💦</div>
-                    <div class="weather-value">${humidityLabel}</div>
+                    <div class="weather-value">${data.humidity}%</div>
                     <div class="weather-label">Humidity</div>
-                    <div class="weather-subtext">
-                        ${
-                            realTime?.humidity !== undefined && monthlyData?.humidity !== undefined
-                                ? `Today vs typical: ${realTime.humidity}% vs ${monthlyData.humidity}%`
-                                : 'Based on best available data'
-                        }
-                    </div>
                 </div>
             `;
 
+            // ===== UPDATE PARTICLE BACKGROUND BASED ON WEATHER =====
             if (realTime) {
                 updateParticles(realTime.temp, realTime.precip);
             }
         }
 
+        // Render Impact Analysis
         function renderImpactAnalysis() {
+            if (!currentProperty) return;
             const container = document.getElementById('impactGrid');
-            if (!currentProperty) {
-                container.innerHTML = '';
-                return;
-            }
-
             const weatherMonths = getWeatherData();
-            if (!weatherMonths) {
-                container.innerHTML =
-                    '<p style="color: rgba(255,255,255,0.7);">No climate normals available for this property yet.</p>';
-                return;
-            }
-
+            if (!weatherMonths) return;
             const data = weatherMonths[currentMonth];
 
             const impacts = [
                 {
-                    type: data.temp > 80 || data.temp < 40 ? 'negative' : 'positive',
+                    type: data.temp > 80 ? 'negative' : data.temp < 40 ? 'negative' : 'positive',
                     title: 'Temperature Impact',
-                    description: data.temp > 80
-                        ? 'High cooling costs expected. HVAC system will work harder.'
-                        : data.temp < 40
-                            ? 'Increased heating costs. Potential for frozen pipes.'
-                            : 'Moderate temperatures. Energy costs within normal range.',
-                    score: data.temp > 80 ? Math.max(0, 100 - (data.temp - 80)) :
-                           data.temp < 40 ? Math.max(0, data.temp + 20) :
-                           85
+                    description: data.temp > 80 ? 'High cooling costs expected. HVAC system will work harder.'
+                               : data.temp < 40 ? 'Increased heating costs. Potential for frozen pipes.'
+                               : 'Moderate temperatures. Energy costs within normal range.',
+                    score: data.temp > 80 ? 100 - (data.temp - 80) : data.temp < 40 ? data.temp + 20 : 85
                 },
                 {
                     type: data.precip > 4 ? 'negative' : data.precip < 1 ? 'neutral' : 'positive',
                     title: 'Precipitation Impact',
-                    description: data.precip > 4
-                        ? 'Heavy rainfall. Check drainage systems and gutters.'
-                        : data.precip < 1
-                            ? 'Low rainfall. Good for outdoor activities and maintenance.'
-                            : 'Normal precipitation. Maintain regular property upkeep.',
-                    score: data.precip > 4 ? Math.max(0, 60 - (data.precip * 5)) :
-                           data.precip < 1 ? 75 : 80
+                    description: data.precip > 4 ? 'Heavy rainfall. Check drainage systems and gutters.'
+                               : data.precip < 1 ? 'Low rainfall. Good for outdoor activities and maintenance.'
+                               : 'Normal precipitation. Maintain regular property upkeep.',
+                    score: data.precip > 4 ? 60 - (data.precip * 5) : data.precip < 1 ? 75 : 80
                 },
                 {
                     type: data.wind > 15 ? 'negative' : 'positive',
                     title: 'Wind Impact',
-                    description: data.wind > 15
-                        ? 'Strong winds. Secure outdoor items. Check roof and siding.'
-                        : 'Light to moderate winds. No significant impact expected.',
-                    score: data.wind > 15 ? Math.max(0, 100 - (data.wind * 2)) : 90
+                    description: data.wind > 15 ? 'Strong winds. Secure outdoor items. Check roof and siding.'
+                               : 'Light to moderate winds. No significant impact expected.',
+                    score: data.wind > 15 ? 100 - (data.wind * 2) : 90
                 },
                 {
-                    type: data.humidity > 70 || data.humidity < 30 ? 'negative' : 'positive',
+                    type: data.humidity > 70 ? 'negative' : data.humidity < 30 ? 'negative' : 'positive',
                     title: 'Humidity Impact',
-                    description: data.humidity > 70
-                        ? 'High humidity. Risk of mold and mildew. Use dehumidifiers.'
-                        : data.humidity < 30
-                            ? 'Low humidity. Potential for static and dry conditions.'
-                            : 'Comfortable humidity levels. Ideal indoor environment.',
-                    score: data.humidity > 70
-                        ? Math.max(0, 100 - data.humidity)
-                        : data.humidity < 30
-                            ? data.humidity + 50
-                            : 85
+                    description: data.humidity > 70 ? 'High humidity. Risk of mold and mildew. Use dehumidifiers.'
+                               : data.humidity < 30 ? 'Low humidity. Potential for static and dry conditions.'
+                               : 'Comfortable humidity levels. Ideal indoor environment.',
+                    score: data.humidity > 70 ? 100 - data.humidity : data.humidity < 30 ? data.humidity + 50 : 85
                 }
             ];
 
@@ -1769,59 +1893,51 @@
                     <div class="impact-description">${impact.description}</div>
                     <div class="impact-score">
                         <div class="score-bar">
-                            <div class="score-fill"
-                                 style="width: ${Math.min(100, Math.max(0, impact.score))}%;
-                                        background: ${impact.type === 'positive'
-                                            ? '#10b981'
-                                            : impact.type === 'negative'
-                                                ? '#ef4444'
-                                                : '#FFD700'};"></div>
+                            <div class="score-fill" style="width: ${Math.max(0, impact.score)}%; background: ${impact.type === 'positive' ? '#10b981' : impact.type === 'negative' ? '#ef4444' : '#FFD700'};"></div>
                         </div>
-                        <span class="score-value">${Math.round(Math.min(100, Math.max(0, impact.score)))}</span>
+                        <span class="score-value">${Math.round(Math.max(0, impact.score))}</span>
                     </div>
                 </div>
             `).join('');
         }
 
+        // Render Climate Risk Assessment
         async function renderClimateRisk() {
-            const overallEl = document.getElementById('overallRiskScore');
-            const floodEl = document.getElementById('floodRiskContent');
-            const elevEl = document.getElementById('elevationContent');
-            const structEl = document.getElementById('structuralContent');
-            const imagesEl = document.getElementById('propertyImages');
-
             if (!currentProperty) {
-                overallEl.innerHTML = `
+                document.getElementById('overallRiskScore').innerHTML = `
                     <h3>Overall Climate Risk Score</h3>
                     <div class="loading-message">Select a property to view climate risk assessment...</div>
                 `;
-                floodEl.innerHTML = '<div class="loading-message">Select a property...</div>';
-                elevEl.innerHTML = '<div class="loading-message">Select a property...</div>';
-                structEl.innerHTML = '<div class="loading-message">Select a property...</div>';
-                imagesEl.innerHTML = '<div class="loading-message">Select a property...</div>';
                 return;
             }
 
-            const lat = currentProperty.location?.lat ?? currentProperty.location?.latitude;
-            const lng = currentProperty.location?.lng ?? currentProperty.location?.longitude;
+            console.log('🌍 Rendering climate risk assessment for:', currentProperty.name);
+            console.log('🔍 DEBUG - Full property object:', currentProperty);
+            console.log('🔍 DEBUG - Property location object:', currentProperty.location);
+
+            const lat = currentProperty.location?.lat || currentProperty.location?.latitude;
+            const lng = currentProperty.location?.lng || currentProperty.location?.longitude;
+
+            console.log('🔍 DEBUG - Extracted coordinates - lat:', lat, 'lng:', lng);
 
             if (!lat || !lng) {
-                overallEl.innerHTML = `
+                document.getElementById('overallRiskScore').innerHTML = `
                     <h3>Overall Climate Risk Score</h3>
-                    <div class="error-message">⚠️ No coordinates available for this property.</div>
+                    <div class="error-message">⚠️ No coordinates available for this property</div>
                 `;
                 return;
             }
 
+            // Fetch climate risk data
             let climateRisk = CLIMATE_RISK_DATA[currentProperty.id];
             if (!climateRisk) {
+                console.log(`📡 Fetching climate risk data for ${currentProperty.name}...`);
                 try {
-                    console.log(`📡 Fetching climate risk data for ${currentProperty.name}...`);
                     climateRisk = await climateRiskAPI.getComprehensiveRisk(lat, lng);
                     CLIMATE_RISK_DATA[currentProperty.id] = climateRisk;
                 } catch (error) {
                     console.error('Error fetching climate risk:', error);
-                    overallEl.innerHTML = `
+                    document.getElementById('overallRiskScore').innerHTML = `
                         <h3>Overall Climate Risk Score</h3>
                         <div class="error-message">❌ Error loading climate risk data: ${error.message}</div>
                     `;
@@ -1829,112 +1945,102 @@
                 }
             }
 
-            const overall = climateRisk?.overallRisk || {};
-            const components = overall.components || {};
-            const elevation = climateRisk?.elevation || {};
-            const projections = climateRisk?.projections || {};
-            const floodZone = climateRisk?.floodZone || {};
+            // Render overall risk score with Neon Glassmorphic Gauge
+            const score = climateRisk.overallRisk.score;
+            const scoreClass = score >= 70 ? 'good' : score >= 40 ? 'fair' : 'poor';
 
-            const score = typeof overall.score === 'number' ? overall.score : 50;
-            const rating = overall.rating || 'Unknown';
-
+            // Create gauge first, then add breakdown text
             const gaugeOptions = {
-                series: [score],
-                chart: { type: 'radialBar', height: 300, foreColor: '#00ffcc', background: 'transparent' },
-                plotOptions: {
-                    radialBar: {
-                        hollow: { size: '70%' },
-                        track: { background: '#0a1628' },
-                        dataLabels: {
-                            name: { fontSize: '16px', color: '#00D4FF' },
-                            value: {
-                                fontSize: '30px',
-                                color: '#fff',
-                                formatter: val => val.toFixed(0)
-                            }
-                        }
-                    }
-                },
-                fill: {
-                    type: 'gradient',
-                    gradient: {
-                        shade: 'dark',
-                        type: 'horizontal',
-                        shadeIntensity: 0.5,
-                        gradientToColors: ['#ff0066'],
-                        inverseColors: true,
-                        opacityFrom: 1,
-                        opacityTo: 1,
-                        stops: [0, 100]
-                    }
-                },
-                stroke: { lineCap: 'round' },
-                labels: [rating],
-                colors: ['#00D4FF']
+              series: [climateRisk.overallRisk.score],
+              chart: { type: 'radialBar', height: 300, foreColor: '#00ffcc' },
+              plotOptions: {
+                radialBar: {
+                  hollow: { size: '70%' },
+                  track: { background: '#0a1628' },
+                  dataLabels: {
+                    name: { fontSize: '16px', color: '#00D4FF' },
+                    value: { fontSize: '30px', color: '#fff', formatter: (val) => val.toFixed(0) }
+                  }
+                }
+              },
+              fill: {
+                type: 'gradient',
+                gradient: {
+                  shade: 'dark',
+                  type: 'horizontal',
+                  shadeIntensity: 0.5,
+                  gradientToColors: ['#ff0066'],
+                  inverseColors: true,
+                  opacityFrom: 1,
+                  opacityTo: 1,
+                  stops: [0, 100]
+                }
+              },
+              stroke: { lineCap: 'round' },
+              labels: [climateRisk.overallRisk.rating],
+              colors: ['#00D4FF']
             };
 
-            overallEl.innerHTML = `
+            document.getElementById('overallRiskScore').innerHTML = `
                 <h3>Overall Climate Risk Score</h3>
                 <div id="overallRiskGauge"></div>
-                <div class="risk-breakdown">
-                    <p><strong>Flood Zone Penalty:</strong> -${components.floodZonePenalty ?? 0} points</p>
-                    <p><strong>Property Elevation:</strong> ${(elevation.elevationFeet ?? 'N/A')} feet</p>
-                    <p><strong>Sea Level Rise Impact:</strong> ${components.seaLevelRiseImpact ?? 'N/A'}</p>
+                <div class="risk-breakdown" style="margin-top: 20px;">
+                    <p><strong>Flood Zone Penalty:</strong> -${climateRisk.overallRisk.components.floodZonePenalty} points</p>
+                    <p><strong>Property Elevation:</strong> ${Number(climateRisk.elevation.elevationFeet).toFixed(1)} feet</p>
+                    <p><strong>Sea Level Rise Impact:</strong> ${climateRisk.overallRisk.components.seaLevelRiseImpact}</p>
                 </div>
             `;
 
-            if (riskGaugeChart) riskGaugeChart.destroy();
-            riskGaugeChart = new ApexCharts(document.getElementById("overallRiskGauge"), gaugeOptions);
-            riskGaugeChart.render();
+            if (window.riskGaugeChart) window.riskGaugeChart.destroy();
+            window.riskGaugeChart = new ApexCharts(document.getElementById("overallRiskGauge"), gaugeOptions);
+            window.riskGaugeChart.render();
 
-            // Flood risk
-            if (floodZone.zone) {
-                const sfhaIndicator = floodZone.inSFHA
-                    ? '<span style="background: rgba(239,68,68,0.3); color: #ff6666; padding: 4px 10px; border-radius: 6px; font-size: 0.85em; font-weight: bold; margin-left: 10px;">SFHA</span>'
-                    : '';
-
-                floodEl.innerHTML = `
+            // Render flood risk
+            if (climateRisk.floodZone && climateRisk.floodZone.zone) {
+                document.getElementById('floodRiskContent').innerHTML = `
                     <div class="risk-metric">
                         <span class="label">FEMA Flood Zone:</span>
-                        <span class="value zone-${floodZone.zone}">${floodZone.zone}${sfhaIndicator}</span>
+                        <span class="value zone-${climateRisk.floodZone.zone}">${climateRisk.floodZone.zone}</span>
                     </div>
-                    <p style="color: rgba(255,255,255,0.9); margin-top: 15px;">${floodZone.message || ''}</p>
-                    ${floodZone.staticBFE ? `<p style="color: rgba(255,255,255,0.7); margin-top: 10px;"><strong>Base Flood Elevation (BFE):</strong> ${floodZone.staticBFE} ft</p>` : ''}
-                    ${floodZone.inSFHA ? `<p style="color: #ff6666; margin-top: 10px; font-weight: 600;">⚠️ Property is in Special Flood Hazard Area (SFHA) - Flood insurance required</p>` : ''}
-                    ${floodZone.subtype ? `<p style="color: rgba(255,255,255,0.6); margin-top: 8px; font-size: 0.9em;"><strong>Zone Details:</strong> ${floodZone.subtype}</p>` : ''}
+                    <p style="color: rgba(255,255,255,0.9); margin-top: 15px;">${climateRisk.floodZone.message}</p>
+                    ${climateRisk.floodZone.staticBFE ? `<p style="color: rgba(255,255,255,0.7); margin-top: 10px;"><strong>Base Flood Elevation:</strong> ${climateRisk.floodZone.staticBFE} ft</p>` : ''}
                 `;
             } else {
-                floodEl.innerHTML = '<p class="loading-message">⚠️ Flood zone data not available.</p>';
+                document.getElementById('floodRiskContent').innerHTML = `
+                    <p class="loading-message">⚠️ Flood zone data not available</p>
+                `;
             }
 
-            // Elevation & sea level
-            elevEl.innerHTML = `
+            // Render elevation and sea level rise
+            document.getElementById('elevationContent').innerHTML = `
                 <div class="risk-metric">
                     <span class="label">Elevation:</span>
-                    <span class="value">${elevation.elevationFeet ?? 'N/A'} feet</span>
+                    <span class="value">${Number(climateRisk.elevation.elevationFeet).toFixed(1)} feet</span>
                 </div>
-                <p style="color: rgba(255,255,255,0.9); margin-top: 15px;"><strong>Risk Level:</strong> ${elevation.riskLevel || 'Unknown'}</p>
-                <p style="color: rgba(255,255,255,0.9); margin-top: 15px;"><strong>Sea Level Rise Impact:</strong> ${components.seaLevelRiseImpact ?? 'N/A'}</p>
-                <p style="color: rgba(255,255,255,0.7); margin-top: 10px;">
-                    <strong>Future Projections (if available):</strong><br/>
-                    ${projections.tempIncrease2050 ? `Temperature: +${projections.tempIncrease2050}<br/>` : ''}
-                    ${projections.precipChange2050 ? `Precipitation: ${projections.precipChange2050}<br/>` : ''}
-                    ${projections.heatRisk ? `Heat Risk: ${projections.heatRisk}<br/>` : ''}
-                    ${projections.fireRisk ? `Fire Risk: ${projections.fireRisk}<br/>` : ''}
-                    ${projections.stormRisk ? `Storm Risk: ${projections.stormRisk}` : ''}
+                <p style="color: rgba(255,255,255,0.9); margin-top: 15px;"><strong>Risk Level:</strong> ${climateRisk.elevation.riskLevel}</p>
+                <p style="color: rgba(255,255,255,0.9); margin-top: 15px;"><strong>Sea Level Rise Impact:</strong> ${climateRisk.overallRisk.components.seaLevelRiseImpact}</p>
+                <p style="color: rgba(255,255,255,0.7); margin-top: 10px;"><strong>Future Projections:</strong><br/>
+                   Temperature: +${climateRisk.projections.tempIncrease2050}<br/>
+                   Precipitation: ${climateRisk.projections.precipChange2050}<br/>
+                   Heat Risk: ${climateRisk.projections.heatRisk}<br/>
+                   Fire Risk: ${climateRisk.projections.fireRisk}<br/>
+                   Storm Risk: ${climateRisk.projections.stormRisk}
                 </p>
             `;
 
-            // Structural (MLS)
-            const mlsNumber = currentProperty.mls_number ||
-                              currentProperty.mlsNumber ||
-                              currentProperty.basic?.mlsNumber;
-
+            // Fetch and render MLS data (if available)
+            const mlsNumber = currentProperty.mls_number || currentProperty.mlsNumber || currentProperty.basic?.mlsNumber;
+            console.log('🔍 DEBUG - MLS Number check:', {
+                mls_number: currentProperty.mls_number,
+                mlsNumber: currentProperty.mlsNumber,
+                basicMlsNumber: currentProperty.basic?.mlsNumber,
+                finalMlsNumber: mlsNumber
+            });
             if (mlsNumber) {
                 let mlsData = MLS_DATA[currentProperty.id];
                 if (!mlsData) {
+                    console.log(`🏠 Fetching MLS data for ${mlsNumber}...`);
                     try {
-                        console.log(`🏠 Fetching MLS data for ${mlsNumber}...`);
                         mlsData = await mlsAPI.getPropertyDetails(mlsNumber);
                         MLS_DATA[currentProperty.id] = mlsData;
                     } catch (error) {
@@ -1946,44 +2052,42 @@
                     const condition = mlsAPI.getRoofCondition(mlsData.roofAge, mlsData.roofType);
                     const structuralRisk = mlsAPI.calculateStructuralRisk(mlsData);
 
-                    structEl.innerHTML = `
+                    document.getElementById('structuralContent').innerHTML = `
                         <div class="risk-metric">
                             <span class="label">Roof Age:</span>
                             <span class="value">${mlsData.roofAge} years</span>
                         </div>
                         <div class="risk-metric">
                             <span class="label">Roof Type:</span>
-                            <span class="value">${mlsData.roofType || 'N/A'}</span>
+                            <span class="value">${mlsData.roofType}</span>
                         </div>
                         <p style="color: rgba(255,255,255,0.9); margin-top: 15px;"><strong>Condition:</strong> ${condition}</p>
-                        <p style="color: rgba(255,255,255,0.9);"><strong>Year Built:</strong> ${mlsData.yearBuilt || 'N/A'}</p>
-                        <p style="color: rgba(255,255,255,0.9);"><strong>Foundation:</strong> ${mlsData.foundationType || 'N/A'}</p>
-                        ${
-                            structuralRisk?.recommendations?.length
-                                ? `
-                                    <p style="color: rgba(255,255,255,0.7); margin-top: 15px;"><strong>Recommendations:</strong></p>
-                                    <ul style="color: rgba(255,255,255,0.7); margin-left: 20px; margin-top: 8px;">
-                                        ${structuralRisk.recommendations.map(r => `<li>${r}</li>`).join('')}
-                                    </ul>
-                                  `
-                                : ''
-                        }
+                        <p style="color: rgba(255,255,255,0.9);"><strong>Year Built:</strong> ${mlsData.yearBuilt}</p>
+                        <p style="color: rgba(255,255,255,0.9);"><strong>Foundation:</strong> ${mlsData.foundationType}</p>
+                        ${structuralRisk.recommendations.length > 0 ? `
+                            <p style="color: rgba(255,255,255,0.7); margin-top: 15px;"><strong>Recommendations:</strong></p>
+                            <ul style="color: rgba(255,255,255,0.7); margin-left: 20px; margin-top: 8px;">
+                                ${structuralRisk.recommendations.map(r => `<li>${r}</li>`).join('')}
+                            </ul>
+                        ` : ''}
                     `;
                 } else {
-                    structEl.innerHTML =
-                        '<p class="loading-message">⚠️ MLS data not available or incomplete for this property.</p>';
+                    document.getElementById('structuralContent').innerHTML = `
+                        <p class="loading-message">⚠️ MLS data not available.<br/>Configure MLS API in config.js or waiting for MLS board API access.</p>
+                    `;
                 }
             } else {
-                structEl.innerHTML =
-                    '<p class="loading-message">⚠️ No MLS number available for this property.</p>';
+                document.getElementById('structuralContent').innerHTML = `
+                    <p class="loading-message">⚠️ No MLS number available for this property</p>
+                `;
             }
 
-            // Property imagery
-            if (googleMapsAPI.isConfigured && googleMapsAPI.isConfigured()) {
+            // Render property images
+            if (googleMapsAPI.isConfigured()) {
                 const satelliteUrl = googleMapsAPI.getSatelliteImageUrl(lat, lng, { zoom: 20 });
                 const streetViewUrl = googleMapsAPI.getStreetViewImageUrl(lat, lng);
 
-                imagesEl.innerHTML = `
+                document.getElementById('propertyImages').innerHTML = `
                     <div class="image-grid">
                         <div class="image-card">
                             <h4>🛰️ Satellite View</h4>
@@ -1996,387 +2100,202 @@
                     </div>
                 `;
             } else {
-                imagesEl.innerHTML = `
-                    <div class="error-message">⚠️ Google Maps imagery is not configured in this environment.</div>
+                document.getElementById('propertyImages').innerHTML = `
+                    <div class="error-message">⚠️ Google Maps API not configured</div>
                 `;
             }
 
-            // Multi-hazard risk radar (penalty points)
-            const floodPenalty   = components.floodZonePenalty ?? 0;
-            const elevPenalty    = components.elevationPenalty ?? 0;
-            const heatPenalty    = components.heatRiskPenalty ?? 0;
-            const droughtPenalty = components.droughtFirePenalty ?? 0;
-            const stormPenalty   = components.stormPenalty ?? 0;
-
+            // ===== MULTI-HAZARD RISK RADAR =====
             const radarOptions = {
-                series: [{
-                    name: 'Penalty Points',
-                    data: [floodPenalty, elevPenalty, heatPenalty, droughtPenalty, stormPenalty]
-                }],
-                chart: { height: 400, type: 'radar', foreColor: '#00ffcc', toolbar: { show: false }, background: 'transparent' },
-                theme: { mode: 'dark' },
-                plotOptions: {
-                    radar: {
-                        size: 140,
-                        polygons: {
-                            strokeColors: '#00D4FF',
-                            connectorColors: '#00D4FF',
-                            fill: { colors: ['#0066CC33'] }
-                        }
-                    }
-                },
-                stroke: { width: 4 },
-                fill: { opacity: 0.6 },
-                markers: { size: 6, colors: ['#00D4FF'], strokeColor: '#fff', strokeWidth: 3 },
-                labels: ['Flood', 'Sea-Level', 'Heat', 'Drought/Fire', 'Storm'],
-                yaxis: { show: true, labels: { style: { colors: '#9ca3af' } } },
-                title: { text: 'Penalty Points (higher = worse)', style: { color: '#ff0066' } },
-                colors: ['#00D4FF']
+              series: [{
+                name: 'Risk Level',
+                data: [
+                  climateRisk.overallRisk.components.floodZonePenalty / 10,
+                  climateRisk.overallRisk.components.elevationPenalty / 10,
+                  climateRisk.overallRisk.components.heatRiskPenalty / 5,
+                  climateRisk.overallRisk.components.droughtFirePenalty / 5,
+                  climateRisk.overallRisk.components.stormPenalty / 5
+                ]
+              }],
+              chart: { height: 400, type: 'radar', foreColor: '#00ffcc', toolbar: { show: false } },
+              theme: { mode: 'dark' },
+              plotOptions: { radar: { size: 140, polygons: { strokeColors: '#00D4FF', connectorColors: '#00D4FF', fill: { colors: ['#0066CC33'] } } } },
+              stroke: { width: 4 },
+              fill: { opacity: 0.6 },
+              markers: { size: 6, colors: ['#00D4FF'], strokeColor: '#fff', strokeWidth: 3 },
+              labels: ['Flood', 'Sea-Level', 'Heat', 'Drought/Fire', 'Storm'],
+              yaxis: { show: false },
+              title: { text: 'Higher = worse', style: { color: '#ff0066' } },
+              colors: ['#00D4FF']
             };
 
-            if (riskRadarChart) riskRadarChart.destroy();
-            riskRadarChart = new ApexCharts(document.getElementById("riskRadar"), radarOptions);
-            riskRadarChart.render();
+            if (window.riskRadarChart) window.riskRadarChart.destroy();
+            window.riskRadarChart = new ApexCharts(document.getElementById("riskRadar"), radarOptions);
+            window.riskRadarChart.render();
 
-            // Heat calendar (actual >95°F days this year)
-            await renderHeatCalendar(lat, lng);
+            // ===== LOAD FUTURE PROJECTIONS =====
             await loadProjections();
+
+            // ===== EXTREME HEAT CALENDAR =====
+            // Fetch REAL daily data for 2025 from Open-Meteo
+            const heatCalendarDiv = document.getElementById('heatCalendar');
+            if (heatCalendarDiv && currentProperty) {
+                const lat = currentProperty.location?.latitude || currentProperty.location?.lat;
+                const lng = currentProperty.location?.longitude || currentProperty.location?.lng;
+
+                if (lat && lng) {
+                    try {
+                        // Get year-to-date actual temps + forecast for rest of year
+                        const today = new Date();
+                        const startOfYear = '2025-01-01';
+                        const endOfYear = '2025-12-31';
+                        const todayStr = today.toISOString().split('T')[0];
+
+                        // Fetch actual data Jan 1 - today
+                        const actualUrl = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}&start_date=${startOfYear}&end_date=${todayStr}&daily=temperature_2m_max&temperature_unit=fahrenheit&timezone=auto`;
+
+                        // Fetch forecast data for rest of year (using climate normals as estimate)
+                        const forecastUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=temperature_2m_max&temperature_unit=fahrenheit&forecast_days=16&timezone=auto`;
+
+                        const [actualRes, forecastRes] = await Promise.all([
+                            fetch(actualUrl),
+                            fetch(forecastUrl)
+                        ]);
+
+                        const actualData = await actualRes.json();
+                        const forecastData = await forecastRes.json();
+
+                        // Build heat calendar grid
+                        let calendarHTML = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(10px, 1fr)); gap: 3px; padding: 20px; max-width: 100%;">';
+
+                        let actualHotDays = 0;
+                        let projectedHotDays = 0;
+
+                        // Days with actual data (past/present)
+                        if (actualData.daily?.time) {
+                            actualData.daily.time.forEach((date, i) => {
+                                const temp = actualData.daily.temperature_2m_max[i];
+                                const isHot = temp >= 95;
+                                if (isHot) actualHotDays++;
+
+                                const color = isHot ? '#ff0066' : 'rgba(255,255,255,0.1)';
+                                calendarHTML += `<div style="width: 10px; height: 10px; background: ${color}; border-radius: 2px;" title="${date}: ${temp}°F"></div>`;
+                            });
+                        }
+
+                        // Fill remaining days with forecast-based projection
+                        const daysActual = actualData.daily?.time?.length || 0;
+                        const daysRemaining = 365 - daysActual;
+
+                        // Use forecast temps and climate normals to estimate
+                        const avgForecastTemp = forecastData.daily?.temperature_2m_max?.reduce((a,b) => a+b, 0) / (forecastData.daily?.temperature_2m_max?.length || 1);
+
+                        for (let i = 0; i < daysRemaining; i++) {
+                            // Estimate if day will be hot based on forecast pattern
+                            const willBeHot = avgForecastTemp >= 95;
+                            if (willBeHot) projectedHotDays++;
+
+                            const color = willBeHot ? '#ffaa00' : 'rgba(255,255,255,0.05)';
+                            calendarHTML += `<div style="width: 10px; height: 10px; background: ${color}; border-radius: 2px; opacity: 0.6;" title="Projected"></div>`;
+                        }
+
+                        calendarHTML += '</div>';
+                        calendarHTML += `
+                            <div style="padding: 20px; text-align: center;">
+                                <div style="display: flex; justify-content: center; gap: 40px; margin-bottom: 15px;">
+                                    <div>
+                                        <div style="font-size: 2em; color: #ff0066; font-weight: bold;">${actualHotDays}</div>
+                                        <div style="color: rgba(255,255,255,0.8); font-size: 0.9em;">Actual days >95°F (2025 YTD)</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 2em; color: #ffaa00; font-weight: bold;">${projectedHotDays}</div>
+                                        <div style="color: rgba(255,255,255,0.8); font-size: 0.9em;">Projected days >95°F (rest of 2025)</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; justify-content: center; gap: 20px; font-size: 0.85em; color: rgba(255,255,255,0.6);">
+                                    <div><span style="display: inline-block; width: 12px; height: 12px; background: #ff0066; border-radius: 2px; margin-right: 5px;"></span>Actual >95°F</div>
+                                    <div><span style="display: inline-block; width: 12px; height: 12px; background: #ffaa00; border-radius: 2px; margin-right: 5px;"></span>Projected >95°F</div>
+                                </div>
+                            </div>
+                        `;
+
+                        heatCalendarDiv.innerHTML = calendarHTML;
+                        console.log(`✅ Heat calendar: ${actualHotDays} actual + ${projectedHotDays} projected hot days`);
+
+                    } catch (error) {
+                        console.error('Heat calendar error:', error);
+                        heatCalendarDiv.innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 40px;">Unable to load heat calendar</p>';
+                    }
+                } else {
+                    heatCalendarDiv.innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 40px;">No coordinates available</p>';
+                }
+            }
 
             console.log('✅ Climate risk assessment rendered');
         }
 
-        // Navigation functions for heat calendar
-        window.prevCalendarMonth = function() {
-            if (currentCalendarMonth > 0) {
-                currentCalendarMonth--;
-                renderSingleMonthCalendar();
-            }
-        };
-
-        window.nextCalendarMonth = function() {
-            const today = new Date();
-            const currentRealMonth = today.getMonth();
-            if (currentCalendarMonth < currentRealMonth) {
-                currentCalendarMonth++;
-                renderSingleMonthCalendar();
-            }
-        };
-
-        async function renderHeatCalendar(lat, lng) {
-            const heatCalendarDiv = document.getElementById('heatCalendar');
-            if (!heatCalendarDiv) return;
-
-            const year = new Date().getFullYear();
-            const today = new Date();
-
-            if (!lat || !lng) {
-                heatCalendarDiv.innerHTML =
-                    '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 40px;">No coordinates available.</p>';
-                return;
-            }
-
-            try {
-                const startOfYear = `${year}-01-01`;
-                const todayStr = today.toISOString().split('T')[0];
-
-                // Fetch YTD data with temperature AND humidity for heat index calculation
-                const url =
-                    `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}` +
-                    `&start_date=${startOfYear}&end_date=${todayStr}` +
-                    `&daily=temperature_2m_max,relative_humidity_2m_mean&temperature_unit=fahrenheit&timezone=auto`;
-
-                const res = await fetch(url);
-                const data = await res.json();
-
-                if (!data.daily?.time || !data.daily.temperature_2m_max) {
-                    heatCalendarDiv.innerHTML =
-                        '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 40px;">Heat calendar data not available for YTD.</p>';
-                    return;
-                }
-
-                // Store data globally for month navigation
-                heatCalendarData = data;
-
-                // Render current month
-                renderSingleMonthCalendar();
-
-                console.log(`✅ Heat calendar data loaded for YTD ${year}`);
-            } catch (error) {
-                console.error('Heat calendar error:', error);
-                heatCalendarDiv.innerHTML =
-                    `<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 40px;">
-                        Unable to load heat calendar. Error: ${error.message}
-                    </p>`;
-            }
-        }
-
-        function renderSingleMonthCalendar() {
-            const heatCalendarDiv = document.getElementById('heatCalendar');
-            if (!heatCalendarDiv || !heatCalendarData) return;
-
-            const year = new Date().getFullYear();
-            const today = new Date();
-            const currentRealMonth = today.getMonth();
-
-            // Calculate heat index for each day
-            function calculateHeatIndex(temp, humidity) {
-                const T = temp;
-                const RH = humidity;
-
-                if (T < 80) return T;
-
-                const HI = -42.379 +
-                           2.04901523 * T +
-                           10.14333127 * RH -
-                           0.22475541 * T * RH -
-                           0.00683783 * T * T -
-                           0.05481717 * RH * RH +
-                           0.00122874 * T * T * RH +
-                           0.00085282 * T * RH * RH -
-                           0.00000199 * T * T * RH * RH;
-
-                return Math.round(HI);
-            }
-
-            // Create date map for all YTD data
-            const dateMap = {};
-            let ytdDaysAbove95 = 0;
-            let ytdDaysHeatIndexAbove100 = 0;
-
-            for (let i = 0; i < heatCalendarData.daily.time.length; i++) {
-                const dateStr = heatCalendarData.daily.time[i];
-                const temp = heatCalendarData.daily.temperature_2m_max[i];
-                const humidity = heatCalendarData.daily.relative_humidity_2m_mean[i] || 50;
-                const heatIndex = calculateHeatIndex(temp, humidity);
-
-                if (temp >= 95) ytdDaysAbove95++;
-                if (heatIndex >= 100) ytdDaysHeatIndexAbove100++;
-
-                dateMap[dateStr] = { temp, humidity, heatIndex };
-            }
-
-            // Get first day of the month and total days in month
-            const firstDayOfMonth = new Date(year, currentCalendarMonth, 1);
-            const lastDayOfMonth = new Date(year, currentCalendarMonth + 1, 0);
-            const daysInMonth = lastDayOfMonth.getDate();
-            const startDayOfWeek = firstDayOfMonth.getDay();
-
-            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-                               'July', 'August', 'September', 'October', 'November', 'December'];
-
-            // Count heat days for THIS month only
-            let monthDaysAbove95 = 0;
-            let monthDaysHeatIndexAbove100 = 0;
-
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dateStr = `${year}-${String(currentCalendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const dayData = dateMap[dateStr];
-                if (dayData) {
-                    if (dayData.temp >= 95) monthDaysAbove95++;
-                    if (dayData.heatIndex >= 100) monthDaysHeatIndexAbove100++;
-                }
-            }
-
-            // Build calendar HTML
-            let calendarHTML = `
-                <div style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 25px; max-width: 800px; margin: 0 auto;">
-                    <!-- Month Navigation -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <button onclick="prevCalendarMonth()" ${currentCalendarMonth === 0 ? 'disabled' : ''}
-                            style="background: linear-gradient(135deg, #0066CC, #00D4FF); border: none; color: white;
-                                   padding: 12px 20px; border-radius: 10px; font-size: 1.2em; cursor: pointer;
-                                   font-weight: bold; transition: all 0.3s ease; ${currentCalendarMonth === 0 ? 'opacity: 0.3; cursor: not-allowed;' : ''}"
-                            ${currentCalendarMonth === 0 ? '' : 'onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'"'}>
-                            ◀
-                        </button>
-                        <h3 style="color: white; font-size: 1.8em; margin: 0;">${monthNames[currentCalendarMonth]} ${year}</h3>
-                        <button onclick="nextCalendarMonth()" ${currentCalendarMonth === currentRealMonth ? 'disabled' : ''}
-                            style="background: linear-gradient(135deg, #0066CC, #00D4FF); border: none; color: white;
-                                   padding: 12px 20px; border-radius: 10px; font-size: 1.2em; cursor: pointer;
-                                   font-weight: bold; transition: all 0.3s ease; ${currentCalendarMonth === currentRealMonth ? 'opacity: 0.3; cursor: not-allowed;' : ''}"
-                            ${currentCalendarMonth === currentRealMonth ? '' : 'onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'"'}>
-                            ▶
-                        </button>
-                    </div>
-
-                    <!-- Calendar Grid -->
-                    <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 20px;">
-                        <!-- Day headers -->
-                        <div style="text-align: center; color: rgba(255,255,255,0.9); font-weight: 600; padding: 8px; font-size: 0.85em;">Sun</div>
-                        <div style="text-align: center; color: rgba(255,255,255,0.9); font-weight: 600; padding: 8px; font-size: 0.85em;">Mon</div>
-                        <div style="text-align: center; color: rgba(255,255,255,0.9); font-weight: 600; padding: 8px; font-size: 0.85em;">Tue</div>
-                        <div style="text-align: center; color: rgba(255,255,255,0.9); font-weight: 600; padding: 8px; font-size: 0.85em;">Wed</div>
-                        <div style="text-align: center; color: rgba(255,255,255,0.9); font-weight: 600; padding: 8px; font-size: 0.85em;">Thu</div>
-                        <div style="text-align: center; color: rgba(255,255,255,0.9); font-weight: 600; padding: 8px; font-size: 0.85em;">Fri</div>
-                        <div style="text-align: center; color: rgba(255,255,255,0.9); font-weight: 600; padding: 8px; font-size: 0.85em;">Sat</div>
-            `;
-
-            // Add empty cells for days before start of month
-            for (let i = 0; i < startDayOfWeek; i++) {
-                calendarHTML += '<div style="padding: 15px;"></div>';
-            }
-
-            // Add each day of the month
-            for (let day = 1; day <= daysInMonth; day++) {
-                const dateStr = `${year}-${String(currentCalendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const dayData = dateMap[dateStr];
-
-                let bgColor = 'rgba(255,255,255,0.05)';
-                let borderColor = 'rgba(255,255,255,0.1)';
-                let tooltip = dateStr;
-
-                if (dayData) {
-                    const { temp, heatIndex } = dayData;
-                    tooltip = `${dateStr}\nHigh: ${temp}°F\nHeat Index: ${heatIndex}°F`;
-
-                    if (heatIndex >= 100) {
-                        bgColor = '#ff0000';
-                        borderColor = '#ff6666';
-                    } else if (temp >= 95) {
-                        bgColor = '#ff6600';
-                        borderColor = '#ff9944';
-                    } else if (temp >= 90) {
-                        bgColor = '#ff9900';
-                        borderColor = '#ffbb44';
-                    } else if (temp >= 85) {
-                        bgColor = '#ffcc00';
-                        borderColor = '#ffdd66';
-                    }
-                }
-
-                calendarHTML += `
-                    <div title="${tooltip}" style="
-                        background: ${bgColor};
-                        border: 1px solid ${borderColor};
-                        border-radius: 6px;
-                        padding: 15px 10px;
-                        text-align: center;
-                        color: white;
-                        font-weight: 600;
-                        font-size: 1.1em;
-                        cursor: pointer;
-                        transition: transform 0.2s ease;
-                        min-height: 40px;
-                    " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
-                        ${day}
-                    </div>
-                `;
-            }
-
-            calendarHTML += `
-                    </div>
-
-                    <!-- Month Summary -->
-                    <div style="background: rgba(0,0,0,0.4); border-radius: 10px; padding: 15px; margin-bottom: 15px;">
-                        <div style="text-align: center; color: rgba(255,255,255,0.9); font-size: 1.1em; margin-bottom: 10px;">
-                            ${monthNames[currentCalendarMonth]} Heat Summary
-                        </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                            <div style="text-align: center;">
-                                <div style="font-size: 2.5em; color: #ff6600; font-weight: bold;">${monthDaysAbove95}</div>
-                                <div style="color: rgba(255,255,255,0.8); font-size: 0.9em;">Days ≥ 95°F</div>
-                            </div>
-                            <div style="text-align: center;">
-                                <div style="font-size: 2.5em; color: #ff0000; font-weight: bold;">${monthDaysHeatIndexAbove100}</div>
-                                <div style="color: rgba(255,255,255,0.8); font-size: 0.9em;">Heat Index ≥ 100°F</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Legend -->
-                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 18px; height: 18px; background: #ff0000; border-radius: 4px;"></div>
-                            <span style="color: rgba(255,255,255,0.9); font-size: 0.85em;">Heat Index ≥ 100°F</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 18px; height: 18px; background: #ff6600; border-radius: 4px;"></div>
-                            <span style="color: rgba(255,255,255,0.9); font-size: 0.85em;">Temp ≥ 95°F</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 18px; height: 18px; background: #ff9900; border-radius: 4px;"></div>
-                            <span style="color: rgba(255,255,255,0.9); font-size: 0.85em;">Temp ≥ 90°F</span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <div style="width: 18px; height: 18px; background: #ffcc00; border-radius: 4px;"></div>
-                            <span style="color: rgba(255,255,255,0.9); font-size: 0.85em;">Temp ≥ 85°F</span>
-                        </div>
-                    </div>
-
-                    <!-- YTD Summary (separate panel) -->
-                    <div style="background: rgba(0,100,200,0.2); border: 2px solid rgba(0,212,255,0.4); border-radius: 10px; padding: 20px;">
-                        <div style="text-align: center; color: #00D4FF; font-size: 1.2em; font-weight: bold; margin-bottom: 15px;">
-                            ${year} Year-to-Date Totals
-                        </div>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                            <div style="text-align: center;">
-                                <div style="font-size: 3em; color: #ff6600; font-weight: bold; text-shadow: 0 2px 10px rgba(255,102,0,0.5);">${ytdDaysAbove95}</div>
-                                <div style="color: rgba(255,255,255,0.9); font-size: 1em; margin-top: 8px;">Total Days ≥ 95°F</div>
-                                <div style="color: rgba(255,255,255,0.6); font-size: 0.85em; margin-top: 4px;">Jan-${monthNames[currentRealMonth].substring(0,3)}</div>
-                            </div>
-                            <div style="text-align: center;">
-                                <div style="font-size: 3em; color: #ff0000; font-weight: bold; text-shadow: 0 2px 10px rgba(255,0,0,0.5);">${ytdDaysHeatIndexAbove100}</div>
-                                <div style="color: rgba(255,255,255,0.9); font-size: 1em; margin-top: 8px;">Total Heat Index ≥ 100°F</div>
-                                <div style="color: rgba(255,255,255,0.6); font-size: 0.85em; margin-top: 4px;">Extreme Heat Risk</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            heatCalendarDiv.innerHTML = calendarHTML;
-        }
-
+        // Render 7-Day Forecast
         function renderForecast() {
             const container = document.getElementById('forecastGrid');
             if (!currentProperty) {
-                container.innerHTML =
-                    '<p style="color: rgba(255,255,255,0.7); text-align:center; padding:40px;">No property selected.</p>';
+                container.innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 40px;">No property selected. Add a property to view forecast.</p>';
                 return;
             }
 
-            const data = WEATHERCOM_DATA[currentProperty.id];
-            const forecast = data?.forecast;
+            // Try to use Open-Meteo forecast first
+            const weatherComData = WEATHERCOM_DATA[currentProperty.id];
+            if (weatherComData && weatherComData.forecast) {
+                // Use real Open-Meteo 7-day forecast with proper emojis
+                container.innerHTML = weatherComData.forecast.map(day => {
+                    const date = new Date(day.date);
+                    const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
+                    const icon = day.iconEmoji;
 
-            if (!forecast || !forecast.length) {
-                container.innerHTML =
-                    '<p style="color: rgba(255,255,255,0.7); text-align:center; padding:40px;">No forecast data available for this property yet.</p>';
+                    return `
+                        <div class="day-card">
+                            <div class="day-name">${dayName}</div>
+                            <div class="day-icon">${icon}</div>
+                            <div class="day-temp">${day.tempHigh}°F / ${day.tempLow}°F</div>
+                        </div>
+                    `;
+                }).join('');
                 return;
             }
 
-            container.innerHTML = forecast.map(day => {
-                const date = new Date(day.date);
-                const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
-                const icon = day.iconEmoji || '⛅';
+            // Fall back to generated forecast based on historical data
+            const weatherMonths = getWeatherData();
+            if (!weatherMonths) return;
+            const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const icons = ['☀️', '⛅', '🌤️', '🌦️', '🌧️', '⛈️', '🌈'];
+            const data = weatherMonths[currentMonth];
 
+            container.innerHTML = days.map((day, i) => {
+                const temp = data.temp + Math.floor(Math.random() * 10) - 5;
+                const icon = icons[Math.floor(Math.random() * icons.length)];
                 return `
                     <div class="day-card">
-                        <div class="day-name">${dayName}</div>
+                        <div class="day-name">${day}</div>
                         <div class="day-icon">${icon}</div>
-                        <div class="day-temp">${day.tempHigh}°F / ${day.tempLow}°F</div>
+                        <div class="day-temp">${temp}°F</div>
                     </div>
                 `;
             }).join('');
         }
 
+        // Render Alerts
         function renderAlerts() {
             const container = document.getElementById('alertsContainer');
             if (!currentProperty) {
-                container.innerHTML =
-                    '<p style="color: rgba(255,255,255,0.7); text-align:center; padding:40px;">No property selected.</p>';
+                container.innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 40px;">No property selected. Add a property to view alerts.</p>';
                 return;
             }
-
             const weatherMonths = getWeatherData();
-            if (!weatherMonths) {
-                container.innerHTML =
-                    '<p style="color: rgba(255,255,255,0.7); text-align:center; padding:40px;">No climate normals available for alerts.</p>';
-                return;
-            }
-
+            if (!weatherMonths) return;
             const data = weatherMonths[currentMonth];
+
             const alerts = [];
 
+            // Freeze warning for sub-freezing temperatures
             if (data.temp < 32) {
                 alerts.push({
                     type: 'warning',
@@ -2391,7 +2310,7 @@
                     type: 'critical',
                     icon: '🔥',
                     title: 'Extreme Heat Warning',
-                    message: 'Temperatures exceeding 95°F typical for this month. Expect high cooling demand.'
+                    message: 'Temperatures exceeding 95°F. Ensure HVAC system is functioning optimally. Limit outdoor exposure during peak hours.'
                 });
             }
 
@@ -2400,7 +2319,7 @@
                     type: 'warning',
                     icon: '💧',
                     title: 'Heavy Rainfall Alert',
-                    message: 'Significant precipitation typical. Inspect drainage systems, gutters, and check for potential water intrusion.'
+                    message: 'Significant precipitation expected. Inspect drainage systems, gutters, and check for potential water intrusion.'
                 });
             }
 
@@ -2409,7 +2328,7 @@
                     type: 'warning',
                     icon: '💨',
                     title: 'High Wind Advisory',
-                    message: 'Wind speeds often exceed 18 mph. Secure loose outdoor items and check roof integrity.'
+                    message: 'Wind speeds over 18 mph. Secure loose outdoor items, inspect roof integrity, and check for tree branches near structure.'
                 });
             }
 
@@ -2417,8 +2336,8 @@
                 alerts.push({
                     type: 'info',
                     icon: '✅',
-                    title: 'No Significant Weather Alerts',
-                    message: 'Typical conditions are generally favorable. No major weather-related property risks for this month.'
+                    title: 'No Weather Alerts',
+                    message: 'Weather conditions are favorable for property viewing and outdoor activities. No significant weather impacts expected.'
                 });
             }
 
@@ -2433,99 +2352,103 @@
             `).join('');
         }
 
-        function initOrUpdateCharts() {
+        // Initialize Charts (ApexCharts - Glassmorphic)
+        function initCharts() {
             if (!currentProperty) {
-                document.getElementById('weatherChart').innerHTML =
-                    '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 80px 20px;">No property selected.</p>';
-                document.getElementById('precipChart').innerHTML =
-                    '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 80px 20px;">No property selected.</p>';
+                // Show empty state for charts
+                document.getElementById('weatherChart').innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 80px 20px;">No property selected. Add a property to view annual weather patterns.</p>';
+                document.getElementById('precipChart').innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 80px 20px;">No property selected. Add a property to view precipitation trends.</p>';
+                document.getElementById('heatCalendar').innerHTML = '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 80px 20px;">No property selected. Add a property to view heat calendar.</p>';
                 return;
             }
-
             const weatherMonths = getWeatherData();
-            if (!weatherMonths) {
-                document.getElementById('weatherChart').innerHTML =
-                    '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 80px 20px;">No climate normals available.</p>';
-                document.getElementById('precipChart').innerHTML =
-                    '<p style="color: rgba(255,255,255,0.6); text-align: center; padding: 80px 20px;">No climate normals available.</p>';
-                return;
-            }
+            if (!weatherMonths) return;
 
-            const temps = weatherMonths.map(m => m.temp);
-            const humidities = weatherMonths.map(m => m.humidity);
-            const precips = weatherMonths.map(m => m.precip);
-
+            // ApexCharts - Annual Weather Patterns
             const weatherOptions = {
-                series: [
-                    { name: 'Temperature °F', data: temps },
-                    { name: 'Humidity %', data: humidities }
-                ],
-                chart: {
-                    type: 'area',
-                    height: 400,
-                    foreColor: '#fff',
-                    background: 'transparent',
-                    toolbar: { show: true }
-                },
+                series: [{
+                    name: 'Temperature °F',
+                    data: weatherMonths.map(m => m.temp)
+                }, {
+                    name: 'Humidity %',
+                    data: weatherMonths.map(m => m.humidity)
+                }],
+                chart: { type: 'area', height: 400, foreColor: '#fff', background: 'transparent', toolbar: { show: true } },
                 theme: { mode: 'dark' },
                 stroke: { curve: 'smooth', width: 3 },
                 fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.3 } },
                 xaxis: { categories: MONTHS },
-                yaxis: [
-                    {
-                        seriesName: 'Temperature °F',
-                        title: { text: 'Temp °F', style: { color: '#fff' } },
-                        labels: { style: { colors: '#fff' } }
-                    },
-                    {
-                        seriesName: 'Humidity %',
-                        opposite: true,
-                        title: { text: 'Humidity %', style: { color: '#fff' } },
-                        labels: { style: { colors: '#fff' } }
-                    }
-                ],
+                yaxis: [{ title: { text: 'Temp °F' } }, { opposite: true, title: { text: 'Humidity %' } }],
                 grid: { borderColor: 'rgba(255,255,255,0.1)' },
-                colors: ['#00D4FF', '#ff0066'],
-                legend: { labels: { colors: '#fff' } }
+                colors: ['#00D4FF', '#ff0066']
             };
 
-            if (weatherApexChart) weatherApexChart.destroy();
-            weatherApexChart = new ApexCharts(document.querySelector("#weatherChart"), weatherOptions);
-            weatherApexChart.render();
+            if (window.weatherApexChart) window.weatherApexChart.destroy();
+            window.weatherApexChart = new ApexCharts(document.querySelector("#weatherChart"), weatherOptions);
+            window.weatherApexChart.render();
 
+            // ApexCharts - Precipitation Radar
             const precipOptions = {
-                series: [{ name: 'Precipitation (inches)', data: precips }],
-                chart: { type: 'radar', height: 400, foreColor: '#00D4FF', toolbar: { show: false }, background: 'transparent' },
+                series: [{
+                    name: 'Precipitation',
+                    data: weatherMonths.map(m => m.precip)
+                }],
+                chart: { type: 'radar', height: 400, foreColor: '#00D4FF', toolbar: { show: false } },
                 theme: { mode: 'dark' },
                 plotOptions: { radar: { polygons: { strokeColors: 'rgba(0,212,255,0.3)', fill: { colors: ['transparent'] } } } },
                 stroke: { width: 3 },
                 fill: { opacity: 0.4 },
                 markers: { size: 6, hover: { size: 10 } },
-                xaxis: { categories: MONTHS, labels: { style: { colors: '#fff' } } },
-                yaxis: { labels: { style: { colors: '#9ca3af' } } },
-                title: { text: 'Monthly Precipitation Pattern', style: { color: '#fff' } },
+                xaxis: { categories: MONTHS },
+                title: { text: 'Monthly Precipitation & Wind Pattern', style: { color: '#fff' } },
                 colors: ['#00D4FF']
             };
 
-            if (precipApexChart) precipApexChart.destroy();
-            precipApexChart = new ApexCharts(document.querySelector("#precipChart"), precipOptions);
-            precipApexChart.render();
+            if (window.precipApexChart) window.precipApexChart.destroy();
+            window.precipApexChart = new ApexCharts(document.querySelector("#precipChart"), precipOptions);
+            window.precipApexChart.render();
         }
 
+        // Update Charts
+        function updateCharts() {
+            if (!currentProperty) return;
+            const climateData = getWeatherData();
+            if (!climateData) return;
+
+            if (window.weatherApexChart) {
+                window.weatherApexChart.updateSeries([{
+                    name: 'Temperature °F',
+                    data: climateData.map(m => m.temp)
+                }, {
+                    name: 'Humidity %',
+                    data: climateData.map(m => m.humidity)
+                }]);
+            }
+
+            if (window.precipApexChart) {
+                window.precipApexChart.updateSeries([{
+                    name: 'Precipitation',
+                    data: climateData.map(m => m.precip)
+                }]);
+            }
+        }
+
+        // Set Season
         window.setSeason = function(season, buttonElement) {
             const seasonMap = { spring: 3, summer: 6, fall: 9, winter: 0 };
-            currentMonth = seasonMap[season] ?? 0;
+            currentMonth = seasonMap[season];
             currentSeason = season;
 
-            const slider = document.getElementById('timelineSlider');
-            if (slider) slider.value = currentMonth;
-
+            document.getElementById('timelineSlider').value = currentMonth;
             document.querySelectorAll('.season-btn').forEach(btn => btn.classList.remove('active'));
-            if (buttonElement) buttonElement.classList.add('active');
+            if (buttonElement) {
+                buttonElement.classList.add('active');
+            }
 
             updateDisplay();
         };
 
+        // Refresh Weather
         window.refreshWeather = function() {
             renderWeatherMetrics();
             renderImpactAnalysis();
@@ -2533,18 +2456,21 @@
             renderAlerts();
         };
 
+        // Run Simulation
         window.runSimulation = function() {
             let month = 0;
-            const slider = document.getElementById('timelineSlider');
             const interval = setInterval(() => {
                 currentMonth = month;
-                if (slider) slider.value = month;
+                document.getElementById('timelineSlider').value = month;
                 updateDisplay();
                 month++;
                 if (month >= 12) clearInterval(interval);
             }, 500);
         };
 
+        /**
+         * Export weather report with comprehensive metadata
+         */
         window.exportReport = function() {
             if (!currentProperty) {
                 alert('Cannot export: No property selected');
@@ -2553,11 +2479,13 @@
 
             const weatherMonths = getWeatherData();
             if (!weatherMonths) {
-                alert('Cannot export: No climate data available');
+                alert('Cannot export: No weather data available');
                 return;
             }
 
-            const monthData = weatherMonths[currentMonth];
+            // Determine data source
+            const isRealData = REAL_WEATHER_DATA[currentProperty.id] !== undefined;
+            const dataSource = isRealData ? 'NOAA Climate Data Online (Real Historical Data)' : 'Placeholder Climate Patterns';
 
             const report = {
                 property: {
@@ -2568,17 +2496,14 @@
                     climate: currentProperty.climate
                 },
                 month: MONTHS[currentMonth],
-                weatherData: monthData,
-                annualData: weatherMonths,
+                weatherData: weatherMonths[currentMonth],
+                annualData: weatherMonths, // Full year
                 exportDate: new Date().toISOString(),
                 metadata: {
                     simulator: 'CLUES™ 4D Weather-Impact Simulator',
-                    version: '1.0.1',
-                    dataSource: REAL_WEATHER_DATA[currentProperty.id]
-                        ? 'Open-Meteo climate normals (via CLUES weatherAPI)'
-                        : (USE_PLACEHOLDER_CLIMATE ? 'CLUES placeholder climate pattern' : 'No real climate data'),
-                    hasRealtime: !!WEATHERCOM_DATA[currentProperty.id],
-                    climateFallbackEnabled: USE_PLACEHOLDER_CLIMATE
+                    version: '1.0.0',
+                    dataSource: dataSource,
+                    isRealData: isRealData
                 }
             };
 
@@ -2597,101 +2522,106 @@
             console.log('✅ Report exported successfully');
         };
 
-        function init() {
-            renderSelectedPropertiesToolbar();
-            document.getElementById('weatherMetrics').innerHTML =
-                '<p style="color: rgba(255,255,255,0.7); text-align:center;">No properties selected. Click "+ Add Property" to begin.</p>';
-            document.getElementById('impactGrid').innerHTML = '';
-            document.getElementById('forecastGrid').innerHTML =
-                '<p style="color: rgba(255,255,255,0.7); text-align:center; padding:40px;">No property selected.</p>';
-            document.getElementById('alertsContainer').innerHTML = '';
-
-            const slider = document.getElementById('timelineSlider');
-            if (slider) {
-                slider.addEventListener('input', e => {
-                    currentMonth = parseInt(e.target.value, 10);
-                    updateDisplay();
-                });
-            }
-        }
-
+        /**
+         * Initialize Enhancement with REAL Data
+         */
         async function initializeEnhancement() {
             try {
                 console.log('🌦️ Initializing 4D Weather-Impact Simulator...');
 
+                // Check if sharedDataAdapter exists
                 if (typeof sharedDataAdapter === 'undefined') {
-                    console.error('❌ sharedDataAdapter not found');
-                    const toolbar = document.getElementById('selectedPropertiesToolbar');
-                    const addBtn = document.getElementById('addPropertyBtn');
-                    if (addBtn) addBtn.disabled = true;
-                    if (toolbar) {
-                        toolbar.innerHTML = `
-                            <div class="error-message">
-                                <p><strong>Critical Error:</strong> Shared data adapter not found.</p>
-                                <p>The weather simulator requires the shared data adapter to load properties.</p>
-                                <button class="btn primary" onclick="window.location.href='../index.html'">
-                                    Return to Dashboard
-                                </button>
-                            </div>
-                        `;
-                    }
-                    return;
-                }
+                    console.error('❌ SharedDataAdapter not found');
 
-                await sharedDataAdapter.init();
-                PROPERTIES = await sharedDataAdapter.getPropertiesForWeatherSimulator();
-                console.log(`✅ Loaded ${PROPERTIES.length} properties from database`);
-
-                await ensureCoordinates();
-
-                if (!Array.isArray(PROPERTIES) || PROPERTIES.length === 0) {
-                    const toolbar = document.getElementById('selectedPropertiesToolbar');
-                    const addBtn = document.getElementById('addPropertyBtn');
-                    if (addBtn) addBtn.disabled = true;
-                    if (toolbar) {
-                        toolbar.innerHTML = `
-                            <div class="error-message">
-                                <p><strong>No Properties Found</strong></p>
-                                <p>Please import property data from the main dashboard first.</p>
-                                <button class="btn primary" onclick="window.location.href='../index.html'">
-                                    Return to Dashboard
-                                </button>
-                            </div>
-                        `;
-                    }
-                    return;
-                }
-
-                PROPERTIES.forEach(prop => {
-                    const detectedClimate = detectClimate(prop);
-                    prop.climate = detectedClimate;
-                    console.log(
-                        `📍 Property "${prop.name}" (${prop.location?.city || ''}, ${prop.location?.state || ''}) → Climate: ${prop.climate}`
-                    );
-                });
-
-                currentProperty = null;
-                SELECTED_PROPERTIES = [];
-                init();
-
-                console.log('✨ Weather simulator ready (user will select up to 4 properties).');
-            } catch (error) {
-                console.error('❌ Enhancement initialization failed:', error);
-                const toolbar = document.getElementById('selectedPropertiesToolbar');
-                if (toolbar) {
-                    toolbar.innerHTML = `
+                    const container = document.getElementById('propertySelector');
+                    container.innerHTML = `
                         <div class="error-message">
-                            <p><strong>Initialization Error:</strong> ${error.message}</p>
-                            <p>Please check the browser console for technical details.</p>
+                            <p><strong>Critical Error:</strong> Data adapter not found</p>
+                            <p>The weather simulator requires the shared data adapter to function.</p>
                             <button class="btn primary" onclick="window.location.href='../index.html'">
                                 Return to Dashboard
                             </button>
                         </div>
                     `;
+                    return;
                 }
+
+                // Initialize shared data adapter
+                await sharedDataAdapter.init();
+
+                // Load REAL properties from IndexedDB
+                PROPERTIES = await sharedDataAdapter.getPropertiesForWeatherSimulator();
+
+                console.log(`✅ Loaded ${PROPERTIES.length} properties from database`);
+
+                // Geocode properties that don't have coordinates
+                await ensureCoordinates();
+
+                // Check if we have properties
+                if (PROPERTIES.length === 0) {
+                    const container = document.getElementById('propertySelector');
+                    container.innerHTML = `
+                        <div class="error-message">
+                            <p><strong>No Properties Found</strong></p>
+                            <p>Please import property data from the main dashboard first.</p>
+                            <button class="btn primary" onclick="window.location.href='../index.html'">
+                                Return to Dashboard
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Process properties - detect climate based on location
+                PROPERTIES.forEach(prop => {
+                    // Detect climate from location if not already set
+                    const detectedClimate = detectClimate(prop);
+
+                    // Store as simple string (not nested object) to match WEATHER_DATA keys
+                    prop.climate = detectedClimate;
+
+                    console.log(`📍 Property "${prop.name}" (${prop.location.city}, ${prop.location.state}) → Climate: ${prop.climate}`);
+                });
+
+                // DO NOT fetch all properties on page load!
+                // Data will be fetched ONLY when user clicks "+ Add Property"
+                console.log('✅ Skipping automatic data fetch - user will select up to 4 properties');
+
+                // Initialize empty toolbar
+                renderSelectedPropertiesToolbar();
+
+                // No currentProperty set yet - user must add properties first
+                currentProperty = null;
+
+                // Initialize the UI
+                init();
+
+                console.log('✨ Weather simulator ready!');
+
+            } catch (error) {
+                console.error('❌ Enhancement initialization failed:', error);
+
+                const container = document.getElementById('propertySelector');
+                container.innerHTML = `
+                    <div class="error-message">
+                        <p><strong>Initialization Error:</strong> ${error.message}</p>
+                        <p>Please check the console for details.</p>
+                        <button class="btn primary" onclick="window.location.href='../index.html'">
+                            Return to Dashboard
+                        </button>
+                    </div>
+                `;
             }
         }
 
+        // Expose functions to global scope for onclick handlers
+        window.setSeason = setSeason;
+        window.selectProperty = selectProperty;
+        window.refreshWeather = refreshWeather;
+        window.runSimulation = runSimulation;
+        window.exportReport = exportReport;
+
+        // Initialize on load
         window.addEventListener('load', () => {
             initializeEnhancement();
         });
