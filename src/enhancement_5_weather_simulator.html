@@ -3914,50 +3914,34 @@
             panel.classList.toggle('open');
         }
 
-        // Load saved properties from IndexedDB
+        // Load saved properties using DataManager
         async function loadSavedProperties() {
             try {
-                // Open the CLUES Quantum DB (main app database)
-                const dbRequest = indexedDB.open('CLUES_Quantum_DB', 1);
-
-                dbRequest.onsuccess = (event) => {
-                    const db = event.target.result;
-                    console.log('✅ Connected to CLUES_Quantum_DB');
-
-                    if (!db.objectStoreNames.contains('properties')) {
-                        console.log('⚠️ No properties store found in database');
-                        displayNoProperties();
-                        return;
-                    }
-
-                    const transaction = db.transaction(['properties'], 'readonly');
-                    const store = transaction.objectStore('properties');
-                    const getAllRequest = store.getAll();
-
-                    getAllRequest.onsuccess = () => {
-                        const properties = getAllRequest.result || [];
-                        console.log(`✅ Loaded ${properties.length} saved properties from CLUES_Quantum_DB`);
-
-                        if (properties.length > 0) {
-                            console.log('📍 First property:', properties[0]);
-                        }
-
-                        displayProperties(properties);
-                        document.getElementById('propertyCount').textContent = properties.length;
-                    };
-
-                    getAllRequest.onerror = () => {
-                        console.error('❌ Error loading properties from store');
-                        displayNoProperties();
-                    };
-                };
-
-                dbRequest.onerror = (event) => {
-                    console.error('❌ Error opening CLUES_Quantum_DB:', event.target.error);
+                // Check if DataManager is available
+                if (typeof DataManager === 'undefined') {
+                    console.error('❌ DataManager class not loaded');
                     displayNoProperties();
-                };
+                    return;
+                }
+
+                // Initialize DataManager
+                const dataManager = new DataManager();
+                await dataManager.init();
+                console.log('✅ DataManager initialized');
+
+                // Get all properties using DataManager
+                const properties = await dataManager.getAllProperties();
+                console.log(`✅ Loaded ${properties.length} properties from DataManager`);
+
+                if (properties.length > 0) {
+                    console.log('📍 First property structure:', properties[0]);
+                }
+
+                displayProperties(properties);
+                document.getElementById('propertyCount').textContent = properties.length;
+
             } catch (error) {
-                console.error('❌ Error accessing IndexedDB:', error);
+                console.error('❌ Error loading properties:', error);
                 displayNoProperties();
             }
         }
