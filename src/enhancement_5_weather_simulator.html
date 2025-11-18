@@ -684,6 +684,9 @@
         // Google Maps API Key (restrict in Google Cloud Console to your domain)
         const GOOGLE_MAPS_API_KEY = 'AIzaSyAtnlfmqoHQkiJXc3KYUeR5_4mUupOPLbw';
 
+        // AccuWeather API Key (get free key at developer.accuweather.com)
+        const ACCUWEATHER_API_KEY = 'YOUR_ACCUWEATHER_API_KEY_HERE'; // Replace with your actual key
+
         // Load Google Maps
         function loadGoogleMapsScript() {
             if (document.querySelector('script[src*="maps.googleapis.com"]')) {
@@ -1360,6 +1363,124 @@
                 updateAPIStatus('wildfire-status', 'error');
                 return 0;
             }
+        }
+
+        // Fetch 30-year historical data for climate normals and extreme events
+        async function fetch30YearHistoricalData(lat, lon) {
+            try {
+                console.log('📊 Fetching 30-year historical data (1995-2024) for climate analysis...');
+
+                const endYear = 2024;
+                const startYear = 1995;
+
+                const url = `https://archive-api.open-meteo.com/v1/archive?` +
+                    `latitude=${lat}&longitude=${lon}&` +
+                    `start_date=${startYear}-01-01&end_date=${endYear}-12-31&` +
+                    `daily=temperature_2m_max,temperature_2m_min,precipitation_sum&` +
+                    `temperature_unit=fahrenheit&` +
+                    `precipitation_unit=inch&` +
+                    `timezone=auto`;
+
+                const response = await fetch(url);
+
+                if (!response.ok) {
+                    throw new Error(`Historical data API failed: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                console.log(`✅ Retrieved ${data.daily.time.length} days of historical data (${startYear}-${endYear})`);
+
+                return {
+                    daily: data.daily,
+                    years: endYear - startYear + 1,
+                    startYear: startYear,
+                    endYear: endYear,
+                    source: 'Open-Meteo Archive (ERA5 Reanalysis)'
+                };
+
+            } catch (error) {
+                console.error('❌ 30-year historical data error:', error);
+                return null;
+            }
+        }
+
+        // Calculate 30-year climate normals (monthly averages)
+        function calculate30YearNormals(historicalData) {
+            if (!historicalData || !historicalData.daily) return null;
+
+            const { time, temperature_2m_max, temperature_2m_min, precipitation_sum } = historicalData.daily;
+
+            // Initialize monthly arrays (12 months, each will hold all values for that month)
+            const monthlyMaxTemps = Array.from({ length: 12 }, () => []);
+            const monthlyMinTemps = Array.from({ length: 12 }, () => []);
+            const monthlyPrecip = Array.from({ length: 12 }, () => []);
+
+            // Group data by month
+            time.forEach((dateStr, index) => {
+                const month = new Date(dateStr).getMonth(); // 0-11
+                monthlyMaxTemps[month].push(temperature_2m_max[index]);
+                monthlyMinTemps[month].push(temperature_2m_min[index]);
+                monthlyPrecip[month].push(precipitation_sum[index]);
+            });
+
+            // Calculate averages for each month
+            const normals = monthlyMaxTemps.map((temps, month) => {
+                const avgMax = temps.reduce((a, b) => a + b, 0) / temps.length;
+                const avgMin = monthlyMinTemps[month].reduce((a, b) => a + b, 0) / monthlyMinTemps[month].length;
+                const avgPrecip = monthlyPrecip[month].reduce((a, b) => a + b, 0) / monthlyPrecip[month].length;
+
+                return {
+                    month: month,
+                    monthName: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][month],
+                    avgMaxTemp: avgMax,
+                    avgMinTemp: avgMin,
+                    avgPrecip: avgPrecip
+                };
+            });
+
+            console.log('✅ Calculated 30-year climate normals (1995-2024)');
+            return normals;
+        }
+
+        // Calculate extreme temperature days (heat waves and freeze days)
+        function calculateExtremeTemperatureDays(historicalData) {
+            if (!historicalData || !historicalData.daily) return null;
+
+            const { time, temperature_2m_max, temperature_2m_min } = historicalData.daily;
+
+            // Group by year
+            const yearlyStats = {};
+
+            time.forEach((dateStr, index) => {
+                const year = new Date(dateStr).getFullYear();
+
+                if (!yearlyStats[year]) {
+                    yearlyStats[year] = {
+                        year: year,
+                        heatWaveDays: 0,  // Days with max temp >= 95°F
+                        freezeDays: 0      // Days with min temp <= 32°F
+                    };
+                }
+
+                // Count heat wave days (>= 95°F)
+                if (temperature_2m_max[index] >= 95) {
+                    yearlyStats[year].heatWaveDays++;
+                }
+
+                // Count freeze days (<= 32°F)
+                if (temperature_2m_min[index] <= 32) {
+                    yearlyStats[year].freezeDays++;
+                }
+            });
+
+            const stats = Object.values(yearlyStats);
+
+            console.log(`✅ Calculated extreme temperature days for ${stats.length} years`);
+            console.log(`   Average heat wave days (>=95°F): ${(stats.reduce((a, b) => a + b.heatWaveDays, 0) / stats.length).toFixed(1)}/year`);
+            console.log(`   Average freeze days (<=32°F): ${(stats.reduce((a, b) => a + b.freezeDays, 0) / stats.length).toFixed(1)}/year`);
+
+            return stats;
         }
 
         // Fetch NOAA climate data (FREE with registration)
@@ -2124,6 +2245,266 @@
             charts.tempProjection.render();
         }
 
+        // Create 30-Year Climate Normals chart
+        function createClimateNormalsChart(normals) {
+            if (!normals) return;
+
+            const options = {
+                series: [{
+                    name: 'Avg High',
+                    data: normals.map(n => n.avgMaxTemp.toFixed(1))
+                }, {
+                    name: 'Avg Low',
+                    data: normals.map(n => n.avgMinTemp.toFixed(1))
+                }],
+                chart: {
+                    type: 'line',
+                    height: 350,
+                    background: 'transparent',
+                    toolbar: { show: false }
+                },
+                colors: ['#f59e0b', '#3b82f6'],
+                dataLabels: { enabled: false },
+                stroke: {
+                    curve: 'smooth',
+                    width: 3
+                },
+                xaxis: {
+                    categories: normals.map(n => n.monthName),
+                    labels: {
+                        style: {
+                            colors: '#FFFFFF',
+                            fontSize: '12px',
+                            fontWeight: 700
+                        }
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Temperature (°F)',
+                        style: {
+                            color: '#FFFFFF',
+                            fontSize: '13px',
+                            fontWeight: 700
+                        }
+                    },
+                    labels: {
+                        style: {
+                            colors: '#FFFFFF',
+                            fontSize: '12px',
+                            fontWeight: 700
+                        },
+                        formatter: (val) => `${val}°F`
+                    }
+                },
+                theme: { mode: 'dark' },
+                grid: {
+                    borderColor: 'rgba(255, 255, 255, 0.1)'
+                },
+                legend: {
+                    labels: {
+                        colors: '#FFFFFF',
+                        useSeriesColors: false
+                    }
+                },
+                tooltip: {
+                    theme: 'dark',
+                    y: {
+                        formatter: (val) => `${val}°F`
+                    }
+                },
+                title: {
+                    text: '30-Year Climate Normals (1995-2024)',
+                    align: 'center',
+                    style: {
+                        color: '#FFFFFF',
+                        fontSize: '14px',
+                        fontWeight: 700
+                    }
+                }
+            };
+
+            if (charts.climateNormals) charts.climateNormals.destroy();
+            charts.climateNormals = new ApexCharts(document.querySelector("#climateNormalsChart"), options);
+            charts.climateNormals.render();
+        }
+
+        // Create Heat Wave Days chart
+        function createHeatWaveDaysChart(extremeStats) {
+            if (!extremeStats) return;
+
+            const options = {
+                series: [{
+                    name: 'Days ≥95°F',
+                    data: extremeStats.map(s => s.heatWaveDays)
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 350,
+                    background: 'transparent',
+                    toolbar: { show: false }
+                },
+                colors: ['#ef4444'],
+                plotOptions: {
+                    bar: {
+                        borderRadius: 4,
+                        dataLabels: {
+                            position: 'top'
+                        }
+                    }
+                },
+                dataLabels: {
+                    enabled: true,
+                    formatter: (val) => val > 0 ? val : '',
+                    offsetY: -20,
+                    style: {
+                        fontSize: '10px',
+                        colors: ['#FFFFFF'],
+                        fontWeight: 700
+                    }
+                },
+                xaxis: {
+                    categories: extremeStats.map(s => s.year),
+                    labels: {
+                        style: {
+                            colors: '#FFFFFF',
+                            fontSize: '10px',
+                            fontWeight: 700
+                        },
+                        rotate: -45
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Number of Days',
+                        style: {
+                            color: '#FFFFFF',
+                            fontSize: '13px',
+                            fontWeight: 700
+                        }
+                    },
+                    labels: {
+                        style: {
+                            colors: '#FFFFFF',
+                            fontSize: '12px',
+                            fontWeight: 700
+                        }
+                    }
+                },
+                theme: { mode: 'dark' },
+                grid: {
+                    borderColor: 'rgba(255, 255, 255, 0.1)'
+                },
+                tooltip: {
+                    theme: 'dark',
+                    y: {
+                        formatter: (val) => `${val} days`
+                    }
+                },
+                title: {
+                    text: 'Annual Heat Wave Days (Max Temp ≥95°F)',
+                    align: 'center',
+                    style: {
+                        color: '#FFFFFF',
+                        fontSize: '14px',
+                        fontWeight: 700
+                    }
+                }
+            };
+
+            if (charts.heatWave) charts.heatWave.destroy();
+            charts.heatWave = new ApexCharts(document.querySelector("#heatWaveChart"), options);
+            charts.heatWave.render();
+        }
+
+        // Create Freeze Days chart
+        function createFreezeDaysChart(extremeStats) {
+            if (!extremeStats) return;
+
+            const options = {
+                series: [{
+                    name: 'Days ≤32°F',
+                    data: extremeStats.map(s => s.freezeDays)
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 350,
+                    background: 'transparent',
+                    toolbar: { show: false }
+                },
+                colors: ['#3b82f6'],
+                plotOptions: {
+                    bar: {
+                        borderRadius: 4,
+                        dataLabels: {
+                            position: 'top'
+                        }
+                    }
+                },
+                dataLabels: {
+                    enabled: true,
+                    formatter: (val) => val > 0 ? val : '',
+                    offsetY: -20,
+                    style: {
+                        fontSize: '10px',
+                        colors: ['#FFFFFF'],
+                        fontWeight: 700
+                    }
+                },
+                xaxis: {
+                    categories: extremeStats.map(s => s.year),
+                    labels: {
+                        style: {
+                            colors: '#FFFFFF',
+                            fontSize: '10px',
+                            fontWeight: 700
+                        },
+                        rotate: -45
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Number of Days',
+                        style: {
+                            color: '#FFFFFF',
+                            fontSize: '13px',
+                            fontWeight: 700
+                        }
+                    },
+                    labels: {
+                        style: {
+                            colors: '#FFFFFF',
+                            fontSize: '12px',
+                            fontWeight: 700
+                        }
+                    }
+                },
+                theme: { mode: 'dark' },
+                grid: {
+                    borderColor: 'rgba(255, 255, 255, 0.1)'
+                },
+                tooltip: {
+                    theme: 'dark',
+                    y: {
+                        formatter: (val) => `${val} days`
+                    }
+                },
+                title: {
+                    text: 'Annual Freeze Days (Min Temp ≤32°F)',
+                    align: 'center',
+                    style: {
+                        color: '#FFFFFF',
+                        fontSize: '14px',
+                        fontWeight: 700
+                    }
+                }
+            };
+
+            if (charts.freezeDays) charts.freezeDays.destroy();
+            charts.freezeDays = new ApexCharts(document.querySelector("#freezeDaysChart"), options);
+            charts.freezeDays.render();
+        }
+
         // Main function to load all data
         async function loadAllData() {
             const address = document.getElementById('address').value.trim();
@@ -2257,7 +2638,27 @@
             if (projections) {
                 createClimateProjectionCharts(projections);
             }
-            
+
+            // Fetch and display 30-year historical data for climate normals and extreme events
+            fetch30YearHistoricalData(location.lat, location.lon).then(historicalData => {
+                if (historicalData) {
+                    // Calculate and display 30-year climate normals
+                    const normals = calculate30YearNormals(historicalData);
+                    if (normals) {
+                        createClimateNormalsChart(normals);
+                    }
+
+                    // Calculate and display extreme temperature days
+                    const extremeStats = calculateExtremeTemperatureDays(historicalData);
+                    if (extremeStats) {
+                        createHeatWaveDaysChart(extremeStats);
+                        createFreezeDaysChart(extremeStats);
+                    }
+                }
+            }).catch(error => {
+                console.error('Error processing 30-year historical data:', error);
+            });
+
             // Reset button
             document.getElementById('loadBtn').innerHTML = '🔍 Analyze Location';
         }
