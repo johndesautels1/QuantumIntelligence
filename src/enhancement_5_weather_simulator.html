@@ -66,6 +66,11 @@
             text-shadow: 0 0 20px rgba(0, 212, 255, 0.8);
         }
 
+        .panel p, .data-card p {
+            color: #FFFFFF;
+            font-weight: 700;
+        }
+
         /* Chart containers with glassmorphism - 5D Quantum Explorer style */
         .chart-container {
             background: rgba(0, 212, 255, 0.1);
@@ -151,8 +156,9 @@
             background: rgba(0, 212, 255, 0.1);
             border: 1px solid rgba(0, 212, 255, 0.4);
             border-radius: 10px;
-            color: white;
+            color: #FFFFFF;
             font-size: 16px;
+            font-weight: 700;
             backdrop-filter: blur(10px);
         }
 
@@ -163,7 +169,8 @@
         }
 
         .input-group input::placeholder {
-            color: rgba(0, 212, 255, 0.6);
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 700;
         }
 
         /* Button styles - 5D Quantum Explorer style */
@@ -295,13 +302,15 @@
 
         .data-value {
             font-size: 2em;
-            font-weight: bold;
-            color: white;
+            font-weight: 700;
+            color: #FFFFFF;
         }
 
         .data-unit {
             font-size: 0.8em;
-            opacity: 0.8;
+            color: #FFFFFF;
+            font-weight: 700;
+            opacity: 0.9;
             margin-left: 5px;
         }
 
@@ -1326,11 +1335,11 @@
             container.innerHTML = `
                 <div class="data-card">
                     <h4>FEMA Flood Zone: ${zone}</h4>
-                    <p style="color: ${riskColor}; font-size: 1.2em; margin: 10px 0;">${riskLevel}</p>
-                    <p>Base Flood Elevation: ${data.STATIC_BFE || 'Not specified'}</p>
-                    <p>Zone Subtype: ${data.ZONE_SUBTY || 'N/A'}</p>
-                    ${data.DEPTH ? `<p>Depth: ${data.DEPTH} feet</p>` : ''}
-                    ${data.VELOCITY ? `<p>Velocity: ${data.VELOCITY} ft/s</p>` : ''}
+                    <p style="color: ${riskColor}; font-size: 1.2em; margin: 10px 0; font-weight: 700;">${riskLevel}</p>
+                    <p style="color: #FFFFFF; font-weight: 700;">Base Flood Elevation: ${data.STATIC_BFE || 'Not specified'}</p>
+                    <p style="color: #FFFFFF; font-weight: 700;">Zone Subtype: ${data.ZONE_SUBTY || 'N/A'}</p>
+                    ${data.DEPTH ? `<p style="color: #FFFFFF; font-weight: 700;">Depth: ${data.DEPTH} feet</p>` : ''}
+                    ${data.VELOCITY ? `<p style="color: #FFFFFF; font-weight: 700;">Velocity: ${data.VELOCITY} ft/s</p>` : ''}
                     <p style="margin-top: 15px; opacity: 0.7;">✅ Official FEMA NFHL Data</p>
                 </div>
             `;
@@ -1370,19 +1379,19 @@
                         <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
                             <div>
                                 <p style="opacity: 0.7; font-size: 0.9em;">Temperature</p>
-                                <p style="font-size: 1.3em; color: #60a5fa;">${tempF}°F</p>
+                                <p style="font-size: 1.3em; color: #FFFFFF; font-weight: 700;">${tempF}°F</p>
                             </div>
                             <div>
                                 <p style="opacity: 0.7; font-size: 0.9em;">Humidity</p>
-                                <p style="font-size: 1.3em; color: #60a5fa;">${humidity}%</p>
+                                <p style="font-size: 1.3em; color: #FFFFFF; font-weight: 700;">${humidity}%</p>
                             </div>
                             <div>
                                 <p style="opacity: 0.7; font-size: 0.9em;">Wind Speed</p>
-                                <p style="font-size: 1.3em; color: #60a5fa;">${windSpeed} mph</p>
+                                <p style="font-size: 1.3em; color: #FFFFFF; font-weight: 700;">${windSpeed} mph</p>
                             </div>
                             <div>
                                 <p style="opacity: 0.7; font-size: 0.9em;">Pressure</p>
-                                <p style="font-size: 1.3em; color: #60a5fa;">${pressure} mb</p>
+                                <p style="font-size: 1.3em; color: #FFFFFF; font-weight: 700;">${pressure} mb</p>
                             </div>
                         </div>
                     </div>
