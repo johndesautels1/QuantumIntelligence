@@ -1405,42 +1405,48 @@
             }
         }
 
-        // Calculate 30-year climate normals (monthly averages)
+        // Calculate 30-year climate normals (yearly averages)
         function calculate30YearNormals(historicalData) {
             if (!historicalData || !historicalData.daily) return null;
 
             const { time, temperature_2m_max, temperature_2m_min, precipitation_sum } = historicalData.daily;
 
-            // Initialize monthly arrays (12 months, each will hold all values for that month)
-            const monthlyMaxTemps = Array.from({ length: 12 }, () => []);
-            const monthlyMinTemps = Array.from({ length: 12 }, () => []);
-            const monthlyPrecip = Array.from({ length: 12 }, () => []);
+            // Group data by year
+            const yearlyData = {};
 
-            // Group data by month
             time.forEach((dateStr, index) => {
-                const month = new Date(dateStr).getMonth(); // 0-11
-                monthlyMaxTemps[month].push(temperature_2m_max[index]);
-                monthlyMinTemps[month].push(temperature_2m_min[index]);
-                monthlyPrecip[month].push(precipitation_sum[index]);
+                const year = new Date(dateStr).getFullYear();
+
+                if (!yearlyData[year]) {
+                    yearlyData[year] = {
+                        year: year,
+                        maxTemps: [],
+                        minTemps: [],
+                        precips: []
+                    };
+                }
+
+                yearlyData[year].maxTemps.push(temperature_2m_max[index]);
+                yearlyData[year].minTemps.push(temperature_2m_min[index]);
+                yearlyData[year].precips.push(precipitation_sum[index]);
             });
 
-            // Calculate averages for each month
-            const normals = monthlyMaxTemps.map((temps, month) => {
-                const avgMax = temps.reduce((a, b) => a + b, 0) / temps.length;
-                const avgMin = monthlyMinTemps[month].reduce((a, b) => a + b, 0) / monthlyMinTemps[month].length;
-                const avgPrecip = monthlyPrecip[month].reduce((a, b) => a + b, 0) / monthlyPrecip[month].length;
+            // Calculate annual averages for each year
+            const normals = Object.values(yearlyData).map(yearData => {
+                const avgMax = yearData.maxTemps.reduce((a, b) => a + b, 0) / yearData.maxTemps.length;
+                const avgMin = yearData.minTemps.reduce((a, b) => a + b, 0) / yearData.minTemps.length;
+                const totalPrecip = yearData.precips.reduce((a, b) => a + b, 0);
 
                 return {
-                    month: month,
-                    monthName: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][month],
+                    year: yearData.year,
                     avgMaxTemp: avgMax,
                     avgMinTemp: avgMin,
-                    avgPrecip: avgPrecip
+                    totalPrecip: totalPrecip
                 };
             });
 
-            console.log('✅ Calculated 30-year climate normals (1995-2024)');
-            return normals;
+            console.log(`✅ Calculated 30-year climate normals (${normals[0].year}-${normals[normals.length-1].year})`);
+            return normals.sort((a, b) => a.year - b.year);
         }
 
         // Calculate extreme temperature days (heat waves and freeze days)
@@ -2099,8 +2105,8 @@
                 
                 tempData.forEach(record => {
                     const date = new Date(record.date);
-                    const value = (record.value / 10) * 9/5 + 32; // Convert from tenths of C to F
-                    
+                    const value = record.value / 10; // Convert from tenths of F to F (already in Fahrenheit)
+
                     if (record.datatype === 'TMAX') {
                         tempSeries.TMAX.push({ x: date, y: value });
                     } else {
@@ -2252,10 +2258,10 @@
             const options = {
                 series: [{
                     name: 'Avg High',
-                    data: normals.map(n => n.avgMaxTemp.toFixed(1))
+                    data: normals.map(n => parseFloat(n.avgMaxTemp.toFixed(1)))
                 }, {
                     name: 'Avg Low',
-                    data: normals.map(n => n.avgMinTemp.toFixed(1))
+                    data: normals.map(n => parseFloat(n.avgMinTemp.toFixed(1)))
                 }],
                 chart: {
                     type: 'line',
@@ -2270,13 +2276,14 @@
                     width: 3
                 },
                 xaxis: {
-                    categories: normals.map(n => n.monthName),
+                    categories: normals.map(n => n.year),
                     labels: {
                         style: {
                             colors: '#FFFFFF',
-                            fontSize: '12px',
+                            fontSize: '10px',
                             fontWeight: 700
-                        }
+                        },
+                        rotate: -45
                     }
                 },
                 yaxis: {
