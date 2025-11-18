@@ -3102,16 +3102,15 @@
                         createFreezeDaysChart(extremeStats);
                     }
                 }
-
-                // Create earthquake and sea level charts
-                createEarthquakeChart(earthquakes);
-                createSeaLevelChart(location.lat, location.lon);
-                displayDisasterSummary(earthquakes, hurricanes);
-                console.log('✅ Natural disaster and sea level rise charts created');
-            }
             }).catch(error => {
                 console.error('Error processing 30-year historical data:', error);
             });
+
+            // Create earthquake and sea level charts (outside async callbacks)
+            createEarthquakeChart(earthquakes);
+            createSeaLevelChart(location.lat, location.lon);
+            displayDisasterSummary(earthquakes, hurricanes);
+            console.log('✅ Natural disaster and sea level rise charts created');
 
             // Reset button
             document.getElementById('loadBtn').innerHTML = '🔍 Analyze Location';
