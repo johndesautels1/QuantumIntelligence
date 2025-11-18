@@ -874,40 +874,32 @@
             }
         }
 
-        // Fetch historical climate data for charts using Open-Meteo Archive (FREE, no token needed)
+        // Fetch historical climate data for charts using Open-Meteo (current forecast API with past data)
         async function fetchNOAAHistoricalData(lat, lon) {
             try {
-                console.log('📊 Fetching historical weather data from Open-Meteo Archive...');
+                console.log('📊 Fetching historical weather data for charts...');
 
-                // Get last 12 months of data
-                const endDate = new Date();
-                const startDate = new Date();
-                startDate.setFullYear(endDate.getFullYear() - 1);
-
-                const startDateStr = startDate.toISOString().split('T')[0];
-                const endDateStr = endDate.toISOString().split('T')[0];
-
-                // Open-Meteo Archive API - FREE, reliable, no token needed
-                const url = `https://archive-api.open-meteo.com/v1/archive?` +
+                // Use Open-Meteo FORECAST API with past_days parameter - more reliable than archive
+                const url = `https://api.open-meteo.com/v1/forecast?` +
                     `latitude=${lat}&` +
                     `longitude=${lon}&` +
-                    `start_date=${startDateStr}&` +
-                    `end_date=${endDateStr}&` +
                     `daily=temperature_2m_max,temperature_2m_min,precipitation_sum&` +
                     `temperature_unit=fahrenheit&` +
                     `precipitation_unit=inch&` +
+                    `past_days=92&` + // Last 3 months
+                    `forecast_days=1&` +
                     `timezone=auto`;
 
                 const response = await fetch(url);
 
                 if (!response.ok) {
-                    console.log('⚠️ Open-Meteo Archive API failed, charts will remain empty');
+                    console.log('⚠️ Historical data API failed, charts will remain empty');
                     return null;
                 }
 
                 const data = await response.json();
 
-                // Convert Open-Meteo format to NOAA CDO format for createNOAACharts
+                // Convert to NOAA CDO format for createNOAACharts
                 const records = [];
 
                 if (data.daily) {
@@ -939,7 +931,7 @@
                     }
                 }
 
-                console.log(`✅ Retrieved ${records.length} historical weather records from Open-Meteo`);
+                console.log(`✅ Retrieved ${records.length} historical weather records (${Math.floor(records.length/3)} days)`);
 
                 // Populate the charts
                 if (records.length > 0) {
