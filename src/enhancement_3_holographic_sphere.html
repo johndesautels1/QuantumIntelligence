@@ -1480,9 +1480,10 @@
         .photo-upload-panel {
             position: fixed;
             right: 20px;
-            top: 450px;
+            top: 423px; /* Raised 27px (0.28 inches) from 450px */
+            bottom: 20px; /* Add bottom constraint for better scrolling */
             width: 350px;
-            max-height: 500px;
+            max-height: calc(100vh - 443px); /* Dynamic height based on viewport */
             background: linear-gradient(135deg, rgba(10, 22, 40, 0.95) 0%, rgba(26, 40, 71, 0.95) 100%);
             backdrop-filter: blur(20px);
             border-radius: 15px;
@@ -1493,7 +1494,27 @@
             display: none;
             flex-direction: column;
             gap: 12px;
-            overflow-y: auto;
+            overflow-y: auto; /* Enable scrolling if content overflows */
+            overflow-x: hidden;
+        }
+
+        /* Custom scrollbar for photo upload panel */
+        .photo-upload-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .photo-upload-panel::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+        }
+
+        .photo-upload-panel::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #00D4FF, #8A2BE2);
+            border-radius: 4px;
+        }
+
+        .photo-upload-panel::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #00FF88, #8A2BE2);
         }
 
         .photo-upload-panel h3 {
