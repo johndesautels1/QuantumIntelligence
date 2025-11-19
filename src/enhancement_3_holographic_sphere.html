@@ -1485,6 +1485,11 @@
             gap: 12px;
             overflow-y: auto;
             overflow-x: hidden;
+            pointer-events: auto !important; /* CRITICAL: Allow clicks */
+        }
+
+        .photo-upload-panel * {
+            pointer-events: auto !important; /* All children clickable */
         }
 
         /* Custom scrollbar for photo upload panel */
