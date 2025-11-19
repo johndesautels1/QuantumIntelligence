@@ -2592,6 +2592,14 @@
                 );
             };
 
+            // Verify functions are accessible globally
+            console.log('✅ Photo upload functions defined:', {
+                togglePhotoUpload: typeof window.togglePhotoUpload,
+                selectUploadSlot: typeof window.selectUploadSlot,
+                handlePhotoUpload: typeof window.handlePhotoUpload,
+                applyPhotoTexture: typeof window.applyPhotoTexture
+            });
+
             // ===== INITIALIZATION =====
             async function init() {
                 try {
