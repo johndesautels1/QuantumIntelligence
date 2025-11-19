@@ -1476,6 +1476,61 @@
             height: calc(100% - 21.7px);
         }
 
+        /* Feature #10b: Photo Upload Panel */
+        .photo-upload-panel {
+            position: fixed;
+            right: 20px;
+            top: 450px;
+            width: 350px;
+            max-height: 500px;
+            background: linear-gradient(135deg, rgba(10, 22, 40, 0.95) 0%, rgba(26, 40, 71, 0.95) 100%);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            z-index: 900;
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+        }
+
+        .photo-upload-panel h3 {
+            margin: 0 0 10px 0;
+            color: #00D4FF;
+            font-size: 1.1em;
+        }
+
+        .upload-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .upload-tab {
+            flex: 1;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .upload-tab.active {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(138, 43, 226, 0.3));
+            border-color: #00D4FF;
+            color: #00D4FF;
+        }
+
+        .upload-tab:hover {
+            background: rgba(0, 212, 255, 0.2);
+            border-color: #00D4FF;
+        }
+
         /* Feature #24: Personal Notes Panel */
         .notes-panel {
             position: fixed;
@@ -1795,6 +1850,49 @@
                 🏠 3D Houses: ON
             </button>
 
+            <!-- Photo Upload Button (Feature #10b) -->
+            <button class="mode-toggle" id="photo-upload-toggle" onclick="togglePhotoUpload()"
+                    style="top: 370px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(138, 43, 226, 0.3));"
+                    aria-label="Upload property photos to create 3D models">
+                📸 Upload Photos
+            </button>
+
+            <!-- Photo Upload Panel -->
+            <div class="photo-upload-panel" id="photo-upload-panel" role="region" aria-label="Upload property photos">
+                <h3>📸 Upload Property Photos</h3>
+                <p style="font-size: 0.9em; opacity: 0.8; margin-bottom: 15px;">
+                    Upload a photo of the property to display it as a 3D textured model
+                </p>
+
+                <div class="upload-tabs">
+                    <button class="upload-tab active" onclick="selectUploadSlot('A')">Property A</button>
+                    <button class="upload-tab" onclick="selectUploadSlot('B')">Property B</button>
+                    <button class="upload-tab" onclick="selectUploadSlot('C')">Property C</button>
+                </div>
+
+                <div id="upload-content">
+                    <input type="file" id="photo-input-A" accept="image/*" onchange="handlePhotoUpload('A', this)"
+                           style="margin: 10px 0; display: block; width: 100%;">
+
+                    <div id="photo-preview-A" style="margin: 10px 0; max-width: 100%; max-height: 200px; overflow: hidden; border-radius: 8px;">
+                        <p style="opacity: 0.6; font-size: 0.85em;">No photo uploaded</p>
+                    </div>
+
+                    <button onclick="applyPhotoTexture('A')" class="apply-photo-btn" style="margin-top: 10px; padding: 8px 16px; background: linear-gradient(135deg, #00D4FF, #8A2BE2); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                        ✨ Apply Photo to 3D Model
+                    </button>
+
+                    <div style="margin-top: 15px; padding: 10px; background: rgba(0, 212, 255, 0.1); border-radius: 6px; font-size: 0.85em;">
+                        <strong>💡 Pro Tip:</strong> For best 3D conversion, upload to:
+                        <ul style="margin: 5px 0 0 20px; padding: 0;">
+                            <li><a href="https://lumalabs.ai/" target="_blank" style="color: #00D4FF;">Luma AI</a> - Best quality (free)</li>
+                            <li><a href="https://poly.cam/" target="_blank" style="color: #00D4FF;">Polycam</a> - Mobile app</li>
+                        </ul>
+                        Then download the .glb file and add to MODEL_PATHS in code!
+                    </div>
+                </div>
+            </div>
+
             <!-- Comparison Panel (Feature #6) -->
             <div class="comparison-panel" id="comparison-panel" role="region" aria-label="Property comparison metrics">
                 <h3>📊 Property Comparison</h3>
@@ -2037,6 +2135,8 @@
             let gltfLoader = null;
             let modelCache = {}; // Cache loaded models for performance
             let use3DModels = true; // Toggle between 3D models and spheres
+            let uploadedPhotos = { A: null, B: null, C: null }; // Store uploaded photo URLs
+            let currentUploadSlot = 'A'; // Track which slot is being uploaded to
 
             // Property-specific model paths (extensible for each property)
             // Users can add their own GLTF/GLB files to assets/models/properties/
@@ -2243,6 +2343,157 @@
                 console.log('');
                 console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #00D4FF;');
             }
+
+            // ========== FEATURE #10b: PHOTO UPLOAD & TEXTURE MAPPING ==========
+            // Upload real property photos and apply them as textures to 3D models
+
+            // Toggle photo upload panel
+            window.togglePhotoUpload = function() {
+                const panel = document.getElementById('photo-upload-panel');
+                const isVisible = panel.style.display === 'flex';
+
+                if (isVisible) {
+                    panel.style.display = 'none';
+                } else {
+                    panel.style.display = 'flex';
+                    // Hide other panels
+                    document.getElementById('comparison-panel').style.display = 'none';
+                    document.getElementById('notes-panel').style.display = 'none';
+                }
+
+                vibrate('tap');
+            };
+
+            // Select which property slot to upload photo for
+            window.selectUploadSlot = function(slot) {
+                currentUploadSlot = slot;
+
+                // Update tab styling
+                document.querySelectorAll('.upload-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                event.target.classList.add('active');
+
+                // Show appropriate file input and preview
+                ['A', 'B', 'C'].forEach(s => {
+                    const input = document.getElementById(`photo-input-${s}`);
+                    const preview = document.getElementById(`photo-preview-${s}`);
+                    if (input) input.style.display = (s === slot) ? 'block' : 'none';
+                    if (preview) preview.style.display = (s === slot) ? 'block' : 'none';
+                });
+
+                vibrate('tap');
+            };
+
+            // Handle photo file upload
+            window.handlePhotoUpload = function(slot, inputElement) {
+                const file = inputElement.files[0];
+                if (!file) return;
+
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    showAlert('Please upload an image file (JPG, PNG, etc.)', 'error');
+                    return;
+                }
+
+                // Validate file size (max 10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    showAlert('Image too large! Please use an image under 10MB', 'error');
+                    return;
+                }
+
+                // Create object URL for the image
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedPhotos[slot] = e.target.result;
+
+                    // Show preview
+                    const preview = document.getElementById(`photo-preview-${slot}`);
+                    if (preview) {
+                        preview.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: auto; border-radius: 8px;" alt="Property ${slot} photo">`;
+                    }
+
+                    showAlert(`Photo uploaded for Property ${slot}!`, 'success');
+                    vibrate('success');
+                    console.log(`📸 Photo uploaded for slot ${slot}: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
+                };
+
+                reader.readAsDataURL(file);
+            };
+
+            // Apply uploaded photo as texture to the 3D model
+            window.applyPhotoTexture = function(slot) {
+                if (!uploadedPhotos[slot]) {
+                    showAlert(`No photo uploaded for Property ${slot}`, 'error');
+                    return;
+                }
+
+                if (!use3DModels) {
+                    showAlert('Please enable 3D Houses mode first!', 'info');
+                    return;
+                }
+
+                // Get the house object
+                let house = null;
+                if (slot === 'A') house = sphereA;
+                if (slot === 'B') house = sphereB;
+                if (slot === 'C') house = sphereC;
+
+                if (!house) {
+                    showAlert(`No model loaded for Property ${slot}`, 'error');
+                    return;
+                }
+
+                console.log(`🎨 Applying photo texture to Property ${slot}...`);
+
+                // Create texture from uploaded photo
+                const textureLoader = new THREE.TextureLoader();
+                textureLoader.load(
+                    uploadedPhotos[slot],
+                    (texture) => {
+                        // For procedural houses, apply to body mesh
+                        if (house.userData.isHouse && house.userData.bodyMesh) {
+                            const bodyMesh = house.userData.bodyMesh;
+
+                            // Create photo-textured material
+                            bodyMesh.material = new THREE.MeshPhongMaterial({
+                                map: texture,
+                                emissive: house.userData.originalColor,
+                                emissiveIntensity: 0.1,
+                                shininess: 30
+                            });
+
+                            console.log(`✅ Photo texture applied to procedural house ${slot}`);
+                            showAlert(`Photo applied to Property ${slot}! 🎉`, 'success');
+                            vibrate('success');
+                        }
+                        // For GLTF models, apply to all meshes
+                        else {
+                            house.traverse((child) => {
+                                if (child.isMesh) {
+                                    child.material = new THREE.MeshPhongMaterial({
+                                        map: texture,
+                                        emissive: house.userData.originalColor || 0x00D4FF,
+                                        emissiveIntensity: 0.1,
+                                        shininess: 30
+                                    });
+                                }
+                            });
+
+                            console.log(`✅ Photo texture applied to GLTF model ${slot}`);
+                            showAlert(`Photo applied to Property ${slot}! 🎉`, 'success');
+                            vibrate('success');
+                        }
+
+                        announceToScreenReader(`Photo texture applied to property ${slot}`);
+                    },
+                    undefined,
+                    (error) => {
+                        console.error(`❌ Failed to load texture for slot ${slot}:`, error);
+                        showAlert('Failed to apply photo texture', 'error');
+                    }
+                );
+            };
 
             // ===== INITIALIZATION =====
             async function init() {
