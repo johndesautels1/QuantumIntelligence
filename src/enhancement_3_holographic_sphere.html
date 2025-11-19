@@ -908,36 +908,54 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 4.8px;
-            background: rgba(0, 0, 0, 0.3);
+            padding: 4.8px 8px;
+            background: rgba(255, 255, 255, 0.95);
             border-radius: 3.6px;
-            border-left: 1.8px solid;
+            border-left: 3px solid;
             font-size: 0.75em;
+            color: #333;
         }
 
-        /* Property-specific colors matching sphere and COL chart */
-        .crime-item.property-A {
-            border-left-color: #00D4FF;
-            background: rgba(0, 212, 255, 0.15);
-            color: #00D4FF;
+        /* Score-based colors for icon and number */
+        .crime-item.score-terrible {
+            border-left-color: #FF3B30;
         }
-        .crime-item.property-B {
-            border-left-color: #00FF88;
-            background: rgba(0, 255, 136, 0.15);
-            color: #00FF88;
+        .crime-item.score-terrible .crime-icon,
+        .crime-item.score-terrible .crime-score {
+            color: #FF3B30;
         }
-        .crime-item.property-C {
+
+        .crime-item.score-fair {
+            border-left-color: #FF9500;
+        }
+        .crime-item.score-fair .crime-icon,
+        .crime-item.score-fair .crime-score {
+            color: #FF9500;
+        }
+
+        .crime-item.score-average {
             border-left-color: #FFD700;
-            background: rgba(255, 215, 0, 0.15);
+        }
+        .crime-item.score-average .crime-icon,
+        .crime-item.score-average .crime-score {
             color: #FFD700;
         }
 
-        /* Score-based background tints */
-        .crime-item.score-terrible { background: rgba(255, 59, 48, 0.2); }
-        .crime-item.score-fair { background: rgba(255, 149, 0, 0.2); }
-        .crime-item.score-average { background: rgba(255, 215, 0, 0.2); }
-        .crime-item.score-good { background: rgba(0, 212, 255, 0.2); }
-        .crime-item.score-excellent { background: rgba(0, 255, 136, 0.2); }
+        .crime-item.score-good {
+            border-left-color: #00D4FF;
+        }
+        .crime-item.score-good .crime-icon,
+        .crime-item.score-good .crime-score {
+            color: #00D4FF;
+        }
+
+        .crime-item.score-excellent {
+            border-left-color: #00FF88;
+        }
+        .crime-item.score-excellent .crime-icon,
+        .crime-item.score-excellent .crime-score {
+            color: #00FF88;
+        }
 
         .crime-score {
             font-weight: bold;
@@ -2238,37 +2256,28 @@
                     const crimeScore = prop.dimensions.crime || prop.dimensions.safety || 75;
                     let scoreClass = 'score-average';
                     let icon = '●';
-                    let label = 'Average';
 
                     // 5-tier color scale based on score (higher = better)
                     if (crimeScore <= 20) {
                         scoreClass = 'score-terrible';
                         icon = '🔫';
-                        label = 'Terrible';
                     } else if (crimeScore <= 40) {
                         scoreClass = 'score-fair';
                         icon = '⚠️';
-                        label = 'Fair';
                     } else if (crimeScore <= 60) {
                         scoreClass = 'score-average';
                         icon = '●';
-                        label = 'Average';
                     } else if (crimeScore <= 80) {
                         scoreClass = 'score-good';
                         icon = '✓';
-                        label = 'Good';
                     } else {
                         scoreClass = 'score-excellent';
                         icon = '✅';
-                        label = 'Excellent';
                     }
 
-                    // Property-specific colors (matching sphere and COL chart)
-                    const propertyClass = `property-${letter}`;
-
                     html += `
-                        <div class="crime-item ${propertyClass} ${scoreClass}">
-                            <span>${icon} ${letter}</span>
+                        <div class="crime-item ${scoreClass}">
+                            <span class="crime-icon">${icon} ${letter}</span>
                             <span class="crime-score">${Math.round(crimeScore)}</span>
                         </div>
                     `;
