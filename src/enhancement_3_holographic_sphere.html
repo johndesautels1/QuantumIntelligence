@@ -915,11 +915,29 @@
             font-size: 0.75em;
         }
 
-        .crime-item.terrible { border-left-color: #FF3B30; background: rgba(255, 59, 48, 0.1); }
-        .crime-item.fair { border-left-color: #FF9500; background: rgba(255, 149, 0, 0.1); }
-        .crime-item.average { border-left-color: #FFD700; background: rgba(255, 215, 0, 0.1); }
-        .crime-item.good { border-left-color: #00D4FF; background: rgba(0, 212, 255, 0.1); }
-        .crime-item.excellent { border-left-color: #00FF88; background: rgba(0, 255, 136, 0.1); }
+        /* Property-specific colors matching sphere and COL chart */
+        .crime-item.property-A {
+            border-left-color: #00D4FF;
+            background: rgba(0, 212, 255, 0.15);
+            color: #00D4FF;
+        }
+        .crime-item.property-B {
+            border-left-color: #00FF88;
+            background: rgba(0, 255, 136, 0.15);
+            color: #00FF88;
+        }
+        .crime-item.property-C {
+            border-left-color: #FFD700;
+            background: rgba(255, 215, 0, 0.15);
+            color: #FFD700;
+        }
+
+        /* Score-based background tints */
+        .crime-item.score-terrible { background: rgba(255, 59, 48, 0.2); }
+        .crime-item.score-fair { background: rgba(255, 149, 0, 0.2); }
+        .crime-item.score-average { background: rgba(255, 215, 0, 0.2); }
+        .crime-item.score-good { background: rgba(0, 212, 255, 0.2); }
+        .crime-item.score-excellent { background: rgba(0, 255, 136, 0.2); }
 
         .crime-score {
             font-weight: bold;
@@ -2216,37 +2234,40 @@
 
                 let html = '';
                 properties.forEach(({ prop, letter }) => {
-                    // Calculate crime safety score (higher = safer)
+                    // Calculate crime safety score (higher = safer, like school grades)
                     const crimeScore = prop.dimensions.crime || prop.dimensions.safety || 75;
-                    let className = 'average';
+                    let scoreClass = 'score-average';
                     let icon = '●';
                     let label = 'Average';
 
-                    // 5-tier color scale
+                    // 5-tier color scale based on score (higher = better)
                     if (crimeScore <= 20) {
-                        className = 'terrible';
+                        scoreClass = 'score-terrible';
                         icon = '🔫';
                         label = 'Terrible';
                     } else if (crimeScore <= 40) {
-                        className = 'fair';
+                        scoreClass = 'score-fair';
                         icon = '⚠️';
                         label = 'Fair';
                     } else if (crimeScore <= 60) {
-                        className = 'average';
+                        scoreClass = 'score-average';
                         icon = '●';
                         label = 'Average';
                     } else if (crimeScore <= 80) {
-                        className = 'good';
+                        scoreClass = 'score-good';
                         icon = '✓';
                         label = 'Good';
                     } else {
-                        className = 'excellent';
+                        scoreClass = 'score-excellent';
                         icon = '✅';
                         label = 'Excellent';
                     }
 
+                    // Property-specific colors (matching sphere and COL chart)
+                    const propertyClass = `property-${letter}`;
+
                     html += `
-                        <div class="crime-item ${className}">
+                        <div class="crime-item ${propertyClass} ${scoreClass}">
                             <span>${icon} ${letter}</span>
                             <span class="crime-score">${Math.round(crimeScore)}</span>
                         </div>
