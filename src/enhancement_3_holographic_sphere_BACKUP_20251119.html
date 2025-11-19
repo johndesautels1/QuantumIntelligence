@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLUES™ - Holographic Comparison Sphere</title>
+
+    <!-- Core CLUES™ System -->
+    <script src="core/data-manager.js"></script>
+    <script src="core/scoring-engine.js"></script>
+    <script src="shared-data-adapter.js"></script>
+
+    <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+    <script src="lib/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0066CC 0%, #00D4FF 50%, #9D4EDD 100%);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 0 0 20px 20px;
+            padding: 20px 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: all;
+            max-width: 900px;
+            width: 90%;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .header .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1em;
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        .property-selector {
+            position: absolute;
+            top: 120px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            pointer-events: all;
+            flex-wrap: wrap;
+        }
+
+        .selector-column {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            min-width: 300px;
+            max-width: 350px;
+        }
+
+        .selector-title {
+            color: white;
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .property-option {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .property-option:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+
+        .property-option.active {
+            background: linear-gradient(135deg, rgba(0, 102, 204, 0.4), rgba(0, 212, 255, 0.4));
+            border-color: #FFD700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+
+        .property-name {
+            color: white;
+            font-weight: 600;
+            font-size: 1em;
+            margin-bottom: 5px;
+        }
+
+        .property-price {
+            color: #FFD700;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .comparison-panel {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            pointer-events: all;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 200px 1fr 1fr 1fr;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .metric-label {
+            color: white;
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        .metric-value {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .metric-value.winner {
+            background: linear-gradient(135deg, #10b981, #34d399);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+        }
+
+        .controls {
+            position: absolute;
+            top: 120px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            pointer-events: all;
+            max-width: 250px;
+        }
+
+        .control-title {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn.primary {
+            background: linear-gradient(135deg, #0066CC, #00D4FF);
+            border-color: #00D4FF;
+        }
+
+        .winner-badge {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            color: #000;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 1.1em;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1.5em;
+            font-weight: 600;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="canvas-container"></div>
+
+        <div class="ui-overlay">
+            <!-- Header -->
+            <div class="header">
+                <h1>🔮 Holographic Comparison Sphere</h1>
+                <p class="subtitle">Side-by-Side Property Analysis in 3D Space</p>
+            </div>
+
+            <!-- Property Selectors -->
+            <div class="property-selector">
+                <div class="selector-column">
+                    <div class="selector-title">Property A</div>
+                    <div id="propertyAOptions"></div>
+                </div>
+                <div class="selector-column">
+                    <div class="selector-title">Property B</div>
+                    <div id="propertyBOptions"></div>
+                </div>
+                <div class="selector-column">
+                    <div class="selector-title">Property C (Optional)</div>
+                    <div id="propertyCOptions"></div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <div class="control-title">View Controls</div>
+                <button class="btn primary" onclick="resetView()">🔄 Reset View</button>
+                <button class="btn" onclick="toggleRotation()">🔄 Auto Rotate</button>
+                <button class="btn" onclick="explodeView()">💥 Explode View</button>
+                <button class="btn" onclick="showDataLines()">📊 Show Data</button>
+            </div>
+
+            <!-- Comparison Panel -->
+            <div class="comparison-panel">
+                <div id="comparisonGrid"></div>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">Initializing Holographic Sphere...</div>
+    </div>
+
+    <script>
+        // ===== REAL PROPERTY DATA FROM DATABASE =====
+        // NO HARDCODED FAKE DATA - Loads from IndexedDB
+        let PROPERTIES = [];
+
+        // Scene Setup
+        let scene, camera, renderer, controls;
+        let sphereA, sphereB, sphereC;
+        let propertyA = null;
+        let propertyB = null;
+        let propertyC = null;
+        let autoRotating = false;
+        let exploded = false;
+        let showingData = false;
+        let dataLines = [];
+
+        // Initialize Scene
+        function initScene() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = null;
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(
+                60,
+                window.innerWidth / window.innerHeight,
+                0.1,
+                1000
+            );
+            camera.position.set(0, 0, 15);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setClearColor(0x000000, 0);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // Controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.minDistance = 8;
+            controls.maxDistance = 30;
+
+            // Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            const pointLight1 = new THREE.PointLight(0x00D4FF, 1.5, 100);
+            pointLight1.position.set(5, 5, 5);
+            scene.add(pointLight1);
+
+            const pointLight2 = new THREE.PointLight(0xFF6B35, 1, 100);
+            pointLight2.position.set(-5, -5, -5);
+            scene.add(pointLight2);
+
+            const pointLight3 = new THREE.PointLight(0x9D4EDD, 1.2, 100);
+            pointLight3.position.set(0, 5, -5);
+            scene.add(pointLight3);
+
+            // Create property spheres
+            createPropertySpheres();
+
+            // Window resize
+            window.addEventListener('resize', onWindowResize);
+
+            // Hide loading
+            document.getElementById('loading').style.display = 'none';
+
+            // Render options
+            renderPropertyOptions();
+
+            // Start animation
+            animate();
+        }
+
+        // Create Property Spheres
+        function createPropertySpheres() {
+            // Remove existing spheres
+            if (sphereA) scene.remove(sphereA);
+            if (sphereB) scene.remove(sphereB);
+            if (sphereC) scene.remove(sphereC);
+
+            // Create Sphere A (Left)
+            sphereA = createSphere(propertyA, -5, 0, 0, 0x00D4FF);
+            scene.add(sphereA);
+
+            // Create Sphere B (Right)
+            sphereB = createSphere(propertyB, 5, 0, 0, 0xFF6B35);
+            scene.add(sphereB);
+
+            // Create Sphere C (Top) if selected
+            if (propertyC) {
+                sphereC = createSphere(propertyC, 0, 5, 0, 0x9D4EDD);
+                scene.add(sphereC);
+            }
+
+            // Update comparison
+            updateComparison();
+        }
+
+        // Create Individual Sphere
+        function createSphere(property, x, y, z, color) {
+            const group = new THREE.Group();
+
+            // Calculate average score
+            const metrics = Object.values(property.dimensions || property.metrics || {});
+            const avgScore = metrics.length > 0 ? metrics.reduce((a, b) => a + b) / metrics.length : 50;
+
+            // Outer holographic shell
+            const shellGeometry = new THREE.SphereGeometry(2, 32, 32);
+            const shellMaterial = new THREE.MeshPhongMaterial({
+                color: color,
+                transparent: true,
+                opacity: 0.3,
+                shininess: 100,
+                wireframe: true
+            });
+            const shell = new THREE.Mesh(shellGeometry, shellMaterial);
+            group.add(shell);
+
+            // Inner solid sphere
+            const coreGeometry = new THREE.SphereGeometry(1.5, 32, 32);
+            const coreMaterial = new THREE.MeshPhongMaterial({
+                color: color,
+                emissive: color,
+                emissiveIntensity: 0.4,
+                shininess: 80,
+                transparent: true,
+                opacity: 0.7
+            });
+            const core = new THREE.Mesh(coreGeometry, coreMaterial);
+            group.add(core);
+
+            // Outer glow
+            const glowGeometry = new THREE.SphereGeometry(2.3, 32, 32);
+            const glowMaterial = new THREE.MeshBasicMaterial({
+                color: color,
+                transparent: true,
+                opacity: 0.1
+            });
+            const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+            group.add(glow);
+
+            // Particle ring
+            const particles = createParticleRing(color);
+            group.add(particles);
+
+            // Position
+            group.position.set(x, y, z);
+
+            // Store property data
+            group.userData = { property: property };
+
+            return group;
+        }
+
+        // Create Particle Ring
+        function createParticleRing(color) {
+            const particlesGeometry = new THREE.BufferGeometry();
+            const particleCount = 100;
+            const positions = new Float32Array(particleCount * 3);
+
+            for (let i = 0; i < particleCount; i++) {
+                const angle = (i / particleCount) * Math.PI * 2;
+                const radius = 2.5;
+                positions[i * 3] = Math.cos(angle) * radius;
+                positions[i * 3 + 1] = Math.sin(angle) * radius;
+                positions[i * 3 + 2] = 0;
+            }
+
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+            const particlesMaterial = new THREE.PointsMaterial({
+                color: color,
+                size: 0.1,
+                transparent: true,
+                opacity: 0.8
+            });
+
+            return new THREE.Points(particlesGeometry, particlesMaterial);
+        }
+
+        // Show Data Lines
+        function showDataLines() {
+            if (showingData) {
+                dataLines.forEach(line => scene.remove(line));
+                dataLines = [];
+                showingData = false;
+            } else {
+                // Create data connection lines
+                if (sphereA && sphereB) {
+                    const line = createLine(sphereA.position, sphereB.position, 0x00D4FF);
+                    scene.add(line);
+                    dataLines.push(line);
+                }
+
+                if (sphereA && sphereC) {
+                    const line = createLine(sphereA.position, sphereC.position, 0x00D4FF);
+                    scene.add(line);
+                    dataLines.push(line);
+                }
+
+                if (sphereB && sphereC) {
+                    const line = createLine(sphereB.position, sphereC.position, 0x00D4FF);
+                    scene.add(line);
+                    dataLines.push(line);
+                }
+
+                showingData = true;
+            }
+        }
+
+        // Create Line
+        function createLine(start, end, color) {
+            const points = [start, end];
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const material = new THREE.LineBasicMaterial({
+                color: color,
+                transparent: true,
+                opacity: 0.4
+            });
+            return new THREE.Line(geometry, material);
+        }
+
+        // Animate
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Auto-rotate
+            if (autoRotating) {
+                if (sphereA) sphereA.rotation.y += 0.005;
+                if (sphereB) sphereB.rotation.y += 0.005;
+                if (sphereC) sphereC.rotation.y += 0.005;
+            }
+
+            // Pulse effect
+            const pulse = Math.sin(Date.now() * 0.001) * 0.05 + 1;
+            if (sphereA) sphereA.children[2].scale.set(pulse, pulse, pulse);
+            if (sphereB) sphereB.children[2].scale.set(pulse, pulse, pulse);
+            if (sphereC) sphereC.children[2].scale.set(pulse, pulse, pulse);
+
+            // Rotate particle rings
+            if (sphereA) sphereA.children[3].rotation.z += 0.01;
+            if (sphereB) sphereB.children[3].rotation.z += 0.01;
+            if (sphereC) sphereC.children[3].rotation.z += 0.01;
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Window Resize
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Render Property Options
+        function renderPropertyOptions() {
+            const containerA = document.getElementById('propertyAOptions');
+            const containerB = document.getElementById('propertyBOptions');
+            const containerC = document.getElementById('propertyCOptions');
+
+            containerA.innerHTML = PROPERTIES.map(p => `
+                <div class="property-option ${propertyA?.id === p.id ? 'active' : ''}" onclick="selectPropertyA(${p.id})">
+                    <div class="property-name">${p.name}</div>
+                    <div class="property-price">$${p.price.toLocaleString()}</div>
+                </div>
+            `).join('');
+
+            containerB.innerHTML = PROPERTIES.map(p => `
+                <div class="property-option ${propertyB?.id === p.id ? 'active' : ''}" onclick="selectPropertyB(${p.id})">
+                    <div class="property-name">${p.name}</div>
+                    <div class="property-price">$${p.price.toLocaleString()}</div>
+                </div>
+            `).join('');
+
+            containerC.innerHTML = `
+                <div class="property-option ${propertyC === null ? 'active' : ''}" onclick="selectPropertyC(null)">
+                    <div class="property-name">None</div>
+                </div>
+            ` + PROPERTIES.map(p => `
+                <div class="property-option ${propertyC?.id === p.id ? 'active' : ''}" onclick="selectPropertyC(${p.id})">
+                    <div class="property-name">${p.name}</div>
+                    <div class="property-price">$${p.price.toLocaleString()}</div>
+                </div>
+            `).join('');
+        }
+
+        // Select Property A
+        function selectPropertyA(id) {
+            propertyA = PROPERTIES.find(p => p.id === id);
+            createPropertySpheres();
+            renderPropertyOptions();
+        }
+
+        // Select Property B
+        function selectPropertyB(id) {
+            propertyB = PROPERTIES.find(p => p.id === id);
+            createPropertySpheres();
+            renderPropertyOptions();
+        }
+
+        // Select Property C
+        function selectPropertyC(id) {
+            propertyC = id ? PROPERTIES.find(p => p.id === id) : null;
+            createPropertySpheres();
+            renderPropertyOptions();
+        }
+
+        // Update Comparison
+        function updateComparison() {
+            const container = document.getElementById('comparisonGrid');
+
+            const metrics = [
+                { key: 'location', label: 'Location Score' },
+                { key: 'condition', label: 'Condition' },
+                { key: 'schools', label: 'Schools' },
+                { key: 'safety', label: 'Safety' },
+                { key: 'roi', label: 'ROI Potential' }
+            ];
+
+            let html = '<div class="comparison-grid">';
+
+            metrics.forEach(metric => {
+                html += `<div class="metric-label">${metric.label}</div>`;
+
+                const metricsA = propertyA.dimensions || propertyA.metrics || {};
+                const metricsB = propertyB.dimensions || propertyB.metrics || {};
+                const metricsC = propertyC ? (propertyC.dimensions || propertyC.metrics || {}) : {};
+
+                const valueA = metricsA[metric.key] || 0;
+                const valueB = metricsB[metric.key] || 0;
+                const valueC = propertyC ? (metricsC[metric.key] || 0) : 0;
+
+                const maxValue = Math.max(valueA, valueB, valueC || 0);
+
+                html += `<div class="metric-value ${valueA === maxValue ? 'winner' : ''}">${valueA}</div>`;
+                html += `<div class="metric-value ${valueB === maxValue ? 'winner' : ''}">${valueB}</div>`;
+                html += propertyC ? `<div class="metric-value ${valueC === maxValue ? 'winner' : ''}">${valueC}</div>` : '';
+            });
+
+            html += '</div>';
+
+            // Overall winner
+            const metricsA = propertyA.dimensions || propertyA.metrics || {};
+            const metricsB = propertyB.dimensions || propertyB.metrics || {};
+            const metricsC = propertyC ? (propertyC.dimensions || propertyC.metrics || {}) : {};
+
+            const valuesA = Object.values(metricsA);
+            const valuesB = Object.values(metricsB);
+            const valuesC = Object.values(metricsC);
+
+            const scoreA = valuesA.length > 0 ? valuesA.reduce((a, b) => a + b) / valuesA.length : 0;
+            const scoreB = valuesB.length > 0 ? valuesB.reduce((a, b) => a + b) / valuesB.length : 0;
+            const scoreC = valuesC.length > 0 ? valuesC.reduce((a, b) => a + b) / valuesC.length : 0;
+
+            const maxScore = Math.max(scoreA, scoreB, scoreC);
+            let winner = '';
+            if (scoreA === maxScore) winner = propertyA.name;
+            else if (scoreB === maxScore) winner = propertyB.name;
+            else if (scoreC === maxScore) winner = propertyC.name;
+
+            html += `<div class="winner-badge">🏆 Best Overall: ${winner} (Score: ${Math.round(maxScore)})</div>`;
+
+            container.innerHTML = html;
+        }
+
+        // Reset View
+        function resetView() {
+            camera.position.set(0, 0, 15);
+            controls.target.set(0, 0, 0);
+            exploded = false;
+
+            if (sphereA) sphereA.position.set(-5, 0, 0);
+            if (sphereB) sphereB.position.set(5, 0, 0);
+            if (sphereC) sphereC.position.set(0, 5, 0);
+        }
+
+        // Toggle Rotation
+        function toggleRotation() {
+            autoRotating = !autoRotating;
+        }
+
+        // Explode View
+        function explodeView() {
+            if (!exploded) {
+                if (sphereA) sphereA.position.set(-8, 0, 0);
+                if (sphereB) sphereB.position.set(8, 0, 0);
+                if (sphereC) sphereC.position.set(0, 8, 0);
+                exploded = true;
+            } else {
+                resetView();
+            }
+        }
+
+        // Initialize Enhancement with REAL Data
+        async function initializeEnhancement() {
+            try {
+                // Show loading
+                document.getElementById('loading').textContent = 'Loading property data from database...';
+
+                // Initialize shared data adapter
+                await sharedDataAdapter.init();
+
+                // Load REAL properties from IndexedDB
+                PROPERTIES = await sharedDataAdapter.getPropertiesForHolographicSphere('balanced');
+
+                console.log(`✅ Loaded ${PROPERTIES.length} real properties from database`);
+
+                // Check if we have properties
+                if (PROPERTIES.length === 0) {
+                    document.getElementById('loading').innerHTML = `
+                        <div style="text-align: center; padding: 20px;">
+                            <h2>No Properties Found</h2>
+                            <p>Import property data from the main dashboard to visualize them here.</p>
+                            <button onclick="window.location.href='/index.html'"
+                                    style="margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #00d4ff, #0099cc);
+                                           border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
+                                Go to Dashboard
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Set default properties for comparison
+                propertyA = PROPERTIES[0];
+                propertyB = PROPERTIES.length > 1 ? PROPERTIES[1] : PROPERTIES[0];
+
+                // Initialize 3D scene with REAL data
+                document.getElementById('loading').textContent = 'Initializing Holographic Sphere...';
+                initScene();
+                populatePropertyDropdowns();
+                updateStats();
+
+            } catch (error) {
+                console.error('❌ Enhancement initialization failed:', error);
+                document.getElementById('loading').innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #ff4444;">
+                        <h2>Initialization Error</h2>
+                        <p>${error.message}</p>
+                        <button onclick="location.reload()"
+                                style="margin-top: 20px; padding: 12px 24px; background: linear-gradient(135deg, #00d4ff, #0099cc);
+                                       border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
+                            Retry
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize Everything
+        window.addEventListener('load', () => {
+            initializeEnhancement();
+        });
+    </script>
+</body>
+</html>

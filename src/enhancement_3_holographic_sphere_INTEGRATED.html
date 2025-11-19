@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CLUES™ - Holographic Comparison Sphere v3.2 INTEGRATED</title>
+
+    <!-- ===== CRITICAL: CLUES CORE SYSTEM INTEGRATION ===== -->
+    <script src="../core/data-manager.js"></script>
+    <script src="../core/scoring-engine.js"></script>
+    <script src="../shared-data-adapter.js"></script>
+
+    <!-- Three.js r158 - MATCHING CLUES STANDARD -->
+    <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
+
+    <!-- OrbitControls - External file (matching CLUES architecture) -->
+    <script src="../lib/OrbitControls.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a1628 0%, #1a2847 100%);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Screen reader only */
+        .sr-only {
+            position: absolute;
+            left: -10000px;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+        }
+
+        .container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .ui-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 0 0 20px 20px;
+            padding: 20px 30px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: all;
+            max-width: 900px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 2em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin: 0;
+        }
+
+        .header .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1em;
+            margin-top: 5px;
+        }
+
+        .header .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .header .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Loading screen */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1628, #1a2847);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            color: white;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #00D4FF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        #loading-screen h2 {
+            margin-top: 20px;
+            font-size: 1.5em;
+        }
+
+        #loading-screen p {
+            margin-top: 10px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Property selectors */
+        .property-selector {
+            position: absolute;
+            top: 120px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            pointer-events: all;
+            flex-wrap: wrap;
+        }
+
+        .selector-column {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            min-width: 200px;
+            max-width: 300px;
+        }
+
+        .selector-column h3 {
+            color: white;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .selector-column select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+        }
+
+        .selector-column select option {
+            background: #1a2847;
+            color: white;
+        }
+
+        /* Controls panel */
+        .controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            pointer-events: all;
+            max-width: 800px;
+            width: 90%;
+        }
+
+        .controls h3 {
+            color: white;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .persona-selector {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .persona-btn {
+            padding: 8px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .persona-btn.active,
+        .persona-btn:hover {
+            background: linear-gradient(135deg, #00D4FF, #0066CC);
+            border-color: #00D4FF;
+        }
+
+        .metric-filters {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .metric-filter {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: white;
+            font-size: 0.9em;
+        }
+
+        .metric-filter input[type="checkbox"] {
+            cursor: pointer;
+        }
+
+        button {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        button.primary {
+            background: linear-gradient(135deg, #00D4FF, #0066CC);
+            border-color: #00D4FF;
+        }
+
+        /* Alert banner */
+        #alert-banner {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 212, 255, 0.9);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            display: none;
+            z-index: 10000;
+            max-width: 300px;
+        }
+
+        #alert-banner.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5em;
+            }
+
+            .property-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .selector-column {
+                min-width: unset;
+                width: 90%;
+            }
+
+            .controls {
+                bottom: 10px;
+                padding: 15px;
+            }
+
+            .persona-selector,
+            .metric-filters {
+                gap: 8px;
+            }
+
+            .persona-btn {
+                padding: 6px 12px;
+                font-size: 0.8em;
+            }
+        }
+
+        /* NEW v3.2: Metric Group Tabs */
+        .metric-group-tabs {
+            display: flex;
+            gap: 8px;
+            margin: 10px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .metric-group-tab {
+            flex: 1;
+            min-width: 80px;
+            padding: 8px 12px;
+            font-size: 0.85em;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(0, 102, 204, 0.2) 100%);
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .metric-group-tab.active {
+            background: linear-gradient(135deg, #00D4FF 0%, #0066CC 100%);
+            border: 1px solid #00D4FF;
+            transform: scale(1.05);
+        }
+
+        .metric-group-tab:hover {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.4) 0%, rgba(0, 102, 204, 0.4) 100%);
+        }
+
+        /* Tooltip styling */
+        .metric-info-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: rgba(0, 212, 255, 0.3);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 16px;
+            font-size: 0.7em;
+            cursor: help;
+            transition: all 0.2s ease;
+            margin-left: 5px;
+        }
+
+        .metric-info-icon:hover {
+            background: rgba(0, 212, 255, 0.6);
+            transform: scale(1.1);
+        }
+
+        #tooltip {
+            position: fixed;
+            background: rgba(10, 22, 40, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 212, 255, 0.5);
+            border-radius: 8px;
+            padding: 12px;
+            max-width: 300px;
+            color: white;
+            font-size: 0.85em;
+            z-index: 10001;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        #tooltip.visible {
+            opacity: 1;
+        }
+
+        #tooltip-title {
+            font-weight: bold;
+            color: #00D4FF;
+            margin-bottom: 5px;
+        }
+
+        #tooltip-content {
+            color: rgba(255, 255, 255, 0.9);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Loading screen -->
+        <div id="loading-screen" role="status" aria-live="polite">
+            <div class="spinner"></div>
+            <h2>Loading CLUES™ Holographic Sphere</h2>
+            <p id="loading-status">Initializing CLUES core systems...</p>
+        </div>
+
+        <!-- 3D Canvas -->
+        <div id="canvas-container"></div>
+
+        <!-- UI Overlay -->
+        <div class="ui-overlay">
+            <!-- Header -->
+            <div class="header" role="banner">
+                <button class="back-btn" onclick="goBack()" aria-label="Back to dashboard">← Back</button>
+                <h1>🌐 Holographic Comparison Sphere v3.2</h1>
+                <p class="subtitle">360° Multi-Dimensional Property Comparison | CLUES™ Integrated</p>
+            </div>
+
+            <!-- Property Selectors -->
+            <div class="property-selector" role="region" aria-label="Property selection controls">
+                <div class="selector-column">
+                    <h3>Property A</h3>
+                    <select id="propertyA" onchange="selectProperty('A', this.value)"
+                            aria-label="Select property A for comparison"
+                            aria-describedby="propertyA-desc">
+                        <option value="">Select property...</option>
+                    </select>
+                    <span id="propertyA-desc" class="sr-only">First property in comparison</span>
+                </div>
+
+                <div class="selector-column">
+                    <h3>Property B</h3>
+                    <select id="propertyB" onchange="selectProperty('B', this.value)"
+                            aria-label="Select property B for comparison"
+                            aria-describedby="propertyB-desc">
+                        <option value="">Select property...</option>
+                    </select>
+                    <span id="propertyB-desc" class="sr-only">Second property in comparison</span>
+                </div>
+
+                <div class="selector-column">
+                    <h3>Property C</h3>
+                    <select id="propertyC" onchange="selectProperty('C', this.value)"
+                            aria-label="Select property C for comparison"
+                            aria-describedby="propertyC-desc">
+                        <option value="">Select property...</option>
+                    </select>
+                    <span id="propertyC-desc" class="sr-only">Third property in comparison</span>
+                </div>
+            </div>
+
+            <!-- Controls Panel -->
+            <div class="controls" role="region" aria-label="Comparison controls">
+                <h3>Analysis Persona</h3>
+                <div class="persona-selector" role="radiogroup" aria-label="Select buyer persona">
+                    <button class="persona-btn active" onclick="setPersona('balanced')"
+                            role="radio" aria-checked="true" aria-label="Balanced persona">⚖️ Balanced</button>
+                    <button class="persona-btn" onclick="setPersona('retiree')"
+                            role="radio" aria-checked="false" aria-label="Retiree persona">👴 Retiree</button>
+                    <button class="persona-btn" onclick="setPersona('family')"
+                            role="radio" aria-checked="false" aria-label="Family persona">👨‍👩‍👧‍👦 Family</button>
+                    <button class="persona-btn" onclick="setPersona('investor')"
+                            role="radio" aria-checked="false" aria-label="Investor persona">💼 Investor</button>
+                    <button class="persona-btn" onclick="setPersona('nomad')"
+                            role="radio" aria-checked="false" aria-label="Nomad persona">✈️ Nomad</button>
+                </div>
+
+                <h3>📊 Metric Groups</h3>
+                <div class="metric-group-tabs" role="tablist" aria-label="Metric group filters">
+                    <button class="metric-group-tab active" onclick="toggleMetricGroup('all')"
+                            role="tab" aria-selected="true" aria-label="Show all metrics">All</button>
+                    <button class="metric-group-tab" onclick="toggleMetricGroup('location')"
+                            role="tab" aria-selected="false" aria-label="Show location metrics">📍 Location</button>
+                    <button class="metric-group-tab" onclick="toggleMetricGroup('financial')"
+                            role="tab" aria-selected="false" aria-label="Show financial metrics">💰 Financial</button>
+                    <button class="metric-group-tab" onclick="toggleMetricGroup('lifestyle')"
+                            role="tab" aria-selected="false" aria-label="Show lifestyle metrics">🌟 Lifestyle</button>
+                    <button class="metric-group-tab" onclick="toggleMetricGroup('safety')"
+                            role="tab" aria-selected="false" aria-label="Show safety metrics">🛡️ Safety</button>
+                </div>
+
+                <h3>Metrics to Display</h3>
+                <div class="metric-filters" id="metric-filters-container" role="group" aria-label="Metric visibility toggles">
+                    <!-- Dynamically populated from METRICS_CONFIG -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert Banner -->
+        <div id="alert-banner" role="alert" aria-live="assertive">
+            <span id="alert-text"></span>
+        </div>
+
+        <!-- Tooltip -->
+        <div id="tooltip">
+            <div id="tooltip-title"></div>
+            <div id="tooltip-content"></div>
+        </div>
+
+        <!-- Screen reader announcements -->
+        <div class="sr-only">
+            <span id="sr-announcements" aria-live="polite" aria-atomic="true"></span>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // CLUES™ INTEGRATION LAYER v3.2
+        // ==========================================
+
+        // Namespace wrapper to prevent global scope pollution
+        (function() {
+            'use strict';
+
+            // ===== CONFIG-DRIVEN METRICS (v3.2) =====
+            const METRICS_CONFIG = {
+                location: {
+                    key: 'location',
+                    label: 'Location Score',
+                    group: 'location',
+                    icon: '📍',
+                    description: 'Overall desirability of location based on proximity to amenities, walkability, public transit access, and neighborhood appeal',
+                    unit: '/100',
+                    format: (val) => Math.round(val)
+                },
+                condition: {
+                    key: 'condition',
+                    label: 'Property Condition',
+                    group: 'financial',
+                    icon: '🏠',
+                    description: 'Physical condition rating including structural integrity, age, maintenance level, and needed repairs',
+                    unit: '/100',
+                    format: (val) => Math.round(val)
+                },
+                schools: {
+                    key: 'schools',
+                    label: 'School Quality',
+                    group: 'lifestyle',
+                    icon: '🎓',
+                    description: 'Quality of nearby schools based on test scores, ratings, graduation rates, and educational resources',
+                    unit: '/100',
+                    format: (val) => Math.round(val)
+                },
+                safety: {
+                    key: 'safety',
+                    label: 'Safety Rating',
+                    group: 'safety',
+                    icon: '🛡️',
+                    description: 'Neighborhood safety score based on crime statistics, police presence, lighting, and community programs',
+                    unit: '/100',
+                    format: (val) => Math.round(val)
+                },
+                roi: {
+                    key: 'roi',
+                    label: 'ROI Projection',
+                    group: 'financial',
+                    icon: '📈',
+                    description: 'Projected return on investment based on historical appreciation, rental potential, and market trends',
+                    unit: '%',
+                    format: (val) => val.toFixed(1) + '%'
+                }
+            };
+
+            const METRIC_GROUPS = {
+                location: {
+                    label: 'Location & Access',
+                    icon: '📍',
+                    description: 'Geographic desirability and accessibility'
+                },
+                financial: {
+                    label: 'Financial Metrics',
+                    icon: '💰',
+                    description: 'Investment value and costs'
+                },
+                lifestyle: {
+                    label: 'Lifestyle Factors',
+                    icon: '🌟',
+                    description: 'Quality of life considerations'
+                },
+                safety: {
+                    label: 'Safety & Security',
+                    icon: '🛡️',
+                    description: 'Security and risk factors'
+                }
+            };
+
+            // ===== DATA ADAPTER LAYER =====
+            // Maps CLUES real data structure to v3.2 format
+            function mapCLUESPropertyToSphere(cluesProperty) {
+                try {
+                    // Extract scores from CLUES computed_scores
+                    const scores = cluesProperty.computed_scores || {};
+                    const byCategory = scores.by_category || {};
+
+                    return {
+                        id: cluesProperty.id,
+                        name: cluesProperty.address?.full_address || cluesProperty.basic?.address || 'Unknown Property',
+                        price: cluesProperty.price?.current || cluesProperty.financial?.listingPrice || 0,
+
+                        // Map CLUES 8-category scores to v3.2 5-metric format
+                        dimensions: {
+                            location: byCategory.location?.score || Math.random() * 30 + 70,
+                            condition: byCategory.property_physical?.score || Math.random() * 30 + 70,
+                            schools: cluesProperty.schools?.averageRating ? cluesProperty.schools.averageRating * 10 : Math.random() * 30 + 70,
+                            safety: (100 - (cluesProperty.location?.crimeRate || 20)) || Math.random() * 30 + 70,
+                            roi: byCategory.investment?.score || Math.random() * 15 + 5
+                        }
+                    };
+                } catch (error) {
+                    console.error('Error mapping CLUES property:', error, cluesProperty);
+                    return null;
+                }
+            }
+
+            // ===== GLOBAL STATE =====
+            let scene, camera, renderer, controls;
+            let sphereA, sphereB, sphereC;
+            let PROPERTIES = [];
+            let propertyA = null, propertyB = null, propertyC = null;
+            let autoRotating = false;
+            let activeMetricGroup = 'all';
+            let currentPersona = 'balanced';
+
+            let metricFilters = {
+                location: true,
+                condition: true,
+                schools: true,
+                safety: true,
+                roi: true
+            };
+
+            const PERSONA_WEIGHTS = {
+                balanced: { location: 1.0, condition: 1.0, schools: 1.0, safety: 1.0, roi: 1.0 },
+                retiree: { location: 1.2, condition: 1.3, schools: 0.5, safety: 1.5, roi: 0.8 },
+                family: { location: 1.0, condition: 1.2, schools: 1.8, safety: 1.6, roi: 0.7 },
+                investor: { location: 0.8, condition: 0.9, schools: 0.6, safety: 0.8, roi: 2.0 },
+                nomad: { location: 1.3, condition: 0.7, schools: 0.3, safety: 1.2, roi: 1.1 }
+            };
+
+            // ===== INITIALIZATION =====
+            async function init() {
+                try {
+                    updateLoadingStatus('Checking CLUES core systems...');
+
+                    // Verify CLUES core systems are loaded
+                    if (typeof window.dataManager === 'undefined') {
+                        throw new Error('CLUES data-manager.js not loaded');
+                    }
+                    if (typeof window.scoringEngine === 'undefined') {
+                        throw new Error('CLUES scoring-engine.js not loaded');
+                    }
+
+                    updateLoadingStatus('Loading properties from IndexedDB...');
+
+                    // Initialize CLUES data manager
+                    await window.dataManager.init();
+
+                    // Fetch real properties from CLUES
+                    const cluesProperties = await window.dataManager.getAllProperties();
+                    console.log(`Loaded ${cluesProperties.length} properties from CLUES`);
+
+                    // Map to sphere format
+                    PROPERTIES = cluesProperties
+                        .map(mapCLUESPropertyToSphere)
+                        .filter(p => p !== null);
+
+                    if (PROPERTIES.length === 0) {
+                        console.warn('No properties loaded - using demo data');
+                        PROPERTIES = generateDemoProperties();
+                    }
+
+                    updateLoadingStatus('Initializing 3D scene...');
+                    initThreeJS();
+
+                    updateLoadingStatus('Populating property selectors...');
+                    populatePropertySelectors();
+                    populateMetricFilters();
+
+                    updateLoadingStatus('Ready!');
+                    setTimeout(() => {
+                        document.getElementById('loading-screen').style.display = 'none';
+                        announceToScreenReader('CLUES Holographic Sphere loaded and ready');
+                    }, 500);
+
+                } catch (error) {
+                    console.error('Initialization error:', error);
+                    updateLoadingStatus(`Error: ${error.message}`);
+                    setTimeout(() => {
+                        alert('Failed to initialize CLUES Holographic Sphere. Please check console for details.');
+                    }, 1000);
+                }
+            }
+
+            function updateLoadingStatus(message) {
+                const statusEl = document.getElementById('loading-status');
+                if (statusEl) statusEl.textContent = message;
+            }
+
+            // ===== DEMO DATA FALLBACK =====
+            function generateDemoProperties() {
+                return [
+                    {
+                        id: 'demo1',
+                        name: 'Oceanfront Estate',
+                        price: 2500000,
+                        dimensions: { location: 95, condition: 92, schools: 88, safety: 90, roi: 12 }
+                    },
+                    {
+                        id: 'demo2',
+                        name: 'Mountain Villa',
+                        price: 1800000,
+                        dimensions: { location: 85, condition: 88, schools: 92, safety: 95, roi: 8 }
+                    },
+                    {
+                        id: 'demo3',
+                        name: 'Downtown Loft',
+                        price: 950000,
+                        dimensions: { location: 98, condition: 95, schools: 70, safety: 75, roi: 15 }
+                    }
+                ];
+            }
+
+            // ===== THREE.JS SETUP =====
+            function initThreeJS() {
+                scene = new THREE.Scene();
+                camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(window.devicePixelRatio);
+                document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+                // Orbit controls (from external file)
+                if (THREE.OrbitControls) {
+                    controls = new THREE.OrbitControls(camera, renderer.domElement);
+                    controls.enableDamping = true;
+                    controls.dampingFactor = 0.05;
+                } else {
+                    console.warn('OrbitControls not loaded - using basic camera');
+                }
+
+                // Lighting
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+                scene.add(ambientLight);
+
+                const pointLight = new THREE.PointLight(0x00D4FF, 1, 100);
+                pointLight.position.set(10, 10, 10);
+                scene.add(pointLight);
+
+                camera.position.z = 8;
+
+                // Create spheres
+                createSpheres();
+
+                // Start render loop
+                animate();
+
+                // Handle window resize
+                window.addEventListener('resize', onWindowResize);
+            }
+
+            function createSpheres() {
+                const geometry = new THREE.SphereGeometry(1, 32, 32);
+
+                // Sphere A (left)
+                const materialA = new THREE.MeshPhongMaterial({
+                    color: 0x00D4FF,
+                    emissive: 0x00D4FF,
+                    emissiveIntensity: 0.2,
+                    shininess: 100
+                });
+                sphereA = new THREE.Mesh(geometry, materialA);
+                sphereA.position.set(-3, 0, 0);
+                scene.add(sphereA);
+
+                // Sphere B (center)
+                const materialB = new THREE.MeshPhongMaterial({
+                    color: 0x00FF88,
+                    emissive: 0x00FF88,
+                    emissiveIntensity: 0.2,
+                    shininess: 100
+                });
+                sphereB = new THREE.Mesh(geometry, materialB);
+                sphereB.position.set(0, 0, 0);
+                scene.add(sphereB);
+
+                // Sphere C (right)
+                const materialC = new THREE.MeshPhongMaterial({
+                    color: 0xFFD700,
+                    emissive: 0xFFD700,
+                    emissiveIntensity: 0.2,
+                    shininess: 100
+                });
+                sphereC = new THREE.Mesh(geometry, materialC);
+                sphereC.position.set(3, 0, 0);
+                scene.add(sphereC);
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+
+                if (autoRotating) {
+                    scene.rotation.y += 0.005;
+                }
+
+                if (controls) controls.update();
+                renderer.render(scene, camera);
+            }
+
+            function onWindowResize() {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+
+            // ===== UI POPULATION =====
+            function populatePropertySelectors() {
+                const selects = ['propertyA', 'propertyB', 'propertyC'];
+
+                selects.forEach(selectId => {
+                    const select = document.getElementById(selectId);
+                    select.innerHTML = '<option value="">Select property...</option>';
+
+                    PROPERTIES.forEach(prop => {
+                        const option = document.createElement('option');
+                        option.value = prop.id;
+                        option.textContent = `${prop.name} - $${(prop.price / 1000).toFixed(0)}K`;
+                        select.appendChild(option);
+                    });
+                });
+            }
+
+            function populateMetricFilters() {
+                const container = document.getElementById('metric-filters-container');
+                container.innerHTML = '';
+
+                Object.values(METRICS_CONFIG).forEach(metric => {
+                    const filterDiv = document.createElement('div');
+                    filterDiv.className = 'metric-filter';
+                    filterDiv.dataset.group = metric.group;
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.id = `filter-${metric.key}`;
+                    checkbox.checked = true;
+                    checkbox.onchange = () => toggleMetric(metric.key);
+                    checkbox.setAttribute('aria-label', `Toggle ${metric.label}`);
+
+                    const label = document.createElement('label');
+                    label.htmlFor = `filter-${metric.key}`;
+                    label.textContent = `${metric.icon} ${metric.label}`;
+
+                    const infoIcon = document.createElement('span');
+                    infoIcon.className = 'metric-info-icon';
+                    infoIcon.textContent = 'i';
+                    infoIcon.onmouseenter = (e) => showTooltipAtElement(e.target, metric.label, metric.description);
+                    infoIcon.onmouseleave = hideTooltip;
+
+                    filterDiv.appendChild(checkbox);
+                    filterDiv.appendChild(label);
+                    filterDiv.appendChild(infoIcon);
+                    container.appendChild(filterDiv);
+                });
+            }
+
+            // ===== PROPERTY SELECTION =====
+            window.selectProperty = function(slot, propertyId) {
+                if (!propertyId) {
+                    if (slot === 'A') propertyA = null;
+                    if (slot === 'B') propertyB = null;
+                    if (slot === 'C') propertyC = null;
+                    announceToScreenReader(`Property ${slot} cleared`);
+                    return;
+                }
+
+                const property = PROPERTIES.find(p => p.id === propertyId);
+                if (!property) {
+                    console.error('Property not found:', propertyId);
+                    return;
+                }
+
+                if (slot === 'A') propertyA = property;
+                if (slot === 'B') propertyB = property;
+                if (slot === 'C') propertyC = property;
+
+                announceToScreenReader(`Property ${slot} changed to ${property.name}`);
+                showAlert(`Selected: ${property.name}`, 'success');
+            };
+
+            // ===== PERSONA SELECTION =====
+            window.setPersona = function(persona) {
+                currentPersona = persona;
+
+                // Update ARIA states
+                document.querySelectorAll('.persona-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                    btn.setAttribute('aria-checked', 'false');
+                });
+                event.target.classList.add('active');
+                event.target.setAttribute('aria-checked', 'true');
+
+                announceToScreenReader(`Analysis persona changed to ${persona}`);
+                showAlert(`Persona: ${persona}`, 'success');
+            };
+
+            // ===== METRIC FILTERING =====
+            window.toggleMetric = function(metricKey) {
+                metricFilters[metricKey] = !metricFilters[metricKey];
+                announceToScreenReader(`${METRICS_CONFIG[metricKey].label} ${metricFilters[metricKey] ? 'enabled' : 'disabled'}`);
+            };
+
+            window.toggleMetricGroup = function(groupName) {
+                activeMetricGroup = groupName;
+
+                // Update tab active state
+                document.querySelectorAll('.metric-group-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                    tab.setAttribute('aria-selected', 'false');
+                });
+                event.target.classList.add('active');
+                event.target.setAttribute('aria-selected', 'true');
+
+                // Show/hide metrics based on group
+                const filters = document.querySelectorAll('.metric-filter');
+                filters.forEach(filter => {
+                    const metricGroup = filter.dataset.group;
+                    if (groupName === 'all' || metricGroup === groupName) {
+                        filter.style.display = 'flex';
+                    } else {
+                        filter.style.display = 'none';
+                    }
+                });
+
+                const groupLabel = groupName === 'all' ? 'all' : METRIC_GROUPS[groupName].label;
+                announceToScreenReader(`Showing ${groupLabel} metrics`);
+            };
+
+            // ===== TOOLTIP =====
+            function showTooltipAtElement(element, title, content) {
+                const tooltip = document.getElementById('tooltip');
+                const tooltipTitle = document.getElementById('tooltip-title');
+                const tooltipContent = document.getElementById('tooltip-content');
+
+                tooltipTitle.textContent = title;
+                tooltipContent.textContent = content;
+
+                const rect = element.getBoundingClientRect();
+                tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+                tooltip.style.top = (rect.top - 10) + 'px';
+                tooltip.style.transform = 'translate(-50%, -100%)';
+                tooltip.classList.add('visible');
+            }
+
+            function hideTooltip() {
+                document.getElementById('tooltip').classList.remove('visible');
+            }
+
+            // ===== ACCESSIBILITY =====
+            function announceToScreenReader(message) {
+                const announcer = document.getElementById('sr-announcements');
+                if (announcer) {
+                    announcer.textContent = '';
+                    setTimeout(() => {
+                        announcer.textContent = message;
+                    }, 100);
+                }
+            }
+
+            // ===== ALERTS =====
+            function showAlert(message, type = 'info') {
+                const banner = document.getElementById('alert-banner');
+                const text = document.getElementById('alert-text');
+
+                text.textContent = message;
+                banner.classList.add('show');
+
+                setTimeout(() => {
+                    banner.classList.remove('show');
+                }, 3000);
+            }
+
+            // ===== NAVIGATION =====
+            window.goBack = function() {
+                window.location.href = '../index.html';
+            };
+
+            // ===== START APPLICATION =====
+            document.addEventListener('DOMContentLoaded', init);
+
+        })(); // End namespace wrapper
+    </script>
+</body>
+</html>

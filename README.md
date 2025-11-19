@@ -6,6 +6,53 @@ Version 1.0.0 | Progressive Web App (PWA) | Offline-Capable | Production-Ready
 
 ---
 
+## 🔒 **DEVELOPMENT COMMAND PROTOCOL**
+
+**Last Updated:** November 19, 2025
+**Status:** ACTIVE - All AI assistants must comply
+
+### **Mandatory Requirements for All Code Changes:**
+
+1. ✅ **NO HIDDEN CODE MODIFICATIONS**
+   - No code stripping, redactions, or undocumented deletions
+   - No structural changes without explicit authorization
+   - No ghost implementations (shelled/minimized code)
+   - All implementations must be complete and functional
+
+2. ✅ **100% COMMAND COMPLIANCE**
+   - Follow all instructions exactly as specified
+   - Ask permission before diverging from instructions
+   - User has final authority on all decisions
+
+3. ✅ **CHANGE DOCUMENTATION**
+   - State specific line numbers changed on every update
+   - Document what was changed and why
+   - Test code updates whenever possible
+
+4. ✅ **FILE MAINTENANCE**
+   - Update TODO.md on every task change
+   - Update README.md when relevant changes occur
+   - Update schema documentation for architectural changes
+   - Create reference numbers for all new files
+
+5. ✅ **PLATFORM REQUIREMENTS**
+   - Build for full mobile AND desktop functionality
+   - Build for standalone AND integrated operation
+   - Test on both environments before marking complete
+
+6. ✅ **TRANSPARENCY & HONESTY**
+   - No hallucinations or false claims
+   - Be truthful about limitations and risks
+   - Alert immediately if token limits affect performance
+   - Wait for user verification after each feature completion
+
+7. ✅ **THIRD-PARTY VERIFICATION**
+   - All work subject to LLM code review tools
+   - Code must pass automated verification
+   - Quality over speed
+
+---
+
 ## ⚠️ CRITICAL - SERVICE WORKER DISABLED FOR DEVELOPMENT (Nov 17, 2024)
 
 ### 🚨 START EVERY SESSION BY CHECKING THIS STATUS 🚨
