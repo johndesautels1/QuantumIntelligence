@@ -877,7 +877,7 @@
         /* Crime Danger Widget */
         .crime-widget {
             position: fixed;
-            right: 154.4px;
+            right: 186.4px;
             top: 20px;
             width: 108px;
             background: linear-gradient(135deg, rgba(139, 0, 0, 0.9) 0%, rgba(178, 34, 34, 0.9) 100%);
@@ -915,9 +915,11 @@
             font-size: 0.75em;
         }
 
-        .crime-item.safe { border-left-color: #00FF88; }
-        .crime-item.moderate { border-left-color: #FFD700; }
-        .crime-item.danger { border-left-color: #FF3B30; }
+        .crime-item.terrible { border-left-color: #FF3B30; background: rgba(255, 59, 48, 0.1); }
+        .crime-item.fair { border-left-color: #FF9500; background: rgba(255, 149, 0, 0.1); }
+        .crime-item.average { border-left-color: #FFD700; background: rgba(255, 215, 0, 0.1); }
+        .crime-item.good { border-left-color: #00D4FF; background: rgba(0, 212, 255, 0.1); }
+        .crime-item.excellent { border-left-color: #00FF88; background: rgba(0, 255, 136, 0.1); }
 
         .crime-score {
             font-weight: bold;
@@ -2216,15 +2218,31 @@
                 properties.forEach(({ prop, letter }) => {
                     // Calculate crime safety score (higher = safer)
                     const crimeScore = prop.dimensions.crime || prop.dimensions.safety || 75;
-                    let className = 'safe';
-                    let icon = '✅';
+                    let className = 'average';
+                    let icon = '●';
+                    let label = 'Average';
 
-                    if (crimeScore < 50) {
-                        className = 'danger';
+                    // 5-tier color scale
+                    if (crimeScore <= 20) {
+                        className = 'terrible';
                         icon = '🔫';
-                    } else if (crimeScore < 75) {
-                        className = 'moderate';
+                        label = 'Terrible';
+                    } else if (crimeScore <= 40) {
+                        className = 'fair';
                         icon = '⚠️';
+                        label = 'Fair';
+                    } else if (crimeScore <= 60) {
+                        className = 'average';
+                        icon = '●';
+                        label = 'Average';
+                    } else if (crimeScore <= 80) {
+                        className = 'good';
+                        icon = '✓';
+                        label = 'Good';
+                    } else {
+                        className = 'excellent';
+                        icon = '✅';
+                        label = 'Excellent';
                     }
 
                     html += `
