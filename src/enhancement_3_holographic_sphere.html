@@ -2390,8 +2390,9 @@
 
             console.log('🔧 Initializing photo upload functions...');
 
-            // Toggle photo upload panel
-            window.togglePhotoUpload = function() {
+            try {
+                // Toggle photo upload panel
+                window.togglePhotoUpload = function() {
                 console.log('📸 togglePhotoUpload called');
                 const panel = document.getElementById('photo-upload-panel');
 
@@ -2590,7 +2591,14 @@
                         showAlert('Failed to apply photo texture', 'error');
                     }
                 );
-            };
+                };
+
+                console.log('✅ All photo upload functions created successfully!');
+
+            } catch (error) {
+                console.error('❌❌❌ FATAL ERROR in photo upload functions:', error);
+                console.error('Stack trace:', error.stack);
+            }
 
             // Verify functions are accessible globally
             console.log('✅ Photo upload functions defined:', {
