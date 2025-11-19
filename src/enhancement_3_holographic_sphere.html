@@ -23,6 +23,10 @@
     <!-- Chart.js for Feature #7: Dynamic Radar Chart -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
+    <!-- jsPDF for Feature #14: Export to Report -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -81,7 +85,7 @@
             width: 100%;
             height: 100%;
             position: absolute;
-            top: 0;
+            top: 96px; /* Moved down 1 inch (96px at 96 DPI) */
             left: 0;
         }
 
@@ -456,6 +460,56 @@
                 padding: 7px 10px;
                 font-size: 0.8em;
             }
+
+            /* Panel Toggle Buttons - Tablet */
+            .panel-toggle-buttons {
+                gap: 10px;
+            }
+
+            .panel-toggle-btn {
+                font-size: 0.85em;
+                padding: 9px 14px;
+            }
+
+            /* Mode Toggle Buttons - Tablet */
+            .mode-toggle {
+                min-width: 140px;
+                font-size: 0.9em;
+            }
+
+            /* Panels - Tablet */
+            .comparison-panel,
+            .roi-panel {
+                width: 420px;
+                height: 420px;
+                transform: scale(0.85) !important;
+            }
+
+            .comparison-panel.visible,
+            .roi-panel.visible {
+                transform: translateX(0) scale(0.85) !important;
+            }
+
+            .radar-chart-panel {
+                width: 420px;
+                height: 420px;
+                transform: scale(0.85) !important;
+            }
+
+            .radar-chart-panel.visible {
+                transform: translateX(0) scale(0.85) !important;
+            }
+
+            .crime-widget,
+            .col-chart-panel {
+                width: 420px;
+                transform: scale(0.9);
+            }
+
+            .notes-panel {
+                width: 380px;
+                height: 380px;
+            }
         }
 
         /* Mobile/Tablet Portrait (≤768px) */
@@ -590,6 +644,126 @@
                 left: 5% !important;
                 transform: translateY(-100%) !important;
             }
+
+            /* Panel Toggle Buttons - Mobile */
+            .panel-toggle-buttons {
+                position: relative;
+                top: auto;
+                left: auto;
+                right: auto;
+                flex-direction: row;
+                gap: 6px;
+                padding: 10px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .panel-toggle-btn {
+                font-size: 0.75em;
+                padding: 8px 12px;
+                flex: 1 1 45%;
+                min-width: 120px;
+                text-align: center;
+            }
+
+            /* Mode Toggle Buttons - Mobile */
+            .mode-toggle {
+                position: relative !important;
+                top: auto !important;
+                right: auto !important;
+                margin: 5px;
+                min-width: 140px;
+                font-size: 0.85em;
+                padding: 10px 15px;
+            }
+
+            /* Stack mode toggles in mobile view */
+            .ui-overlay > .mode-toggle {
+                display: inline-block;
+                margin: 5px;
+            }
+
+            /* Panels - Mobile Responsive */
+            .comparison-panel,
+            .roi-panel {
+                position: relative;
+                right: auto;
+                bottom: auto;
+                left: auto;
+                width: 100%;
+                max-width: 100%;
+                height: auto;
+                max-height: 60vh;
+                transform: none !important;
+                margin: 10px 0;
+                border-radius: 15px;
+            }
+
+            .comparison-panel.visible,
+            .roi-panel.visible {
+                transform: none !important;
+                display: block;
+            }
+
+            .radar-chart-panel {
+                position: relative;
+                left: auto;
+                top: auto;
+                width: 100%;
+                max-width: 100%;
+                height: auto;
+                transform: none !important;
+                margin: 10px 0;
+            }
+
+            .radar-chart-panel.visible {
+                transform: none !important;
+            }
+
+            .crime-widget {
+                position: relative;
+                top: auto;
+                left: auto;
+                width: 100%;
+                max-width: 100%;
+                margin: 10px 0;
+            }
+
+            .col-chart-panel {
+                position: relative;
+                top: auto;
+                left: auto;
+                width: 100%;
+                max-width: 100%;
+                margin: 10px 0;
+            }
+
+            .notes-panel {
+                position: relative;
+                left: auto;
+                bottom: auto;
+                width: 100%;
+                max-width: 100%;
+                height: auto;
+                max-height: 60vh;
+                margin: 10px 0;
+            }
+
+            /* Time Travel Slider - Mobile */
+            .time-travel-slider {
+                width: 90%;
+                margin: 10px auto;
+            }
+
+            /* Comparison table - Mobile */
+            .comparison-table {
+                font-size: 0.75em;
+            }
+
+            .comparison-table th,
+            .comparison-table td {
+                padding: 6px 4px;
+            }
         }
 
         /* Mobile Small (≤480px) */
@@ -605,6 +779,7 @@
             .persona-btn {
                 font-size: 0.7em;
                 padding: 6px 8px;
+                min-width: 55px;
             }
 
             .metric-group-tab {
@@ -616,6 +791,82 @@
             #canvas-container {
                 height: 40vh;
                 min-height: 250px;
+            }
+
+            /* Panel Toggle Buttons - Extra Small Mobile */
+            .panel-toggle-btn {
+                font-size: 0.7em;
+                padding: 7px 10px;
+                flex: 1 1 100%;
+                min-width: 100px;
+            }
+
+            /* Mode Toggle Buttons - Extra Small Mobile */
+            .mode-toggle {
+                font-size: 0.75em;
+                padding: 8px 12px;
+                min-width: 120px;
+            }
+
+            /* Comparison table - Extra Small Mobile */
+            .comparison-table {
+                font-size: 0.65em;
+            }
+
+            .comparison-table th,
+            .comparison-table td {
+                padding: 4px 2px;
+            }
+
+            /* Notes Panel - Extra Small Mobile */
+            .note-item {
+                font-size: 0.8em;
+                padding: 8px;
+            }
+
+            /* Crime Widget - Extra Small Mobile */
+            .crime-item {
+                font-size: 0.8em;
+                padding: 8px;
+            }
+        }
+
+        /* Mobile Landscape (≤768px height in landscape) */
+        @media (max-height: 500px) and (orientation: landscape) {
+            #canvas-container {
+                height: 60vh;
+                min-height: 200px;
+            }
+
+            .header {
+                padding: 8px 15px;
+            }
+
+            .header h1 {
+                font-size: 1.2em;
+            }
+
+            .property-selector {
+                flex-direction: row;
+                gap: 10px;
+            }
+
+            .selector-column {
+                flex: 1;
+                min-width: 150px;
+            }
+
+            .controls {
+                padding: 10px;
+            }
+
+            .panel-toggle-buttons {
+                gap: 8px;
+            }
+
+            .panel-toggle-btn {
+                font-size: 0.75em;
+                padding: 6px 10px;
             }
         }
 
@@ -1513,6 +1764,20 @@
                 📳 Vibration: ON
             </button>
 
+            <!-- Gravity Toggle Button (Feature #31) -->
+            <button class="mode-toggle" id="gravity-toggle" onclick="toggleGravity()"
+                    style="top: 220px; background: linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 212, 255, 0.3));"
+                    aria-label="Toggle cost-of-living gravity positioning">
+                🌍 Gravity: ON
+            </button>
+
+            <!-- Export to PDF Button (Feature #14) -->
+            <button class="mode-toggle" id="export-pdf-btn" onclick="exportToPDF()"
+                    style="top: 270px;"
+                    aria-label="Export comparison report to PDF">
+                📄 Export PDF
+            </button>
+
             <!-- Comparison Panel (Feature #6) -->
             <div class="comparison-panel" id="comparison-panel" role="region" aria-label="Property comparison metrics">
                 <h3>📊 Property Comparison</h3>
@@ -1942,6 +2207,11 @@
                         }
                     });
                 });
+
+                // Feature #31: Apply gravity positioning (smooth Y-axis movement)
+                if (gravityEnabled) {
+                    applyGravityPositioning();
+                }
 
                 // Feature #15: Animate deal-breaker shockwaves (red warning pulses)
                 ['A', 'B', 'C'].forEach(slot => {
@@ -2584,7 +2854,176 @@
                 if (propertyA && sphereA) createGravityRings(sphereA, 'A', propertyA);
                 if (propertyB && sphereB) createGravityRings(sphereB, 'B', propertyB);
                 if (propertyC && sphereC) createGravityRings(sphereC, 'C', propertyC);
+
+                // Feature #31: Apply physics-based vertical positioning
+                applyGravityPositioning();
             }
+
+            // ===== FEATURE #31: PHYSICS-BASED GRAVITY POSITIONING =====
+            let gravityEnabled = true;
+            let gravityIndicators = { A: null, B: null, C: null };
+
+            function applyGravityPositioning() {
+                if (!gravityEnabled) return;
+
+                const properties = [
+                    { sphere: sphereA, property: propertyA, slot: 'A', baseX: -3 },
+                    { sphere: sphereB, property: propertyB, slot: 'B', baseX: 0 },
+                    { sphere: sphereC, property: propertyC, slot: 'C', baseX: 3 }
+                ];
+
+                properties.forEach(({ sphere, property, slot, baseX }) => {
+                    if (!sphere || !property) return;
+
+                    // Get cost of living score (0-100, lower cost = higher score)
+                    const colScore = property.dimensions.costOfLiving || 70;
+
+                    // Convert to gravity effect: high COL (expensive) = sink down, low COL (cheap) = float up
+                    // Score: 100 (cheapest) → Y = +2.0 (float up - light/affordable)
+                    // Score: 50 (average) → Y = 0 (neutral)
+                    // Score: 0 (most expensive) → Y = -2.0 (sink down - heavy cost burden)
+                    const gravityOffset = ((colScore - 50) / 50) * 2.0; // Range: -2.0 to +2.0
+
+                    // Smoothly animate to target Y position
+                    const targetY = gravityOffset;
+                    sphere.position.y += (targetY - sphere.position.y) * 0.05; // Smooth easing
+
+                    // Update gravity indicator
+                    updateGravityIndicator(sphere, slot, colScore, gravityOffset);
+                });
+
+                // Update connected objects (crowns, photo rings) to follow spheres
+                updateConnectedObjects();
+            }
+
+            function updateGravityIndicator(sphere, slot, colScore, gravityOffset) {
+                // Remove old indicator
+                if (gravityIndicators[slot]) {
+                    scene.remove(gravityIndicators[slot]);
+                }
+
+                // Create vertical line from sphere to Y=0 plane
+                const lineGeometry = new THREE.BufferGeometry();
+                const points = [
+                    new THREE.Vector3(sphere.position.x, 0, sphere.position.z), // Ground level
+                    new THREE.Vector3(sphere.position.x, sphere.position.y, sphere.position.z) // Sphere position
+                ];
+                lineGeometry.setFromPoints(points);
+
+                // Color based on direction: green (floating/cheap) vs red (sinking/expensive)
+                const color = gravityOffset > 0 ? 0x00ff88 : 0xff3b30; // Green up, red down
+                const lineMaterial = new THREE.LineBasicMaterial({
+                    color: color,
+                    opacity: 0.4,
+                    transparent: true,
+                    linewidth: 2
+                });
+
+                const line = new THREE.Line(lineGeometry, lineMaterial);
+                line.userData = { type: 'gravityIndicator', slot: slot };
+                scene.add(line);
+                gravityIndicators[slot] = line;
+
+                // Add text sprite showing COL score at base (doubled size)
+                const canvas = document.createElement('canvas');
+                canvas.width = 256; // Doubled from 128
+                canvas.height = 128; // Doubled from 64
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(0, 0, 256, 128);
+                ctx.fillStyle = gravityOffset > 0 ? '#00ff88' : '#ff3b30';
+                ctx.font = 'bold 40px Arial'; // Doubled from 20px
+                ctx.textAlign = 'center';
+                ctx.fillText(`COL: ${Math.round(colScore)}`, 128, 50); // Adjusted positions
+                ctx.font = '28px Arial'; // Doubled from 14px
+                ctx.fillStyle = 'white';
+                ctx.fillText(gravityOffset > 0 ? 'Affordable' : 'Expensive', 128, 90); // Adjusted positions
+
+                const texture = new THREE.CanvasTexture(canvas);
+                const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
+                const labelSprite = new THREE.Sprite(spriteMaterial);
+                labelSprite.scale.set(2.0, 1.0, 1); // Doubled from 1.0, 0.5, 1
+                labelSprite.position.set(sphere.position.x, -0.3, sphere.position.z);
+                scene.add(labelSprite);
+
+                // Store label with indicator for cleanup
+                line.userData.label = labelSprite;
+            }
+
+            function updateConnectedObjects() {
+                // Update crown positions to follow spheres
+                ['A', 'B', 'C'].forEach(slot => {
+                    const crown = crownSprites[slot];
+                    const sphere = slot === 'A' ? sphereA : slot === 'B' ? sphereB : sphereC;
+                    if (crown && sphere) {
+                        crown.position.set(sphere.position.x, sphere.position.y + 1.5, sphere.position.z);
+                    }
+                });
+
+                // Update photo ring positions to follow spheres
+                ['A', 'B', 'C'].forEach(slot => {
+                    const sphere = slot === 'A' ? sphereA : slot === 'B' ? sphereB : sphereC;
+                    if (!sphere) return;
+
+                    photoRings[slot].forEach(photo => {
+                        if (photo && photo.userData) {
+                            // Update orbit around new sphere Y position
+                            const angle = photo.userData.orbitAngle;
+                            const radius = photo.userData.orbitRadius;
+                            photo.position.x = sphere.position.x + Math.cos(angle) * radius;
+                            photo.position.y = sphere.position.y + 0.5;
+                            photo.position.z = sphere.position.z + Math.sin(angle) * radius;
+                        }
+                    });
+                });
+
+                // Update gravity rings to follow sphere Y position
+                ['A', 'B', 'C'].forEach(slot => {
+                    const sphere = slot === 'A' ? sphereA : slot === 'B' ? sphereB : sphereC;
+                    if (!sphere) return;
+
+                    gravityRings[slot].forEach(ring => {
+                        if (ring) {
+                            ring.position.y = sphere.position.y;
+                        }
+                    });
+                });
+            }
+
+            window.toggleGravity = function() {
+                gravityEnabled = !gravityEnabled;
+                const btn = document.getElementById('gravity-toggle');
+
+                if (gravityEnabled) {
+                    btn.textContent = '🌍 Gravity: ON';
+                    btn.style.background = 'linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 212, 255, 0.3))';
+                    showAlert('Cost-of-Living Gravity enabled', 'success');
+                } else {
+                    btn.textContent = '🌍 Gravity: OFF';
+                    btn.style.background = '';
+
+                    // Reset all spheres to Y=0
+                    if (sphereA) sphereA.position.y = 0;
+                    if (sphereB) sphereB.position.y = 0;
+                    if (sphereC) sphereC.position.y = 0;
+
+                    // Remove indicators
+                    ['A', 'B', 'C'].forEach(slot => {
+                        if (gravityIndicators[slot]) {
+                            if (gravityIndicators[slot].userData.label) {
+                                scene.remove(gravityIndicators[slot].userData.label);
+                            }
+                            scene.remove(gravityIndicators[slot]);
+                            gravityIndicators[slot] = null;
+                        }
+                    });
+
+                    showAlert('Cost-of-Living Gravity disabled', 'info');
+                }
+
+                updateConnectedObjects();
+                vibrate('tap');
+            };
 
             // ===== FEATURE #21: MINI PHOTO RING =====
             function createPhotoRing(sphere, slot, property) {
@@ -3627,7 +4066,25 @@
 
                 // Help command
                 if (command.includes('help') || command.includes('what can you do')) {
-                    showAlert('Voice commands: "Select property A/B/C", "Investor mode", "Show winner", "Help"', 'info');
+                    showAlert('Voice commands: "Select property A/B/C", "Investor mode", "Show winner", "Gravity on/off", "Export PDF", "Help"', 'info');
+                }
+
+                // Export to PDF (Feature #14)
+                if (command.includes('export') || command.includes('download report') || command.includes('save report') || command.includes('generate pdf')) {
+                    exportToPDF();
+                }
+
+                // Gravity control (Feature #31)
+                if (command.includes('gravity on') || command.includes('enable gravity') || command.includes('turn on gravity')) {
+                    if (!gravityEnabled) {
+                        toggleGravity();
+                        showAlert('Cost-of-Living Gravity enabled', 'success');
+                    }
+                } else if (command.includes('gravity off') || command.includes('disable gravity') || command.includes('turn off gravity')) {
+                    if (gravityEnabled) {
+                        toggleGravity();
+                        showAlert('Cost-of-Living Gravity disabled', 'info');
+                    }
                 }
 
                 // Metric filtering
@@ -3646,6 +4103,263 @@
                 }
             }
 
+            // ===== FEATURE #14: EXPORT TO PDF REPORT =====
+            window.exportToPDF = async function() {
+                const properties = [propertyA, propertyB, propertyC].filter(p => p !== null);
+
+                if (properties.length === 0) {
+                    showAlert('Please select at least one property to export', 'error');
+                    return;
+                }
+
+                showAlert('Generating PDF report...', 'info');
+                vibrate('tap');
+
+                try {
+                    // Initialize jsPDF - check multiple possible namespaces
+                    let jsPDF;
+                    if (window.jspdf && window.jspdf.jsPDF) {
+                        jsPDF = window.jspdf.jsPDF;
+                    } else if (window.jsPDF) {
+                        jsPDF = window.jsPDF;
+                    } else {
+                        throw new Error('jsPDF library not loaded');
+                    }
+
+                    const doc = new jsPDF('p', 'mm', 'a4');
+                    const pageWidth = doc.internal.pageSize.getWidth();
+                    const pageHeight = doc.internal.pageSize.getHeight();
+                    let yPos = 20;
+
+                    // Header
+                    doc.setFontSize(24);
+                    doc.setTextColor(0, 128, 255);
+                    doc.text('CLUES™ Property Comparison Report', pageWidth / 2, yPos, { align: 'center' });
+
+                    yPos += 10;
+                    doc.setFontSize(10);
+                    doc.setTextColor(100, 100, 100);
+                    doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth / 2, yPos, { align: 'center' });
+                    doc.text(`Persona: ${currentPersona.charAt(0).toUpperCase() + currentPersona.slice(1)}`, pageWidth / 2, yPos + 5, { align: 'center' });
+
+                    yPos += 15;
+                    doc.setDrawColor(0, 212, 255);
+                    doc.line(20, yPos, pageWidth - 20, yPos);
+                    yPos += 10;
+
+                    // Property Summary Section
+                    doc.setFontSize(16);
+                    doc.setTextColor(0, 0, 0);
+                    doc.text('Property Summary', 20, yPos);
+                    yPos += 8;
+
+                    properties.forEach((prop, idx) => {
+                        const letter = ['A', 'B', 'C'][idx];
+                        doc.setFontSize(12);
+                        doc.setTextColor(0, 0, 0);
+                        doc.text(`${letter}. ${prop.name}`, 25, yPos);
+                        yPos += 6;
+
+                        doc.setFontSize(10);
+                        doc.setTextColor(80, 80, 80);
+                        doc.text(`   Price: $${prop.price.toLocaleString()}`, 25, yPos);
+                        yPos += 5;
+
+                        // Add winner badge if applicable
+                        if (winnerProperty && winnerProperty === letter) {
+                            doc.setTextColor(0, 200, 0);
+                            doc.text(`   🏆 BEST MATCH (${currentPersona} persona)`, 25, yPos);
+                            yPos += 5;
+                        }
+
+                        yPos += 3;
+                    });
+
+                    yPos += 5;
+
+                    // Metrics Comparison Table
+                    if (yPos > pageHeight - 80) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+
+                    doc.setFontSize(16);
+                    doc.setTextColor(0, 0, 0);
+                    doc.text('Detailed Metrics Comparison', 20, yPos);
+                    yPos += 8;
+
+                    // Table headers
+                    doc.setFontSize(9);
+                    doc.setFillColor(240, 240, 240);
+                    doc.rect(20, yPos, pageWidth - 40, 7, 'F');
+                    doc.setTextColor(0, 0, 0);
+                    doc.text('Metric', 25, yPos + 5);
+
+                    const colWidth = (pageWidth - 80) / properties.length;
+                    properties.forEach((prop, idx) => {
+                        const letter = ['A', 'B', 'C'][idx];
+                        doc.text(letter, 80 + (idx * colWidth), yPos + 5);
+                    });
+                    yPos += 7;
+
+                    // Table rows
+                    Object.values(METRICS_CONFIG).forEach(metric => {
+                        if (!metricFilters[metric.key]) return;
+                        if (yPos > pageHeight - 20) {
+                            doc.addPage();
+                            yPos = 20;
+                        }
+
+                        doc.setFontSize(8);
+                        doc.setTextColor(60, 60, 60);
+                        doc.text(`${metric.icon} ${metric.label}`, 25, yPos + 4);
+
+                        properties.forEach((prop, idx) => {
+                            const value = prop.dimensions[metric.key];
+                            const formatted = String(metric.format(value)); // Ensure it's a string
+
+                            // Color code based on score
+                            if (value <= 20) doc.setTextColor(255, 59, 48);
+                            else if (value <= 40) doc.setTextColor(255, 149, 0);
+                            else if (value <= 60) doc.setTextColor(200, 180, 0);
+                            else if (value <= 80) doc.setTextColor(0, 150, 255);
+                            else doc.setTextColor(0, 200, 100);
+
+                            doc.text(formatted, 80 + (idx * colWidth), yPos + 4);
+                        });
+
+                        yPos += 6;
+                    });
+
+                    yPos += 10;
+
+                    // Add gravity info if enabled
+                    if (gravityEnabled) {
+                        if (yPos > pageHeight - 40) {
+                            doc.addPage();
+                            yPos = 20;
+                        }
+
+                        doc.setFontSize(14);
+                        doc.setTextColor(0, 0, 0);
+                        doc.text('Cost-of-Living Gravity Analysis', 20, yPos);
+                        yPos += 8;
+
+                        doc.setFontSize(9);
+                        properties.forEach((prop, idx) => {
+                            const letter = ['A', 'B', 'C'][idx];
+                            const colScore = prop.dimensions.costOfLiving || 70;
+                            const gravityOffset = ((colScore - 50) / 50) * 2.0;
+
+                            doc.setTextColor(60, 60, 60);
+                            doc.text(`${letter}. ${prop.name}`, 25, yPos);
+                            yPos += 5;
+
+                            doc.setTextColor(gravityOffset > 0 ? 0 : 255, gravityOffset > 0 ? 200 : 59, gravityOffset > 0 ? 100 : 48);
+                            doc.text(`   COL Score: ${Math.round(colScore)} - ${gravityOffset > 0 ? 'Affordable ↑' : 'Expensive ↓'}`, 25, yPos);
+                            yPos += 7;
+                        });
+                    }
+
+                    // Footer on last page
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    doc.text('Generated by CLUES™ Quantum Property Intelligence', pageWidth / 2, pageHeight - 10, { align: 'center' });
+                    doc.text('Holographic Comparison Sphere v3.2', pageWidth / 2, pageHeight - 6, { align: 'center' });
+
+                    // Save PDF
+                    const filename = `CLUES_Property_Comparison_${new Date().toISOString().slice(0, 10)}.pdf`;
+                    doc.save(filename);
+
+                    showAlert('PDF report downloaded successfully!', 'success');
+                    vibrate('success');
+
+                } catch (error) {
+                    console.error('PDF generation error:', error);
+                    console.error('Error details:', error.message);
+                    console.error('jsPDF available?', typeof window.jspdf, typeof window.jsPDF);
+                    showAlert(`Failed to generate PDF: ${error.message}`, 'error');
+                    vibrate('error');
+                }
+            };
+
+            // ===== FEATURE #12: TOUCH OPTIMIZATIONS FOR MOBILE =====
+            function initTouchOptimizations() {
+                // Detect if device is touch-enabled
+                const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
+                if (isTouchDevice) {
+                    document.body.classList.add('touch-device');
+
+                    // Improve button tap targets (44x44px minimum for accessibility)
+                    const buttons = document.querySelectorAll('button, .persona-btn, .metric-group-tab, .panel-toggle-btn, .mode-toggle');
+                    buttons.forEach(btn => {
+                        btn.style.minHeight = '44px';
+                    });
+
+                    // Prevent double-tap zoom on buttons
+                    buttons.forEach(btn => {
+                        btn.addEventListener('touchend', (e) => {
+                            e.preventDefault();
+                            btn.click();
+                        }, { passive: false });
+                    });
+
+                    // Optimize Three.js controls for touch
+                    if (renderer && renderer.domElement) {
+                        renderer.domElement.style.touchAction = 'pan-y';
+                    }
+
+                    // Add touch feedback to interactive elements
+                    const interactiveElements = document.querySelectorAll('.panel-toggle-btn, .mode-toggle, .persona-btn, .metric-group-tab');
+                    interactiveElements.forEach(el => {
+                        el.addEventListener('touchstart', function() {
+                            this.style.transform = 'scale(0.95)';
+                            this.style.transition = 'transform 0.1s ease';
+                        });
+                        el.addEventListener('touchend', function() {
+                            this.style.transform = 'scale(1)';
+                        });
+                    });
+
+                    console.log('Touch optimizations initialized for mobile device');
+                }
+            }
+
+            // ===== FEATURE #12: RESPONSIVE LAYOUT DETECTION =====
+            function detectLayout() {
+                const width = window.innerWidth;
+                let layout = 'desktop';
+
+                if (width <= 480) {
+                    layout = 'mobile-small';
+                } else if (width <= 768) {
+                    layout = 'mobile';
+                } else if (width <= 1199) {
+                    layout = 'tablet';
+                }
+
+                document.body.setAttribute('data-layout', layout);
+                console.log(`Layout detected: ${layout} (${width}px)`);
+
+                // Adjust Three.js camera for mobile
+                if (layout === 'mobile' || layout === 'mobile-small') {
+                    if (camera) {
+                        camera.position.z = 8; // Pull camera back for better view on small screens
+                    }
+                } else {
+                    if (camera) {
+                        camera.position.z = 6; // Default desktop view
+                    }
+                }
+            }
+
+            // Re-detect layout on window resize
+            window.addEventListener('resize', () => {
+                detectLayout();
+                onWindowResize();
+            });
+
             document.addEventListener('DOMContentLoaded', () => {
                 init();
                 loadDisplayModePreference();
@@ -3659,6 +4373,10 @@
                 if (vibToggle) {
                     vibToggle.textContent = vibrationEnabled ? '📳 Vibration: ON' : '📴 Vibration: OFF';
                 }
+
+                // Feature #12: Initialize responsive features
+                detectLayout();
+                initTouchOptimizations();
             });
 
         })(); // End namespace wrapper
