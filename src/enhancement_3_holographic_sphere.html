@@ -16,19 +16,8 @@
     <!-- OrbitControls - External file (matching CLUES architecture) -->
     <script src="lib/OrbitControls.js"></script>
 
-    <!-- GLTFLoader for 3D property models -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/loaders/GLTFLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.158.0/examples/jsm/loaders/DRACOLoader.js"></script>
-
-    <!-- Feature #10: 3D Property Models - GLTF/GLB Loader -->
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.158.0/build/three.module.js",
-            "three/addons/": "https://unpkg.com/three@0.158.0/examples/jsm/"
-        }
-    }
-    </script>
+    <!-- Feature #10: GLTF Loader will be loaded via CDN in script -->
+    <!-- Removed broken ES module imports -->
 
     <!-- Chart.js for Feature #7: Dynamic Radar Chart -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -2203,11 +2192,17 @@
 
             // Initialize GLTF Loader
             function initGLTFLoader() {
-                if (!gltfLoader && THREE.GLTFLoader) {
-                    gltfLoader = new THREE.GLTFLoader();
-                    console.log('✅ GLTF Loader initialized for 3D property models');
-                } else if (!THREE.GLTFLoader) {
-                    console.warn('⚠️ GLTFLoader not available - falling back to procedural models');
+                // GLTFLoader is optional - we have procedural houses as fallback
+                if (typeof THREE !== 'undefined' && THREE.GLTFLoader) {
+                    try {
+                        gltfLoader = new THREE.GLTFLoader();
+                        console.log('✅ GLTF Loader initialized for 3D property models');
+                    } catch (e) {
+                        console.warn('⚠️ GLTFLoader failed to initialize:', e);
+                        console.log('📦 Using procedural houses instead (no problem!)');
+                    }
+                } else {
+                    console.log('📦 GLTFLoader not available - using procedural 3D houses (works great!)');
                 }
             }
 
@@ -2399,15 +2394,29 @@
             window.togglePhotoUpload = function() {
                 console.log('📸 togglePhotoUpload called');
                 const panel = document.getElementById('photo-upload-panel');
+
+                if (!panel) {
+                    console.error('❌ Panel element not found: photo-upload-panel');
+                    return;
+                }
+
                 const isVisible = panel.style.display === 'flex';
+                console.log(`📸 Panel current state: ${isVisible ? 'VISIBLE' : 'HIDDEN'}`);
 
                 if (isVisible) {
                     panel.style.display = 'none';
+                    console.log('📸 Panel CLOSED');
                 } else {
                     panel.style.display = 'flex';
+                    console.log('📸 Panel OPENED (display: flex)');
+
                     // Hide other panels
-                    document.getElementById('comparison-panel').style.display = 'none';
-                    document.getElementById('notes-panel').style.display = 'none';
+                    const comparisonPanel = document.getElementById('comparison-panel');
+                    const notesPanel = document.getElementById('notes-panel');
+                    if (comparisonPanel) comparisonPanel.style.display = 'none';
+                    if (notesPanel) notesPanel.style.display = 'none';
+
+                    console.log('📸 Panel should now be visible at top: 423px, right: 20px');
                 }
 
                 vibrate('tap');
