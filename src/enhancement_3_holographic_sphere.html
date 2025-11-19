@@ -2346,13 +2346,29 @@
                 }
 
                 const properties = [
-                    { prop: propertyA, letter: 'A', color: 'rgba(0, 212, 255, 1)' },
-                    { prop: propertyB, letter: 'B', color: 'rgba(0, 255, 136, 1)' },
-                    { prop: propertyC, letter: 'C', color: 'rgba(255, 215, 0, 1)' }
+                    { prop: propertyA, letter: 'A' },
+                    { prop: propertyB, letter: 'B' },
+                    { prop: propertyC, letter: 'C' }
                 ].filter(p => p.prop !== null);
 
                 if (properties.length === 0) {
                     return;
+                }
+
+                function getColorForScore(score) {
+                    if (score <= 20) return 'rgba(255, 59, 48, 0.9)'; // Red - Terrible
+                    if (score <= 40) return 'rgba(255, 149, 0, 0.9)'; // Orange - Fair
+                    if (score <= 60) return 'rgba(255, 215, 0, 0.9)'; // Yellow - Average
+                    if (score <= 80) return 'rgba(0, 212, 255, 0.9)'; // Blue - Good
+                    return 'rgba(0, 255, 136, 0.9)'; // Green - Excellent
+                }
+
+                function getBorderColorForScore(score) {
+                    if (score <= 20) return 'rgba(255, 59, 48, 1)';
+                    if (score <= 40) return 'rgba(255, 149, 0, 1)';
+                    if (score <= 60) return 'rgba(255, 215, 0, 1)';
+                    if (score <= 80) return 'rgba(0, 212, 255, 1)';
+                    return 'rgba(0, 255, 136, 1)';
                 }
 
                 const labels = properties.map(p => `Property ${p.letter}`);
@@ -2360,8 +2376,8 @@
                     // Get cost of living score (0-100, higher = more expensive)
                     return p.prop.dimensions.costOfLiving || 50;
                 });
-                const backgroundColors = properties.map(p => p.color.replace('1)', '0.7)'));
-                const borderColors = properties.map(p => p.color);
+                const backgroundColors = data.map(score => getColorForScore(score));
+                const borderColors = data.map(score => getBorderColorForScore(score));
 
                 colChart = new Chart(ctx, {
                     type: 'bar',
@@ -2401,10 +2417,12 @@
                                     label: function(context) {
                                         const value = context.parsed.y;
                                         let rating = '';
-                                        if (value < 33) rating = '💚 Affordable';
-                                        else if (value < 67) rating = '💛 Moderate';
-                                        else rating = '❤️ Expensive';
-                                        return `Index: ${Math.round(value)} - ${rating}`;
+                                        if (value <= 20) rating = '🔴 Terrible';
+                                        else if (value <= 40) rating = '🟠 Fair';
+                                        else if (value <= 60) rating = '🟡 Average';
+                                        else if (value <= 80) rating = '🔵 Good';
+                                        else rating = '🟢 Excellent';
+                                        return `Score: ${Math.round(value)} - ${rating}`;
                                     }
                                 }
                             }
