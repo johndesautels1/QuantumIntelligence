@@ -37,6 +37,31 @@
             overflow: hidden;
         }
 
+        /* Feature #17: Guided vs Expert Mode Styles */
+        body.guided-mode .advanced-control {
+            display: none;
+        }
+
+        body.expert-mode .metric-tooltip,
+        body.expert-mode .help-text {
+            display: none;
+        }
+
+        .help-text {
+            font-size: 0.75em;
+            color: rgba(255, 255, 255, 0.6);
+            font-style: italic;
+            margin-top: 5px;
+        }
+
+        .advanced-control {
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            background: rgba(255, 215, 0, 0.05);
+            padding: 8px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
         /* Screen reader only */
         .sr-only {
             position: absolute;
@@ -176,7 +201,7 @@
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(20px);
             border-radius: 20px;
-            padding: 20px;
+            padding: 10px;
             border: 1px solid rgba(255, 255, 255, 0.3);
             min-width: 200px;
             max-width: 300px;
@@ -185,13 +210,13 @@
         .selector-column h3 {
             color: white;
             font-size: 1.2em;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             text-align: center;
         }
 
         .selector-column select {
             width: 100%;
-            padding: 10px;
+            padding: 5px;
             border-radius: 10px;
             border: 1px solid rgba(255, 255, 255, 0.3);
             background: rgba(255, 255, 255, 0.2);
@@ -203,6 +228,48 @@
         .selector-column select option {
             background: #1a2847;
             color: white;
+        }
+
+        /* Panel Toggle Buttons */
+        .panel-toggle-buttons {
+            position: absolute;
+            top: 226px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            pointer-events: all;
+            flex-wrap: wrap;
+            z-index: 100;
+        }
+
+        .panel-toggle-btn {
+            background: rgba(128, 128, 128, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(128, 128, 128, 0.3);
+            border-radius: 12px;
+            padding: 10px 16px;
+            color: rgba(160, 160, 160, 0.9);
+            font-size: 0.9em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            pointer-events: all;
+        }
+
+        .panel-toggle-btn:hover {
+            background: rgba(128, 128, 128, 0.3);
+            color: rgba(200, 200, 200, 0.9);
+            transform: translateY(-2px);
+            border-color: rgba(128, 128, 128, 0.5);
+        }
+
+        .panel-toggle-btn.active {
+            background: rgba(0, 212, 255, 0.3);
+            border-color: #00D4FF;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 212, 255, 0.3);
         }
 
         /* Controls panel */
@@ -220,6 +287,31 @@
             pointer-events: all;
             max-width: 800px;
             width: 90%;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .controls.collapsed {
+            transform: translateX(-50%) scale(0.67) translateY(calc(100% - 40px));
+        }
+
+        .controls-toggle-btn {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            background: rgba(0, 212, 255, 0.2);
+            border: 1px solid rgba(0, 212, 255, 0.4);
+            border-radius: 8px;
+            padding: 6px 12px;
+            color: white;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .controls-toggle-btn:hover {
+            background: rgba(0, 212, 255, 0.4);
+            transform: scale(1.05);
         }
 
         .controls h3 {
@@ -346,7 +438,7 @@
             .selector-column {
                 min-width: 180px;
                 max-width: 250px;
-                padding: 15px;
+                padding: 7.5px;
             }
 
             .controls {
@@ -652,6 +744,9 @@
             z-index: 1000;
             transition: all 0.3s ease;
             pointer-events: all;
+            min-width: 150px;
+            text-align: center;
+            box-sizing: border-box;
         }
 
         .mode-toggle:hover {
@@ -662,21 +757,21 @@
         /* Time Travel Control */
         .time-travel-control {
             margin-top: 20px;
-            padding: 15px;
+            padding: 4.5px;
             background: rgba(0, 212, 255, 0.1);
             border-radius: 10px;
             border: 1px solid rgba(0, 212, 255, 0.3);
         }
 
         .time-travel-control h3 {
-            margin: 0 0 10px 0;
+            margin: 0 0 3px 0;
             font-size: 0.9em;
             color: #00D4FF;
         }
 
         .time-slider-container {
             position: relative;
-            margin: 10px 0;
+            margin: 3px 0;
         }
 
         .time-slider {
@@ -712,9 +807,10 @@
         .time-labels {
             display: flex;
             justify-content: space-between;
-            font-size: 0.75em;
-            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.5em;
+            color: rgba(255, 255, 255, 1);
             margin-top: 5px;
+            font-weight: bold;
         }
 
         .time-display {
@@ -729,9 +825,9 @@
         .comparison-panel {
             position: fixed;
             right: 20px;
-            bottom: calc(100vh - 690px);
-            width: 420px;
-            max-height: calc(100vh - 280px);
+            bottom: -16px;
+            width: 480px;
+            height: 480px;
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(20px);
             border-radius: 15px;
@@ -740,7 +836,7 @@
             color: white;
             overflow-y: auto;
             opacity: 0;
-            transform: translateX(470px) scale(0.95);
+            transform: translateX(550px) scale(0.792);
             transition: all 0.5s ease;
             pointer-events: none;
             z-index: 999;
@@ -748,7 +844,7 @@
 
         .comparison-panel.visible {
             opacity: 1;
-            transform: translateX(0) scale(1);
+            transform: translateX(0) scale(0.792);
             pointer-events: all;
         }
 
@@ -815,9 +911,9 @@
         .roi-panel {
             position: fixed;
             right: 20px;
-            bottom: 20px;
-            width: 420px;
-            max-height: 200px;
+            bottom: -16px;
+            width: 480px;
+            height: 480px;
             background: rgba(255, 255, 255, 0.15);
             backdrop-filter: blur(20px);
             border-radius: 15px;
@@ -826,7 +922,7 @@
             color: white;
             overflow-y: auto;
             opacity: 0;
-            transform: translateX(470px) scale(0.95);
+            transform: translateX(550px) scale(0.792);
             transition: all 0.5s ease;
             pointer-events: none;
             z-index: 998;
@@ -834,7 +930,7 @@
 
         .roi-panel.visible {
             opacity: 1;
-            transform: translateX(0) scale(1);
+            transform: translateX(0) scale(0.792);
             pointer-events: all;
         }
 
@@ -903,7 +999,7 @@
             padding: 20px;
             color: white;
             opacity: 0;
-            transform: translateX(-550px) scale(0.9);
+            transform: translateX(-550px) scale(0.792);
             transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
             pointer-events: none;
             z-index: 998;
@@ -914,7 +1010,7 @@
 
         .radar-chart-panel.visible {
             opacity: 1;
-            transform: translateX(0) scale(0.9);
+            transform: translateX(0) scale(0.792);
             pointer-events: all;
         }
 
@@ -991,6 +1087,7 @@
             padding: 9px;
             border: 1px solid rgba(255, 59, 48, 0.5);
             box-shadow: 0 4px 16px rgba(255, 0, 0, 0.3);
+            display: none;
             z-index: 900;
             transition: all 0.3s ease;
         }
@@ -1084,6 +1181,7 @@
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             transform: translateY(0);
             opacity: 1;
+            display: none;
         }
 
         .col-chart-panel::before {
@@ -1117,6 +1215,131 @@
             height: calc(100% - 21.7px);
         }
 
+        /* Feature #24: Personal Notes Panel */
+        .notes-panel {
+            position: fixed;
+            left: 20px;
+            bottom: calc(100vh - 690px);
+            width: 420px;
+            height: 410px;
+            background: linear-gradient(135deg, rgba(10, 22, 40, 0.95) 0%, rgba(26, 40, 71, 0.95) 100%);
+            backdrop-filter: blur(20px);
+            border-radius: 15px;
+            padding: 15px;
+            border: 1px solid rgba(138, 43, 226, 0.4);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            z-index: 850;
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+        }
+
+        .notes-panel h3 {
+            margin: 0;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #BA55D3;
+        }
+
+        .notes-tabs {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 8px;
+        }
+
+        .notes-tab {
+            padding: 6px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s ease;
+        }
+
+        .notes-tab:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .notes-tab.active {
+            background: rgba(138, 43, 226, 0.3);
+            border-color: #BA55D3;
+            color: #BA55D3;
+        }
+
+        .emoji-reactions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .emoji-btn {
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .emoji-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.15);
+        }
+
+        .emoji-display {
+            min-height: 30px;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            font-size: 1.3em;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .emoji-display:empty::after {
+            content: 'No reactions yet';
+            font-size: 0.6em;
+            color: rgba(255, 255, 255, 0.3);
+            font-style: italic;
+        }
+
+        .notes-textarea {
+            width: 100%;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-family: inherit;
+            font-size: 0.85em;
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .notes-textarea:focus {
+            outline: none;
+            border-color: #BA55D3;
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .notes-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .notes-hint {
+            font-size: 0.7em;
+            color: rgba(255, 255, 255, 0.5);
+            text-align: center;
+        }
+
         /* Responsive radar chart */
         @media (max-width: 768px) {
             .radar-chart-panel {
@@ -1130,7 +1353,7 @@
         }
     </style>
 </head>
-<body class="analyst-mode">
+<body class="analyst-mode guided-mode">
     <div class="container">
         <!-- Loading screen -->
         <div id="loading-screen" role="status" aria-live="polite">
@@ -1184,9 +1407,40 @@
                 </div>
             </div>
 
+            <!-- Panel Toggle Buttons -->
+            <div class="panel-toggle-buttons" role="region" aria-label="Panel visibility controls">
+                <button class="panel-toggle-btn" id="toggle-comparison" onclick="togglePanel('comparison')"
+                        aria-label="Toggle property comparison panel">
+                    📊 Property Comparison
+                </button>
+                <button class="panel-toggle-btn" id="toggle-col" onclick="togglePanel('col')"
+                        aria-label="Toggle cost of living panel">
+                    💵 Cost of Living
+                </button>
+                <button class="panel-toggle-btn" id="toggle-crime" onclick="togglePanel('crime')"
+                        aria-label="Toggle crime comparison panel">
+                    🔫 Crime Comparison
+                </button>
+                <button class="panel-toggle-btn" id="toggle-metric" onclick="togglePanel('metric')"
+                        aria-label="Toggle metric comparison panel">
+                    📡 Metric Comparison
+                </button>
+                <button class="panel-toggle-btn" id="toggle-roi" onclick="togglePanel('roi')"
+                        aria-label="Toggle ROI projections panel">
+                    📈 ROI Projections
+                </button>
+                <button class="panel-toggle-btn" id="toggle-notes" onclick="togglePanel('notes')"
+                        aria-label="Toggle property notes panel">
+                    📝 Property Notes
+                </button>
+            </div>
+
             <!-- Controls Panel -->
-            <div class="controls" role="region" aria-label="Comparison controls">
-                <h3>Analysis Persona</h3>
+            <div class="controls" id="controls-panel" role="region" aria-label="Comparison controls">
+                <button class="controls-toggle-btn" onclick="toggleControlsPanel()" aria-label="Toggle controls panel">
+                    ▼ Hide Controls
+                </button>
+                <h3>Personality Analysis</h3>
                 <div class="persona-selector" role="radiogroup" aria-label="Select buyer persona">
                     <button class="persona-btn active" onclick="setPersona('balanced')"
                             role="radio" aria-checked="true" aria-label="Balanced persona">⚖️ Balanced</button>
@@ -1233,9 +1487,6 @@
                             <span>Now</span>
                         </div>
                     </div>
-                    <p style="font-size: 0.7em; opacity: 0.7; margin-top: 10px; text-align: center;">
-                        See how property metrics evolved over time
-                    </p>
                 </div>
             </div>
 
@@ -1244,16 +1495,22 @@
                 📊 Analyst Mode
             </button>
 
-            <!-- Vibration Toggle Button (Feature #18) -->
-            <button class="mode-toggle" id="vibration-toggle" onclick="toggleVibration()"
-                    style="top: 70px;" aria-label="Toggle haptic vibration feedback">
-                📳 Vibration: ON
+            <!-- Experience Mode Toggle Button (Feature #17) -->
+            <button class="mode-toggle" id="experience-toggle" onclick="toggleExperienceMode()"
+                    style="top: 70px;" aria-label="Toggle between guided and expert mode">
+                🧭 Guided Mode
             </button>
 
             <!-- Voice Control Button -->
             <button class="mode-toggle" id="voice-toggle" onclick="toggleVoiceControl()"
                     style="top: 120px;" aria-label="Toggle voice commands">
                 🎤 Voice: OFF
+            </button>
+
+            <!-- Vibration Toggle Button (Feature #18) -->
+            <button class="mode-toggle" id="vibration-toggle" onclick="toggleVibration()"
+                    style="top: 170px;" aria-label="Toggle haptic vibration feedback">
+                📳 Vibration: ON
             </button>
 
             <!-- Comparison Panel (Feature #6) -->
@@ -1293,6 +1550,29 @@
                 <h3>💵 Cost of Living Comparison</h3>
                 <div id="col-chart-container">
                     <canvas id="col-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Feature #24: Personal Notes Panel -->
+            <div class="notes-panel" id="notes-panel" role="region" aria-label="Property notes and reactions">
+                <h3>📝 Property Notes</h3>
+                <div class="notes-tabs">
+                    <button class="notes-tab active" onclick="selectNotesProperty('A')">A</button>
+                    <button class="notes-tab" onclick="selectNotesProperty('B')">B</button>
+                    <button class="notes-tab" onclick="selectNotesProperty('C')">C</button>
+                </div>
+                <div id="notes-content">
+                    <div class="emoji-reactions">
+                        <button class="emoji-btn" onclick="addEmoji('A', '❤️')" title="Love it">❤️</button>
+                        <button class="emoji-btn" onclick="addEmoji('A', '👍')" title="Like">👍</button>
+                        <button class="emoji-btn" onclick="addEmoji('A', '🤔')" title="Maybe">🤔</button>
+                        <button class="emoji-btn" onclick="addEmoji('A', '👎')" title="Dislike">👎</button>
+                        <button class="emoji-btn" onclick="addEmoji('A', '⭐')" title="Favorite">⭐</button>
+                    </div>
+                    <div class="emoji-display" id="emoji-display-A"></div>
+                    <textarea class="notes-textarea" id="notes-A" placeholder="Add your notes about this property..."
+                              rows="4" oninput="saveNotes('A')"></textarea>
+                    <div class="notes-hint help-text">💡 Notes are saved automatically</div>
                 </div>
             </div>
         </div>
@@ -1442,6 +1722,15 @@
             let autoRotating = false;
             let activeMetricGroup = 'all';
             let currentPersona = 'balanced';
+
+            // Feature #15: Deal-Breaker Rules
+            let dealBreakerRules = {
+                minSafety: 50,
+                minSchools: 40,
+                maxCostOfLiving: 80,
+                minCondition: 50
+            };
+            let shockwaveObjects = { A: null, B: null, C: null };
 
             let metricFilters = {
                 location: true,
@@ -1654,6 +1943,47 @@
                     });
                 });
 
+                // Feature #15: Animate deal-breaker shockwaves (red warning pulses)
+                ['A', 'B', 'C'].forEach(slot => {
+                    const shockwave = shockwaveObjects[slot];
+                    if (shockwave) {
+                        const elapsed = (time - shockwave.userData.startTime);
+
+                        // Pulsing scale expansion (more dramatic than gravity rings)
+                        const pulse = 1 + Math.sin(elapsed * 3) * 0.2; // ±20% expansion
+                        shockwave.scale.set(pulse, pulse, 1);
+
+                        // Pulsing opacity (more visible warning)
+                        const opacityPulse = 0.6 + Math.sin(elapsed * 2.5) * 0.3; // 0.3 to 0.9
+                        shockwave.material.opacity = opacityPulse;
+                    }
+                });
+
+                // Feature #21: Animate photo rings (orbital rotation + billboarding)
+                ['A', 'B', 'C'].forEach(slot => {
+                    photoRings[slot].forEach(photo => {
+                        if (photo) {
+                            const data = photo.userData;
+
+                            // Rotate around sphere (slow orbit)
+                            data.orbitAngle += 0.01; // Rotation speed
+
+                            // Calculate new position
+                            const x = data.spherePosition.x + Math.cos(data.orbitAngle) * data.orbitRadius;
+                            const z = data.spherePosition.z + Math.sin(data.orbitAngle) * data.orbitRadius;
+                            const y = data.spherePosition.y + 0.5 + Math.sin(time + data.photoIndex) * 0.1; // Gentle up/down bob
+
+                            photo.position.set(x, y, z);
+
+                            // Always face camera (billboard effect)
+                            photo.lookAt(camera.position);
+
+                            // Gentle opacity pulse for visual interest
+                            photo.material.opacity = 0.8 + Math.sin(time * 2 + data.photoIndex) * 0.15; // 0.65 to 0.95
+                        }
+                    });
+                });
+
                 if (controls) controls.update();
                 renderer.render(scene, camera);
             }
@@ -1767,9 +2097,94 @@
                 updateRadarChartVisibility();
                 updateComparisonPanel();
                 updateCrimeWidget();
-                createCOLChart();
+                if (panelStates.col) {
+                    createCOLChart();
+                }
                 calculateWinner();
                 updateAllGravityRings();
+                checkDealBreakers(); // Check for violations
+            }
+
+            // ===== FEATURE #15: DEAL-BREAKER SHOCKWAVES =====
+            function checkDealBreakers() {
+                [
+                    { prop: propertyA, letter: 'A', sphere: sphereA },
+                    { prop: propertyB, letter: 'B', sphere: sphereB },
+                    { prop: propertyC, letter: 'C', sphere: sphereC }
+                ].forEach(({ prop, letter, sphere }) => {
+                    if (!prop || !sphere) {
+                        removeShockwave(letter);
+                        return;
+                    }
+
+                    const violations = [];
+
+                    // Check safety
+                    if ((prop.dimensions.safety || prop.dimensions.crime || 100) < dealBreakerRules.minSafety) {
+                        violations.push('Safety below minimum');
+                    }
+
+                    // Check schools
+                    if ((prop.dimensions.schools || 100) < dealBreakerRules.minSchools) {
+                        violations.push('School quality below minimum');
+                    }
+
+                    // Check cost of living
+                    if ((prop.dimensions.costOfLiving || 0) > dealBreakerRules.maxCostOfLiving) {
+                        violations.push('Cost of living too high');
+                    }
+
+                    // Check condition
+                    if ((prop.dimensions.condition || 100) < dealBreakerRules.minCondition) {
+                        violations.push('Property condition below minimum');
+                    }
+
+                    if (violations.length > 0) {
+                        createShockwave(letter, sphere, violations);
+                    } else {
+                        removeShockwave(letter);
+                    }
+                });
+            }
+
+            function createShockwave(slot, sphere, violations) {
+                // Remove existing shockwave
+                if (shockwaveObjects[slot]) {
+                    scene.remove(shockwaveObjects[slot]);
+                }
+
+                // Create pulsing red ring around sphere
+                const ringGeometry = new THREE.RingGeometry(1.2, 1.4, 32);
+                const ringMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xFF3B30,
+                    side: THREE.DoubleSide,
+                    transparent: true,
+                    opacity: 0.7
+                });
+
+                const shockwave = new THREE.Mesh(ringGeometry, ringMaterial);
+                shockwave.position.copy(sphere.position);
+                shockwave.position.y = 0; // On ground plane
+                shockwave.rotation.x = -Math.PI / 2; // Lay flat
+
+                // Store violation data
+                shockwave.userData = {
+                    violations: violations,
+                    startTime: Date.now() * 0.001 // Convert to seconds to match animation time
+                };
+
+                scene.add(shockwave);
+                shockwaveObjects[slot] = shockwave;
+
+                // Show alert for first violation
+                showAlert(`⚠️ Deal-breaker: Property ${slot} - ${violations[0]}`, 'error');
+            }
+
+            function removeShockwave(slot) {
+                if (shockwaveObjects[slot]) {
+                    scene.remove(shockwaveObjects[slot]);
+                    shockwaveObjects[slot] = null;
+                }
             }
 
             // ===== PROPERTY SELECTION =====
@@ -1817,8 +2232,16 @@
                 // Update crime danger widget
                 updateCrimeWidget();
 
-                // Update cost-of-living chart
-                createCOLChart();
+                // Update cost-of-living chart (only if panel is visible)
+                if (panelStates.col) {
+                    createCOLChart();
+                }
+
+                // Feature #15: Check for deal-breaker violations
+                checkDealBreakers();
+
+                // Feature #21: Update photo rings
+                updateAllPhotoRings();
             };
 
             // ===== PERSONA SELECTION =====
@@ -1945,6 +2368,9 @@
 
             // ===== FEATURE #31: COST-OF-LIVING GRAVITY RINGS =====
             let gravityRings = { A: [], B: [], C: [] };
+
+            // ===== FEATURE #21: MINI PHOTO RING =====
+            let photoRings = { A: [], B: [], C: [] };
 
             function calculateWinner() {
                 const properties = [
@@ -2158,6 +2584,276 @@
                 if (propertyA && sphereA) createGravityRings(sphereA, 'A', propertyA);
                 if (propertyB && sphereB) createGravityRings(sphereB, 'B', propertyB);
                 if (propertyC && sphereC) createGravityRings(sphereC, 'C', propertyC);
+            }
+
+            // ===== FEATURE #21: MINI PHOTO RING =====
+            function createPhotoRing(sphere, slot, property) {
+                // Remove existing photo ring
+                photoRings[slot].forEach(photo => scene.remove(photo));
+                photoRings[slot] = [];
+
+                if (!property || !sphere) return;
+
+                // Create 3-4 small photo planes orbiting the sphere
+                const numPhotos = 3;
+                const orbitRadius = 1.8; // Distance from sphere center
+
+                for (let i = 0; i < numPhotos; i++) {
+                    // Create small rectangular plane for photo
+                    const photoGeometry = new THREE.PlaneGeometry(0.4, 0.3);
+
+                    // Create photo material with semi-transparent white placeholder
+                    // In a real implementation, you'd load actual property photos
+                    const photoMaterial = new THREE.MeshBasicMaterial({
+                        color: 0xffffff,
+                        transparent: true,
+                        opacity: 0.8,
+                        side: THREE.DoubleSide
+                    });
+
+                    const photoPlane = new THREE.Mesh(photoGeometry, photoMaterial);
+
+                    // Position in orbit around sphere
+                    const angle = (i / numPhotos) * Math.PI * 2;
+                    const x = sphere.position.x + Math.cos(angle) * orbitRadius;
+                    const z = sphere.position.z + Math.sin(angle) * orbitRadius;
+                    const y = sphere.position.y + 0.5; // Slightly above sphere center
+
+                    photoPlane.position.set(x, y, z);
+
+                    // Make photo face camera initially
+                    photoPlane.lookAt(camera.position);
+
+                    // Store metadata for animation
+                    photoPlane.userData = {
+                        slot: slot,
+                        photoIndex: i,
+                        orbitAngle: angle,
+                        orbitRadius: orbitRadius,
+                        spherePosition: sphere.position.clone()
+                    };
+
+                    scene.add(photoPlane);
+                    photoRings[slot].push(photoPlane);
+                }
+
+                console.log(`Feature #21: Created ${numPhotos} photo placeholders for property ${slot}`);
+            }
+
+            function updateAllPhotoRings() {
+                if (propertyA && sphereA) createPhotoRing(sphereA, 'A', propertyA);
+                if (propertyB && sphereB) createPhotoRing(sphereB, 'B', propertyB);
+                if (propertyC && sphereC) createPhotoRing(sphereC, 'C', propertyC);
+            }
+
+            // ===== CONTROLS PANEL TOGGLE =====
+            let controlsPanelCollapsed = false;
+
+            window.toggleControlsPanel = function() {
+                const panel = document.getElementById('controls-panel');
+                const btn = document.querySelector('.controls-toggle-btn');
+
+                controlsPanelCollapsed = !controlsPanelCollapsed;
+
+                if (controlsPanelCollapsed) {
+                    panel.classList.add('collapsed');
+                    btn.textContent = '▲ Show Controls';
+                } else {
+                    panel.classList.remove('collapsed');
+                    btn.textContent = '▼ Hide Controls';
+                }
+
+                // Feature #18: Vibration feedback
+                vibrate('toggle');
+
+                // Announce to screen reader
+                const status = controlsPanelCollapsed ? 'collapsed' : 'expanded';
+                announceToScreenReader(`Controls panel ${status}`);
+            };
+
+            // ===== PANEL TOGGLE FUNCTIONALITY =====
+            let panelStates = {
+                comparison: false,
+                col: false,
+                crime: false,
+                metric: false,
+                roi: false,
+                notes: false
+            };
+
+            window.togglePanel = function(panelName) {
+                // Toggle state
+                panelStates[panelName] = !panelStates[panelName];
+
+                // Update button appearance
+                const btn = document.getElementById(`toggle-${panelName}`);
+                if (panelStates[panelName]) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+
+                // Toggle panel visibility
+                let panelId;
+                switch(panelName) {
+                    case 'comparison':
+                        panelId = 'comparison-panel';
+                        if (panelStates[panelName]) {
+                            document.getElementById(panelId).classList.add('visible');
+                        } else {
+                            document.getElementById(panelId).classList.remove('visible');
+                        }
+                        break;
+                    case 'col':
+                        panelId = 'col-chart-panel';
+                        if (panelStates[panelName]) {
+                            document.getElementById(panelId).style.display = 'block';
+                            // Render the chart when panel is opened
+                            createCOLChart();
+                        } else {
+                            document.getElementById(panelId).style.display = 'none';
+                        }
+                        break;
+                    case 'crime':
+                        panelId = 'crime-widget';
+                        document.getElementById(panelId).style.display = panelStates[panelName] ? 'block' : 'none';
+                        break;
+                    case 'metric':
+                        panelId = 'radar-chart-panel';
+                        if (panelStates[panelName]) {
+                            document.getElementById(panelId).classList.add('visible');
+                        } else {
+                            document.getElementById(panelId).classList.remove('visible');
+                        }
+                        break;
+                    case 'roi':
+                        panelId = 'roi-panel';
+                        if (panelStates[panelName]) {
+                            document.getElementById(panelId).classList.add('visible');
+                        } else {
+                            document.getElementById(panelId).classList.remove('visible');
+                        }
+                        break;
+                    case 'notes':
+                        panelId = 'notes-panel';
+                        if (panelStates[panelName]) {
+                            document.getElementById(panelId).style.display = 'flex';
+                            // Initialize notes display when panel is opened
+                            updateNotesDisplay();
+                        } else {
+                            document.getElementById(panelId).style.display = 'none';
+                        }
+                        break;
+                }
+
+                // Feature #18: Vibration feedback
+                vibrate('tap');
+
+                // Announce to screen reader
+                const status = panelStates[panelName] ? 'shown' : 'hidden';
+                announceToScreenReader(`${panelName} panel ${status}`);
+            };
+
+            // ===== FEATURE #24: PERSONAL NOTES & EMOJI REACTIONS =====
+            let propertyNotes = {
+                A: { text: '', emojis: [] },
+                B: { text: '', emojis: [] },
+                C: { text: '', emojis: [] }
+            };
+            let currentNotesSlot = 'A';
+
+            // Load notes from localStorage
+            function loadAllNotes() {
+                try {
+                    const saved = localStorage.getItem('holosphere_property_notes');
+                    if (saved) {
+                        propertyNotes = JSON.parse(saved);
+                    }
+                } catch (error) {
+                    console.error('Error loading notes:', error);
+                }
+            }
+
+            // Save notes to localStorage
+            function saveAllNotes() {
+                try {
+                    localStorage.setItem('holosphere_property_notes', JSON.stringify(propertyNotes));
+                } catch (error) {
+                    console.error('Error saving notes:', error);
+                }
+            }
+
+            window.selectNotesProperty = function(slot) {
+                currentNotesSlot = slot;
+
+                // Update tab active states
+                document.querySelectorAll('.notes-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                });
+                event.target.classList.add('active');
+
+                // Update content
+                updateNotesDisplay();
+            };
+
+            window.addEmoji = function(slot, emoji) {
+                // Use current slot, not the parameter (since we're always working with currentNotesSlot)
+                if (!propertyNotes[currentNotesSlot].emojis) {
+                    propertyNotes[currentNotesSlot].emojis = [];
+                }
+
+                propertyNotes[currentNotesSlot].emojis.push(emoji);
+                saveAllNotes();
+                updateNotesDisplay();
+
+                // Feature #18: Vibration feedback
+                vibrate('tap');
+
+                showAlert(`Added ${emoji} to Property ${currentNotesSlot}`, 'success');
+            };
+
+            window.saveNotes = function(slot) {
+                const textarea = document.getElementById(`notes-${currentNotesSlot}`);
+                propertyNotes[currentNotesSlot].text = textarea.value;
+                saveAllNotes();
+            };
+
+            function updateNotesDisplay() {
+                // Update emoji buttons to work with current slot
+                document.querySelectorAll('.emoji-btn').forEach(btn => {
+                    const emoji = btn.textContent.trim();
+                    btn.onclick = () => addEmoji(currentNotesSlot, emoji);
+                });
+
+                // Update emoji display
+                const emojiDisplay = document.getElementById(`emoji-display-A`);
+                emojiDisplay.id = `emoji-display-${currentNotesSlot}`;
+                emojiDisplay.innerHTML = '';
+
+                if (propertyNotes[currentNotesSlot].emojis && propertyNotes[currentNotesSlot].emojis.length > 0) {
+                    propertyNotes[currentNotesSlot].emojis.forEach((emoji, index) => {
+                        const span = document.createElement('span');
+                        span.textContent = emoji;
+                        span.style.cursor = 'pointer';
+                        span.title = 'Click to remove';
+                        span.onclick = () => {
+                            propertyNotes[currentNotesSlot].emojis.splice(index, 1);
+                            saveAllNotes();
+                            updateNotesDisplay();
+                        };
+                        emojiDisplay.appendChild(span);
+                    });
+                }
+
+                // Update textarea
+                let textarea = document.getElementById(`notes-${currentNotesSlot}`);
+                if (!textarea) {
+                    // Create new textarea if it doesn't exist
+                    textarea = document.querySelector('.notes-textarea');
+                    textarea.id = `notes-${currentNotesSlot}`;
+                }
+                textarea.value = propertyNotes[currentNotesSlot].text || '';
+                textarea.oninput = () => saveNotes(currentNotesSlot);
             }
 
             // ===== FEATURE #18: MOBILE VIBRATION FEEDBACK =====
@@ -2640,6 +3336,71 @@
                 localStorage.setItem('holosphere_display_mode', displayMode);
             };
 
+            // ===== FEATURE #17: GUIDED VS EXPERT MODE =====
+            let experienceMode = 'guided'; // 'guided' or 'expert'
+
+            window.toggleExperienceMode = function() {
+                const body = document.body;
+                const modeBtn = document.getElementById('experience-toggle');
+
+                // Feature #18: Vibration feedback
+                vibrate('toggle');
+
+                if (experienceMode === 'guided') {
+                    // Switch to Expert Mode
+                    experienceMode = 'expert';
+                    body.classList.remove('guided-mode');
+                    body.classList.add('expert-mode');
+                    modeBtn.textContent = '🎓 Expert Mode';
+                    showAlert('Expert mode: All tooltips hidden, advanced features unlocked', 'success');
+                    announceToScreenReader('Switched to expert mode - tooltips hidden, advanced features enabled');
+                } else {
+                    // Switch to Guided Mode
+                    experienceMode = 'guided';
+                    body.classList.remove('expert-mode');
+                    body.classList.add('guided-mode');
+                    modeBtn.textContent = '🧭 Guided Mode';
+                    showAlert('Guided mode: Helpful tips and explanations enabled', 'success');
+                    announceToScreenReader('Switched to guided mode - helpful tooltips and explanations enabled');
+                }
+
+                // Save preference
+                localStorage.setItem('holosphere_experience_mode', experienceMode);
+
+                // Update UI elements visibility
+                updateExperienceModeUI();
+            };
+
+            function updateExperienceModeUI() {
+                const tooltips = document.querySelectorAll('.metric-tooltip');
+                const helpTexts = document.querySelectorAll('.help-text');
+                const advancedControls = document.querySelectorAll('.advanced-control');
+
+                if (experienceMode === 'expert') {
+                    // Hide tooltips and help text
+                    tooltips.forEach(tip => tip.style.display = 'none');
+                    helpTexts.forEach(text => text.style.display = 'none');
+                    // Show advanced controls
+                    advancedControls.forEach(ctrl => ctrl.style.display = 'block');
+                } else {
+                    // Show tooltips and help text
+                    tooltips.forEach(tip => tip.style.display = 'inline-block');
+                    helpTexts.forEach(text => text.style.display = 'block');
+                    // Hide advanced controls (can be expanded later)
+                    advancedControls.forEach(ctrl => ctrl.style.display = 'none');
+                }
+            }
+
+            // Load saved experience mode preference
+            function loadExperienceModePreference() {
+                const saved = localStorage.getItem('holosphere_experience_mode');
+                if (saved && saved !== experienceMode) {
+                    setTimeout(() => {
+                        window.toggleExperienceMode();
+                    }, 600);
+                }
+            }
+
             function getScoreClass(value) {
                 if (value <= 20) return 'score-terrible';
                 if (value <= 40) return 'score-fair';
@@ -2837,13 +3598,22 @@
                     showAlert('Switched to First-Time Buyer persona', 'success');
                 }
 
-                // Mode commands
+                // Display mode commands
                 if (command.includes('analyst mode')) {
                     if (displayMode !== 'analyst') toggleDisplayMode();
                     showAlert('Switched to Analyst mode', 'success');
                 } else if (command.includes('cinematic mode')) {
                     if (displayMode !== 'cinematic') toggleDisplayMode();
                     showAlert('Switched to Cinematic mode', 'success');
+                }
+
+                // Experience mode commands (Feature #17)
+                if (command.includes('guided mode') || command.includes('help mode')) {
+                    if (experienceMode !== 'guided') toggleExperienceMode();
+                    showAlert('Switched to Guided mode', 'success');
+                } else if (command.includes('expert mode') || command.includes('advanced mode')) {
+                    if (experienceMode !== 'expert') toggleExperienceMode();
+                    showAlert('Switched to Expert mode', 'success');
                 }
 
                 // Winner query
@@ -2880,6 +3650,9 @@
                 init();
                 loadDisplayModePreference();
                 loadVibrationPreference();
+                loadExperienceModePreference();
+                loadAllNotes();
+                // Notes display will initialize when panel is opened
 
                 // Update vibration button text based on preference
                 const vibToggle = document.getElementById('vibration-toggle');
