@@ -16,6 +16,10 @@
     <!-- OrbitControls - External file (matching CLUES architecture) -->
     <script src="lib/OrbitControls.js"></script>
 
+    <!-- GLTFLoader for 3D property models -->
+    <script src="https://unpkg.com/three@0.158.0/examples/jsm/loaders/GLTFLoader.js" type="module"></script>
+    <script src="https://unpkg.com/three@0.158.0/examples/jsm/loaders/DRACOLoader.js" type="module"></script>
+
     <!-- Chart.js for Feature #7: Dynamic Radar Chart -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
@@ -870,6 +874,105 @@
             border-radius: 3px;
         }
 
+        /* Crime Danger Widget */
+        .crime-widget {
+            position: fixed;
+            right: 20px;
+            top: 20px;
+            width: 180px;
+            background: linear-gradient(135deg, rgba(139, 0, 0, 0.9) 0%, rgba(178, 34, 34, 0.9) 100%);
+            backdrop-filter: blur(20px);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid rgba(255, 59, 48, 0.5);
+            box-shadow: 0 4px 16px rgba(255, 0, 0, 0.3);
+            z-index: 900;
+            transition: all 0.3s ease;
+        }
+
+        .crime-widget h4 {
+            margin: 0 0 10px 0;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .crime-level {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .crime-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            border-left: 3px solid;
+        }
+
+        .crime-item.safe { border-left-color: #00FF88; }
+        .crime-item.moderate { border-left-color: #FFD700; }
+        .crime-item.danger { border-left-color: #FF3B30; }
+
+        .crime-score {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        /* Cost-of-Living Bar Chart Panel */
+        .col-chart-panel {
+            position: fixed;
+            left: 20px;
+            bottom: 20px;
+            width: 480px;
+            height: 280px;
+            background: linear-gradient(135deg, rgba(10, 22, 40, 0.85) 0%, rgba(26, 40, 71, 0.85) 100%);
+            backdrop-filter: blur(20px);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            z-index: 800;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .col-chart-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 16px;
+            padding: 2px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.5), rgba(0, 255, 136, 0.3), rgba(255, 215, 0, 0.3));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            animation: gradient-border 3s ease infinite;
+        }
+
+        .col-chart-panel h3 {
+            margin: 0 0 15px 0;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #00D4FF;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #col-chart-container {
+            width: 100%;
+            height: calc(100% - 35px);
+        }
+
         /* Responsive radar chart */
         @media (max-width: 768px) {
             .radar-chart-panel {
@@ -984,6 +1087,12 @@
                 📳 Vibration: ON
             </button>
 
+            <!-- Voice Control Button -->
+            <button class="mode-toggle" id="voice-toggle" onclick="toggleVoiceControl()"
+                    style="top: 120px;" aria-label="Toggle voice commands">
+                🎤 Voice: OFF
+            </button>
+
             <!-- Comparison Panel (Feature #6) -->
             <div class="comparison-panel" id="comparison-panel" role="region" aria-label="Property comparison metrics">
                 <h3>📊 Property Comparison</h3>
@@ -997,6 +1106,22 @@
                 <h3>📡 Metric Comparison</h3>
                 <div id="radar-chart-container">
                     <canvas id="radar-chart"></canvas>
+                </div>
+            </div>
+
+            <!-- Crime Danger Widget -->
+            <div class="crime-widget" id="crime-widget" role="region" aria-label="Crime safety levels">
+                <h4>🔫 Crime Safety</h4>
+                <div class="crime-level" id="crime-level">
+                    <p style="text-align: center; opacity: 0.7; font-size: 0.85em;">Select properties to view</p>
+                </div>
+            </div>
+
+            <!-- Cost-of-Living Bar Chart -->
+            <div class="col-chart-panel" id="col-chart-panel" role="region" aria-label="Cost of living comparison">
+                <h3>💵 Cost of Living Comparison</h3>
+                <div id="col-chart-container">
+                    <canvas id="col-chart"></canvas>
                 </div>
             </div>
         </div>
@@ -1459,6 +1584,12 @@
 
                 // Feature #31: Update gravity rings
                 updateAllGravityRings();
+
+                // Update crime danger widget
+                updateCrimeWidget();
+
+                // Update cost-of-living chart
+                createCOLChart();
             };
 
             // ===== PERSONA SELECTION =====
@@ -2066,6 +2197,154 @@
                 }
             }
 
+            // ===== CRIME DANGER WIDGET =====
+            function updateCrimeWidget() {
+                const crimeLevel = document.getElementById('crime-level');
+                const properties = [
+                    { prop: propertyA, letter: 'A' },
+                    { prop: propertyB, letter: 'B' },
+                    { prop: propertyC, letter: 'C' }
+                ].filter(p => p.prop !== null);
+
+                if (properties.length === 0) {
+                    crimeLevel.innerHTML = '<p style="text-align: center; opacity: 0.7; font-size: 0.85em;">Select properties to view</p>';
+                    return;
+                }
+
+                let html = '';
+                properties.forEach(({ prop, letter }) => {
+                    // Calculate crime safety score (higher = safer)
+                    const crimeScore = prop.dimensions.crime || prop.dimensions.safety || 75;
+                    let className = 'safe';
+                    let icon = '✅';
+
+                    if (crimeScore < 50) {
+                        className = 'danger';
+                        icon = '🔫';
+                    } else if (crimeScore < 75) {
+                        className = 'moderate';
+                        icon = '⚠️';
+                    }
+
+                    html += `
+                        <div class="crime-item ${className}">
+                            <span>${icon} ${letter}</span>
+                            <span class="crime-score">${Math.round(crimeScore)}</span>
+                        </div>
+                    `;
+                });
+
+                crimeLevel.innerHTML = html;
+            }
+
+            // ===== COST-OF-LIVING BAR CHART =====
+            let colChart = null;
+
+            function createCOLChart() {
+                const canvas = document.getElementById('col-chart');
+                const ctx = canvas.getContext('2d');
+
+                // Destroy existing chart if it exists
+                if (colChart) {
+                    colChart.destroy();
+                }
+
+                const properties = [
+                    { prop: propertyA, letter: 'A', color: 'rgba(0, 212, 255, 1)' },
+                    { prop: propertyB, letter: 'B', color: 'rgba(0, 255, 136, 1)' },
+                    { prop: propertyC, letter: 'C', color: 'rgba(255, 215, 0, 1)' }
+                ].filter(p => p.prop !== null);
+
+                if (properties.length === 0) {
+                    return;
+                }
+
+                const labels = properties.map(p => `Property ${p.letter}`);
+                const data = properties.map(p => {
+                    // Get cost of living score (0-100, higher = more expensive)
+                    return p.prop.dimensions.costOfLiving || 50;
+                });
+                const backgroundColors = properties.map(p => p.color.replace('1)', '0.7)'));
+                const borderColors = properties.map(p => p.color);
+
+                colChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Cost of Living Index',
+                            data: data,
+                            backgroundColor: backgroundColors,
+                            borderColor: borderColors,
+                            borderWidth: 2,
+                            borderRadius: 8,
+                            barThickness: 60
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: {
+                            duration: 800,
+                            easing: 'easeInOutQuart'
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#00D4FF',
+                                bodyColor: '#ffffff',
+                                borderColor: '#00D4FF',
+                                borderWidth: 1,
+                                padding: 12,
+                                cornerRadius: 8,
+                                displayColors: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.parsed.y;
+                                        let rating = '';
+                                        if (value < 33) rating = '💚 Affordable';
+                                        else if (value < 67) rating = '💛 Moderate';
+                                        else rating = '❤️ Expensive';
+                                        return `Index: ${Math.round(value)} - ${rating}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.7)',
+                                    font: {
+                                        size: 11
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    lineWidth: 1
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    font: {
+                                        size: 12,
+                                        weight: 'bold'
+                                    }
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
             // ===== FEATURE #6: ADAPTIVE HUD DENSITY MODE =====
             let displayMode = 'analyst'; // 'analyst' or 'cinematic'
 
@@ -2158,6 +2437,155 @@
             }
 
             // ===== START APPLICATION =====
+            // ===== VOICE CONTROL SYSTEM =====
+            let voiceEnabled = false;
+            let recognition = null;
+
+            window.toggleVoiceControl = function() {
+                voiceEnabled = !voiceEnabled;
+                const voiceToggle = document.getElementById('voice-toggle');
+
+                if (voiceEnabled) {
+                    voiceToggle.textContent = '🎤 Voice: ON';
+                    voiceToggle.style.background = 'linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 212, 255, 0.3))';
+                    startVoiceRecognition();
+                    showAlert('Voice commands activated', 'success');
+                } else {
+                    voiceToggle.textContent = '🎤 Voice: OFF';
+                    voiceToggle.style.background = '';
+                    stopVoiceRecognition();
+                    showAlert('Voice commands deactivated', 'info');
+                }
+
+                vibrate('tap');
+            };
+
+            function startVoiceRecognition() {
+                if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                    showAlert('Voice commands not supported in this browser', 'error');
+                    voiceEnabled = false;
+                    return;
+                }
+
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.continuous = true;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+
+                recognition.onresult = (event) => {
+                    const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase().trim();
+                    console.log('Voice command:', transcript);
+                    handleVoiceCommand(transcript);
+                };
+
+                recognition.onerror = (event) => {
+                    console.error('Voice recognition error:', event.error);
+                    if (event.error === 'no-speech') {
+                        // Silently restart
+                        if (voiceEnabled && recognition) {
+                            recognition.start();
+                        }
+                    }
+                };
+
+                recognition.onend = () => {
+                    // Auto-restart if still enabled
+                    if (voiceEnabled) {
+                        try {
+                            recognition.start();
+                        } catch (e) {
+                            console.log('Recognition restart failed:', e);
+                        }
+                    }
+                };
+
+                try {
+                    recognition.start();
+                } catch (e) {
+                    console.error('Could not start voice recognition:', e);
+                }
+            }
+
+            function stopVoiceRecognition() {
+                if (recognition) {
+                    recognition.stop();
+                    recognition = null;
+                }
+            }
+
+            function handleVoiceCommand(command) {
+                // Property selection commands
+                if (command.includes('select property') || command.includes('show property')) {
+                    if (command.includes('a') || command.includes('first')) {
+                        document.getElementById('propertyA').focus();
+                        showAlert('Property A selector focused', 'info');
+                    } else if (command.includes('b') || command.includes('second')) {
+                        document.getElementById('propertyB').focus();
+                        showAlert('Property B selector focused', 'info');
+                    } else if (command.includes('c') || command.includes('third')) {
+                        document.getElementById('propertyC').focus();
+                        showAlert('Property C selector focused', 'info');
+                    }
+                }
+
+                // Persona commands
+                if (command.includes('investor') || command.includes('investment')) {
+                    setPersona('investor');
+                    showAlert('Switched to Investor persona', 'success');
+                } else if (command.includes('family')) {
+                    setPersona('family');
+                    showAlert('Switched to Family persona', 'success');
+                } else if (command.includes('retiree') || command.includes('retire')) {
+                    setPersona('retiree');
+                    showAlert('Switched to Retiree persona', 'success');
+                } else if (command.includes('nomad') || command.includes('digital nomad')) {
+                    setPersona('nomad');
+                    showAlert('Switched to Digital Nomad persona', 'success');
+                } else if (command.includes('first time') || command.includes('first-time buyer')) {
+                    setPersona('firstTimeBuyer');
+                    showAlert('Switched to First-Time Buyer persona', 'success');
+                }
+
+                // Mode commands
+                if (command.includes('analyst mode')) {
+                    if (displayMode !== 'analyst') toggleDisplayMode();
+                    showAlert('Switched to Analyst mode', 'success');
+                } else if (command.includes('cinematic mode')) {
+                    if (displayMode !== 'cinematic') toggleDisplayMode();
+                    showAlert('Switched to Cinematic mode', 'success');
+                }
+
+                // Winner query
+                if (command.includes('which is best') || command.includes('show winner') || command.includes('best property')) {
+                    if (winnerProperty) {
+                        showAlert(`Best match: Property ${winnerProperty}`, 'success');
+                    } else {
+                        showAlert('Select 2+ properties to compare', 'info');
+                    }
+                }
+
+                // Help command
+                if (command.includes('help') || command.includes('what can you do')) {
+                    showAlert('Voice commands: "Select property A/B/C", "Investor mode", "Show winner", "Help"', 'info');
+                }
+
+                // Metric filtering
+                if (command.includes('show all metrics')) {
+                    Object.keys(metricFilters).forEach(key => {
+                        metricFilters[key] = true;
+                    });
+                    updateActiveMetricFilters();
+                    showAlert('All metrics enabled', 'success');
+                } else if (command.includes('show location metrics')) {
+                    setMetricGroup('location');
+                    showAlert('Showing location metrics', 'success');
+                } else if (command.includes('show financial metrics')) {
+                    setMetricGroup('financial');
+                    showAlert('Showing financial metrics', 'success');
+                }
+            }
+
             document.addEventListener('DOMContentLoaded', () => {
                 init();
                 loadDisplayModePreference();
