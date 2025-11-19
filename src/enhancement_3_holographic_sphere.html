@@ -1467,23 +1467,23 @@
 
         /* Feature #10b: Photo Upload Panel */
         .photo-upload-panel {
-            position: fixed;
-            right: 20px;
-            top: 423px; /* Raised 27px (0.28 inches) from 450px */
-            bottom: 20px; /* Add bottom constraint for better scrolling */
-            width: 350px;
-            max-height: calc(100vh - 443px); /* Dynamic height based on viewport */
-            background: linear-gradient(135deg, rgba(10, 22, 40, 0.95) 0%, rgba(26, 40, 71, 0.95) 100%);
-            backdrop-filter: blur(20px);
-            border-radius: 15px;
-            padding: 20px;
-            border: 1px solid rgba(0, 212, 255, 0.4);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            z-index: 900;
+            position: fixed !important;
+            right: 20px !important;
+            top: 420px !important; /* Below Upload Photos button */
+            width: 380px !important;
+            height: auto !important;
+            max-height: 600px !important;
+            background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%) !important;
+            backdrop-filter: blur(20px) !important;
+            border-radius: 15px !important;
+            padding: 20px !important;
+            border: 2px solid rgba(0, 212, 255, 0.6) !important;
+            box-shadow: 0 10px 40px rgba(0, 212, 255, 0.3), 0 0 20px rgba(0, 212, 255, 0.2) !important;
+            z-index: 9999 !important; /* Very high z-index to ensure visibility */
             display: none;
             flex-direction: column;
             gap: 12px;
-            overflow-y: auto; /* Enable scrolling if content overflows */
+            overflow-y: auto;
             overflow-x: hidden;
         }
 
@@ -2407,7 +2407,11 @@
                     panel.style.display = 'none';
                     console.log('📸 Panel CLOSED');
                 } else {
+                    // Force panel to be visible
                     panel.style.display = 'flex';
+                    panel.style.visibility = 'visible';
+                    panel.style.opacity = '1';
+
                     console.log('📸 Panel OPENED (display: flex)');
 
                     // Hide other panels
@@ -2416,7 +2420,21 @@
                     if (comparisonPanel) comparisonPanel.style.display = 'none';
                     if (notesPanel) notesPanel.style.display = 'none';
 
-                    console.log('📸 Panel should now be visible at top: 423px, right: 20px');
+                    // Log final computed styles for debugging
+                    const styles = window.getComputedStyle(panel);
+                    console.log('📸 Panel computed styles:', {
+                        display: styles.display,
+                        position: styles.position,
+                        top: styles.top,
+                        right: styles.right,
+                        width: styles.width,
+                        height: styles.height,
+                        zIndex: styles.zIndex,
+                        visibility: styles.visibility,
+                        opacity: styles.opacity
+                    });
+
+                    console.log('📸 Panel should now be visible! Look for bright cyan border on right side.');
                 }
 
                 vibrate('tap');
