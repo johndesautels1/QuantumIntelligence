@@ -2372,8 +2372,11 @@
             // ========== FEATURE #10b: PHOTO UPLOAD & TEXTURE MAPPING ==========
             // Upload real property photos and apply them as textures to 3D models
 
+            console.log('🔧 Initializing photo upload functions...');
+
             // Toggle photo upload panel
             window.togglePhotoUpload = function() {
+                console.log('📸 togglePhotoUpload called');
                 const panel = document.getElementById('photo-upload-panel');
                 const isVisible = panel.style.display === 'flex';
 
@@ -2416,8 +2419,13 @@
 
             // Handle photo file upload
             window.handlePhotoUpload = function(slot, inputElement) {
+                console.log(`📸 handlePhotoUpload called for slot ${slot}`);
                 const file = inputElement.files[0];
-                if (!file) return;
+                if (!file) {
+                    console.log('❌ No file selected');
+                    return;
+                }
+                console.log(`📁 File: ${file.name}, Size: ${(file.size / 1024).toFixed(1)} KB, Type: ${file.type}`);
 
                 // Validate file type
                 if (!file.type.startsWith('image/')) {
@@ -2432,14 +2440,20 @@
                 }
 
                 // Create object URL for the image
+                console.log('📖 Reading file with FileReader...');
                 const reader = new FileReader();
+
                 reader.onload = function(e) {
                     uploadedPhotos[slot] = e.target.result;
+                    console.log(`✅ FileReader success! Data URL length: ${e.target.result.length}`);
 
                     // Show preview
                     const preview = document.getElementById(`photo-preview-${slot}`);
                     if (preview) {
                         preview.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: auto; border-radius: 8px;" alt="Property ${slot} photo">`;
+                        console.log(`✅ Preview updated for slot ${slot}`);
+                    } else {
+                        console.log(`❌ Preview element not found: photo-preview-${slot}`);
                     }
 
                     showAlert(`Photo uploaded for Property ${slot}!`, 'success');
@@ -2447,7 +2461,13 @@
                     console.log(`📸 Photo uploaded for slot ${slot}: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
                 };
 
+                reader.onerror = function(error) {
+                    console.error('❌ FileReader error:', error);
+                    showAlert('Failed to read file!', 'error');
+                };
+
                 reader.readAsDataURL(file);
+                console.log('📖 FileReader.readAsDataURL() called');
             };
 
             // Apply uploaded photo as texture to the 3D model

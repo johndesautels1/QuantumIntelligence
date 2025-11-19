@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Upload Test</title>
+    <style>
+        body {
+            background: #0a1628;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 40px;
+        }
+        .upload-box {
+            background: linear-gradient(135deg, rgba(10, 22, 40, 0.95) 0%, rgba(26, 40, 71, 0.95) 100%);
+            border: 2px solid #00D4FF;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        h1 { color: #FFD700; }
+        input[type="file"] {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            width: 100%;
+            margin: 20px 0;
+        }
+        button {
+            background: linear-gradient(135deg, #00D4FF, #8A2BE2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        #preview {
+            margin: 20px 0;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            min-height: 100px;
+        }
+        #preview img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+        .log {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #00FF88;
+        }
+    </style>
+</head>
+<body>
+    <div class="upload-box">
+        <h1>📸 Photo Upload Test</h1>
+        <p style="color: rgba(255, 255, 255, 0.9);">Testing if file upload works at all</p>
+
+        <input type="file" id="photo-input" accept="image/*">
+
+        <div id="preview">
+            <p style="color: rgba(255, 255, 255, 0.7); text-align: center;">📷 No photo uploaded</p>
+        </div>
+
+        <button id="apply-btn">✨ Test Apply Photo</button>
+
+        <div class="log" id="log">Waiting for action...</div>
+    </div>
+
+    <script>
+        const input = document.getElementById('photo-input');
+        const preview = document.getElementById('preview');
+        const applyBtn = document.getElementById('apply-btn');
+        const log = document.getElementById('log');
+
+        let uploadedPhoto = null;
+
+        function addLog(message) {
+            log.innerHTML += '<br>' + message;
+            console.log(message);
+        }
+
+        input.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+
+            if (!file) {
+                addLog('❌ No file selected');
+                return;
+            }
+
+            addLog(`📁 File selected: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
+            addLog(`📋 Type: ${file.type}`);
+
+            if (!file.type.startsWith('image/')) {
+                addLog('❌ ERROR: Not an image file!');
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                uploadedPhoto = event.target.result;
+                preview.innerHTML = `<img src="${uploadedPhoto}" alt="Preview">`;
+                addLog('✅ Photo loaded successfully!');
+                addLog(`📏 Data URL length: ${uploadedPhoto.length} characters`);
+            };
+
+            reader.onerror = function() {
+                addLog('❌ ERROR: Failed to read file!');
+            };
+
+            addLog('📖 Reading file...');
+            reader.readAsDataURL(file);
+        });
+
+        applyBtn.addEventListener('click', function() {
+            if (!uploadedPhoto) {
+                addLog('❌ No photo to apply!');
+                alert('Please upload a photo first!');
+                return;
+            }
+
+            addLog('🎨 Applying photo...');
+            addLog('✅ SUCCESS! Photo data is ready to use.');
+            addLog(`📊 Photo data starts with: ${uploadedPhoto.substring(0, 50)}...`);
+            alert('Photo upload WORKS! ✅\n\nNow we need to debug why it fails in the main app.');
+        });
+    </script>
+</body>
+</html>
