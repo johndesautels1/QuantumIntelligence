@@ -1859,8 +1859,8 @@
 
             <!-- Photo Upload Panel -->
             <div class="photo-upload-panel" id="photo-upload-panel" role="region" aria-label="Upload property photos">
-                <h3>📸 Upload Property Photos</h3>
-                <p style="font-size: 0.9em; opacity: 0.8; margin-bottom: 15px;">
+                <h3 style="color: #FFD700;">📸 Upload Property Photos</h3>
+                <p style="font-size: 0.9em; color: rgba(255, 255, 255, 0.9); margin-bottom: 15px;">
                     Upload a photo of the property to display it as a 3D textured model
                 </p>
 
@@ -1870,25 +1870,50 @@
                     <button class="upload-tab" onclick="selectUploadSlot('C')">Property C</button>
                 </div>
 
-                <div id="upload-content">
+                <div id="upload-content" style="color: #FFFFFF;">
+                    <!-- Property A upload -->
                     <input type="file" id="photo-input-A" accept="image/*" onchange="handlePhotoUpload('A', this)"
-                           style="margin: 10px 0; display: block; width: 100%;">
+                           style="margin: 10px 0; display: block; width: 100%; color: white; background: rgba(255, 255, 255, 0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.3);">
 
-                    <div id="photo-preview-A" style="margin: 10px 0; max-width: 100%; max-height: 200px; overflow: hidden; border-radius: 8px;">
-                        <p style="opacity: 0.6; font-size: 0.85em;">No photo uploaded</p>
+                    <div id="photo-preview-A" style="margin: 10px 0; max-width: 100%; max-height: 200px; overflow: hidden; border-radius: 8px; background: rgba(0, 0, 0, 0.3); padding: 10px;">
+                        <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.85em; text-align: center;">📷 No photo uploaded yet</p>
                     </div>
 
-                    <button onclick="applyPhotoTexture('A')" class="apply-photo-btn" style="margin-top: 10px; padding: 8px 16px; background: linear-gradient(135deg, #00D4FF, #8A2BE2); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                    <button onclick="applyPhotoTexture('A')" id="apply-btn-A" class="apply-photo-btn" style="margin-top: 10px; padding: 10px 20px; background: linear-gradient(135deg, #00D4FF, #8A2BE2); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1em;">
                         ✨ Apply Photo to 3D Model
                     </button>
 
-                    <div style="margin-top: 15px; padding: 10px; background: rgba(0, 212, 255, 0.1); border-radius: 6px; font-size: 0.85em;">
-                        <strong>💡 Pro Tip:</strong> For best 3D conversion, upload to:
-                        <ul style="margin: 5px 0 0 20px; padding: 0;">
-                            <li><a href="https://lumalabs.ai/" target="_blank" style="color: #00D4FF;">Luma AI</a> - Best quality (free)</li>
-                            <li><a href="https://poly.cam/" target="_blank" style="color: #00D4FF;">Polycam</a> - Mobile app</li>
+                    <!-- Property B upload (hidden by default) -->
+                    <input type="file" id="photo-input-B" accept="image/*" onchange="handlePhotoUpload('B', this)"
+                           style="margin: 10px 0; display: none; width: 100%; color: white; background: rgba(255, 255, 255, 0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.3);">
+
+                    <div id="photo-preview-B" style="margin: 10px 0; max-width: 100%; max-height: 200px; overflow: hidden; border-radius: 8px; background: rgba(0, 0, 0, 0.3); padding: 10px; display: none;">
+                        <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.85em; text-align: center;">📷 No photo uploaded yet</p>
+                    </div>
+
+                    <button onclick="applyPhotoTexture('B')" id="apply-btn-B" class="apply-photo-btn" style="margin-top: 10px; padding: 10px 20px; background: linear-gradient(135deg, #00FF88, #8A2BE2); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1em; display: none;">
+                        ✨ Apply Photo to 3D Model
+                    </button>
+
+                    <!-- Property C upload (hidden by default) -->
+                    <input type="file" id="photo-input-C" accept="image/*" onchange="handlePhotoUpload('C', this)"
+                           style="margin: 10px 0; display: none; width: 100%; color: white; background: rgba(255, 255, 255, 0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.3);">
+
+                    <div id="photo-preview-C" style="margin: 10px 0; max-width: 100%; max-height: 200px; overflow: hidden; border-radius: 8px; background: rgba(0, 0, 0, 0.3); padding: 10px; display: none;">
+                        <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.85em; text-align: center;">📷 No photo uploaded yet</p>
+                    </div>
+
+                    <button onclick="applyPhotoTexture('C')" id="apply-btn-C" class="apply-photo-btn" style="margin-top: 10px; padding: 10px 20px; background: linear-gradient(135deg, #FFD700, #8A2BE2); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1em; display: none;">
+                        ✨ Apply Photo to 3D Model
+                    </button>
+
+                    <div style="margin-top: 15px; padding: 12px; background: rgba(0, 212, 255, 0.15); border-radius: 8px; font-size: 0.85em; color: #FFFFFF; border: 1px solid rgba(0, 212, 255, 0.3);">
+                        <strong style="color: #FFD700;">💡 Pro Tip:</strong> <span style="color: rgba(255, 255, 255, 0.9);">For best 3D conversion, upload to:</span>
+                        <ul style="margin: 8px 0 0 20px; padding: 0; color: rgba(255, 255, 255, 0.9);">
+                            <li><a href="https://lumalabs.ai/" target="_blank" style="color: #00D4FF; font-weight: bold;">Luma AI</a> - Best quality (free)</li>
+                            <li><a href="https://poly.cam/" target="_blank" style="color: #00D4FF; font-weight: bold;">Polycam</a> - Mobile app (50 scans free)</li>
                         </ul>
-                        Then download the .glb file and add to MODEL_PATHS in code!
+                        <span style="color: rgba(255, 255, 255, 0.8); font-size: 0.9em;">Then download the .glb file and add to MODEL_PATHS!</span>
                     </div>
                 </div>
             </div>
@@ -2374,15 +2399,19 @@
                 });
                 event.target.classList.add('active');
 
-                // Show appropriate file input and preview
+                // Show appropriate file input, preview, and apply button
                 ['A', 'B', 'C'].forEach(s => {
                     const input = document.getElementById(`photo-input-${s}`);
                     const preview = document.getElementById(`photo-preview-${s}`);
+                    const applyBtn = document.getElementById(`apply-btn-${s}`);
+
                     if (input) input.style.display = (s === slot) ? 'block' : 'none';
                     if (preview) preview.style.display = (s === slot) ? 'block' : 'none';
+                    if (applyBtn) applyBtn.style.display = (s === slot) ? 'block' : 'none';
                 });
 
                 vibrate('tap');
+                console.log(`📸 Switched to Property ${slot} upload tab`);
             };
 
             // Handle photo file upload
