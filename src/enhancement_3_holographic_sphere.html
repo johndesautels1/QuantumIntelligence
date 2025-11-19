@@ -1875,9 +1875,9 @@
                 </p>
 
                 <div class="upload-tabs">
-                    <button class="upload-tab active" onclick="selectUploadSlot('A')">Property A</button>
-                    <button class="upload-tab" onclick="selectUploadSlot('B')">Property B</button>
-                    <button class="upload-tab" onclick="selectUploadSlot('C')">Property C</button>
+                    <button class="upload-tab active" onclick="selectUploadSlot('A', event); return false;">Property A</button>
+                    <button class="upload-tab" onclick="selectUploadSlot('B', event); return false;">Property B</button>
+                    <button class="upload-tab" onclick="selectUploadSlot('C', event); return false;">Property C</button>
                 </div>
 
                 <div id="upload-content" style="color: #FFFFFF;">
@@ -2442,14 +2442,18 @@
             };
 
             // Select which property slot to upload photo for
-            window.selectUploadSlot = function(slot) {
+            window.selectUploadSlot = function(slot, evt) {
+                console.log(`🔵 selectUploadSlot called with slot: ${slot}`);
                 currentUploadSlot = slot;
 
                 // Update tab styling
                 document.querySelectorAll('.upload-tab').forEach(tab => {
                     tab.classList.remove('active');
                 });
-                event.target.classList.add('active');
+
+                // Use passed event or fallback to global event
+                const clickedElement = evt ? evt.target : event.target;
+                clickedElement.classList.add('active');
 
                 // Show appropriate file input, preview, and apply button
                 ['A', 'B', 'C'].forEach(s => {
