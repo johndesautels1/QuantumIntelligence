@@ -1846,6 +1846,8 @@
             overflow-y: auto;
             overflow-x: hidden;
             pointer-events: auto !important; /* CRITICAL: Allow clicks */
+            transform: scale(0.85) !important; /* SCALED DOWN TO 85% */
+            transform-origin: bottom left !important; /* Scale from bottom-left corner */
         }
 
         .photo-upload-panel * {
@@ -2103,16 +2105,7 @@
                 </div>
             </div>
 
-            <!-- Import Saved Properties Button -->
-            <div style="text-align: center; margin: 20px 0;">
-                <button onclick="openImportModal()"
-                        style="padding: 12px 30px; background: linear-gradient(135deg, #FFD700, #FFA500);
-                               color: #000; border: none; border-radius: 10px; font-weight: bold;
-                               cursor: pointer; font-size: 1em; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);"
-                        aria-label="Import saved properties from database">
-                    📥 Import Saved Properties
-                </button>
-            </div>
+            <!-- Import Saved Properties Button MOVED - now at top left under Upload Photos -->
 
             <!-- Consolidated Data Panels Button -->
             <div class="panel-toggle-buttons" role="region" aria-label="Panel visibility controls">
@@ -2177,7 +2170,21 @@
                 </div>
             </div>
 
-            <!-- TOOLS Master Dropdown Menu -->
+            <!-- IMPORT PROPERTIES Button (Top Left - TOP POSITION) -->
+            <button class="mode-toggle" id="import-properties-btn" onclick="openImportModal()"
+                    aria-label="Import saved properties from database"
+                    style="left: 20px; right: auto; min-width: 220px; background: linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(255, 165, 0, 0.4)); font-weight: bold;">
+                📥 IMPORT PROPERTIES
+            </button>
+
+            <!-- PHOTO UPLOAD Button (Top Left - BELOW Import Properties) -->
+            <button class="mode-toggle" id="photo-upload-master-btn" onclick="togglePhotoUpload()"
+                    aria-label="Upload property photos"
+                    style="left: 20px; right: auto; top: 75px; min-width: 220px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.4), rgba(138, 43, 226, 0.4)); font-weight: bold;">
+                📸 UPLOAD PHOTOS
+            </button>
+
+            <!-- TOOLS Master Dropdown Menu (Top Right) -->
             <button class="mode-toggle" id="tools-master-btn" onclick="toggleToolsMenu()"
                     aria-label="Open/close tools menu"
                     style="min-width: 220px; background: linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(0, 212, 255, 0.4)); font-weight: bold;">
@@ -2255,12 +2262,7 @@
                     ⚪ Inner Sphere: OFF
                 </button>
 
-                <!-- Upload Photos -->
-                <button class="mode-toggle" id="photo-upload-toggle" onclick="togglePhotoUpload()"
-                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(138, 43, 226, 0.3));"
-                        aria-label="Upload property photos to create 3D models">
-                    📸 Upload Photos
-                </button>
+                <!-- Upload Photos REMOVED - now a standalone button at top left -->
 
                 <!-- Share Screenshot -->
                 <button class="mode-toggle" id="share-btn" onclick="shareComparison()"
@@ -2399,15 +2401,15 @@
                 </div>
                 <div id="notes-content">
                     <div class="emoji-reactions">
-                        <button class="emoji-btn" onclick="addEmoji('A', '❤️')" title="Love it">❤️</button>
-                        <button class="emoji-btn" onclick="addEmoji('A', '👍')" title="Like">👍</button>
-                        <button class="emoji-btn" onclick="addEmoji('A', '🤔')" title="Maybe">🤔</button>
-                        <button class="emoji-btn" onclick="addEmoji('A', '👎')" title="Dislike">👎</button>
-                        <button class="emoji-btn" onclick="addEmoji('A', '⭐')" title="Favorite">⭐</button>
+                        <button class="emoji-btn" title="Love it">❤️</button>
+                        <button class="emoji-btn" title="Like">👍</button>
+                        <button class="emoji-btn" title="Maybe">🤔</button>
+                        <button class="emoji-btn" title="Dislike">👎</button>
+                        <button class="emoji-btn" title="Favorite">⭐</button>
                     </div>
                     <div class="emoji-display" id="emoji-display-A"></div>
                     <textarea class="notes-textarea" id="notes-A" placeholder="Add your notes about this property..."
-                              rows="4" oninput="saveNotes('A')"></textarea>
+                              rows="4"></textarea>
                     <div class="notes-hint help-text">💡 Notes are saved automatically</div>
                     <button onclick="exportNotesToFile()" style="margin-top: 10px; padding: 8px 16px; background: linear-gradient(135deg, #00D4FF, #8A2BE2); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 0.9em; pointer-events: auto !important;" title="Download notes as text file">
                         📥 Export Notes to File
@@ -2445,16 +2447,34 @@
                         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);">
 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h2 style="color: #FFD700; margin: 0;">📥 Import Saved Properties</h2>
+                    <h2 style="color: #FFD700; margin: 0;">📥 Import Properties</h2>
                     <button onclick="closeImportModal()"
                             style="background: rgba(255, 0, 0, 0.7); color: white; border: none;
                                    border-radius: 50%; width: 35px; height: 35px; cursor: pointer;
                                    font-size: 20px; font-weight: bold;">×</button>
                 </div>
 
-                <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 20px;">
-                    Select a property and assign it to a slot (A, B, or C) for comparison.
-                </p>
+                <!-- Dual Source Tabs -->
+                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                    <button id="import-tab-saved" onclick="switchImportTab('saved')"
+                            style="flex: 1; padding: 12px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.4), rgba(138, 43, 226, 0.4));
+                                   border: 2px solid rgba(0, 212, 255, 0.6); border-radius: 10px; color: white;
+                                   font-weight: bold; cursor: pointer; transition: all 0.3s;">
+                        💾 Saved Properties
+                    </button>
+                    <button id="import-tab-upload" onclick="switchImportTab('upload')"
+                            style="flex: 1; padding: 12px; background: rgba(255, 255, 255, 0.1);
+                                   border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 10px; color: white;
+                                   font-weight: bold; cursor: pointer; transition: all 0.3s;">
+                        📤 Upload File
+                    </button>
+                </div>
+
+                <!-- Tab Content: Saved Properties -->
+                <div id="import-content-saved" style="display: block;">
+                    <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 20px;">
+                        Select a property from your database and assign it to a slot (A, B, or C).
+                    </p>
 
                 <div id="import-properties-list" style="display: grid; gap: 15px;">
                     <!-- Properties will be loaded here -->
@@ -2462,12 +2482,45 @@
 
                 <div id="import-no-properties" style="display: none; text-align: center; padding: 40px; color: rgba(255, 255, 255, 0.7);">
                     <p style="font-size: 1.2em; margin-bottom: 15px;">No saved properties found.</p>
-                    <p style="font-size: 0.9em; margin-bottom: 20px;">Import properties from the main dashboard first.</p>
+                    <p style="font-size: 0.9em; margin-bottom: 20px;">Either import from the dashboard or upload a file using the "Upload File" tab above.</p>
                     <button onclick="window.location.href='../index.html'"
                             style="padding: 10px 20px; background: linear-gradient(135deg, #00d4ff, #0099cc);
                                    border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
                         Go to Dashboard
                     </button>
+                </div>
+                </div>
+
+                <!-- Tab Content: Upload File -->
+                <div id="import-content-upload" style="display: none;">
+                    <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 20px;">
+                        Upload a JSON or CSV file containing property data. You can export properties from the main dashboard.
+                    </p>
+
+                    <div style="background: rgba(0, 212, 255, 0.1); border: 2px dashed rgba(0, 212, 255, 0.5);
+                                border-radius: 15px; padding: 30px; text-align: center; margin-bottom: 20px;">
+                        <input type="file" id="property-file-input" accept=".json,.csv"
+                               style="display: none;" onchange="handlePropertyFileUpload(event)">
+                        <button onclick="document.getElementById('property-file-input').click()"
+                                style="padding: 15px 30px; background: linear-gradient(135deg, #00D4FF, #8A2BE2);
+                                       border: none; border-radius: 10px; color: white; font-weight: bold;
+                                       cursor: pointer; font-size: 1.1em; box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);">
+                            📂 Choose File
+                        </button>
+                        <p style="color: rgba(255, 255, 255, 0.7); margin-top: 15px; font-size: 0.9em;">
+                            Supported formats: JSON, CSV
+                        </p>
+                    </div>
+
+                    <div id="upload-file-preview" style="display: none; background: rgba(255, 255, 255, 0.05);
+                                                          border: 1px solid rgba(0, 212, 255, 0.3); border-radius: 10px;
+                                                          padding: 20px;">
+                        <h4 style="color: #FFD700; margin-top: 0;">📄 File Loaded:</h4>
+                        <p id="upload-filename" style="color: rgba(255, 255, 255, 0.9); margin-bottom: 15px;"></p>
+                        <div id="upload-properties-list" style="display: grid; gap: 15px; max-height: 400px; overflow-y: auto;">
+                            <!-- Uploaded properties will appear here -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -3728,6 +3781,150 @@
                 closeImportModal();
             };
 
+            // DUAL SOURCE IMPORT: Tab switching
+            window.switchImportTab = function(tabName) {
+                const savedTab = document.getElementById('import-tab-saved');
+                const uploadTab = document.getElementById('import-tab-upload');
+                const savedContent = document.getElementById('import-content-saved');
+                const uploadContent = document.getElementById('import-content-upload');
+
+                if (tabName === 'saved') {
+                    savedTab.style.background = 'linear-gradient(135deg, rgba(0, 212, 255, 0.4), rgba(138, 43, 226, 0.4))';
+                    savedTab.style.borderColor = 'rgba(0, 212, 255, 0.6)';
+                    uploadTab.style.background = 'rgba(255, 255, 255, 0.1)';
+                    uploadTab.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                    savedContent.style.display = 'block';
+                    uploadContent.style.display = 'none';
+                } else {
+                    uploadTab.style.background = 'linear-gradient(135deg, rgba(0, 212, 255, 0.4), rgba(138, 43, 226, 0.4))';
+                    uploadTab.style.borderColor = 'rgba(0, 212, 255, 0.6)';
+                    savedTab.style.background = 'rgba(255, 255, 255, 0.1)';
+                    savedTab.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                    uploadContent.style.display = 'block';
+                    savedContent.style.display = 'none';
+                }
+                vibrate('tap');
+            };
+
+            // DUAL SOURCE IMPORT: File upload handler
+            let uploadedPropertiesCache = [];
+
+            window.handlePropertyFileUpload = async function(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                console.log('📂 File selected:', file.name);
+                showAlert(`Loading ${file.name}...`, 'info');
+
+                try {
+                    const fileContent = await file.text();
+                    let properties = [];
+
+                    if (file.name.endsWith('.json')) {
+                        properties = JSON.parse(fileContent);
+                    } else if (file.name.endsWith('.csv')) {
+                        // Simple CSV parsing (assuming CLUES export format)
+                        const lines = fileContent.split('\n').filter(l => l.trim());
+                        const headers = lines[0].split(',');
+                        properties = lines.slice(1).map(line => {
+                            const values = line.split(',');
+                            const prop = {};
+                            headers.forEach((header, i) => {
+                                prop[header.trim()] = values[i]?.trim();
+                            });
+                            return prop;
+                        });
+                    }
+
+                    if (!Array.isArray(properties) || properties.length === 0) {
+                        throw new Error('No valid properties found in file');
+                    }
+
+                    uploadedPropertiesCache = properties;
+                    displayUploadedProperties(properties, file.name);
+                    showAlert(`✅ Loaded ${properties.length} properties from file`, 'success');
+                } catch (error) {
+                    console.error('❌ Error parsing file:', error);
+                    showAlert(`Failed to parse file: ${error.message}`, 'error');
+                }
+            };
+
+            function displayUploadedProperties(properties, filename) {
+                document.getElementById('upload-filename').textContent = filename;
+                document.getElementById('upload-file-preview').style.display = 'block';
+
+                const container = document.getElementById('upload-properties-list');
+                container.innerHTML = properties.map((prop, index) => {
+                    const name = prop.name || prop.address || 'Property ' + (index + 1);
+                    const price = prop.price > 0 ? `$${parseInt(prop.price).toLocaleString()}` : 'Price N/A';
+
+                    return `
+                        <div style="background: rgba(255, 255, 255, 0.05);
+                                    border: 1px solid rgba(0, 212, 255, 0.3);
+                                    border-radius: 10px;
+                                    padding: 15px;">
+                            <div style="font-weight: bold; color: #FFD700; margin-bottom: 8px;">${name}</div>
+                            <div style="color: #00FF88; font-size: 0.9em; margin-bottom: 12px;">${price}</div>
+                            <div style="display: flex; gap: 8px; justify-content: center;">
+                                <button onclick='assignUploadedPropertyToSlot(${index}, "A")'
+                                        style="flex: 1; padding: 8px; background: linear-gradient(135deg, #00D4FF, #0099cc);
+                                               border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer;">
+                                    → Slot A
+                                </button>
+                                <button onclick='assignUploadedPropertyToSlot(${index}, "B")'
+                                        style="flex: 1; padding: 8px; background: linear-gradient(135deg, #00FF88, #00cc66);
+                                               border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer;">
+                                    → Slot B
+                                </button>
+                                <button onclick='assignUploadedPropertyToSlot(${index}, "C")'
+                                        style="flex: 1; padding: 8px; background: linear-gradient(135deg, #FFD700, #FFA500);
+                                               border: none; border-radius: 6px; color: white; font-weight: bold; cursor: pointer;">
+                                    → Slot C
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            window.assignUploadedPropertyToSlot = function(propertyIndex, slot) {
+                const property = uploadedPropertiesCache[propertyIndex];
+                if (!property) {
+                    showAlert('Property not found', 'error');
+                    return;
+                }
+
+                // Normalize property structure for this enhancement
+                const normalizedProperty = {
+                    id: property.id || `uploaded-${Date.now()}-${propertyIndex}`,
+                    name: property.name || property.address || 'Uploaded Property',
+                    price: parseInt(property.price) || 0,
+                    dimensions: property.dimensions || {
+                        location: parseInt(property.location) || 70,
+                        condition: parseInt(property.condition) || 70,
+                        schools: parseInt(property.schools) || 70,
+                        safety: parseInt(property.safety) || 70,
+                        roi: parseInt(property.roi) || 10,
+                        costOfLiving: parseInt(property.costOfLiving) || 70
+                    }
+                };
+
+                console.log(`Assigning uploaded property to slot ${slot}:`, normalizedProperty);
+
+                // Add to PROPERTIES array
+                if (!PROPERTIES.find(p => p.id === normalizedProperty.id)) {
+                    PROPERTIES.push(normalizedProperty);
+                    populatePropertySelectors();
+                }
+
+                // Select the property
+                selectProperty(slot, normalizedProperty.id);
+
+                showAlert(`${normalizedProperty.name} assigned to Slot ${slot}`, 'success');
+                vibrate('success');
+                closeImportModal();
+            };
+
             // Toggle all panels
             window.togglePanel = function(panelType) {
                 if (panelType === 'notes') {
@@ -4015,17 +4212,14 @@
                     const noteTabs = clonedPanel.querySelectorAll('.notes-tab');
                     noteTabs.forEach((tab, index) => {
                         const slot = ['A', 'B', 'C'][index];
-                        tab.onclick = () => selectNotesProperty(slot);
+                        tab.onclick = (e) => selectNotesProperty(slot, e);
                     });
 
                     const emojiButtons = clonedPanel.querySelectorAll('.emoji-btn');
                     emojiButtons.forEach(btn => {
-                        const emoji = btn.getAttribute('onclick')?.match(/'([^']+)'/g);
-                        if (emoji && emoji.length >= 2) {
-                            const slot = emoji[0].replace(/'/g, '');
-                            const emojiChar = emoji[1].replace(/'/g, '');
-                            btn.onclick = () => addEmoji(slot, emojiChar);
-                        }
+                        // Simply get the emoji from the button text content
+                        const emojiChar = btn.textContent.trim();
+                        btn.onclick = () => addEmoji(currentNotesSlot, emojiChar);
                     });
 
                     const textareas = clonedPanel.querySelectorAll('.notes-textarea');
@@ -4037,6 +4231,11 @@
                     const closeBtn = clonedPanel.querySelector('button[onclick*="toggleNotesPanel"]');
                     if (closeBtn) {
                         closeBtn.style.display = 'none'; // Hide close button (modal has its own)
+                    }
+
+                    const exportBtn = clonedPanel.querySelector('button[onclick*="exportNotesToFile"]');
+                    if (exportBtn) {
+                        exportBtn.onclick = () => exportNotesToFile();
                     }
                 }
 
@@ -4228,6 +4427,7 @@
                         house.position.set(position.x, position.y, position.z);
                         house.userData.slot = slot;
                         house.userData.isHouse = true;
+                        house.visible = false; // START HIDDEN - only show when property selected
                         scene.add(house);
 
                         // Assign to sphere variables for compatibility
@@ -4235,7 +4435,7 @@
                         if (slot === 'B') sphereB = house;
                         if (slot === 'C') sphereC = house;
 
-                        console.log(`   ✅ Created 3D house for slot ${slot}`);
+                        console.log(`   ✅ Created 3D house for slot ${slot} (initially hidden)`);
                     } else {
                         // Classic sphere fallback
                         const geometry = new THREE.SphereGeometry(1, 32, 32);
@@ -4249,6 +4449,7 @@
                         sphere.position.set(position.x, position.y, position.z);
                         sphere.userData.slot = slot;
                         sphere.userData.isSphere = true;
+                        sphere.visible = false; // START HIDDEN - only show when property selected
                         scene.add(sphere);
 
                         if (slot === 'A') sphereA = sphere;
@@ -4412,30 +4613,8 @@
                     }
                 });
 
-                // Feature #21: Animate photo rings (orbital rotation + billboarding)
-                ['A', 'B', 'C'].forEach(slot => {
-                    photoRings[slot].forEach(photo => {
-                        if (photo) {
-                            const data = photo.userData;
-
-                            // Rotate around sphere (slow orbit)
-                            data.orbitAngle += 0.01; // Rotation speed
-
-                            // Calculate new position
-                            const x = data.spherePosition.x + Math.cos(data.orbitAngle) * data.orbitRadius;
-                            const z = data.spherePosition.z + Math.sin(data.orbitAngle) * data.orbitRadius;
-                            const y = data.spherePosition.y + 0.5 + Math.sin(time + data.photoIndex) * 0.1; // Gentle up/down bob
-
-                            photo.position.set(x, y, z);
-
-                            // Always face camera (billboard effect)
-                            photo.lookAt(camera.position);
-
-                            // Gentle opacity pulse for visual interest
-                            photo.material.opacity = 0.8 + Math.sin(time * 2 + data.photoIndex) * 0.15; // 0.65 to 0.95
-                        }
-                    });
-                });
+                // Feature #21: Photo ring animation DISABLED (feature removed per user request)
+                // Skipping photo ring animation - improves performance
 
                 if (controls) controls.update();
                 renderer.render(scene, camera);
@@ -4550,9 +4729,7 @@
                 updateRadarChartVisibility();
                 updateComparisonPanel();
                 updateCrimeWidget();
-                if (panelStates.col) {
-                    createCOLChart();
-                }
+                // COL chart removed - panelStates was undefined (updates in modal instead)
                 calculateWinner();
                 updateAllGravityRings();
                 checkDealBreakers(); // Check for violations
@@ -4643,9 +4820,19 @@
             // ===== PROPERTY SELECTION =====
             window.selectProperty = function(slot, propertyId) {
                 if (!propertyId) {
-                    if (slot === 'A') propertyA = null;
-                    if (slot === 'B') propertyB = null;
-                    if (slot === 'C') propertyC = null;
+                    // Clear property data
+                    if (slot === 'A') {
+                        propertyA = null;
+                        if (sphereA) sphereA.visible = false; // HIDE 3D object when cleared
+                    }
+                    if (slot === 'B') {
+                        propertyB = null;
+                        if (sphereB) sphereB.visible = false; // HIDE 3D object when cleared
+                    }
+                    if (slot === 'C') {
+                        propertyC = null;
+                        if (sphereC) sphereC.visible = false; // HIDE 3D object when cleared
+                    }
                     announceToScreenReader(`Property ${slot} cleared`);
                     return;
                 }
@@ -4656,9 +4843,28 @@
                     return;
                 }
 
-                if (slot === 'A') propertyA = property;
-                if (slot === 'B') propertyB = property;
-                if (slot === 'C') propertyC = property;
+                // Assign property and SHOW 3D object
+                if (slot === 'A') {
+                    propertyA = property;
+                    if (sphereA) {
+                        sphereA.visible = true; // SHOW 3D object when selected
+                        console.log(`✅ Property A selected - sphereA visible: ${sphereA.visible}, isHouse: ${sphereA.userData.isHouse}, isSphere: ${sphereA.userData.isSphere}`);
+                    }
+                }
+                if (slot === 'B') {
+                    propertyB = property;
+                    if (sphereB) {
+                        sphereB.visible = true; // SHOW 3D object when selected
+                        console.log(`✅ Property B selected - sphereB visible: ${sphereB.visible}, isHouse: ${sphereB.userData.isHouse}, isSphere: ${sphereB.userData.isSphere}`);
+                    }
+                }
+                if (slot === 'C') {
+                    propertyC = property;
+                    if (sphereC) {
+                        sphereC.visible = true; // SHOW 3D object when selected
+                        console.log(`✅ Property C selected - sphereC visible: ${sphereC.visible}, isHouse: ${sphereC.userData.isHouse}, isSphere: ${sphereC.userData.isSphere}`);
+                    }
+                }
 
                 // Feature #18: Vibration feedback
                 vibrate('select');
@@ -4685,10 +4891,8 @@
                 // Update crime danger widget
                 updateCrimeWidget();
 
-                // Update cost-of-living chart (only if panel is visible)
-                if (panelStates.col) {
-                    createCOLChart();
-                }
+                // Update cost-of-living chart (removed panelStates check - was causing errors)
+                // COL chart updates when modal is opened instead
 
                 // Feature #15: Check for deal-breaker violations
                 checkDealBreakers();
@@ -4873,7 +5077,10 @@
             }
 
             function updateCrownVisuals() {
-                // Remove all crowns first
+                // FEATURE REMOVED: Winner diamond crown deleted per user request
+                // Crowns were deemed "silly" and removed to improve performance
+
+                // Remove all crowns if any exist
                 Object.keys(crownSprites).forEach(slot => {
                     if (crownSprites[slot]) {
                         scene.remove(crownSprites[slot]);
@@ -4888,19 +5095,8 @@
                     }
                 });
 
-                // Add crown and glow to winner ONLY in sphere mode (not in 3D house mode)
-                if (winnerProperty && !use3DModels) {
-                    const sphere = winnerProperty === 'A' ? sphereA :
-                                   winnerProperty === 'B' ? sphereB : sphereC;
-
-                    if (sphere) {
-                        createCrown(sphere, winnerProperty);
-                        sphere.userData.isWinner = true;
-
-                        // Vibration feedback for winner selection
-                        vibrate('success');
-                    }
-                }
+                // Crown creation DISABLED - no longer showing winner diamonds
+                // Winner is still calculated and shown in comparison panels
             }
 
             function createCrown(sphere, slot) {
@@ -5156,14 +5352,8 @@
             }
 
             function updateConnectedObjects() {
-                // Update crown positions to follow spheres
-                ['A', 'B', 'C'].forEach(slot => {
-                    const crown = crownSprites[slot];
-                    const sphere = slot === 'A' ? sphereA : slot === 'B' ? sphereB : sphereC;
-                    if (crown && sphere) {
-                        crown.position.set(sphere.position.x, sphere.position.y + 1.5, sphere.position.z);
-                    }
-                });
+                // CROWN UPDATE DISABLED: Winner diamonds removed per user request
+                // (Crowns are no longer created, so this loop does nothing)
 
                 // Update photo ring positions to follow spheres
                 ['A', 'B', 'C'].forEach(slot => {
@@ -5225,10 +5415,10 @@
 
                 // Remove all connected objects
                 ['A', 'B', 'C'].forEach(slot => {
-                    // Remove crowns
-                    if (crownObjects[slot]) {
-                        scene.remove(crownObjects[slot]);
-                        crownObjects[slot] = null;
+                    // Remove crowns (FIXED: was crownObjects, should be crownSprites)
+                    if (crownSprites[slot]) {
+                        scene.remove(crownSprites[slot]);
+                        crownSprites[slot] = null;
                     }
                     // Remove photo rings
                     if (photoRings[slot]) {
@@ -5258,10 +5448,20 @@
                 // Recreate with new mode
                 create3DModels();
 
-                // Reapply selections
-                if (propertyA) selectProperty('A', propertyA.id);
-                if (propertyB) selectProperty('B', propertyB.id);
-                if (propertyC) selectProperty('C', propertyC.id);
+                // Reapply selections (this will make visible the ones that were selected)
+                console.log('🔄 Reapplying property selections after toggle...');
+                if (propertyA) {
+                    console.log('   Restoring Property A:', propertyA.name);
+                    selectProperty('A', propertyA.id);
+                }
+                if (propertyB) {
+                    console.log('   Restoring Property B:', propertyB.name);
+                    selectProperty('B', propertyB.id);
+                }
+                if (propertyC) {
+                    console.log('   Restoring Property C:', propertyC.name);
+                    selectProperty('C', propertyC.id);
+                }
 
                 // Recreate gravity indicators if gravity is enabled
                 if (gravityEnabled) {
@@ -5348,56 +5548,13 @@
 
             // ===== FEATURE #21: MINI PHOTO RING =====
             function createPhotoRing(sphere, slot, property) {
-                // Remove existing photo ring
+                // FEATURE DISABLED: Photo rings removed per user request (white frames were distracting)
+                // Remove existing photo ring if any
                 photoRings[slot].forEach(photo => scene.remove(photo));
                 photoRings[slot] = [];
 
-                if (!property || !sphere) return;
-
-                // Create 3-4 small photo planes orbiting the sphere
-                const numPhotos = 3;
-                const orbitRadius = 1.8; // Distance from sphere center
-
-                for (let i = 0; i < numPhotos; i++) {
-                    // Create small rectangular plane for photo
-                    const photoGeometry = new THREE.PlaneGeometry(0.4, 0.3);
-
-                    // Create photo material with semi-transparent white placeholder
-                    // In a real implementation, you'd load actual property photos
-                    const photoMaterial = new THREE.MeshBasicMaterial({
-                        color: 0xffffff,
-                        transparent: true,
-                        opacity: 0.8,
-                        side: THREE.DoubleSide
-                    });
-
-                    const photoPlane = new THREE.Mesh(photoGeometry, photoMaterial);
-
-                    // Position in orbit around sphere
-                    const angle = (i / numPhotos) * Math.PI * 2;
-                    const x = sphere.position.x + Math.cos(angle) * orbitRadius;
-                    const z = sphere.position.z + Math.sin(angle) * orbitRadius;
-                    const y = sphere.position.y + 0.5; // Slightly above sphere center
-
-                    photoPlane.position.set(x, y, z);
-
-                    // Make photo face camera initially
-                    photoPlane.lookAt(camera.position);
-
-                    // Store metadata for animation
-                    photoPlane.userData = {
-                        slot: slot,
-                        photoIndex: i,
-                        orbitAngle: angle,
-                        orbitRadius: orbitRadius,
-                        spherePosition: sphere.position.clone()
-                    };
-
-                    scene.add(photoPlane);
-                    photoRings[slot].push(photoPlane);
-                }
-
-                console.log(`Feature #21: Created ${numPhotos} photo placeholders for property ${slot}`);
+                // Photo ring creation disabled - no more white floating frames
+                return;
             }
 
             function updateAllPhotoRings() {
@@ -5514,14 +5671,25 @@
                 }
             };
 
-            window.selectNotesProperty = function(slot) {
+            window.selectNotesProperty = function(slot, event) {
                 currentNotesSlot = slot;
 
-                // Update tab active states
-                document.querySelectorAll('.notes-tab').forEach(tab => {
-                    tab.classList.remove('active');
-                });
-                event.target.classList.add('active');
+                // Determine if we're in the modal or standalone panel
+                const modal = document.getElementById('data-panels-modal');
+                const isModalOpen = modal && modal.style.display === 'flex';
+                const container = isModalOpen
+                    ? modal.querySelector('#modal-panel-container')
+                    : document.getElementById('notes-panel');
+
+                if (container) {
+                    // Update tab active states (scoped to container)
+                    container.querySelectorAll('.notes-tab').forEach(tab => {
+                        tab.classList.remove('active');
+                    });
+                    if (event && event.target) {
+                        event.target.classList.add('active');
+                    }
+                }
 
                 // Update content
                 updateNotesDisplay();
@@ -5550,41 +5718,51 @@
             };
 
             function updateNotesDisplay() {
-                // Update emoji buttons to work with current slot
-                document.querySelectorAll('.emoji-btn').forEach(btn => {
+                // Determine if we're in the modal or the standalone panel
+                const modal = document.getElementById('data-panels-modal');
+                const isModalOpen = modal && modal.style.display === 'flex';
+                const container = isModalOpen
+                    ? modal.querySelector('#modal-panel-container')
+                    : document.getElementById('notes-panel');
+
+                if (!container) {
+                    console.warn('⚠️ No notes container found');
+                    return;
+                }
+
+                // Update emoji buttons to work with current slot (scoped to container)
+                container.querySelectorAll('.emoji-btn').forEach(btn => {
                     const emoji = btn.textContent.trim();
                     btn.onclick = () => addEmoji(currentNotesSlot, emoji);
                 });
 
-                // Update emoji display
-                const emojiDisplay = document.getElementById(`emoji-display-A`);
-                emojiDisplay.id = `emoji-display-${currentNotesSlot}`;
-                emojiDisplay.innerHTML = '';
+                // Update emoji display (scoped to container)
+                let emojiDisplay = container.querySelector('.emoji-display');
+                if (emojiDisplay) {
+                    emojiDisplay.innerHTML = '';
 
-                if (propertyNotes[currentNotesSlot].emojis && propertyNotes[currentNotesSlot].emojis.length > 0) {
-                    propertyNotes[currentNotesSlot].emojis.forEach((emoji, index) => {
-                        const span = document.createElement('span');
-                        span.textContent = emoji;
-                        span.style.cursor = 'pointer';
-                        span.title = 'Click to remove';
-                        span.onclick = () => {
-                            propertyNotes[currentNotesSlot].emojis.splice(index, 1);
-                            saveAllNotes();
-                            updateNotesDisplay();
-                        };
-                        emojiDisplay.appendChild(span);
-                    });
+                    if (propertyNotes[currentNotesSlot].emojis && propertyNotes[currentNotesSlot].emojis.length > 0) {
+                        propertyNotes[currentNotesSlot].emojis.forEach((emoji, index) => {
+                            const span = document.createElement('span');
+                            span.textContent = emoji;
+                            span.style.cursor = 'pointer';
+                            span.title = 'Click to remove';
+                            span.onclick = () => {
+                                propertyNotes[currentNotesSlot].emojis.splice(index, 1);
+                                saveAllNotes();
+                                updateNotesDisplay();
+                            };
+                            emojiDisplay.appendChild(span);
+                        });
+                    }
                 }
 
-                // Update textarea
-                let textarea = document.getElementById(`notes-${currentNotesSlot}`);
-                if (!textarea) {
-                    // Create new textarea if it doesn't exist
-                    textarea = document.querySelector('.notes-textarea');
-                    textarea.id = `notes-${currentNotesSlot}`;
+                // Update textarea (scoped to container)
+                let textarea = container.querySelector('.notes-textarea');
+                if (textarea) {
+                    textarea.value = propertyNotes[currentNotesSlot].text || '';
+                    textarea.oninput = () => saveNotes(currentNotesSlot);
                 }
-                textarea.value = propertyNotes[currentNotesSlot].text || '';
-                textarea.oninput = () => saveNotes(currentNotesSlot);
             }
 
             // ===== FEATURE #18: MOBILE VIBRATION FEEDBACK =====
