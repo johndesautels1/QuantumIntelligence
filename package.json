@@ -21,7 +21,7 @@
   ],
   "author": "John Desautels <cluesnomads@gmail.com> (https://cluesnomad.com)",
   "license": "ISC",
-  "type": "commonjs",
+  "type": "module",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
     "@capacitor/android": "^7.4.4",
