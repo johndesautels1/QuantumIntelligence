@@ -1774,6 +1774,17 @@
                 </div>
             </div>
 
+            <!-- Import Saved Properties Button -->
+            <div style="text-align: center; margin: 20px 0;">
+                <button onclick="openImportModal()"
+                        style="padding: 12px 30px; background: linear-gradient(135deg, #FFD700, #FFA500);
+                               color: #000; border: none; border-radius: 10px; font-weight: bold;
+                               cursor: pointer; font-size: 1em; box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);"
+                        aria-label="Import saved properties from database">
+                    📥 Import Saved Properties
+                </button>
+            </div>
+
             <!-- Panel Toggle Buttons -->
             <div class="panel-toggle-buttons" role="region" aria-label="Panel visibility controls">
                 <button class="panel-toggle-btn" id="toggle-comparison" onclick="togglePanel('comparison')"
@@ -2110,6 +2121,46 @@
         <!-- Screen reader announcements -->
         <div class="sr-only">
             <span id="sr-announcements" aria-live="polite" aria-atomic="true"></span>
+        </div>
+
+        <!-- Import Properties Modal -->
+        <div id="import-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 10000; align-items: center; justify-content: center;">
+            <div style="background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%);
+                        backdrop-filter: blur(20px);
+                        border: 2px solid rgba(0, 212, 255, 0.5);
+                        border-radius: 20px;
+                        padding: 30px;
+                        max-width: 800px;
+                        max-height: 80vh;
+                        overflow-y: auto;
+                        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);">
+
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="color: #FFD700; margin: 0;">📥 Import Saved Properties</h2>
+                    <button onclick="closeImportModal()"
+                            style="background: rgba(255, 0, 0, 0.7); color: white; border: none;
+                                   border-radius: 50%; width: 35px; height: 35px; cursor: pointer;
+                                   font-size: 20px; font-weight: bold;">×</button>
+                </div>
+
+                <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 20px;">
+                    Select a property and assign it to a slot (A, B, or C) for comparison.
+                </p>
+
+                <div id="import-properties-list" style="display: grid; gap: 15px;">
+                    <!-- Properties will be loaded here -->
+                </div>
+
+                <div id="import-no-properties" style="display: none; text-align: center; padding: 40px; color: rgba(255, 255, 255, 0.7);">
+                    <p style="font-size: 1.2em; margin-bottom: 15px;">No saved properties found.</p>
+                    <p style="font-size: 0.9em; margin-bottom: 20px;">Import properties from the main dashboard first.</p>
+                    <button onclick="window.location.href='../index.html'"
+                            style="padding: 10px 20px; background: linear-gradient(135deg, #00d4ff, #0099cc);
+                                   border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
+                        Go to Dashboard
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -3204,6 +3255,115 @@
                     showAlert('Failed to share: ' + error.message, 'error');
                     vibrate('error');
                 }
+            };
+
+            // ===== PROPERTY IMPORT SYSTEM =====
+            let savedPropertiesCache = [];
+
+            window.openImportModal = async function() {
+                const modal = document.getElementById('import-modal');
+                modal.style.display = 'flex';
+
+                showAlert('Loading saved properties...', 'info');
+                vibrate('tap');
+
+                try {
+                    // Initialize shared data adapter
+                    await window.sharedDataAdapter.init();
+                    console.log('✅ sharedDataAdapter initialized');
+
+                    // Load properties from IndexedDB
+                    const loadedProperties = await window.sharedDataAdapter.getPropertiesFor5DExplorer('balanced');
+                    console.log(`✅ Loaded ${loadedProperties.length} properties from database`);
+
+                    savedPropertiesCache = loadedProperties;
+
+                    if (loadedProperties.length > 0) {
+                        displayImportProperties(loadedProperties);
+                    } else {
+                        document.getElementById('import-properties-list').style.display = 'none';
+                        document.getElementById('import-no-properties').style.display = 'block';
+                    }
+
+                    showAlert(`Loaded ${loadedProperties.length} properties`, 'success');
+                } catch (error) {
+                    console.error('❌ Error loading properties:', error);
+                    showAlert('Failed to load properties: ' + error.message, 'error');
+                    document.getElementById('import-properties-list').style.display = 'none';
+                    document.getElementById('import-no-properties').style.display = 'block';
+                }
+            };
+
+            window.closeImportModal = function() {
+                document.getElementById('import-modal').style.display = 'none';
+                vibrate('tap');
+            };
+
+            function displayImportProperties(properties) {
+                const container = document.getElementById('import-properties-list');
+                container.style.display = 'grid';
+                document.getElementById('import-no-properties').style.display = 'none';
+
+                container.innerHTML = properties.map((prop, index) => {
+                    const price = prop.price > 0 ? `$${prop.price.toLocaleString()}` : 'Price N/A';
+
+                    return `
+                        <div style="background: rgba(255, 255, 255, 0.05);
+                                    border: 1px solid rgba(0, 212, 255, 0.3);
+                                    border-radius: 10px;
+                                    padding: 15px;
+                                    transition: all 0.3s;">
+                            <div style="font-weight: bold; color: #FFD700; margin-bottom: 8px;">${prop.name}</div>
+                            <div style="color: #00FF88; font-size: 0.9em; margin-bottom: 12px;">${price}</div>
+                            <div style="display: flex; gap: 8px; justify-content: center;">
+                                <button onclick='assignPropertyToSlot(${index}, "A")'
+                                        style="flex: 1; padding: 8px; background: linear-gradient(135deg, #00D4FF, #0099cc);
+                                               border: none; border-radius: 6px; color: white; font-weight: bold;
+                                               cursor: pointer; font-size: 0.85em;">
+                                    → Slot A
+                                </button>
+                                <button onclick='assignPropertyToSlot(${index}, "B")'
+                                        style="flex: 1; padding: 8px; background: linear-gradient(135deg, #00FF88, #00cc66);
+                                               border: none; border-radius: 6px; color: white; font-weight: bold;
+                                               cursor: pointer; font-size: 0.85em;">
+                                    → Slot B
+                                </button>
+                                <button onclick='assignPropertyToSlot(${index}, "C")'
+                                        style="flex: 1; padding: 8px; background: linear-gradient(135deg, #FFD700, #FFA500);
+                                               border: none; border-radius: 6px; color: white; font-weight: bold;
+                                               cursor: pointer; font-size: 0.85em;">
+                                    → Slot C
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            window.assignPropertyToSlot = function(propertyIndex, slot) {
+                const property = savedPropertiesCache[propertyIndex];
+                if (!property) {
+                    showAlert('Property not found', 'error');
+                    return;
+                }
+
+                console.log(`Assigning property to slot ${slot}:`, property);
+
+                // Add property to PROPERTIES array if not already there
+                if (!PROPERTIES.find(p => p.id === property.id)) {
+                    PROPERTIES.push(property);
+                    // Update dropdowns
+                    populatePropertySelectors();
+                }
+
+                // Select the property in the appropriate slot
+                selectProperty(slot, property.id);
+
+                showAlert(`${property.name} assigned to Slot ${slot}`, 'success');
+                vibrate('success');
+
+                // Close modal
+                closeImportModal();
             };
 
             // Toggle all panels
