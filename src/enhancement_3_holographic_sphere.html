@@ -1928,6 +1928,13 @@
                     🏠 3D Houses: ON
                 </button>
 
+                <!-- Inner Sphere Toggle -->
+                <button class="mode-toggle" id="inner-sphere-toggle" onclick="toggleInnerSphere()"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; display: none;"
+                        aria-label="Toggle inner sphere visibility in 3D houses">
+                    ⚪ Inner Sphere: OFF
+                </button>
+
                 <!-- Upload Photos -->
                 <button class="mode-toggle" id="photo-upload-toggle" onclick="togglePhotoUpload()"
                         style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(138, 43, 226, 0.3));"
@@ -2476,6 +2483,22 @@
 
             function createProceduralHouse(color) {
                 const houseGroup = new THREE.Group();
+
+                // Optional inner sphere (hidden by default)
+                const sphereGeometry = new THREE.SphereGeometry(0.4, 32, 32);
+                const sphereMaterial = new THREE.MeshPhongMaterial({
+                    color: color,
+                    emissive: color,
+                    emissiveIntensity: 0.3,
+                    shininess: 100,
+                    transparent: true,
+                    opacity: 0.6
+                });
+                const innerSphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+                innerSphere.position.y = 0;
+                innerSphere.visible = false; // Hidden by default
+                innerSphere.userData.isInnerSphere = true;
+                houseGroup.add(innerSphere);
 
                 // Main house body (rectangular prism)
                 const bodyGeometry = new THREE.BoxGeometry(1.2, 0.8, 1.0);
@@ -4413,6 +4436,7 @@
             window.toggle3DModels = function() {
                 use3DModels = !use3DModels;
                 const btn = document.getElementById('model-toggle');
+                const innerSphereBtn = document.getElementById('inner-sphere-toggle');
 
                 // Vibration feedback
                 vibrate('tap');
@@ -4420,10 +4444,14 @@
                 if (use3DModels) {
                     btn.textContent = '🏠 3D Houses: ON';
                     btn.style.background = 'linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 136, 0, 0.3))';
+                    // Show inner sphere toggle button
+                    if (innerSphereBtn) innerSphereBtn.style.display = 'block';
                     showAlert('Switched to 3D House Models', 'success');
                 } else {
                     btn.textContent = '⚪ Spheres: ON';
                     btn.style.background = '';
+                    // Hide inner sphere toggle button
+                    if (innerSphereBtn) innerSphereBtn.style.display = 'none';
                     showAlert('Switched to Classic Spheres', 'success');
                 }
 
@@ -4521,6 +4549,37 @@
                 }
 
                 updateConnectedObjects();
+                vibrate('tap');
+            };
+
+            // Toggle inner sphere visibility in 3D houses
+            window.toggleInnerSphere = function() {
+                const btn = document.getElementById('inner-sphere-toggle');
+
+                // Track state
+                const showInnerSphere = btn.textContent.includes('OFF');
+
+                // Update button
+                if (showInnerSphere) {
+                    btn.textContent = '⚪ Inner Sphere: ON';
+                    btn.style.background = 'linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(138, 43, 226, 0.3))';
+                } else {
+                    btn.textContent = '⚪ Inner Sphere: OFF';
+                    btn.style.background = '';
+                }
+
+                // Toggle visibility of inner spheres in all houses
+                [sphereA, sphereB, sphereC].forEach(house => {
+                    if (house && house.userData.isHouse) {
+                        house.children.forEach(child => {
+                            if (child.userData.isInnerSphere) {
+                                child.visible = showInnerSphere;
+                            }
+                        });
+                    }
+                });
+
+                showAlert(showInnerSphere ? 'Inner spheres visible' : 'Inner spheres hidden', 'info');
                 vibrate('tap');
             };
 
