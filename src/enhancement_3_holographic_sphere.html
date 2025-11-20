@@ -916,6 +916,37 @@
             50% { transform: scale(1.2); }
         }
 
+        @keyframes pulse-border {
+            0%, 100% {
+                border-color: rgba(255, 215, 0, 0.5);
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            }
+            50% {
+                border-color: rgba(255, 215, 0, 0.9);
+                box-shadow: 0 0 30px rgba(255, 215, 0, 0.6);
+            }
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.5) rotate(-10deg);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        @keyframes glow-text {
+            0%, 100% {
+                text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+            }
+            50% {
+                text-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 30px rgba(255, 215, 0, 0.6);
+            }
+        }
+
         .winner-glow {
             animation: winner-pulse 2s ease-in-out infinite;
         }
@@ -1564,6 +1595,11 @@
             flex-direction: column;
             gap: 12px;
             overflow-y: auto;
+            pointer-events: auto !important; /* CRITICAL: Allow interactions */
+        }
+
+        .notes-panel * {
+            pointer-events: auto !important; /* All children clickable */
         }
 
         .notes-panel h3 {
@@ -1767,7 +1803,7 @@
             </div>
 
             <!-- Controls Panel -->
-            <div class="controls" id="controls-panel" role="region" aria-label="Comparison controls">
+            <div class="controls collapsed" id="controls-panel" role="region" aria-label="Comparison controls">
                 <button class="controls-toggle-btn" onclick="toggleControlsPanel()" aria-label="Toggle controls panel">
                     ▼ Hide Controls
                 </button>
@@ -1821,62 +1857,101 @@
                 </div>
             </div>
 
-            <!-- Mode Toggle Button (Feature #6) -->
-            <button class="mode-toggle" onclick="toggleDisplayMode()" aria-label="Toggle between cinematic and analyst mode">
-                📊 Analyst Mode
+            <!-- TOOLS Master Dropdown Menu -->
+            <button class="mode-toggle" id="tools-master-btn" onclick="toggleToolsMenu()"
+                    aria-label="Open/close tools menu"
+                    style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(0, 212, 255, 0.4)); font-weight: bold; font-size: 1.1em;">
+                🛠️ TOOLS
             </button>
 
-            <!-- Experience Mode Toggle Button (Feature #17) -->
-            <button class="mode-toggle" id="experience-toggle" onclick="toggleExperienceMode()"
-                    style="top: 70px;" aria-label="Toggle between guided and expert mode">
-                🧭 Guided Mode
-            </button>
+            <!-- Tools Dropdown Container -->
+            <div id="tools-dropdown" style="
+                position: fixed;
+                right: 20px;
+                top: 70px;
+                display: none;
+                flex-direction: column;
+                gap: 8px;
+                background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%);
+                backdrop-filter: blur(20px);
+                border: 2px solid rgba(0, 212, 255, 0.5);
+                border-radius: 15px;
+                padding: 15px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+                z-index: 900;
+                min-width: 220px;
+            ">
+                <h4 style="color: #FFD700; margin: 0 0 10px 0; font-size: 0.95em; text-align: center; border-bottom: 1px solid rgba(255, 215, 0, 0.3); padding-bottom: 8px;">🛠️ Tools & Settings</h4>
 
-            <!-- Voice Control Button -->
-            <button class="mode-toggle" id="voice-toggle" onclick="toggleVoiceControl()"
-                    style="top: 120px;" aria-label="Toggle voice commands">
-                🎤 Voice: OFF
-            </button>
+                <!-- Analyst Mode -->
+                <button class="mode-toggle" onclick="toggleDisplayMode()" aria-label="Toggle between cinematic and analyst mode"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0;">
+                    📊 Analyst Mode
+                </button>
 
-            <!-- Vibration Toggle Button (Feature #18) -->
-            <button class="mode-toggle" id="vibration-toggle" onclick="toggleVibration()"
-                    style="top: 170px;" aria-label="Toggle haptic vibration feedback">
-                📳 Vibration: ON
-            </button>
+                <!-- Experience Mode -->
+                <button class="mode-toggle" id="experience-toggle" onclick="toggleExperienceMode()"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0;" aria-label="Toggle between guided and expert mode">
+                    🧭 Guided Mode
+                </button>
 
-            <!-- Gravity Toggle Button (Feature #31) -->
-            <button class="mode-toggle" id="gravity-toggle" onclick="toggleGravity()"
-                    style="top: 220px; background: linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 212, 255, 0.3));"
-                    aria-label="Toggle cost-of-living gravity positioning">
-                🌍 Gravity: ON
-            </button>
+                <!-- Voice Control -->
+                <button class="mode-toggle" id="voice-toggle" onclick="toggleVoiceControl()"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0;" aria-label="Toggle voice commands">
+                    🎤 Voice: OFF
+                </button>
 
-            <!-- Export to PDF Button (Feature #14) -->
-            <button class="mode-toggle" id="export-pdf-btn" onclick="exportToPDF()"
-                    style="top: 270px;"
-                    aria-label="Export comparison report to PDF">
-                📄 Export PDF
-            </button>
+                <!-- Vibration -->
+                <button class="mode-toggle" id="vibration-toggle" onclick="toggleVibration()"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0;" aria-label="Toggle haptic vibration feedback">
+                    📳 Vibration: ON
+                </button>
 
-            <!-- 3D Model Toggle Button (Feature #10) -->
-            <button class="mode-toggle" id="model-toggle" onclick="toggle3DModels()"
-                    style="top: 320px; background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 136, 0, 0.3));"
-                    aria-label="Toggle between 3D house models and classic spheres">
-                🏠 3D Houses: ON
-            </button>
+                <!-- Gravity -->
+                <button class="mode-toggle" id="gravity-toggle" onclick="toggleGravity()"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 212, 255, 0.3));"
+                        aria-label="Toggle cost-of-living gravity positioning">
+                    🌍 Gravity: ON
+                </button>
 
-            <!-- Photo Upload Button (Feature #10b) -->
-            <button class="mode-toggle" id="photo-upload-toggle" onclick="togglePhotoUpload()"
-                    style="top: 370px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(138, 43, 226, 0.3));"
-                    aria-label="Upload property photos to create 3D models">
-                📸 Upload Photos
-            </button>
+                <!-- Export PDF -->
+                <button class="mode-toggle" id="export-pdf-btn" onclick="exportToPDF()"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0;"
+                        aria-label="Export comparison report to PDF">
+                    📄 Export PDF
+                </button>
+
+                <!-- 3D Houses -->
+                <button class="mode-toggle" id="model-toggle" onclick="toggle3DModels()"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 136, 0, 0.3));"
+                        aria-label="Toggle between 3D house models and classic spheres">
+                    🏠 3D Houses: ON
+                </button>
+
+                <!-- Upload Photos -->
+                <button class="mode-toggle" id="photo-upload-toggle" onclick="togglePhotoUpload()"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(138, 43, 226, 0.3));"
+                        aria-label="Upload property photos to create 3D models">
+                    📸 Upload Photos
+                </button>
+
+                <!-- Auto-Cycle -->
+                <button class="mode-toggle" id="auto-cycle-toggle" onclick="toggleAutoCycle()"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(138, 43, 226, 0.3)); display: none;"
+                        aria-label="Automatically cycle through uploaded photos">
+                    🔄 Auto-Cycle: OFF
+                </button>
+            </div>
 
             <!-- Photo Upload Panel -->
             <div class="photo-upload-panel" id="photo-upload-panel" role="region" aria-label="Upload property photos">
-                <h3 style="color: #FFD700;">📸 Upload Property Photos</h3>
-                <p style="font-size: 0.9em; color: rgba(255, 255, 255, 0.9); margin-bottom: 15px;">
-                    Upload a photo of the property to display it as a 3D textured model
+                <button onclick="togglePhotoUpload()" style="position: absolute; top: 10px; right: 10px; background: rgba(255, 0, 0, 0.7); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 18px; font-weight: bold; line-height: 1; z-index: 10000;" aria-label="Close photo upload panel">×</button>
+                <h3 style="color: #FFD700;">📸 Upload Ultra-HD Property Photos</h3>
+                <p style="font-size: 0.85em; color: rgba(255, 255, 255, 0.9); margin-bottom: 10px; line-height: 1.4;">
+                    <strong style="color: #00FF88;">📦 Multi-Photo Cube Mapping:</strong><br>
+                    • Upload 2-6 photos for crystal-clear 3D cube<br>
+                    • Photos map to: Front, Back, Left, Right, Top, Bottom<br>
+                    • <em style="color: #FFD700;">Tip: Include aerial/drone shot for top face!</em>
                 </p>
 
                 <div class="upload-tabs">
@@ -1887,8 +1962,12 @@
 
                 <div id="upload-content" style="color: #FFFFFF;">
                     <!-- Property A upload -->
-                    <input type="file" id="photo-input-A" accept="image/*" onchange="handlePhotoUpload('A', this)"
+                    <input type="file" id="photo-input-A" accept="image/*" multiple onchange="handlePhotoUpload('A', this)"
                            style="margin: 10px 0; display: block; width: 100%; color: white; background: rgba(255, 255, 255, 0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.3);">
+                    <p style="font-size: 0.75em; color: rgba(255, 200, 0, 0.9); margin: -5px 0 10px 0; line-height: 1.3;">
+                        💡 <strong>1 photo</strong> = Single plane | <strong>2-6 photos</strong> = Ultra-HD 3D cube<br>
+                        🎯 Order: Front → Back → Left → Right → Top → Bottom
+                    </p>
 
                     <div id="photo-preview-A" style="margin: 10px 0; max-width: 100%; max-height: 200px; overflow: hidden; border-radius: 8px; background: rgba(0, 0, 0, 0.3); padding: 10px;">
                         <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.85em; text-align: center;">📷 No photo uploaded yet</p>
@@ -1899,8 +1978,9 @@
                     </button>
 
                     <!-- Property B upload (hidden by default) -->
-                    <input type="file" id="photo-input-B" accept="image/*" onchange="handlePhotoUpload('B', this)"
+                    <input type="file" id="photo-input-B" accept="image/*" multiple onchange="handlePhotoUpload('B', this)"
                            style="margin: 10px 0; display: none; width: 100%; color: white; background: rgba(255, 255, 255, 0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.3);">
+                    <p id="hint-B" style="font-size: 0.8em; color: rgba(255, 200, 0, 0.9); margin: -5px 0 10px 0; display: none;">💡 Select multiple photos for better 3D effect!</p>
 
                     <div id="photo-preview-B" style="margin: 10px 0; max-width: 100%; max-height: 200px; overflow: hidden; border-radius: 8px; background: rgba(0, 0, 0, 0.3); padding: 10px; display: none;">
                         <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.85em; text-align: center;">📷 No photo uploaded yet</p>
@@ -1911,8 +1991,9 @@
                     </button>
 
                     <!-- Property C upload (hidden by default) -->
-                    <input type="file" id="photo-input-C" accept="image/*" onchange="handlePhotoUpload('C', this)"
+                    <input type="file" id="photo-input-C" accept="image/*" multiple onchange="handlePhotoUpload('C', this)"
                            style="margin: 10px 0; display: none; width: 100%; color: white; background: rgba(255, 255, 255, 0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.3);">
+                    <p id="hint-C" style="font-size: 0.8em; color: rgba(255, 200, 0, 0.9); margin: -5px 0 10px 0; display: none;">💡 Select multiple photos for better 3D effect!</p>
 
                     <div id="photo-preview-C" style="margin: 10px 0; max-width: 100%; max-height: 200px; overflow: hidden; border-radius: 8px; background: rgba(0, 0, 0, 0.3); padding: 10px; display: none;">
                         <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.85em; text-align: center;">📷 No photo uploaded yet</p>
@@ -1975,6 +2056,7 @@
 
             <!-- Feature #24: Personal Notes Panel -->
             <div class="notes-panel" id="notes-panel" role="region" aria-label="Property notes and reactions">
+                <button onclick="toggleNotesPanel()" style="position: absolute; top: 10px; right: 10px; background: rgba(255, 0, 0, 0.7); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 18px; font-weight: bold; line-height: 1; z-index: 10000; pointer-events: auto !important;" aria-label="Close notes panel">×</button>
                 <h3>📝 Property Notes</h3>
                 <div class="notes-tabs">
                     <button class="notes-tab active" onclick="selectNotesProperty('A')">A</button>
@@ -1993,6 +2075,9 @@
                     <textarea class="notes-textarea" id="notes-A" placeholder="Add your notes about this property..."
                               rows="4" oninput="saveNotes('A')"></textarea>
                     <div class="notes-hint help-text">💡 Notes are saved automatically</div>
+                    <button onclick="exportNotesToFile()" style="margin-top: 10px; padding: 8px 16px; background: linear-gradient(135deg, #00D4FF, #8A2BE2); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 0.9em; pointer-events: auto !important;" title="Download notes as text file">
+                        📥 Export Notes to File
+                    </button>
                 </div>
             </div>
         </div>
@@ -2175,7 +2260,7 @@
             let gltfLoader = null;
             let modelCache = {}; // Cache loaded models for performance
             let use3DModels = true; // Toggle between 3D models and spheres
-            let uploadedPhotos = { A: null, B: null, C: null }; // Store uploaded photo URLs
+            let uploadedPhotos = { A: [], B: [], C: [] }; // Store MULTIPLE uploaded photo URLs
             let currentUploadSlot = 'A'; // Track which slot is being uploaded to
 
             // Property-specific model paths (extensible for each property)
@@ -2245,6 +2330,143 @@
             }
 
             // Create procedural 3D house (fallback when no model available)
+            // Create ULTRA HIGH-QUALITY photo cube with individual photos on each face
+            function createPhotoCube(photos, color) {
+                const cubeGroup = new THREE.Group();
+
+                // Cube size
+                const cubeSize = 1.4;
+
+                // Get renderer's max anisotropy for MAXIMUM quality
+                const maxAnisotropy = renderer ? renderer.capabilities.getMaxAnisotropy() : 16;
+                console.log(`🎨 Using maximum anisotropy: ${maxAnisotropy}`);
+
+                // Create materials array for each face (order: +X, -X, +Y, -Y, +Z, -Z)
+                // That's: Right, Left, Top, Bottom, Front, Back
+                const materials = [];
+                const faceNames = ['Right', 'Left', 'Top', 'Bottom', 'Front', 'Back'];
+
+                for (let i = 0; i < 6; i++) {
+                    const photoUrl = photos[i] || photos[0]; // Use first photo if not enough provided
+
+                    const textureLoader = new THREE.TextureLoader();
+                    const texture = textureLoader.load(photoUrl, (loadedTexture) => {
+                        // CRITICAL: Apply ultra-high quality settings AFTER texture loads
+                        loadedTexture.minFilter = THREE.LinearMipMapLinearFilter; // Best quality minification
+                        loadedTexture.magFilter = THREE.LinearFilter; // Best quality magnification
+                        loadedTexture.anisotropy = maxAnisotropy; // MAXIMUM anisotropic filtering
+                        loadedTexture.generateMipmaps = true;
+                        loadedTexture.needsUpdate = true;
+
+                        console.log(`✅ Ultra-HD texture loaded for ${faceNames[i]} face`);
+                    });
+
+                    // Pre-configure texture settings
+                    texture.minFilter = THREE.LinearMipMapLinearFilter;
+                    texture.magFilter = THREE.LinearFilter;
+                    texture.anisotropy = maxAnisotropy;
+                    texture.encoding = THREE.sRGBEncoding; // Correct color space
+
+                    const material = new THREE.MeshBasicMaterial({
+                        map: texture,
+                        side: THREE.FrontSide,
+                        transparent: false,
+                        opacity: 1.0,
+                        toneMapped: true, // Better color rendering
+                        precision: 'highp' // High precision shader
+                    });
+
+                    materials.push(material);
+                }
+
+                // Create cube geometry with HIGH segment count for better quality
+                const cubeGeometry = new THREE.BoxGeometry(cubeSize, cubeSize, cubeSize, 32, 32, 32); // More segments = smoother
+                const photoCube = new THREE.Mesh(cubeGeometry, materials);
+
+                cubeGroup.add(photoCube);
+
+                // Add glowing wireframe overlay for prismatic effect
+                const wireframeGeometry = new THREE.EdgesGeometry(cubeGeometry);
+                const wireframeMaterial = new THREE.LineBasicMaterial({
+                    color: 0xFFD700,
+                    linewidth: 2,
+                    transparent: true,
+                    opacity: 0.6
+                });
+                const wireframe = new THREE.LineSegments(wireframeGeometry, wireframeMaterial);
+                cubeGroup.add(wireframe);
+
+                // Store data
+                cubeGroup.userData.isPhotoCube = true;
+                cubeGroup.userData.photoCube = photoCube;
+                cubeGroup.userData.wireframe = wireframe;
+                cubeGroup.userData.materials = materials;
+                cubeGroup.userData.originalColor = color;
+                cubeGroup.userData.uploadedPhotos = photos;
+
+                // Slow rotation for viewing all sides
+                cubeGroup.userData.rotationSpeed = 0.005;
+
+                return cubeGroup;
+            }
+
+            // Legacy: Create single-photo plane (for backward compatibility)
+            function createPhotoDisplay(photoUrl, color) {
+                const displayGroup = new THREE.Group();
+
+                // Create high-res plane for photo display
+                const planeGeometry = new THREE.PlaneGeometry(1.6, 1.2);
+
+                // Get max anisotropy
+                const maxAnisotropy = renderer ? renderer.capabilities.getMaxAnisotropy() : 16;
+
+                // Load texture from photo
+                const textureLoader = new THREE.TextureLoader();
+                const texture = textureLoader.load(photoUrl, (loadedTexture) => {
+                    loadedTexture.minFilter = THREE.LinearMipMapLinearFilter;
+                    loadedTexture.magFilter = THREE.LinearFilter;
+                    loadedTexture.anisotropy = maxAnisotropy;
+                    loadedTexture.generateMipmaps = true;
+                    loadedTexture.encoding = THREE.sRGBEncoding;
+                    loadedTexture.needsUpdate = true;
+                });
+
+                texture.minFilter = THREE.LinearMipMapLinearFilter;
+                texture.magFilter = THREE.LinearFilter;
+                texture.anisotropy = maxAnisotropy;
+                texture.encoding = THREE.sRGBEncoding;
+
+                const planeMaterial = new THREE.MeshBasicMaterial({
+                    map: texture,
+                    side: THREE.DoubleSide,
+                    transparent: false,
+                    opacity: 1.0,
+                    toneMapped: true,
+                    precision: 'highp'
+                });
+
+                const photoPlane = new THREE.Mesh(planeGeometry, planeMaterial);
+                displayGroup.add(photoPlane);
+
+                // Add subtle glowing frame
+                const frameGeometry = new THREE.PlaneGeometry(1.7, 1.3);
+                const frameMaterial = new THREE.MeshBasicMaterial({
+                    color: 0xFFD700,
+                    transparent: true,
+                    opacity: 0.3,
+                    side: THREE.DoubleSide
+                });
+                const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+                frame.position.z = -0.01;
+                displayGroup.add(frame);
+
+                displayGroup.userData.isPhotoDisplay = true;
+                displayGroup.userData.photoPlane = photoPlane;
+                displayGroup.userData.originalColor = color;
+
+                return displayGroup;
+            }
+
             function createProceduralHouse(color) {
                 const houseGroup = new THREE.Group();
 
@@ -2475,134 +2697,386 @@
                 console.log(`📸 Switched to Property ${slot} upload tab`);
             };
 
-            // Handle photo file upload
+            // Handle MULTIPLE photo file uploads
             window.handlePhotoUpload = function(slot, inputElement) {
                 console.log(`📸 handlePhotoUpload called for slot ${slot}`);
-                const file = inputElement.files[0];
-                if (!file) {
-                    console.log('❌ No file selected');
-                    return;
-                }
-                console.log(`📁 File: ${file.name}, Size: ${(file.size / 1024).toFixed(1)} KB, Type: ${file.type}`);
-
-                // Validate file type
-                if (!file.type.startsWith('image/')) {
-                    showAlert('Please upload an image file (JPG, PNG, etc.)', 'error');
+                const files = inputElement.files;
+                if (!files || files.length === 0) {
+                    console.log('❌ No files selected');
                     return;
                 }
 
-                // Validate file size (max 10MB)
-                if (file.size > 10 * 1024 * 1024) {
-                    showAlert('Image too large! Please use an image under 10MB', 'error');
-                    return;
+                console.log(`📁 ${files.length} file(s) selected`);
+                uploadedPhotos[slot] = []; // Clear previous photos
+
+                const preview = document.getElementById(`photo-preview-${slot}`);
+                if (preview) {
+                    preview.innerHTML = `<p style="color: #FFD700; text-align: center;">Loading ${files.length} photo(s)...</p>`;
                 }
 
-                // Create object URL for the image
-                console.log('📖 Reading file with FileReader...');
-                const reader = new FileReader();
+                let loadedCount = 0;
+                const photoUrls = [];
 
-                reader.onload = function(e) {
-                    uploadedPhotos[slot] = e.target.result;
-                    console.log(`✅ FileReader success! Data URL length: ${e.target.result.length}`);
-
-                    // Show preview
-                    const preview = document.getElementById(`photo-preview-${slot}`);
-                    if (preview) {
-                        preview.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: auto; border-radius: 8px;" alt="Property ${slot} photo">`;
-                        console.log(`✅ Preview updated for slot ${slot}`);
-                    } else {
-                        console.log(`❌ Preview element not found: photo-preview-${slot}`);
+                // Filter valid image files first
+                const validFiles = Array.from(files).filter(file => {
+                    if (!file.type.startsWith('image/')) {
+                        console.warn(`⚠️ Skipping non-image file: ${file.name}`);
+                        return false;
                     }
+                    if (file.size > 10 * 1024 * 1024) {
+                        console.warn(`⚠️ Skipping large file: ${file.name} (${(file.size / 1024 / 1024).toFixed(1)} MB)`);
+                        return false;
+                    }
+                    return true;
+                });
 
-                    showAlert(`Photo uploaded for Property ${slot}!`, 'success');
-                    vibrate('success');
-                    console.log(`📸 Photo uploaded for slot ${slot}: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`);
-                };
+                const totalValidFiles = validFiles.length;
+                console.log(`✅ ${totalValidFiles} valid image file(s) to load`);
 
-                reader.onerror = function(error) {
-                    console.error('❌ FileReader error:', error);
-                    showAlert('Failed to read file!', 'error');
-                };
+                if (totalValidFiles === 0) {
+                    if (preview) {
+                        preview.innerHTML = `<p style="color: #FF6B6B; text-align: center;">❌ No valid image files selected</p>`;
+                    }
+                    showAlert('Please select valid image files (max 10MB each)', 'error');
+                    return;
+                }
 
-                reader.readAsDataURL(file);
-                console.log('📖 FileReader.readAsDataURL() called');
+                // Load all valid files
+                validFiles.forEach((file, index) => {
+                    const reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        photoUrls.push(e.target.result);
+                        loadedCount++;
+                        console.log(`✅ Loaded ${loadedCount}/${totalValidFiles}: ${file.name}`);
+
+                        // When all files loaded, update preview
+                        if (loadedCount === totalValidFiles) {
+                            uploadedPhotos[slot] = photoUrls;
+
+                            // Show enhanced gallery preview with animations
+                            if (preview) {
+                                let galleryHTML = `
+                                <div style="
+                                    display: grid;
+                                    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+                                    gap: 8px;
+                                    padding: 10px;
+                                    background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(138, 43, 226, 0.1) 100%);
+                                    border-radius: 10px;
+                                    border: 2px solid rgba(255, 215, 0, 0.5);
+                                    box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+                                    animation: pulse-border 2s ease-in-out infinite;
+                                ">`;
+                                photoUrls.forEach((url, i) => {
+                                    galleryHTML += `
+                                    <div style="position: relative; animation: fadeInScale 0.5s ease-out ${i * 0.1}s backwards;">
+                                        <img src="${url}"
+                                            style="
+                                                width: 100%;
+                                                height: 80px;
+                                                object-fit: cover;
+                                                border-radius: 6px;
+                                                border: 3px solid #FFD700;
+                                                box-shadow: 0 0 15px rgba(255, 215, 0, 0.6), inset 0 0 10px rgba(255, 215, 0, 0.2);
+                                                transition: all 0.3s ease;
+                                                cursor: pointer;
+                                            "
+                                            alt="Photo ${i+1}"
+                                            onmouseover="this.style.transform='scale(1.1) rotate(2deg)'; this.style.boxShadow='0 0 25px rgba(255, 215, 0, 1)'"
+                                            onmouseout="this.style.transform='scale(1) rotate(0deg)'; this.style.boxShadow='0 0 15px rgba(255, 215, 0, 0.6)'"
+                                        >
+                                        <div style="
+                                            position: absolute;
+                                            top: 3px;
+                                            right: 3px;
+                                            background: rgba(255, 215, 0, 0.9);
+                                            color: #0a1628;
+                                            font-size: 10px;
+                                            font-weight: bold;
+                                            padding: 2px 6px;
+                                            border-radius: 10px;
+                                            box-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+                                        ">${i + 1}</div>
+                                    </div>`;
+                                });
+                                galleryHTML += `</div>`;
+                                galleryHTML += `
+                                <p style="
+                                    color: #FFD700;
+                                    text-align: center;
+                                    margin-top: 12px;
+                                    font-size: 0.95em;
+                                    font-weight: bold;
+                                    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+                                    animation: glow-text 2s ease-in-out infinite;
+                                ">✨ ${photoUrls.length} photo(s) ready! ✨</p>
+                                <p style="
+                                    color: rgba(255, 255, 255, 0.8);
+                                    text-align: center;
+                                    font-size: 0.75em;
+                                    margin-top: 5px;
+                                ">🎮 Use arrow keys ← → to cycle photos</p>`;
+                                preview.innerHTML = galleryHTML;
+                            }
+
+                            // Update Apply button to show photo count
+                            const applyBtn = document.getElementById(`apply-btn-${slot}`);
+                            if (applyBtn) {
+                                if (photoUrls.length === 1) {
+                                    applyBtn.innerHTML = `✨ Apply Photo to 3D Model`;
+                                } else {
+                                    applyBtn.innerHTML = `✨ Apply ${photoUrls.length} Photos to 3D Model`;
+                                }
+                                applyBtn.style.background = 'linear-gradient(135deg, #FFD700, #FF8800)';
+                                applyBtn.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.6)';
+                            }
+
+                            showAlert(`${photoUrls.length} photo(s) uploaded for Property ${slot}!`, 'success');
+                            vibrate('success');
+                            console.log(`📸 ${photoUrls.length} photos uploaded for slot ${slot}`);
+                        }
+                    };
+
+                    reader.onerror = function(error) {
+                        console.error(`❌ Error reading ${file.name}:`, error);
+                    };
+
+                    reader.readAsDataURL(file);
+                });
             };
 
-            // Apply uploaded photo as texture to the 3D model
+            // Apply uploaded photo(s) - REPLACES procedural house with crystal clear photo display
             window.applyPhotoTexture = function(slot) {
-                if (!uploadedPhotos[slot]) {
-                    showAlert(`No photo uploaded for Property ${slot}`, 'error');
+                if (!uploadedPhotos[slot] || uploadedPhotos[slot].length === 0) {
+                    showAlert(`No photos uploaded for Property ${slot}`, 'error');
                     return;
                 }
+
+                console.log(`🎨 Replacing house with ${uploadedPhotos[slot].length} crystal clear photo(s) for Property ${slot}...`);
 
                 if (!use3DModels) {
                     showAlert('Please enable 3D Houses mode first!', 'info');
                     return;
                 }
 
-                // Get the house object
+                // Get the current house object and its position
+                let currentHouse = null;
+                let slotRef = null;
+                if (slot === 'A') {
+                    currentHouse = sphereA;
+                    slotRef = 'sphereA';
+                }
+                if (slot === 'B') {
+                    currentHouse = sphereB;
+                    slotRef = 'sphereB';
+                }
+                if (slot === 'C') {
+                    currentHouse = sphereC;
+                    slotRef = 'sphereC';
+                }
+
+                if (!currentHouse) {
+                    showAlert(`No model loaded for Property ${slot}`, 'error');
+                    return;
+                }
+
+                // Store current position
+                const currentPosition = currentHouse.position.clone();
+                const originalColor = currentHouse.userData.originalColor || 0x00D4FF;
+
+                // Use first photo as primary (can cycle through later)
+                const primaryPhotoUrl = uploadedPhotos[slot][0];
+                const photoCount = uploadedPhotos[slot].length;
+
+                console.log(`🎨 Replacing procedural house with photo display for Property ${slot} (1 of ${photoCount})...`);
+
+                // REMOVE the old procedural house from scene
+                scene.remove(currentHouse);
+
+                // CREATE ULTRA HD PHOTO CUBE (if 2+ photos) or single plane
+                let photoDisplay;
+                if (photoCount >= 2) {
+                    // Create 3D cube with photos on each face
+                    photoDisplay = createPhotoCube(uploadedPhotos[slot], originalColor);
+                    console.log(`📦 Created Ultra-HD photo cube with ${photoCount} photos mapped to faces`);
+                } else {
+                    // Single photo - use plane
+                    photoDisplay = createPhotoDisplay(primaryPhotoUrl, originalColor);
+                    console.log(`🖼️ Created Ultra-HD single photo display`);
+                }
+
+                // Position it where the old house was
+                photoDisplay.position.copy(currentPosition);
+
+                // Store all photos for cycling
+                photoDisplay.userData.uploadedPhotos = uploadedPhotos[slot];
+                photoDisplay.userData.currentPhotoIndex = 0;
+                photoDisplay.userData.isHouse = true; // For compatibility
+
+                // Add to scene
+                scene.add(photoDisplay);
+
+                // Update global reference
+                if (slot === 'A') window.sphereA = photoDisplay;
+                if (slot === 'B') window.sphereB = photoDisplay;
+                if (slot === 'C') window.sphereC = photoDisplay;
+
+                // Add pulsing glow animation
+                photoDisplay.userData.photoAnimationActive = true;
+                photoDisplay.userData.photoGlowPhase = 0;
+
+                const animateGlow = () => {
+                    if (photoDisplay.userData.photoAnimationActive) {
+                        photoDisplay.userData.photoGlowPhase += 0.02;
+
+                        // Animate wireframe (cube) or frame (plane)
+                        if (photoDisplay.userData.wireframe) {
+                            const opacity = 0.6 + Math.sin(photoDisplay.userData.photoGlowPhase) * 0.3;
+                            photoDisplay.userData.wireframe.material.opacity = opacity;
+                        } else if (photoDisplay.children[1]) {
+                            const opacity = 0.3 + Math.sin(photoDisplay.userData.photoGlowPhase) * 0.15;
+                            photoDisplay.children[1].material.opacity = opacity;
+                        }
+
+                        requestAnimationFrame(animateGlow);
+                    }
+                };
+                animateGlow();
+
+                console.log(`✅ Procedural house REPLACED with crystal clear photo display for ${slot} (${photoCount} total)`);
+
+                // Show auto-cycle button if multiple photos uploaded
+                if (photoCount > 1) {
+                    const autoCycleBtn = document.getElementById('auto-cycle-toggle');
+                    if (autoCycleBtn) {
+                        autoCycleBtn.style.display = 'block';
+                    }
+                }
+
+                showAlert(`📸 Crystal clear photo(s) applied to Property ${slot}! ✨`, 'success');
+                vibrate('success');
+                announceToScreenReader(`${photoCount} crystal clear photo(s) applied to property ${slot}`);
+            };
+
+            // Cycle through multiple uploaded photos (if available)
+            window.cyclePropertyPhoto = function(slot, direction = 1) {
                 let house = null;
                 if (slot === 'A') house = sphereA;
                 if (slot === 'B') house = sphereB;
                 if (slot === 'C') house = sphereC;
 
-                if (!house) {
-                    showAlert(`No model loaded for Property ${slot}`, 'error');
+                if (!house || !house.userData.uploadedPhotos || house.userData.uploadedPhotos.length <= 1) {
+                    console.log(`No multiple photos to cycle for Property ${slot}`);
                     return;
                 }
 
-                console.log(`🎨 Applying photo texture to Property ${slot}...`);
+                const photos = house.userData.uploadedPhotos;
+                house.userData.currentPhotoIndex = (house.userData.currentPhotoIndex + direction + photos.length) % photos.length;
+                const newIndex = house.userData.currentPhotoIndex;
+                const newPhotoUrl = photos[newIndex];
 
-                // Create texture from uploaded photo
+                console.log(`🔄 Cycling to photo ${newIndex + 1}/${photos.length} for Property ${slot}`);
+
+                // Load and apply new texture
                 const textureLoader = new THREE.TextureLoader();
-                textureLoader.load(
-                    uploadedPhotos[slot],
-                    (texture) => {
-                        // For procedural houses, apply to body mesh
-                        if (house.userData.isHouse && house.userData.bodyMesh) {
-                            const bodyMesh = house.userData.bodyMesh;
+                textureLoader.load(newPhotoUrl, (texture) => {
+                    texture.minFilter = THREE.LinearFilter; // Crystal clear
+                    texture.magFilter = THREE.LinearFilter;
+                    texture.anisotropy = 16;
 
-                            // Create photo-textured material
-                            bodyMesh.material = new THREE.MeshPhongMaterial({
-                                map: texture,
-                                emissive: house.userData.originalColor,
-                                emissiveIntensity: 0.1,
-                                shininess: 30
-                            });
-
-                            console.log(`✅ Photo texture applied to procedural house ${slot}`);
-                            showAlert(`Photo applied to Property ${slot}! 🎉`, 'success');
-                            vibrate('success');
-                        }
-                        // For GLTF models, apply to all meshes
-                        else {
-                            house.traverse((child) => {
-                                if (child.isMesh) {
-                                    child.material = new THREE.MeshPhongMaterial({
-                                        map: texture,
-                                        emissive: house.userData.originalColor || 0x00D4FF,
-                                        emissiveIntensity: 0.1,
-                                        shininess: 30
-                                    });
-                                }
-                            });
-
-                            console.log(`✅ Photo texture applied to GLTF model ${slot}`);
-                            showAlert(`Photo applied to Property ${slot}! 🎉`, 'success');
-                            vibrate('success');
-                        }
-
-                        announceToScreenReader(`Photo texture applied to property ${slot}`);
-                    },
-                    undefined,
-                    (error) => {
-                        console.error(`❌ Failed to load texture for slot ${slot}:`, error);
-                        showAlert('Failed to apply photo texture', 'error');
+                    // Update photo display plane OR textured house
+                    if (house.userData.isPhotoDisplay && house.userData.photoPlane) {
+                        // Crystal clear photo display
+                        house.userData.photoPlane.material.map = texture;
+                        house.userData.photoPlane.material.needsUpdate = true;
+                    } else if (house.userData.bodyMesh) {
+                        // Fallback: textured house body
+                        house.userData.bodyMesh.material.map = texture;
+                        house.userData.bodyMesh.material.needsUpdate = true;
+                    } else {
+                        // Fallback: traverse all meshes
+                        house.traverse((child) => {
+                            if (child.isMesh && child.material) {
+                                child.material.map = texture;
+                                child.material.needsUpdate = true;
+                            }
+                        });
                     }
-                );
-                };
 
-                console.log('✅ All photo upload functions created successfully!');
+                    showAlert(`Photo ${newIndex + 1}/${photos.length} for Property ${slot}`, 'info');
+                    vibrate('light');
+                });
+            };
+
+            // Auto-cycle through photos
+            let autoCycleEnabled = false;
+            let autoCycleInterval = null;
+
+            window.toggleAutoCycle = function() {
+                autoCycleEnabled = !autoCycleEnabled;
+                const btn = document.getElementById('auto-cycle-toggle');
+
+                if (autoCycleEnabled) {
+                    btn.textContent = '🔄 Auto-Cycle: ON';
+                    btn.style.background = 'linear-gradient(135deg, rgba(255, 215, 0, 0.6), rgba(138, 43, 226, 0.6))';
+
+                    // Start auto-cycling every 3 seconds
+                    autoCycleInterval = setInterval(() => {
+                        cyclePropertyPhoto('A', 1);
+                        cyclePropertyPhoto('B', 1);
+                        cyclePropertyPhoto('C', 1);
+                    }, 3000);
+
+                    showAlert('Auto-cycling photos every 3 seconds', 'info');
+                    console.log('🔄 Auto-cycle enabled');
+                } else {
+                    btn.textContent = '🔄 Auto-Cycle: OFF';
+                    btn.style.background = 'linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(138, 43, 226, 0.3))';
+
+                    if (autoCycleInterval) {
+                        clearInterval(autoCycleInterval);
+                        autoCycleInterval = null;
+                    }
+
+                    showAlert('Auto-cycling disabled', 'info');
+                    console.log('🔄 Auto-cycle disabled');
+                }
+
+                announceToScreenReader(`Photo auto-cycling ${autoCycleEnabled ? 'enabled' : 'disabled'}`);
+            };
+
+            // Add keyboard shortcuts for photo cycling
+            document.addEventListener('keydown', function(e) {
+                // Arrow keys to cycle photos
+                if (e.key === 'ArrowLeft') {
+                    // Cycle all properties backwards
+                    cyclePropertyPhoto('A', -1);
+                    cyclePropertyPhoto('B', -1);
+                    cyclePropertyPhoto('C', -1);
+                } else if (e.key === 'ArrowRight') {
+                    // Cycle all properties forward
+                    cyclePropertyPhoto('A', 1);
+                    cyclePropertyPhoto('B', 1);
+                    cyclePropertyPhoto('C', 1);
+                }
+                // Number keys 1,2,3 to cycle individual properties
+                else if (e.key === '1') {
+                    cyclePropertyPhoto('A', 1);
+                } else if (e.key === '2') {
+                    cyclePropertyPhoto('B', 1);
+                } else if (e.key === '3') {
+                    cyclePropertyPhoto('C', 1);
+                }
+                // 'C' key to toggle auto-cycle
+                else if (e.key === 'c' || e.key === 'C') {
+                    if (document.getElementById('auto-cycle-toggle').style.display !== 'none') {
+                        toggleAutoCycle();
+                    }
+                }
+            });
+
+            console.log('✅ All photo upload functions created successfully!');
 
             } catch (error) {
                 console.error('❌❌❌ FATAL ERROR in photo upload functions:', error);
@@ -2616,6 +3090,91 @@
                 handlePhotoUpload: typeof window.handlePhotoUpload,
                 applyPhotoTexture: typeof window.applyPhotoTexture
             });
+
+            // ===== TOOLS MENU & PANEL TOGGLES =====
+
+            // Toggle TOOLS dropdown menu
+            window.toggleToolsMenu = function() {
+                const dropdown = document.getElementById('tools-dropdown');
+                const btn = document.getElementById('tools-master-btn');
+
+                if (dropdown.style.display === 'none' || dropdown.style.display === '') {
+                    dropdown.style.display = 'flex';
+                    btn.style.background = 'linear-gradient(135deg, rgba(255, 215, 0, 0.7), rgba(0, 212, 255, 0.7))';
+                    btn.textContent = '🛠️ TOOLS ▲';
+                    console.log('🛠️ Tools menu opened');
+                } else {
+                    dropdown.style.display = 'none';
+                    btn.style.background = 'linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(0, 212, 255, 0.4))';
+                    btn.textContent = '🛠️ TOOLS';
+                    console.log('🛠️ Tools menu closed');
+                }
+
+                vibrate('tap');
+            };
+
+            // Toggle photo upload panel
+            window.togglePhotoUpload = function() {
+                const panel = document.getElementById('photo-upload-panel');
+                const btn = document.getElementById('photo-upload-toggle');
+
+                if (panel.style.display === 'none' || panel.style.display === '') {
+                    panel.style.display = 'flex';
+                    if (btn) {
+                        btn.style.background = 'linear-gradient(135deg, rgba(0, 212, 255, 0.7), rgba(138, 43, 226, 0.7))';
+                    }
+                    console.log('📸 Photo upload panel opened');
+                    announceToScreenReader('Photo upload panel opened');
+                } else {
+                    panel.style.display = 'none';
+                    if (btn) {
+                        btn.style.background = 'linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(138, 43, 226, 0.3))';
+                    }
+                    console.log('📸 Photo upload panel closed');
+                    announceToScreenReader('Photo upload panel closed');
+                }
+
+                vibrate('tap');
+            };
+
+            // Toggle notes panel (legacy compatibility)
+            window.togglePanel = function(panelType) {
+                if (panelType === 'notes') {
+                    toggleNotesPanel();
+                }
+            };
+
+            // Toggle notes panel
+            window.toggleNotesPanel = function() {
+                const panel = document.getElementById('notes-panel');
+                const btn = document.getElementById('toggle-notes');
+
+                if (panel.style.display === 'none' || panel.style.display === '') {
+                    panel.style.display = 'flex';
+                    if (btn) {
+                        btn.style.background = 'rgba(138, 43, 226, 0.4)';
+                    }
+
+                    // CRITICAL: Load saved notes when panel opens
+                    if (typeof updateNotesDisplay === 'function') {
+                        updateNotesDisplay();
+                    }
+
+                    console.log('📝 Notes panel opened - notes loaded from localStorage');
+                    announceToScreenReader('Notes panel opened');
+                } else {
+                    panel.style.display = 'none';
+                    if (btn) {
+                        btn.style.background = 'rgba(255, 255, 255, 0.1)';
+                    }
+                    console.log('📝 Notes panel closed');
+                    announceToScreenReader('Notes panel closed');
+                }
+
+                vibrate('tap');
+            };
+
+            console.log('✅ Tools menu and panel toggle functions created');
 
             // ===== INITIALIZATION =====
             async function init() {
@@ -2708,9 +3267,24 @@
                 scene = new THREE.Scene();
                 camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
-                renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+                renderer = new THREE.WebGLRenderer({
+                    antialias: true,
+                    alpha: true,
+                    powerPreference: 'high-performance', // Use GPU for better performance
+                    precision: 'highp', // High precision shaders
+                    preserveDrawingBuffer: true // Better quality rendering
+                });
                 renderer.setSize(window.innerWidth, window.innerHeight);
-                renderer.setPixelRatio(window.devicePixelRatio);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Cap at 2x for performance
+
+                // CRITICAL: Enable maximum texture quality
+                const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+                console.log(`🎨 GPU supports max anisotropy: ${maxAnisotropy}`);
+
+                // Enable better color rendering
+                renderer.outputEncoding = THREE.sRGBEncoding;
+                renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                renderer.toneMappingExposure = 1.0;
                 document.getElementById('canvas-container').appendChild(renderer.domElement);
 
                 // Orbit controls (from external file)
@@ -2869,6 +3443,14 @@
                 if (autoRotating) {
                     scene.rotation.y += 0.005;
                 }
+
+                // Rotate photo cubes to show all sides
+                [sphereA, sphereB, sphereC].forEach(object => {
+                    if (object && object.userData.isPhotoCube && object.userData.rotationSpeed) {
+                        object.rotation.y += object.userData.rotationSpeed;
+                        object.rotation.x += object.userData.rotationSpeed * 0.5; // Slight tilt
+                    }
+                });
 
                 // Feature #25: Apply pulsing glow to winner (sphere or house)
                 const time = Date.now() * 0.001; // Time in seconds
@@ -3198,14 +3780,14 @@
                 announceToScreenReader(`Property ${slot} changed to ${property.name}`);
                 showAlert(`Selected: ${property.name}`, 'success');
 
-                // Feature #6: Update comparison panel if in analyst mode
-                if (displayMode === 'analyst' && propertyA && propertyB) {
-                    const comparisonPanel = document.getElementById('comparison-panel');
-                    comparisonPanel.classList.add('visible');
+                // Feature #6: Update comparison panel (only if already open)
+                // REMOVED AUTO-OPEN: Panel only opens when user clicks button
+                const comparisonPanel = document.getElementById('comparison-panel');
+                if (comparisonPanel.classList.contains('visible') && propertyA && propertyB) {
                     updateComparisonPanel();
                 }
 
-                // Feature #7: Update radar chart
+                // Feature #7: Update radar chart (only if already open)
                 updateRadarChartVisibility();
 
                 // Feature #25: Calculate winner when properties change
@@ -3997,14 +4579,68 @@
                 }
             }
 
-            // Save notes to localStorage
+            // Save notes to localStorage (auto-saves to user's PC)
             function saveAllNotes() {
                 try {
                     localStorage.setItem('holosphere_property_notes', JSON.stringify(propertyNotes));
+                    console.log('💾 Notes auto-saved to browser localStorage');
+                    // Visual feedback that save happened
+                    const hint = document.querySelector('.notes-hint');
+                    if (hint) {
+                        hint.textContent = '💾 Saved!';
+                        hint.style.color = '#00FF88';
+                        setTimeout(() => {
+                            hint.textContent = '💡 Notes are saved automatically';
+                            hint.style.color = '';
+                        }, 2000);
+                    }
                 } catch (error) {
                     console.error('Error saving notes:', error);
+                    showAlert('Failed to save notes', 'error');
                 }
             }
+
+            // Export notes to downloadable text file
+            window.exportNotesToFile = function() {
+                try {
+                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+                    let content = `CLUES™ Property Notes Export\n`;
+                    content += `Generated: ${new Date().toLocaleString()}\n`;
+                    content += `${'='.repeat(60)}\n\n`;
+
+                    ['A', 'B', 'C'].forEach(slot => {
+                        const notes = propertyNotes[slot];
+                        if (notes && (notes.text || (notes.emojis && notes.emojis.length > 0))) {
+                            content += `PROPERTY ${slot}\n`;
+                            content += `-`.repeat(40) + '\n';
+                            if (notes.emojis && notes.emojis.length > 0) {
+                                content += `Reactions: ${notes.emojis.join(' ')}\n\n`;
+                            }
+                            if (notes.text) {
+                                content += `${notes.text}\n`;
+                            }
+                            content += `\n`;
+                        }
+                    });
+
+                    // Create downloadable file
+                    const blob = new Blob([content], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `property-notes-${timestamp}.txt`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+
+                    showAlert('Notes exported to file! 📥', 'success');
+                    console.log('📥 Notes exported to file');
+                } catch (error) {
+                    console.error('Error exporting notes:', error);
+                    showAlert('Failed to export notes', 'error');
+                }
+            };
 
             window.selectNotesProperty = function(slot) {
                 currentNotesSlot = slot;
@@ -4334,15 +4970,16 @@
             }
 
             function updateRadarChartVisibility() {
+                // REMOVED AUTO-OPEN: Chart only opens when user explicitly clicks button
+                // Just update the chart data if it's already open
                 const radarPanel = document.getElementById('radar-chart-panel');
                 const properties = [propertyA, propertyB, propertyC].filter(p => p !== null);
 
-                if (displayMode === 'analyst' && properties.length > 0) {
-                    radarPanel.classList.add('visible');
+                // Only update chart if panel is already visible (user opened it manually)
+                if (radarPanel.classList.contains('visible') && properties.length > 0) {
                     createRadarChart();
-                } else {
-                    radarPanel.classList.remove('visible');
                 }
+                // Don't auto-close either - let user control visibility
             }
 
             // ===== CRIME DANGER WIDGET =====
@@ -4547,8 +5184,9 @@
                     body.classList.remove('cinematic-mode');
                     body.classList.add('analyst-mode');
                     modeBtn.textContent = '📊 Analyst Mode';
-                    if (propertyA && propertyB) {
-                        comparisonPanel.classList.add('visible');
+                    // REMOVED AUTO-OPEN: Let user manually open comparison panel
+                    // Only update if already visible
+                    if (comparisonPanel.classList.contains('visible') && propertyA && propertyB) {
                         updateComparisonPanel();
                     }
                     updateRadarChartVisibility();
