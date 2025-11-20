@@ -3930,13 +3930,30 @@
                 clonedPanel.style.position = 'relative';
                 container.appendChild(clonedPanel);
 
-                // Call the update function to populate data
-                if (typeof panelInfo.updateFn === 'function') {
-                    try {
-                        panelInfo.updateFn();
-                        console.log(`✅ Updated ${tabName} panel data`);
-                    } catch (err) {
-                        console.warn(`⚠️ Could not update ${tabName} panel:`, err.message);
+                // Special handling for chart panels - need to render on cloned canvas
+                if (tabName === 'col') {
+                    // COL Chart - render on cloned canvas
+                    const clonedCanvas = clonedPanel.querySelector('#col-chart');
+                    if (clonedCanvas) {
+                        createCOLChartOnCanvas(clonedCanvas);
+                        console.log(`✅ Rendered COL chart on cloned canvas`);
+                    }
+                } else if (tabName === 'metric') {
+                    // Radar Chart - render on cloned canvas
+                    const clonedCanvas = clonedPanel.querySelector('#radar-chart');
+                    if (clonedCanvas) {
+                        createRadarChartOnCanvas(clonedCanvas);
+                        console.log(`✅ Rendered radar chart on cloned canvas`);
+                    }
+                } else {
+                    // Call the update function for non-chart panels
+                    if (typeof panelInfo.updateFn === 'function') {
+                        try {
+                            panelInfo.updateFn();
+                            console.log(`✅ Updated ${tabName} panel data`);
+                        } catch (err) {
+                            console.warn(`⚠️ Could not update ${tabName} panel:`, err.message);
+                        }
                     }
                 }
 
@@ -5960,6 +5977,225 @@
                     }
                 });
             }
+
+            // ===== CHART RENDERING FOR MODAL (Canvas-Specific Versions) =====
+
+            // Create COL chart on a specific canvas element (for modal clones)
+            window.createCOLChartOnCanvas = function(canvasElement) {
+                if (!canvasElement) {
+                    console.error('❌ No canvas element provided for COL chart');
+                    return;
+                }
+
+                const ctx = canvasElement.getContext('2d');
+
+                const properties = [
+                    { prop: propertyA, letter: 'A' },
+                    { prop: propertyB, letter: 'B' },
+                    { prop: propertyC, letter: 'C' }
+                ].filter(p => p.prop !== null);
+
+                if (properties.length === 0) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.font = '16px Segoe UI';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Select properties to view Cost of Living comparison', canvasElement.width / 2, canvasElement.height / 2);
+                    return;
+                }
+
+                function getColorForScore(score) {
+                    if (score <= 20) return 'rgba(255, 59, 48, 0.9)';
+                    if (score <= 40) return 'rgba(255, 149, 0, 0.9)';
+                    if (score <= 60) return 'rgba(255, 215, 0, 0.9)';
+                    if (score <= 80) return 'rgba(0, 212, 255, 0.9)';
+                    return 'rgba(0, 255, 136, 0.9)';
+                }
+
+                function getBorderColorForScore(score) {
+                    if (score <= 20) return 'rgba(255, 59, 48, 1)';
+                    if (score <= 40) return 'rgba(255, 149, 0, 1)';
+                    if (score <= 60) return 'rgba(255, 215, 0, 1)';
+                    if (score <= 80) return 'rgba(0, 212, 255, 1)';
+                    return 'rgba(0, 255, 136, 1)';
+                }
+
+                const labels = properties.map(p => `Property ${p.letter}`);
+                const data = properties.map(p => p.prop.dimensions.costOfLiving || 50);
+                const backgroundColors = data.map(score => getColorForScore(score));
+                const borderColors = data.map(score => getBorderColorForScore(score));
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Cost of Living Score',
+                            data: data,
+                            backgroundColor: backgroundColors,
+                            borderColor: borderColors,
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.parsed.y;
+                                        let rating = '';
+                                        if (value <= 20) rating = '🔴 Terrible';
+                                        else if (value <= 40) rating = '🟠 Fair';
+                                        else if (value <= 60) rating = '🟡 Average';
+                                        else if (value <= 80) rating = '🔵 Good';
+                                        else rating = '🟢 Excellent';
+                                        return `Score: ${Math.round(value)} - ${rating}`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.7)',
+                                    font: { size: 11 }
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    lineWidth: 1
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    font: { size: 12, weight: 'bold' }
+                                },
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            };
+
+            // Create radar chart on a specific canvas element (for modal clones)
+            window.createRadarChartOnCanvas = function(canvasElement) {
+                if (!canvasElement) {
+                    console.error('❌ No canvas element provided for radar chart');
+                    return;
+                }
+
+                const ctx = canvasElement.getContext('2d');
+
+                const properties = [propertyA, propertyB, propertyC].filter(p => p !== null);
+
+                if (properties.length === 0) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.font = '16px Segoe UI';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Select properties to view metric comparison', canvasElement.width / 2, canvasElement.height / 2);
+                    return;
+                }
+
+                const labels = Object.values(METRICS_CONFIG)
+                    .filter(m => metricFilters[m.key])
+                    .map(m => m.label);
+
+                const datasets = [];
+                const colors = [
+                    { bg: 'rgba(0, 212, 255, 0.2)', border: 'rgba(0, 212, 255, 1)' },
+                    { bg: 'rgba(0, 255, 136, 0.2)', border: 'rgba(0, 255, 136, 1)' },
+                    { bg: 'rgba(255, 215, 0, 0.2)', border: 'rgba(255, 215, 0, 1)' }
+                ];
+
+                properties.forEach((prop, idx) => {
+                    const letter = ['A', 'B', 'C'][idx];
+                    const data = Object.values(METRICS_CONFIG)
+                        .filter(m => metricFilters[m.key])
+                        .map(m => prop.dimensions[m.key]);
+
+                    datasets.push({
+                        label: `${letter}: ${prop.name.substring(0, 15)}...`,
+                        data: data,
+                        backgroundColor: colors[idx].bg,
+                        borderColor: colors[idx].border,
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    });
+                });
+
+                new Chart(ctx, {
+                    type: 'radar',
+                    data: { labels, datasets },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    font: { size: 13, family: 'Segoe UI' },
+                                    padding: 15,
+                                    usePointStyle: true,
+                                    pointStyle: 'circle'
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(10, 22, 40, 0.95)',
+                                titleColor: '#00D4FF',
+                                bodyColor: '#ffffff',
+                                borderColor: 'rgba(0, 212, 255, 0.5)',
+                                borderWidth: 1,
+                                padding: 12,
+                                cornerRadius: 8,
+                                displayColors: true,
+                                callbacks: {
+                                    label: function(context) {
+                                        const value = context.parsed.r;
+                                        let quality = '';
+                                        if (value <= 20) quality = 'Below Average';
+                                        else if (value <= 40) quality = 'Average';
+                                        else if (value <= 60) quality = 'Good';
+                                        else if (value <= 80) quality = 'Very Good';
+                                        else quality = 'Excellent';
+                                        return `${context.dataset.label}: ${Math.round(value)} (${quality})`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            r: {
+                                min: 0,
+                                max: 100,
+                                ticks: {
+                                    stepSize: 25,
+                                    color: 'rgba(255, 255, 255, 0.6)',
+                                    backdropColor: 'rgba(0, 0, 0, 0.3)',
+                                    font: { size: 11 }
+                                },
+                                grid: {
+                                    color: 'rgba(0, 212, 255, 0.15)',
+                                    lineWidth: 1
+                                },
+                                angleLines: {
+                                    color: 'rgba(0, 212, 255, 0.3)',
+                                    lineWidth: 1
+                                },
+                                pointLabels: {
+                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    font: { size: 12, weight: '600' }
+                                }
+                            }
+                        }
+                    }
+                });
+            };
 
             // ===== FEATURE #6: ADAPTIVE HUD DENSITY MODE =====
             let displayMode = 'analyst'; // 'analyst' or 'cinematic'
