@@ -2426,7 +2426,7 @@
                 <div id="roi-content" style="position: relative; min-height: 400px; padding: 20px;">
                     <canvas id="roi-chart" style="max-width: 100%; height: 350px;"></canvas>
                     <p style="text-align: center; opacity: 0.6; font-size: 0.85em; margin-top: 10px;">
-                        5-Year ROI Projection
+                        Current ROI Rate Comparison
                     </p>
                 </div>
             </div>
@@ -7283,22 +7283,23 @@
                 }
 
                 const labels = properties.map(p => `Property ${p.letter}`);
-                const data = properties.map(p => p.prop.dimensions.roi || 50);
+                // ROI is stored as actual percentage (0-20%)
+                const data = properties.map(p => p.prop.dimensions.roi || 5);
 
-                // Use 5-tier color scale based on current ROI score
-                const backgroundColors = data.map(score => {
-                    if (score > 80) return 'rgba(76, 175, 80, 0.8)';      // Green - Excellent
-                    if (score > 60) return 'rgba(33, 150, 243, 0.8)';     // Blue - Good
-                    if (score > 40) return 'rgba(255, 235, 59, 0.8)';     // Yellow - Caution
-                    if (score > 20) return 'rgba(255, 152, 0, 0.8)';      // Orange - Less than ideal
-                    return 'rgba(244, 67, 54, 0.8)';                       // Red - Poor
+                // Color based on ROI percentage: Red (0-3%), Orange (4-5%), Yellow (6-7%), Blue (8-9%), Green (10+%)
+                const backgroundColors = data.map(roi => {
+                    if (roi >= 10) return 'rgba(76, 175, 80, 0.8)';       // Green - 10%+ ROI
+                    if (roi >= 8) return 'rgba(33, 150, 243, 0.8)';       // Blue - 8-9% ROI
+                    if (roi >= 6) return 'rgba(255, 235, 59, 0.8)';       // Yellow - 6-7% ROI
+                    if (roi >= 4) return 'rgba(255, 152, 0, 0.8)';        // Orange - 4-5% ROI
+                    return 'rgba(244, 67, 54, 0.8)';                       // Red - 0-3% ROI
                 });
 
-                const borderColors = data.map(score => {
-                    if (score > 80) return 'rgba(76, 175, 80, 1)';
-                    if (score > 60) return 'rgba(33, 150, 243, 1)';
-                    if (score > 40) return 'rgba(255, 235, 59, 1)';
-                    if (score > 20) return 'rgba(255, 152, 0, 1)';
+                const borderColors = data.map(roi => {
+                    if (roi >= 10) return 'rgba(76, 175, 80, 1)';
+                    if (roi >= 8) return 'rgba(33, 150, 243, 1)';
+                    if (roi >= 6) return 'rgba(255, 235, 59, 1)';
+                    if (roi >= 4) return 'rgba(255, 152, 0, 1)';
                     return 'rgba(244, 67, 54, 1)';
                 });
 
@@ -7307,7 +7308,7 @@
                     data: {
                         labels: labels,
                         datasets: [{
-                            label: 'Current ROI Rate',
+                            label: 'ROI Rate (%)',
                             data: data,
                             backgroundColor: backgroundColors,
                             borderColor: borderColors,
@@ -7335,17 +7336,18 @@
                                 cornerRadius: 12,
                                 displayColors: false,
                                 callbacks: {
-                                    label: (ctx) => `ROI Rate: ${Math.round(ctx.parsed.y)}/100`
+                                    label: (ctx) => `ROI: ${ctx.parsed.y}%`
                                 }
                             }
                         },
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                max: 100,
+                                max: 20,
                                 ticks: {
                                     color: 'rgba(255, 255, 255, 0.8)',
-                                    font: { size: 13, weight: 'bold' }
+                                    font: { size: 13, weight: 'bold' },
+                                    callback: (value) => `${value}%`
                                 },
                                 grid: {
                                     color: 'rgba(255, 255, 255, 0.1)',
@@ -7353,7 +7355,7 @@
                                 },
                                 title: {
                                     display: true,
-                                    text: 'ROI Rate (/100)',
+                                    text: 'ROI Percentage (%)',
                                     color: 'rgba(255, 215, 0, 1)',
                                     font: { size: 14, weight: 'bold' }
                                 }
@@ -8022,27 +8024,28 @@
                     ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
                     ctx.font = '16px Segoe UI';
                     ctx.textAlign = 'center';
-                    ctx.fillText('Select properties to view ROI projection', canvasElement.width / 2, canvasElement.height / 2);
+                    ctx.fillText('Select properties to view ROI comparison', canvasElement.width / 2, canvasElement.height / 2);
                     return;
                 }
 
                 const labels = properties.map(p => `Property ${p.letter}`);
-                const data = properties.map(p => p.prop.dimensions.roi || 50);
+                // ROI is stored as actual percentage (0-20%)
+                const data = properties.map(p => p.prop.dimensions.roi || 5);
 
-                // Use 5-tier color scale based on current ROI score
-                const backgroundColors = data.map(score => {
-                    if (score > 80) return 'rgba(76, 175, 80, 0.8)';      // Green - Excellent
-                    if (score > 60) return 'rgba(33, 150, 243, 0.8)';     // Blue - Good
-                    if (score > 40) return 'rgba(255, 235, 59, 0.8)';     // Yellow - Caution
-                    if (score > 20) return 'rgba(255, 152, 0, 0.8)';      // Orange - Less than ideal
-                    return 'rgba(244, 67, 54, 0.8)';                       // Red - Poor
+                // Color based on ROI percentage: Red (0-3%), Orange (4-5%), Yellow (6-7%), Blue (8-9%), Green (10+%)
+                const backgroundColors = data.map(roi => {
+                    if (roi >= 10) return 'rgba(76, 175, 80, 0.8)';       // Green - 10%+ ROI
+                    if (roi >= 8) return 'rgba(33, 150, 243, 0.8)';       // Blue - 8-9% ROI
+                    if (roi >= 6) return 'rgba(255, 235, 59, 0.8)';       // Yellow - 6-7% ROI
+                    if (roi >= 4) return 'rgba(255, 152, 0, 0.8)';        // Orange - 4-5% ROI
+                    return 'rgba(244, 67, 54, 0.8)';                       // Red - 0-3% ROI
                 });
 
-                const borderColors = data.map(score => {
-                    if (score > 80) return 'rgba(76, 175, 80, 1)';
-                    if (score > 60) return 'rgba(33, 150, 243, 1)';
-                    if (score > 40) return 'rgba(255, 235, 59, 1)';
-                    if (score > 20) return 'rgba(255, 152, 0, 1)';
+                const borderColors = data.map(roi => {
+                    if (roi >= 10) return 'rgba(76, 175, 80, 1)';
+                    if (roi >= 8) return 'rgba(33, 150, 243, 1)';
+                    if (roi >= 6) return 'rgba(255, 235, 59, 1)';
+                    if (roi >= 4) return 'rgba(255, 152, 0, 1)';
                     return 'rgba(244, 67, 54, 1)';
                 });
 
@@ -8051,7 +8054,7 @@
                     data: {
                         labels: labels,
                         datasets: [{
-                            label: 'Current ROI Rate',
+                            label: 'ROI Rate (%)',
                             data: data,
                             backgroundColor: backgroundColors,
                             borderColor: borderColors,
@@ -8079,17 +8082,18 @@
                                 cornerRadius: 12,
                                 displayColors: false,
                                 callbacks: {
-                                    label: (ctx) => `ROI Rate: ${Math.round(ctx.parsed.y)}/100`
+                                    label: (ctx) => `ROI: ${ctx.parsed.y}%`
                                 }
                             }
                         },
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                max: 100,
+                                max: 20,
                                 ticks: {
                                     color: 'rgba(255, 255, 255, 0.8)',
-                                    font: { size: 13, weight: 'bold' }
+                                    font: { size: 13, weight: 'bold' },
+                                    callback: (value) => `${value}%`
                                 },
                                 grid: {
                                     color: 'rgba(255, 255, 255, 0.1)',
@@ -8097,7 +8101,7 @@
                                 },
                                 title: {
                                     display: true,
-                                    text: 'ROI Rate (/100)',
+                                    text: 'ROI Percentage (%)',
                                     color: 'rgba(255, 215, 0, 1)',
                                     font: { size: 14, weight: 'bold' }
                                 }
