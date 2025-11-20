@@ -1287,11 +1287,11 @@
             flex-direction: column;
             justify-content: flex-start;
             align-items: center;
-            padding: 20px 25px 25px 25px;
+            padding: 20px 25px 15px 25px;
             border-bottom: 1px solid rgba(0, 212, 255, 0.3);
             background: rgba(0, 0, 0, 0.2);
             position: relative;
-            min-height: 140px;
+            min-height: 180px;
         }
 
         .data-modal-header-top {
@@ -2594,7 +2594,7 @@
                         <span style="color: #4CAF50;">●</span> Excellent (81-100)
                     </div>
                     <!-- Personality Analysis (moved from Controls Panel) -->
-                    <div style="text-align: center;">
+                    <div style="text-align: center; margin-bottom: 15px;">
                         <h3 style="color: #00D4FF; margin: 0 0 8px 0; font-size: 0.95em;">Personality Analysis</h3>
                         <div class="persona-selector" role="radiogroup" aria-label="Select buyer persona">
                             <button class="persona-btn active" onclick="setPersona('balanced')"
@@ -2611,7 +2611,7 @@
                     </div>
                 </div>
 
-                <!-- Tab Navigation -->
+                <!-- Tab Navigation (BELOW header) -->
                 <div class="data-modal-tabs" role="tablist" aria-label="Data panel categories">
                     <button class="data-tab active" id="tab-comparison" onclick="switchDataTab('comparison')"
                             role="tab" aria-selected="true" aria-controls="panel-comparison">
