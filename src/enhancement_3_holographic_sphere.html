@@ -1121,6 +1121,7 @@
             transition: all 0.5s ease;
             pointer-events: none;
             z-index: 999;
+            display: none !important; /* Hidden - only shown in modal */
         }
 
         .comparison-panel.visible {
@@ -1207,6 +1208,7 @@
             transition: all 0.5s ease;
             pointer-events: none;
             z-index: 998;
+            display: none !important; /* Hidden - only shown in modal */
         }
 
         .roi-panel.visible {
@@ -1651,75 +1653,125 @@
         }
 
         .crime-widget h4 {
-            margin: 0 0 6px 0;
-            font-size: 0.54em;
-            display: flex;
-            align-items: center;
-            gap: 4.8px;
+            margin: 0 0 20px 0;
+            font-size: 1.3em;
+            font-weight: 700;
+            color: white;
+            text-align: center;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
         }
 
         .crime-level {
             display: flex;
             flex-direction: column;
-            gap: 4.8px;
+            gap: 15px;
         }
 
         .crime-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 4.8px 8px;
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 3.6px;
-            border-left: 3px solid;
-            font-size: 0.75em;
-            color: #333;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            border: 2px solid;
+            font-size: 1em;
+            color: white;
+            transition: all 0.3s ease;
         }
 
-        /* Score-based colors for icon and number */
-        .crime-item.score-terrible {
-            border-left-color: #FF3B30;
-        }
-        .crime-item.score-terrible .crime-icon,
-        .crime-item.score-terrible .crime-score {
-            color: #FF3B30;
+        .crime-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
-        .crime-item.score-fair {
-            border-left-color: #FF9500;
-        }
-        .crime-item.score-fair .crime-icon,
-        .crime-item.score-fair .crime-score {
-            color: #FF9500;
-        }
-
-        .crime-item.score-average {
-            border-left-color: #FFD700;
-        }
-        .crime-item.score-average .crime-icon,
-        .crime-item.score-average .crime-score {
-            color: #FFD700;
+        .crime-property-label {
+            font-size: 1.1em;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
         }
 
-        .crime-item.score-good {
-            border-left-color: #00D4FF;
-        }
-        .crime-item.score-good .crime-icon,
-        .crime-item.score-good .crime-score {
-            color: #00D4FF;
+        .crime-score-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .crime-item.score-excellent {
-            border-left-color: #00FF88;
-        }
-        .crime-item.score-excellent .crime-icon,
-        .crime-item.score-excellent .crime-score {
-            color: #00FF88;
+        .crime-checkmark {
+            font-size: 1.8em;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
         }
 
         .crime-score {
-            font-weight: bold;
-            font-size: 0.9em;
+            font-size: 1.4em;
+            font-weight: 900;
+            min-width: 50px;
+            text-align: right;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Score-based colors with improved contrast - 5-tier scale */
+        /* 0-20: Red (Very Dangerous) */
+        .crime-item.score-terrible {
+            border-color: #FF3B30;
+            background: rgba(255, 59, 48, 0.15);
+        }
+        .crime-item.score-terrible .crime-checkmark {
+            color: #FF3B30;
+        }
+        .crime-item.score-terrible .crime-score {
+            color: #FF6B63;
+        }
+
+        /* 21-40: Orange (Fairly Dangerous) */
+        .crime-item.score-fair {
+            border-color: #FF9500;
+            background: rgba(255, 149, 0, 0.15);
+        }
+        .crime-item.score-fair .crime-checkmark {
+            color: #FF9500;
+        }
+        .crime-item.score-fair .crime-score {
+            color: #FFB340;
+        }
+
+        /* 41-60: Yellow (Caution) */
+        .crime-item.score-average {
+            border-color: #FFD700;
+            background: rgba(255, 215, 0, 0.15);
+        }
+        .crime-item.score-average .crime-checkmark {
+            color: #FFD700;
+        }
+        .crime-item.score-average .crime-score {
+            color: #FFE44D;
+        }
+
+        /* 61-80: Blue (Fairly Safe) */
+        .crime-item.score-good {
+            border-color: #00D4FF;
+            background: rgba(0, 212, 255, 0.15);
+        }
+        .crime-item.score-good .crime-checkmark {
+            color: #00D4FF;
+        }
+        .crime-item.score-good .crime-score {
+            color: #40E0FF;
+        }
+
+        /* 81-100: Green (Very Safe) */
+        .crime-item.score-excellent {
+            border-color: #00FF88;
+            background: rgba(0, 255, 136, 0.15);
+        }
+        .crime-item.score-excellent .crime-checkmark {
+            color: #00FF88;
+        }
+        .crime-item.score-excellent .crime-score {
+            color: #40FFAA;
         }
 
         /* Cost-of-Living Bar Chart Panel */
@@ -5812,39 +5864,53 @@
                 ].filter(p => p.prop !== null);
 
                 if (properties.length === 0) {
-                    crimeLevel.innerHTML = '<p style="text-align: center; opacity: 0.7; font-size: 0.85em;">Select properties to view</p>';
+                    crimeLevel.innerHTML = '<p style="text-align: center; opacity: 0.7; font-size: 1em; color: white;">Select properties to view safety scores</p>';
                     return;
                 }
 
                 let html = '';
                 properties.forEach(({ prop, letter }) => {
-                    // Calculate crime safety score (higher = safer, like school grades)
+                    // Calculate crime safety score (higher = safer, 0-100 scale)
                     const crimeScore = prop.dimensions.crime || prop.dimensions.safety || 75;
                     let scoreClass = 'score-average';
-                    let icon = '●';
+                    let checkmark = '✓';
+                    let safetyLabel = '';
 
                     // 5-tier color scale based on score (higher = better)
+                    // 0-20: Red (Very Dangerous)
                     if (crimeScore <= 20) {
                         scoreClass = 'score-terrible';
-                        icon = '🔫';
+                        checkmark = '✗';
+                        safetyLabel = 'Very Dangerous';
+                    // 21-40: Orange (Fairly Dangerous)
                     } else if (crimeScore <= 40) {
                         scoreClass = 'score-fair';
-                        icon = '⚠️';
+                        checkmark = '⚠';
+                        safetyLabel = 'Fairly Dangerous';
+                    // 41-60: Yellow (Caution)
                     } else if (crimeScore <= 60) {
                         scoreClass = 'score-average';
-                        icon = '●';
+                        checkmark = '△';
+                        safetyLabel = 'Caution';
+                    // 61-80: Blue (Fairly Safe)
                     } else if (crimeScore <= 80) {
                         scoreClass = 'score-good';
-                        icon = '✓';
+                        checkmark = '✓';
+                        safetyLabel = 'Fairly Safe';
+                    // 81-100: Green (Very Safe)
                     } else {
                         scoreClass = 'score-excellent';
-                        icon = '✅';
+                        checkmark = '✓✓';
+                        safetyLabel = 'Very Safe';
                     }
 
                     html += `
                         <div class="crime-item ${scoreClass}">
-                            <span class="crime-icon">${icon} ${letter}</span>
-                            <span class="crime-score">${Math.round(crimeScore)}</span>
+                            <span class="crime-property-label">Property ${letter}</span>
+                            <div class="crime-score-container">
+                                <span class="crime-checkmark">${checkmark}</span>
+                                <span class="crime-score">${Math.round(crimeScore)}</span>
+                            </div>
                         </div>
                     `;
                 });
