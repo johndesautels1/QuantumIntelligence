@@ -1935,6 +1935,13 @@
                     📸 Upload Photos
                 </button>
 
+                <!-- Share Screenshot -->
+                <button class="mode-toggle" id="share-btn" onclick="shareComparison()"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 212, 255, 0.3));"
+                        aria-label="Share comparison screenshot">
+                    📤 Share Screenshot
+                </button>
+
                 <!-- Auto-Cycle -->
                 <button class="mode-toggle" id="auto-cycle-toggle" onclick="toggleAutoCycle()"
                         style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(138, 43, 226, 0.3)); display: none;"
@@ -3135,6 +3142,45 @@
                 }
 
                 vibrate('tap');
+            };
+
+            // ===== SOCIAL SHARING SYSTEM =====
+            window.shareComparison = async function() {
+                try {
+                    showAlert('Capturing screenshot...', 'info');
+
+                    // Capture canvas screenshot
+                    const canvas = renderer.domElement;
+                    const dataUrl = canvas.toDataURL('image/png');
+
+                    // Convert to blob
+                    const response = await fetch(dataUrl);
+                    const blob = await response.blob();
+                    const file = new File([blob], 'clues-property-comparison.png', { type: 'image/png' });
+
+                    // Check Web Share API support with file sharing
+                    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            title: 'CLUES™ Property Comparison',
+                            text: 'Check out this property comparison from CLUES™ Quantum Intelligence!',
+                            files: [file]
+                        });
+                        showAlert('Shared successfully! ✅', 'success');
+                    } else {
+                        // Fallback: Download image
+                        const link = document.createElement('a');
+                        link.href = dataUrl;
+                        link.download = `clues-comparison-${new Date().toISOString().slice(0, 10)}.png`;
+                        link.click();
+                        showAlert('Screenshot downloaded! 📥', 'success');
+                    }
+
+                    vibrate('success');
+                } catch (error) {
+                    console.error('Share error:', error);
+                    showAlert('Failed to share: ' + error.message, 'error');
+                    vibrate('error');
+                }
             };
 
             // Toggle all panels
