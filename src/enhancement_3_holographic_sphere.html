@@ -4147,8 +4147,8 @@
                     }
                 });
 
-                // Add crown and glow to winner
-                if (winnerProperty) {
+                // Add crown and glow to winner ONLY in sphere mode (not in 3D house mode)
+                if (winnerProperty && !use3DModels) {
                     const sphere = winnerProperty === 'A' ? sphereA :
                                    winnerProperty === 'B' ? sphereB : sphereC;
 
