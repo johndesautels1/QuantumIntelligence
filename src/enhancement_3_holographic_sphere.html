@@ -4305,6 +4305,16 @@
             }
 
             function updateAllGravityRings() {
+                // Only show gravity rings in classic sphere mode, not in 3D house mode
+                if (use3DModels) {
+                    // Remove all rings if in house mode
+                    ['A', 'B', 'C'].forEach(slot => {
+                        gravityRings[slot].forEach(ring => scene.remove(ring));
+                        gravityRings[slot] = [];
+                    });
+                    return;
+                }
+
                 if (propertyA && sphereA) createGravityRings(sphereA, 'A', propertyA);
                 if (propertyB && sphereB) createGravityRings(sphereB, 'B', propertyB);
                 if (propertyC && sphereC) createGravityRings(sphereC, 'C', propertyC);
