@@ -77,8 +77,64 @@ async function testScraper() {
 
     console.log('\n');
 
-    // Test 3: Walk Score extraction
-    console.log('3️⃣ Testing WALK SCORE extraction...');
+    // Test 3: GPT specifically
+    console.log('3️⃣ Testing GPT (ChatGPT) specifically...');
+    try {
+        if (config.llm.enabled.gpt && config.apiKeys.openai) {
+            const testUrl = 'https://www.zillow.com/homedetails/808-Redwood-Dr-Miami-FL-33101/12345678_zpid/';
+            console.log(`   URL: ${testUrl}`);
+
+            const property3 = await scraper.scrapeProperty(testUrl, {
+                preferredLLM: 'gpt',
+                enrichData: false
+            });
+
+            if (property3) {
+                console.log('✅ GPT test PASSED');
+                console.log(`   Address: ${property3.address?.full_address || 'N/A'}`);
+                console.log(`   Price: $${property3.price?.current?.toLocaleString() || 'N/A'}`);
+            } else {
+                console.warn('⚠️ GPT test returned null');
+            }
+        } else {
+            console.warn('⚠️ GPT disabled or API key missing - skipping');
+        }
+    } catch (error) {
+        console.error('❌ GPT test FAILED:', error.message);
+    }
+
+    console.log('\n');
+
+    // Test 4: Grok specifically
+    console.log('4️⃣ Testing GROK specifically...');
+    try {
+        if (config.llm.enabled.grok && config.apiKeys.grok) {
+            const testUrl = 'https://www.zillow.com/homedetails/808-Redwood-Dr-Miami-FL-33101/12345678_zpid/';
+            console.log(`   URL: ${testUrl}`);
+
+            const property4 = await scraper.scrapeProperty(testUrl, {
+                preferredLLM: 'grok',
+                enrichData: false
+            });
+
+            if (property4) {
+                console.log('✅ Grok test PASSED');
+                console.log(`   Address: ${property4.address?.full_address || 'N/A'}`);
+                console.log(`   Price: $${property4.price?.current?.toLocaleString() || 'N/A'}`);
+            } else {
+                console.warn('⚠️ Grok test returned null');
+            }
+        } else {
+            console.warn('⚠️ Grok disabled or API key missing - skipping');
+        }
+    } catch (error) {
+        console.error('❌ Grok test FAILED:', error.message);
+    }
+
+    console.log('\n');
+
+    // Test 5: Walk Score extraction
+    console.log('5️⃣ Testing WALK SCORE extraction...');
     try {
         if (config.llm.enabled.gpt && config.apiKeys.openai) {
             const testAddress = '808 Redwood Dr, Miami, FL 33101';
@@ -103,8 +159,8 @@ async function testScraper() {
 
     console.log('\n');
 
-    // Test 4: Crime data extraction
-    console.log('4️⃣ Testing CRIME DATA extraction...');
+    // Test 6: Crime data extraction
+    console.log('6️⃣ Testing CRIME DATA extraction...');
     try {
         if (config.llm.enabled.claude && config.apiKeys.anthropic) {
             const testAddress = '808 Redwood Dr, Miami, FL 33101';
@@ -129,8 +185,8 @@ async function testScraper() {
 
     console.log('\n');
 
-    // Test 5: School data extraction
-    console.log('5️⃣ Testing SCHOOL DATA extraction...');
+    // Test 7: School data extraction
+    console.log('7️⃣ Testing SCHOOL DATA extraction...');
     try {
         if (config.llm.enabled.gemini && config.apiKeys.gemini) {
             const testAddress = '808 Redwood Dr, Miami, FL 33101';

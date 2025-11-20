@@ -210,25 +210,11 @@ export class UnifiedLLMScraper {
                 model: 'gpt-4-turbo-preview',
                 messages: [{
                     role: 'system',
-                    content: 'You are a real estate data extraction expert. Extract property information and return as JSON.'
+                    content: 'You are a real estate data extraction API. Return ONLY valid JSON, no other text. If you cannot browse the URL, return the empty JSON template with null values.'
                 }, {
                     role: 'user',
                     content: prompt
-                }],
-                tools: [{
-                    type: 'function',
-                    function: {
-                        name: 'web_search',
-                        description: 'Search and browse the web for property data',
-                        parameters: {
-                            type: 'object',
-                            properties: {
-                                url: { type: 'string' }
-                            }
-                        }
-                    }
-                }],
-                tool_choice: 'auto'
+                }]
             });
 
             // Parse GPT's response
@@ -437,62 +423,21 @@ export class UnifiedLLMScraper {
      * 📝 BUILD EXTRACTION PROMPT
      */
     buildExtractionPrompt(url) {
-        return `Navigate to this real estate listing and extract ALL available data as JSON:
+        return `You are a real estate data extraction API. Your response MUST be valid JSON only.
 
-URL: ${url}
+Visit this URL and extract property data: ${url}
 
-Extract the following fields (use null if not found):
+CRITICAL INSTRUCTIONS:
+1. Use web_search tool to visit the URL
+2. Extract all available data from the property listing
+3. Return ONLY the JSON object below - NO explanations, NO markdown, NO text before or after
+4. If you cannot find a value, use null for numbers or empty string "" for text
+5. Your entire response must be parseable by JSON.parse()
 
-{
-    "address": {
-        "full_address": "",
-        "street": "",
-        "city": "",
-        "state": "",
-        "zip": "",
-        "county": "",
-        "latitude": null,
-        "longitude": null
-    },
-    "price": {
-        "current": null,
-        "original": null,
-        "per_sqft": null,
-        "tax_assessed": null
-    },
-    "property": {
-        "bedrooms": null,
-        "bathrooms": null,
-        "sqft": null,
-        "lot_size": null,
-        "year_built": null,
-        "property_type": "",
-        "stories": null,
-        "garage": null,
-        "pool": false,
-        "hoa": null
-    },
-    "listing": {
-        "status": "",
-        "days_on_market": null,
-        "mls_number": "",
-        "listing_agent": "",
-        "listing_brokerage": ""
-    },
-    "description": "",
-    "features": [],
-    "images": [],
-    "virtual_tour_url": null,
-    "school_district": ""
-}
+Return this exact JSON structure with real data filled in:
+{"address":{"full_address":"","street":"","city":"","state":"","zip":"","county":"","latitude":null,"longitude":null},"price":{"current":null,"original":null,"per_sqft":null,"tax_assessed":null},"property":{"bedrooms":null,"bathrooms":null,"sqft":null,"lot_size":null,"year_built":null,"property_type":"","stories":null,"garage":null,"pool":false,"hoa":null},"listing":{"status":"","days_on_market":null,"mls_number":"","listing_agent":"","listing_brokerage":""},"description":"","features":[],"images":[],"virtual_tour_url":null,"school_district":"","crime_data":null,"walk_score":null,"transit_score":null,"bike_score":null}
 
-IMPORTANT:
-1. Visit the URL using web browsing/computer use
-2. Extract data accurately from the page
-3. Return ONLY valid JSON, no markdown formatting
-4. Use null for missing numeric values
-5. Use empty string "" for missing text values
-6. Be thorough - check all sections of the listing`;
+RESPOND WITH JSON ONLY - NO OTHER TEXT`;
     }
 
     /**
@@ -504,14 +449,21 @@ IMPORTANT:
             const content = response.content.find(c => c.type === 'text');
             if (!content) throw new Error('No text content in Claude response');
 
-            const text = content.text;
-            const jsonMatch = text.match(/\{[\s\S]*\}/);
+            let text = content.text.trim();
 
+            // Remove markdown code blocks if present
+            text = text.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+
+            // Try to find JSON object
+            const jsonMatch = text.match(/\{[\s\S]*\}/);
             if (!jsonMatch) throw new Error('No JSON found in Claude response');
 
-            return JSON.parse(jsonMatch[0]);
+            const parsed = JSON.parse(jsonMatch[0]);
+            console.log('✅ Claude JSON parsed successfully');
+            return parsed;
         } catch (error) {
             console.error('❌ Failed to parse Claude response:', error.message);
+            console.error('Response text:', content?.text?.substring(0, 500));
             return null;
         }
     }
@@ -523,15 +475,22 @@ IMPORTANT:
         try {
             const message = response.choices[0]?.message;
             if (!message) throw new Error('No message in GPT response');
+            if (!message.content) throw new Error('GPT response has no content');
 
-            const content = message.content;
+            let content = message.content.trim();
+
+            // Remove markdown code blocks if present
+            content = content.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+
             const jsonMatch = content.match(/\{[\s\S]*\}/);
-
             if (!jsonMatch) throw new Error('No JSON found in GPT response');
 
-            return JSON.parse(jsonMatch[0]);
+            const parsed = JSON.parse(jsonMatch[0]);
+            console.log('✅ GPT JSON parsed successfully');
+            return parsed;
         } catch (error) {
             console.error('❌ Failed to parse GPT response:', error.message);
+            console.error('Response structure:', JSON.stringify(response.choices[0], null, 2));
             return null;
         }
     }
@@ -544,14 +503,20 @@ IMPORTANT:
             const message = response.choices[0]?.message;
             if (!message) throw new Error('No message in Grok response');
 
-            const content = message.content;
-            const jsonMatch = content.match(/\{[\s\S]*\}/);
+            let content = message.content.trim();
 
+            // Remove markdown code blocks if present
+            content = content.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
             if (!jsonMatch) throw new Error('No JSON found in Grok response');
 
-            return JSON.parse(jsonMatch[0]);
+            const parsed = JSON.parse(jsonMatch[0]);
+            console.log('✅ Grok JSON parsed successfully');
+            return parsed;
         } catch (error) {
             console.error('❌ Failed to parse Grok response:', error.message);
+            console.error('Response text:', message?.content?.substring(0, 500));
             return null;
         }
     }
@@ -561,13 +526,20 @@ IMPORTANT:
      */
     parseGeminiResponse(text) {
         try {
-            const jsonMatch = text.match(/\{[\s\S]*\}/);
+            let content = text.trim();
 
+            // Remove markdown code blocks if present
+            content = content.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
             if (!jsonMatch) throw new Error('No JSON found in Gemini response');
 
-            return JSON.parse(jsonMatch[0]);
+            const parsed = JSON.parse(jsonMatch[0]);
+            console.log('✅ Gemini JSON parsed successfully');
+            return parsed;
         } catch (error) {
             console.error('❌ Failed to parse Gemini response:', error.message);
+            console.error('Response text:', text?.substring(0, 500));
             return null;
         }
     }
@@ -605,7 +577,11 @@ If any score is not available, use null.`;
                 }]
             });
 
-            const text = response.choices[0]?.message?.content || '';
+            let text = response.choices[0]?.message?.content || '';
+
+            // Remove markdown code blocks if present
+            text = text.trim().replace(/```json\s*/g, '').replace(/```\s*/g, '');
+
             const jsonMatch = text.match(/\{[\s\S]*\}/);
 
             if (!jsonMatch) {
@@ -662,7 +638,11 @@ If data is not available, use null.`;
             const content = response.content.find(c => c.type === 'text');
             if (!content) return null;
 
-            const text = content.text;
+            let text = content.text.trim();
+
+            // Remove markdown code blocks if present
+            text = text.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+
             const jsonMatch = text.match(/\{[\s\S]*\}/);
 
             if (!jsonMatch) {
