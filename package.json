@@ -7,7 +7,11 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "scrape:single": "node src/scrapers/examples/scrape-single-property.js",
+    "scrape:batch": "node src/scrapers/examples/scrape-batch.js",
+    "scrape:city": "node src/scrapers/examples/scrape-city.js",
+    "scrape:test": "node src/scrapers/examples/test-llm-scraper.js"
   },
   "keywords": [
     "real estate",
@@ -19,6 +23,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
     "@capacitor/android": "^7.4.4",
     "@capacitor/app": "^7.1.0",
     "@capacitor/camera": "^7.0.2",
@@ -32,7 +37,11 @@
     "@capacitor/network": "^7.0.2",
     "@capacitor/share": "^7.0.2",
     "@capacitor/splash-screen": "^7.0.3",
-    "@capacitor/status-bar": "^7.0.3"
+    "@capacitor/status-bar": "^7.0.3",
+    "@google/generative-ai": "^0.21.0",
+    "axios": "^1.7.9",
+    "dotenv": "^16.4.7",
+    "openai": "^4.77.3"
   },
   "devDependencies": {
     "@capacitor/assets": "^3.0.5",

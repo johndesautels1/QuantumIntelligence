@@ -10,17 +10,25 @@ node_modules/
 /build
 /dist
 
-# Environment Variables
+# Environment Variables - NEVER COMMIT API KEYS!
 .env
+.env.*
 .env.local
+.env.development
 .env.development.local
+.env.test
 .env.test.local
+.env.production
 .env.production.local
 
 # API Keys (CRITICAL - Never commit)
 **/api-keys.js
 **/config/keys.js
+**/.env
 **/.env.*
+*.key
+*-key.txt
+api-keys.*
 
 # IDE
 .vscode/

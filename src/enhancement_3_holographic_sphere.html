@@ -2349,35 +2349,35 @@
                 </div>
             </div>
 
-            <!-- Location Panel -->
+            <!-- Location Panel - 3D Glassmorphic Column Chart -->
             <div class="comparison-panel" id="location-panel" role="region" aria-label="Property location information">
-                <h3>📍 Location</h3>
-                <div id="location-content">
-                    <p style="text-align: center; opacity: 0.7; padding: 40px 20px;">
-                        Location data will be displayed here.<br>
-                        <span style="font-size: 0.85em; opacity: 0.6;">(Feature coming soon)</span>
+                <h3>📍 Location Score</h3>
+                <div id="location-content" style="position: relative; min-height: 400px; padding: 20px;">
+                    <canvas id="location-chart" style="max-width: 100%; height: 350px;"></canvas>
+                    <p style="text-align: center; opacity: 0.6; font-size: 0.85em; margin-top: 10px;">
+                        3D Glassmorphic Column Visualization
                     </p>
                 </div>
             </div>
 
-            <!-- Property Condition Panel -->
+            <!-- Property Condition Panel - 3D Stacked Bar Chart -->
             <div class="comparison-panel" id="condition-panel" role="region" aria-label="Property condition information">
-                <h3>🏠 Condition</h3>
-                <div id="condition-content">
-                    <p style="text-align: center; opacity: 0.7; padding: 40px 20px;">
-                        Condition data will be displayed here.<br>
-                        <span style="font-size: 0.85em; opacity: 0.6;">(Feature coming soon)</span>
+                <h3>🏠 Property Condition</h3>
+                <div id="condition-content" style="position: relative; min-height: 400px; padding: 20px;">
+                    <canvas id="condition-chart" style="max-width: 100%; height: 350px;"></canvas>
+                    <p style="text-align: center; opacity: 0.6; font-size: 0.85em; margin-top: 10px;">
+                        3D Depth Bar Visualization
                     </p>
                 </div>
             </div>
 
-            <!-- Lifestyle Panel -->
+            <!-- Lifestyle Panel - 3D Polar/Donut Chart -->
             <div class="comparison-panel" id="lifestyle-panel" role="region" aria-label="Property lifestyle information">
-                <h3>🎨 Lifestyle</h3>
-                <div id="lifestyle-content">
-                    <p style="text-align: center; opacity: 0.7; padding: 40px 20px;">
-                        Lifestyle data will be displayed here.<br>
-                        <span style="font-size: 0.85em; opacity: 0.6;">(Feature coming soon)</span>
+                <h3>🎨 Lifestyle Quality</h3>
+                <div id="lifestyle-content" style="position: relative; min-height: 400px; padding: 20px;">
+                    <canvas id="lifestyle-chart" style="max-width: 100%; height: 350px;"></canvas>
+                    <p style="text-align: center; opacity: 0.6; font-size: 0.85em; margin-top: 10px;">
+                        3D Glassmorphic Polar Visualization
                     </p>
                 </div>
             </div>
@@ -2398,13 +2398,24 @@
                 </div>
             </div>
 
-            <!-- Education Panel -->
+            <!-- Education Panel - 3D Doughnut Chart -->
             <div class="comparison-panel" id="education-panel" role="region" aria-label="Education information">
-                <h3>🎓 Education</h3>
-                <div id="education-content">
-                    <p style="text-align: center; opacity: 0.7; padding: 40px 20px;">
-                        Education data will be displayed here.<br>
-                        <span style="font-size: 0.85em; opacity: 0.6;">(Feature coming soon)</span>
+                <h3>🎓 Education Quality</h3>
+                <div id="education-content" style="position: relative; min-height: 400px; padding: 20px;">
+                    <canvas id="education-chart" style="max-width: 100%; height: 350px;"></canvas>
+                    <p style="text-align: center; opacity: 0.6; font-size: 0.85em; margin-top: 10px;">
+                        3D Glassmorphic Doughnut Visualization
+                    </p>
+                </div>
+            </div>
+
+            <!-- ROI Panel - Line Chart for Investment Returns -->
+            <div class="comparison-panel" id="roi-panel" role="region" aria-label="ROI projection">
+                <h3>💰 Return on Investment (ROI)</h3>
+                <div id="roi-content" style="position: relative; min-height: 400px; padding: 20px;">
+                    <canvas id="roi-chart" style="max-width: 100%; height: 350px;"></canvas>
+                    <p style="text-align: center; opacity: 0.6; font-size: 0.85em; margin-top: 10px;">
+                        5-Year ROI Projection
                     </p>
                 </div>
             </div>
@@ -4249,17 +4260,17 @@
                     },
                     'location': {
                         id: 'location-panel',
-                        updateFn: null, // No update function needed yet - placeholder
+                        updateFn: createLocationChart,
                         label: 'Location'
                     },
                     'condition': {
                         id: 'condition-panel',
-                        updateFn: null, // Placeholder for future function
+                        updateFn: createConditionChart,
                         label: 'Condition'
                     },
                     'lifestyle': {
                         id: 'lifestyle-panel',
-                        updateFn: null, // Placeholder for future function
+                        updateFn: createLifestyleChart,
                         label: 'Lifestyle'
                     },
                     'col': {
@@ -4269,7 +4280,7 @@
                     },
                     'education': {
                         id: 'education-panel',
-                        updateFn: null, // Placeholder for future function
+                        updateFn: createEducationChart,
                         label: 'Education'
                     },
                     'crime': {
@@ -4278,8 +4289,8 @@
                         label: 'Crime'
                     },
                     'roi': {
-                        id: 'comparison-panel',
-                        updateFn: updateComparisonPanel,
+                        id: 'roi-panel',
+                        updateFn: createROIChart,
                         label: 'ROI'
                     },
                     'metric': {
@@ -4330,6 +4341,41 @@
                     if (clonedCanvas) {
                         createRadarChartOnCanvas(clonedCanvas);
                         console.log(`✅ Rendered radar chart on cloned canvas`);
+                    }
+                } else if (tabName === 'location') {
+                    // Location Chart - render on cloned canvas
+                    const clonedCanvas = clonedPanel.querySelector('#location-chart');
+                    if (clonedCanvas) {
+                        createLocationChartOnCanvas(clonedCanvas);
+                        console.log(`✅ Rendered Location chart on cloned canvas`);
+                    }
+                } else if (tabName === 'condition') {
+                    // Condition Chart - render on cloned canvas
+                    const clonedCanvas = clonedPanel.querySelector('#condition-chart');
+                    if (clonedCanvas) {
+                        createConditionChartOnCanvas(clonedCanvas);
+                        console.log(`✅ Rendered Condition chart on cloned canvas`);
+                    }
+                } else if (tabName === 'lifestyle') {
+                    // Lifestyle Chart - render on cloned canvas
+                    const clonedCanvas = clonedPanel.querySelector('#lifestyle-chart');
+                    if (clonedCanvas) {
+                        createLifestyleChartOnCanvas(clonedCanvas);
+                        console.log(`✅ Rendered Lifestyle chart on cloned canvas`);
+                    }
+                } else if (tabName === 'education') {
+                    // Education Chart - render on cloned canvas
+                    const clonedCanvas = clonedPanel.querySelector('#education-chart');
+                    if (clonedCanvas) {
+                        createEducationChartOnCanvas(clonedCanvas);
+                        console.log(`✅ Rendered Education chart on cloned canvas`);
+                    }
+                } else if (tabName === 'roi') {
+                    // ROI Chart - render on cloned canvas
+                    const clonedCanvas = clonedPanel.querySelector('#roi-chart');
+                    if (clonedCanvas) {
+                        createROIChartOnCanvas(clonedCanvas);
+                        console.log(`✅ Rendered ROI chart on cloned canvas`);
                     }
                 } else {
                     // Call the update function for non-chart panels
@@ -4781,9 +4827,18 @@
             }
 
             function populateMetricFilters() {
+                console.log('📋 populateMetricFilters() called');
                 const container = document.getElementById('metric-filters-container');
+
+                if (!container) {
+                    console.error('❌ metric-filters-container NOT FOUND!');
+                    return;
+                }
+
+                console.log('✅ Container found:', container);
                 container.innerHTML = '';
 
+                let checkboxCount = 0;
                 Object.values(METRICS_CONFIG).forEach(metric => {
                     const filterDiv = document.createElement('div');
                     filterDiv.className = 'metric-filter';
@@ -4793,7 +4848,10 @@
                     checkbox.type = 'checkbox';
                     checkbox.id = `filter-${metric.key}`;
                     checkbox.checked = true;
-                    checkbox.onchange = () => toggleMetric(metric.key);
+                    checkbox.onchange = () => {
+                        console.log(`✅ Checkbox clicked: ${metric.key}`);
+                        toggleMetric(metric.key);
+                    };
                     checkbox.setAttribute('aria-label', `Toggle ${metric.label}`);
 
                     const label = document.createElement('label');
@@ -4810,7 +4868,10 @@
                     filterDiv.appendChild(label);
                     filterDiv.appendChild(infoIcon);
                     container.appendChild(filterDiv);
+                    checkboxCount++;
                 });
+
+                console.log(`✅ Created ${checkboxCount} metric checkboxes`);
             }
 
             // ===== FEATURE #9: TIME TRAVEL =====
@@ -6562,6 +6623,564 @@
                 });
             }
 
+            // ===== GLASSMORPHIC 3D CHART FUNCTIONS =====
+
+            let locationChart = null;
+            let conditionChart = null;
+            let lifestyleChart = null;
+            let educationChart = null;
+            let roiChart = null;
+
+            // 📍 LOCATION CHART - 3D Glassmorphic Columns
+            function createLocationChart() {
+                const canvas = document.getElementById('location-chart');
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+
+                if (locationChart) {
+                    locationChart.destroy();
+                }
+
+                const properties = [
+                    { prop: propertyA, letter: 'A' },
+                    { prop: propertyB, letter: 'B' },
+                    { prop: propertyC, letter: 'C' }
+                ].filter(p => p.prop !== null);
+
+                if (properties.length === 0) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                    ctx.font = '18px Segoe UI';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Select 2+ properties to compare', canvas.width / 2, canvas.height / 2);
+                    return;
+                }
+
+                const labels = properties.map(p => `Property ${p.letter}`);
+                const data = properties.map(p => p.prop.dimensions.location || 50);
+                const backgroundColors = data.map(score => {
+                    if (score > 80) return 'rgba(76, 175, 80, 0.7)';
+                    if (score > 60) return 'rgba(33, 150, 243, 0.7)';
+                    if (score > 40) return 'rgba(255, 235, 59, 0.7)';
+                    if (score > 20) return 'rgba(255, 152, 0, 0.7)';
+                    return 'rgba(244, 67, 54, 0.7)';
+                });
+
+                locationChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Location Score',
+                            data: data,
+                            backgroundColor: backgroundColors,
+                            borderColor: 'rgba(255, 255, 255, 0.8)',
+                            borderWidth: 3,
+                            borderRadius: 15,
+                            barThickness: 80,
+                            shadowOffsetX: 0,
+                            shadowOffsetY: 10,
+                            shadowBlur: 25,
+                            shadowColor: 'rgba(0, 212, 255, 0.5)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: {
+                            duration: 1200,
+                            easing: 'easeOutBounce'
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                                titleColor: '#00D4FF',
+                                bodyColor: '#fff',
+                                borderColor: '#00D4FF',
+                                borderWidth: 2,
+                                padding: 15,
+                                cornerRadius: 12,
+                                displayColors: false,
+                                callbacks: {
+                                    label: (ctx) => `Location Score: ${Math.round(ctx.parsed.y)}/100`
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.8)',
+                                    font: { size: 13, weight: 'bold' }
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    lineWidth: 2
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    font: { size: 14, weight: 'bold' }
+                                },
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 🏠 CONDITION CHART - 3D Horizontal Bars with Depth
+            function createConditionChart() {
+                const canvas = document.getElementById('condition-chart');
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+
+                if (conditionChart) {
+                    conditionChart.destroy();
+                }
+
+                const properties = [
+                    { prop: propertyA, letter: 'A' },
+                    { prop: propertyB, letter: 'B' },
+                    { prop: propertyC, letter: 'C' }
+                ].filter(p => p.prop !== null);
+
+                if (properties.length === 0) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                    ctx.font = '18px Segoe UI';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Select 2+ properties to compare', canvas.width / 2, canvas.height / 2);
+                    return;
+                }
+
+                const labels = properties.map(p => `Property ${p.letter}`);
+                const data = properties.map(p => p.prop.dimensions.condition || 50);
+                const backgroundColors = data.map(score => {
+                    if (score > 80) return 'rgba(76, 175, 80, 0.7)';       // Green
+                    if (score > 60) return 'rgba(33, 150, 243, 0.7)';      // Blue
+                    if (score > 40) return 'rgba(255, 235, 59, 0.7)';      // Yellow
+                    if (score > 20) return 'rgba(255, 152, 0, 0.7)';       // Orange
+                    return 'rgba(244, 67, 54, 0.7)';                       // Red
+                });
+
+                conditionChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Condition Score',
+                            data: data,
+                            backgroundColor: backgroundColors,
+                            borderColor: 'rgba(255, 215, 0, 0.9)',
+                            borderWidth: 4,
+                            borderRadius: 20,
+                            barThickness: 70,
+                            hoverBackgroundColor: 'rgba(121, 85, 72, 1)'
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',  // Horizontal bars for uniqueness
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: {
+                            duration: 1000,
+                            easing: 'easeOutCubic'
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.95)',
+                                titleColor: '#FFD700',
+                                bodyColor: '#fff',
+                                borderColor: '#FFD700',
+                                borderWidth: 2,
+                                padding: 15,
+                                cornerRadius: 12,
+                                displayColors: false,
+                                callbacks: {
+                                    label: (ctx) => `Condition: ${Math.round(ctx.parsed.x)}/100`
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.8)',
+                                    font: { size: 13, weight: 'bold' }
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.15)',
+                                    lineWidth: 2
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    font: { size: 15, weight: 'bold' }
+                                },
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 🎨 LIFESTYLE CHART - 3D Polar/Donut with Glassmorphism
+            function createLifestyleChart() {
+                const canvas = document.getElementById('lifestyle-chart');
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+
+                if (lifestyleChart) {
+                    lifestyleChart.destroy();
+                }
+
+                const properties = [
+                    { prop: propertyA, letter: 'A' },
+                    { prop: propertyB, letter: 'B' },
+                    { prop: propertyC, letter: 'C' }
+                ].filter(p => p.prop !== null);
+
+                if (properties.length === 0) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                    ctx.font = '18px Segoe UI';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Select 2+ properties to compare', canvas.width / 2, canvas.height / 2);
+                    return;
+                }
+
+                const labels = properties.map(p => `Property ${p.letter}`);
+                const data = properties.map(p => p.prop.dimensions.lifestyle || 50);
+                const backgroundColors = [
+                    'rgba(156, 39, 176, 0.8)',
+                    'rgba(103, 58, 183, 0.8)',
+                    'rgba(63, 81, 181, 0.8)'
+                ];
+
+                lifestyleChart = new Chart(ctx, {
+                    type: 'polarArea',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Lifestyle Score',
+                            data: data,
+                            backgroundColor: backgroundColors,
+                            borderColor: 'rgba(255, 255, 255, 0.9)',
+                            borderWidth: 3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: {
+                            duration: 1500,
+                            easing: 'easeInOutElastic'
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    font: { size: 14, weight: 'bold' },
+                                    padding: 20
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                                titleColor: '#9C27B0',
+                                bodyColor: '#fff',
+                                borderColor: '#9C27B0',
+                                borderWidth: 2,
+                                padding: 15,
+                                cornerRadius: 12,
+                                displayColors: true,
+                                callbacks: {
+                                    label: (ctx) => `Lifestyle: ${Math.round(ctx.parsed.r)}/100`
+                                }
+                            }
+                        },
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 1)',
+                                    backdropColor: 'rgba(0, 0, 0, 0.5)',
+                                    font: { size: 14, weight: 'bold' }
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.2)',
+                                    lineWidth: 2
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 🎓 EDUCATION CHART - 3D Doughnut with School Rating Breakdown
+            function createEducationChart() {
+                const canvas = document.getElementById('education-chart');
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+
+                if (educationChart) {
+                    educationChart.destroy();
+                }
+
+                const properties = [
+                    { prop: propertyA, letter: 'A' },
+                    { prop: propertyB, letter: 'B' },
+                    { prop: propertyC, letter: 'C' }
+                ].filter(p => p.prop !== null);
+
+                if (properties.length === 0) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                    ctx.font = '18px Segoe UI';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Select 2+ properties to compare', canvas.width / 2, canvas.height / 2);
+                    return;
+                }
+
+                const labels = properties.map(p => `Property ${p.letter}`);
+                const data = properties.map(p => p.prop.dimensions.schools || 50);
+                const backgroundColors = data.map(score => {
+                    if (score > 80) return 'rgba(76, 175, 80, 0.8)';       // Green
+                    if (score > 60) return 'rgba(33, 150, 243, 0.8)';      // Blue
+                    if (score > 40) return 'rgba(255, 235, 59, 0.8)';      // Yellow
+                    if (score > 20) return 'rgba(255, 152, 0, 0.8)';       // Orange
+                    return 'rgba(244, 67, 54, 0.8)';                       // Red
+                });
+                const borderColors = data.map(score => {
+                    if (score > 80) return 'rgba(76, 175, 80, 1)';
+                    if (score > 60) return 'rgba(33, 150, 243, 1)';
+                    if (score > 40) return 'rgba(255, 235, 59, 1)';
+                    if (score > 20) return 'rgba(255, 152, 0, 1)';
+                    return 'rgba(244, 67, 54, 1)';
+                });
+
+                educationChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'School Rating Score',
+                            data: data,
+                            backgroundColor: backgroundColors,
+                            borderColor: borderColors,
+                            borderWidth: 3,
+                            hoverOffset: 15
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: {
+                            duration: 1300,
+                            easing: 'easeOutQuart'
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    font: { size: 14, weight: 'bold' },
+                                    padding: 20,
+                                    generateLabels: function(chart) {
+                                        const data = chart.data;
+                                        if (data.labels.length && data.datasets.length) {
+                                            return data.labels.map((label, i) => {
+                                                const value = data.datasets[0].data[i];
+                                                return {
+                                                    text: `${label}: ${Math.round(value)}/100`,
+                                                    fillStyle: data.datasets[0].backgroundColor[i],
+                                                    strokeStyle: data.datasets[0].borderColor[i],
+                                                    lineWidth: 2,
+                                                    hidden: false,
+                                                    index: i
+                                                };
+                                            });
+                                        }
+                                        return [];
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.95)',
+                                titleColor: '#FFD700',
+                                bodyColor: '#fff',
+                                borderColor: '#FFD700',
+                                borderWidth: 2,
+                                padding: 15,
+                                cornerRadius: 12,
+                                displayColors: true,
+                                callbacks: {
+                                    label: (ctx) => {
+                                        const score = Math.round(ctx.parsed);
+                                        let rating = '';
+                                        if (score > 80) rating = 'Excellent Schools';
+                                        else if (score > 60) rating = 'Good Schools';
+                                        else if (score > 40) rating = 'Average Schools';
+                                        else if (score > 20) rating = 'Below Average';
+                                        else rating = 'Poor Schools';
+                                        return `${ctx.label}: ${score}/100 - ${rating}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // 💰 ROI CHART - Line Chart with 5-Year Projection
+            function createROIChart() {
+                const canvas = document.getElementById('roi-chart');
+                if (!canvas) return;
+
+                const ctx = canvas.getContext('2d');
+
+                if (roiChart) {
+                    roiChart.destroy();
+                }
+
+                const properties = [
+                    { prop: propertyA, letter: 'A' },
+                    { prop: propertyB, letter: 'B' },
+                    { prop: propertyC, letter: 'C' }
+                ].filter(p => p.prop !== null);
+
+                if (properties.length === 0) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                    ctx.font = '18px Segoe UI';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Select 2+ properties to compare ROI', canvas.width / 2, canvas.height / 2);
+                    return;
+                }
+
+                // Generate 5-year ROI projection based on current ROI score
+                const datasets = properties.map((p, idx) => {
+                    const roiScore = p.prop.dimensions.roi || 50;
+                    // Project 5 years of growth based on ROI score
+                    // Higher ROI = steeper growth curve
+                    const growthRate = roiScore / 100; // 0.0 to 1.0
+                    const data = [0]; // Start at year 0
+                    for (let year = 1; year <= 5; year++) {
+                        // Compound growth: more realistic for investments
+                        const projectedReturn = Math.pow(1 + (growthRate * 0.15), year) * 100 - 100;
+                        data.push(Math.round(projectedReturn * 10) / 10);
+                    }
+
+                    const colors = [
+                        { line: 'rgba(255, 215, 0, 1)', fill: 'rgba(255, 215, 0, 0.2)' },      // Gold
+                        { line: 'rgba(76, 175, 80, 1)', fill: 'rgba(76, 175, 80, 0.2)' },      // Green
+                        { line: 'rgba(33, 150, 243, 1)', fill: 'rgba(33, 150, 243, 0.2)' }     // Blue
+                    ];
+
+                    return {
+                        label: `Property ${p.letter} (ROI: ${Math.round(roiScore)}/100)`,
+                        data: data,
+                        borderColor: colors[idx].line,
+                        backgroundColor: colors[idx].fill,
+                        borderWidth: 4,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointBackgroundColor: colors[idx].line,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 3,
+                        fill: true,
+                        tension: 0.4  // Smooth curves
+                    };
+                });
+
+                roiChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Year 0', 'Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5'],
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: {
+                            duration: 1500,
+                            easing: 'easeInOutQuad'
+                        },
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    font: { size: 13, weight: 'bold' },
+                                    padding: 15,
+                                    usePointStyle: true,
+                                    pointStyle: 'line'
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.95)',
+                                titleColor: '#FFD700',
+                                bodyColor: '#fff',
+                                borderColor: '#FFD700',
+                                borderWidth: 2,
+                                padding: 15,
+                                cornerRadius: 12,
+                                displayColors: true,
+                                callbacks: {
+                                    label: (ctx) => {
+                                        const value = ctx.parsed.y;
+                                        return `${ctx.dataset.label.split('(')[0]}: +${value.toFixed(1)}% Return`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.8)',
+                                    font: { size: 13, weight: 'bold' },
+                                    callback: (value) => `${value}%`
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    lineWidth: 2
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Projected Return (%)',
+                                    color: 'rgba(255, 215, 0, 1)',
+                                    font: { size: 14, weight: 'bold' }
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    font: { size: 13, weight: 'bold' }
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.05)',
+                                    lineWidth: 1
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
             // ===== CHART RENDERING FOR MODAL (Canvas-Specific Versions) =====
 
             // Create COL chart on a specific canvas element (for modal clones)
@@ -6701,14 +7320,28 @@
                         .filter(m => metricFilters[m.key])
                         .map(m => prop.dimensions[m.key]);
 
+                    // Generate color array for each data point based on its value
+                    const pointColors = data.map(value => {
+                        if (value >= 81) return 'rgba(76, 175, 80, 1)';      // Green
+                        if (value >= 61) return 'rgba(33, 150, 243, 1)';     // Blue
+                        if (value >= 41) return 'rgba(255, 235, 59, 1)';     // Yellow
+                        if (value >= 21) return 'rgba(255, 152, 0, 1)';      // Orange
+                        return 'rgba(244, 67, 54, 1)';                        // Red
+                    });
+
                     datasets.push({
                         label: `${letter}: ${prop.name.substring(0, 15)}...`,
                         data: data,
                         backgroundColor: colors[idx].bg,
                         borderColor: colors[idx].border,
                         borderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6
+                        pointBackgroundColor: pointColors,  // Value-based colors
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointHoverBackgroundColor: pointColors,
+                        pointHoverBorderColor: '#fff',
+                        pointRadius: 5,
+                        pointHoverRadius: 7
                     });
                 });
 
@@ -6774,6 +7407,534 @@
                                 pointLabels: {
                                     color: 'rgba(255, 255, 255, 0.9)',
                                     font: { size: 12, weight: '600' }
+                                }
+                            }
+                        }
+                    }
+                });
+            };
+
+            // Create Location chart on a specific canvas element (for modal clones)
+            window.createLocationChartOnCanvas = function(canvasElement) {
+                if (!canvasElement) {
+                    console.error('❌ No canvas element provided for Location chart');
+                    return;
+                }
+
+                const ctx = canvasElement.getContext('2d');
+
+                const properties = [
+                    { prop: propertyA, letter: 'A' },
+                    { prop: propertyB, letter: 'B' },
+                    { prop: propertyC, letter: 'C' }
+                ].filter(p => p.prop !== null);
+
+                if (properties.length === 0) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.font = '16px Segoe UI';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Select properties to view Location comparison', canvasElement.width / 2, canvasElement.height / 2);
+                    return;
+                }
+
+                const data = properties.map(p => p.prop.dimensions.location || 50);
+                const backgroundColors = data.map(score => {
+                    if (score > 80) return 'rgba(76, 175, 80, 0.7)';
+                    if (score > 60) return 'rgba(33, 150, 243, 0.7)';
+                    if (score > 40) return 'rgba(255, 235, 59, 0.7)';
+                    if (score > 20) return 'rgba(255, 152, 0, 0.7)';
+                    return 'rgba(244, 67, 54, 0.7)';
+                });
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: properties.map(p => `Property ${p.letter}`),
+                        datasets: [{
+                            label: 'Location Score',
+                            data: data,
+                            backgroundColor: backgroundColors,
+                            borderColor: 'rgba(255, 255, 255, 0.8)',
+                            borderWidth: 3,
+                            borderRadius: 15,
+                            barThickness: 80
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: {
+                            duration: 1200,
+                            easing: 'easeOutBounce'
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                                titleColor: '#00D4FF',
+                                bodyColor: '#fff',
+                                borderColor: '#00D4FF',
+                                borderWidth: 2,
+                                padding: 15,
+                                cornerRadius: 12
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.8)',
+                                    font: { size: 13, weight: 'bold' }
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    lineWidth: 2
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    font: { size: 13, weight: 'bold' }
+                                },
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            };
+
+            // Create Condition chart on a specific canvas element (for modal clones)
+            window.createConditionChartOnCanvas = function(canvasElement) {
+                if (!canvasElement) {
+                    console.error('❌ No canvas element provided for Condition chart');
+                    return;
+                }
+
+                const ctx = canvasElement.getContext('2d');
+
+                const properties = [
+                    { prop: propertyA, letter: 'A' },
+                    { prop: propertyB, letter: 'B' },
+                    { prop: propertyC, letter: 'C' }
+                ].filter(p => p.prop !== null);
+
+                if (properties.length === 0) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.font = '16px Segoe UI';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Select properties to view Condition comparison', canvasElement.width / 2, canvasElement.height / 2);
+                    return;
+                }
+
+                const data = properties.map(p => p.prop.dimensions.condition || 50);
+                const backgroundColors = data.map(score => {
+                    if (score > 80) return 'rgba(76, 175, 80, 0.7)';       // Green
+                    if (score > 60) return 'rgba(33, 150, 243, 0.7)';      // Blue
+                    if (score > 40) return 'rgba(255, 235, 59, 0.7)';      // Yellow
+                    if (score > 20) return 'rgba(255, 152, 0, 0.7)';       // Orange
+                    return 'rgba(244, 67, 54, 0.7)';                       // Red
+                });
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: properties.map(p => `Property ${p.letter}`),
+                        datasets: [{
+                            label: 'Condition Score',
+                            data: data,
+                            backgroundColor: backgroundColors,
+                            borderColor: 'rgba(255, 215, 0, 0.9)',
+                            borderWidth: 3,
+                            borderRadius: 12,
+                            barThickness: 50
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: {
+                            duration: 1000,
+                            easing: 'easeOutCubic'
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                                titleColor: '#FFD700',
+                                bodyColor: '#fff',
+                                borderColor: '#FFD700',
+                                borderWidth: 2,
+                                padding: 15,
+                                cornerRadius: 12
+                            }
+                        },
+                        scales: {
+                            x: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.8)',
+                                    font: { size: 13, weight: 'bold' }
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    lineWidth: 2
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    font: { size: 13, weight: 'bold' }
+                                },
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            };
+
+            // Create Lifestyle chart on a specific canvas element (for modal clones)
+            window.createLifestyleChartOnCanvas = function(canvasElement) {
+                if (!canvasElement) {
+                    console.error('❌ No canvas element provided for Lifestyle chart');
+                    return;
+                }
+
+                const ctx = canvasElement.getContext('2d');
+
+                const properties = [
+                    { prop: propertyA, letter: 'A' },
+                    { prop: propertyB, letter: 'B' },
+                    { prop: propertyC, letter: 'C' }
+                ].filter(p => p.prop !== null);
+
+                if (properties.length === 0) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.font = '16px Segoe UI';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Select properties to view Lifestyle comparison', canvasElement.width / 2, canvasElement.height / 2);
+                    return;
+                }
+
+                const labels = properties.map(p => `Property ${p.letter}`);
+                const data = properties.map(p => p.prop.dimensions.lifestyle || 50);
+                const backgroundColors = [
+                    'rgba(156, 39, 176, 0.8)',
+                    'rgba(103, 58, 183, 0.8)',
+                    'rgba(63, 81, 181, 0.8)'
+                ];
+                const borderColors = [
+                    'rgba(156, 39, 176, 1)',
+                    'rgba(103, 58, 183, 1)',
+                    'rgba(63, 81, 181, 1)'
+                ];
+
+                new Chart(ctx, {
+                    type: 'polarArea',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Lifestyle Score',
+                            data: data,
+                            backgroundColor: backgroundColors.slice(0, properties.length),
+                            borderColor: borderColors.slice(0, properties.length),
+                            borderWidth: 3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: {
+                            duration: 1500,
+                            easing: 'easeInOutElastic'
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    font: { size: 13, weight: 'bold' },
+                                    padding: 15
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                                titleColor: '#AB47BC',
+                                bodyColor: '#fff',
+                                borderColor: '#AB47BC',
+                                borderWidth: 2,
+                                padding: 15,
+                                cornerRadius: 12,
+                                displayColors: true,
+                                callbacks: {
+                                    label: (ctx) => `Lifestyle: ${Math.round(ctx.parsed.r)}/100`
+                                }
+                            }
+                        },
+                        scales: {
+                            r: {
+                                beginAtZero: true,
+                                max: 100,
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 1)',
+                                    backdropColor: 'rgba(0, 0, 0, 0.5)',
+                                    font: { size: 14, weight: 'bold' }
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.2)',
+                                    lineWidth: 2
+                                }
+                            }
+                        }
+                    }
+                });
+            };
+
+            // Create Education chart on a specific canvas element (for modal clones)
+            window.createEducationChartOnCanvas = function(canvasElement) {
+                if (!canvasElement) {
+                    console.error('❌ No canvas element provided for Education chart');
+                    return;
+                }
+
+                const ctx = canvasElement.getContext('2d');
+
+                const properties = [
+                    { prop: propertyA, letter: 'A' },
+                    { prop: propertyB, letter: 'B' },
+                    { prop: propertyC, letter: 'C' }
+                ].filter(p => p.prop !== null);
+
+                if (properties.length === 0) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.font = '16px Segoe UI';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Select properties to view Education comparison', canvasElement.width / 2, canvasElement.height / 2);
+                    return;
+                }
+
+                const labels = properties.map(p => `Property ${p.letter}`);
+                const data = properties.map(p => p.prop.dimensions.schools || 50);
+                const backgroundColors = data.map(score => {
+                    if (score > 80) return 'rgba(76, 175, 80, 0.8)';
+                    if (score > 60) return 'rgba(33, 150, 243, 0.8)';
+                    if (score > 40) return 'rgba(255, 235, 59, 0.8)';
+                    if (score > 20) return 'rgba(255, 152, 0, 0.8)';
+                    return 'rgba(244, 67, 54, 0.8)';
+                });
+                const borderColors = data.map(score => {
+                    if (score > 80) return 'rgba(76, 175, 80, 1)';
+                    if (score > 60) return 'rgba(33, 150, 243, 1)';
+                    if (score > 40) return 'rgba(255, 235, 59, 1)';
+                    if (score > 20) return 'rgba(255, 152, 0, 1)';
+                    return 'rgba(244, 67, 54, 1)';
+                });
+
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'School Rating Score',
+                            data: data,
+                            backgroundColor: backgroundColors,
+                            borderColor: borderColors,
+                            borderWidth: 3,
+                            hoverOffset: 15
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: {
+                            duration: 1300,
+                            easing: 'easeOutQuart'
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    font: { size: 14, weight: 'bold' },
+                                    padding: 20,
+                                    generateLabels: function(chart) {
+                                        const data = chart.data;
+                                        if (data.labels.length && data.datasets.length) {
+                                            return data.labels.map((label, i) => {
+                                                const value = data.datasets[0].data[i];
+                                                return {
+                                                    text: `${label}: ${Math.round(value)}/100`,
+                                                    fillStyle: data.datasets[0].backgroundColor[i],
+                                                    strokeStyle: data.datasets[0].borderColor[i],
+                                                    lineWidth: 2,
+                                                    hidden: false,
+                                                    index: i
+                                                };
+                                            });
+                                        }
+                                        return [];
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.95)',
+                                titleColor: '#FFD700',
+                                bodyColor: '#fff',
+                                borderColor: '#FFD700',
+                                borderWidth: 2,
+                                padding: 15,
+                                cornerRadius: 12,
+                                displayColors: true,
+                                callbacks: {
+                                    label: (ctx) => {
+                                        const score = Math.round(ctx.parsed);
+                                        let rating = '';
+                                        if (score > 80) rating = 'Excellent Schools';
+                                        else if (score > 60) rating = 'Good Schools';
+                                        else if (score > 40) rating = 'Average Schools';
+                                        else if (score > 20) rating = 'Below Average';
+                                        else rating = 'Poor Schools';
+                                        return `${ctx.label}: ${score}/100 - ${rating}`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            };
+
+            // Create ROI chart on a specific canvas element (for modal clones)
+            window.createROIChartOnCanvas = function(canvasElement) {
+                if (!canvasElement) {
+                    console.error('❌ No canvas element provided for ROI chart');
+                    return;
+                }
+
+                const ctx = canvasElement.getContext('2d');
+
+                const properties = [
+                    { prop: propertyA, letter: 'A' },
+                    { prop: propertyB, letter: 'B' },
+                    { prop: propertyC, letter: 'C' }
+                ].filter(p => p.prop !== null);
+
+                if (properties.length === 0) {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.font = '16px Segoe UI';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Select properties to view ROI projection', canvasElement.width / 2, canvasElement.height / 2);
+                    return;
+                }
+
+                // Generate 5-year ROI projection
+                const datasets = properties.map((p, idx) => {
+                    const roiScore = p.prop.dimensions.roi || 50;
+                    const growthRate = roiScore / 100;
+                    const data = [0];
+                    for (let year = 1; year <= 5; year++) {
+                        const projectedReturn = Math.pow(1 + (growthRate * 0.15), year) * 100 - 100;
+                        data.push(Math.round(projectedReturn * 10) / 10);
+                    }
+
+                    const colors = [
+                        { line: 'rgba(255, 215, 0, 1)', fill: 'rgba(255, 215, 0, 0.2)' },
+                        { line: 'rgba(76, 175, 80, 1)', fill: 'rgba(76, 175, 80, 0.2)' },
+                        { line: 'rgba(33, 150, 243, 1)', fill: 'rgba(33, 150, 243, 0.2)' }
+                    ];
+
+                    return {
+                        label: `Property ${p.letter} (ROI: ${Math.round(roiScore)}/100)`,
+                        data: data,
+                        borderColor: colors[idx].line,
+                        backgroundColor: colors[idx].fill,
+                        borderWidth: 4,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointBackgroundColor: colors[idx].line,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    };
+                });
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Year 0', 'Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5'],
+                        datasets: datasets
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        animation: {
+                            duration: 1500,
+                            easing: 'easeInOutQuad'
+                        },
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    font: { size: 13, weight: 'bold' },
+                                    padding: 15,
+                                    usePointStyle: true,
+                                    pointStyle: 'line'
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.95)',
+                                titleColor: '#FFD700',
+                                bodyColor: '#fff',
+                                borderColor: '#FFD700',
+                                borderWidth: 2,
+                                padding: 15,
+                                cornerRadius: 12,
+                                displayColors: true,
+                                callbacks: {
+                                    label: (ctx) => {
+                                        const value = ctx.parsed.y;
+                                        return `${ctx.dataset.label.split('(')[0]}: +${value.toFixed(1)}% Return`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.8)',
+                                    font: { size: 13, weight: 'bold' },
+                                    callback: (value) => `${value}%`
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.1)',
+                                    lineWidth: 2
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Projected Return (%)',
+                                    color: 'rgba(255, 215, 0, 1)',
+                                    font: { size: 14, weight: 'bold' }
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 0.9)',
+                                    font: { size: 13, weight: 'bold' }
+                                },
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.05)',
+                                    lineWidth: 1
                                 }
                             }
                         }
