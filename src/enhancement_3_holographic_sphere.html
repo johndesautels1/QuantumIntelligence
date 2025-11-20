@@ -8135,8 +8135,16 @@
                     body.classList.remove('analyst-mode');
                     body.classList.add('cinematic-mode');
                     modeBtn.textContent = '🎬 Cinematic Mode';
+                    modeBtn.style.background = 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)';
                     comparisonPanel.classList.remove('visible');
                     document.getElementById('radar-chart-panel').classList.remove('visible');
+
+                    // Hide all data panels for immersive view
+                    document.querySelectorAll('.comparison-panel').forEach(panel => {
+                        panel.classList.remove('visible');
+                    });
+
+                    showAlert('🎬 Cinematic Mode - Immersive 3D view', 'success');
                     announceToScreenReader('Switched to cinematic mode - large 3D view with minimal UI');
                 } else {
                     // Switch to Analyst Mode
@@ -8144,12 +8152,16 @@
                     body.classList.remove('cinematic-mode');
                     body.classList.add('analyst-mode');
                     modeBtn.textContent = '📊 Analyst Mode';
-                    // REMOVED AUTO-OPEN: Let user manually open comparison panel
-                    // Only update if already visible
-                    if (comparisonPanel.classList.contains('visible') && propertyA && propertyB) {
+                    modeBtn.style.background = 'linear-gradient(135deg, #10B981 0%, #059669 100%)';
+
+                    // Show comparison panel if properties selected
+                    if (propertyA && propertyB) {
+                        comparisonPanel.classList.add('visible');
                         updateComparisonPanel();
                     }
                     updateRadarChartVisibility();
+
+                    showAlert('📊 Analyst Mode - Data panels available', 'success');
                     announceToScreenReader('Switched to analyst mode - detailed comparison view');
                 }
 
