@@ -4182,7 +4182,19 @@
                 });
                 const crown = new THREE.Sprite(spriteMaterial);
                 crown.scale.set(0.8, 0.8, 1);
-                crown.position.set(sphere.position.x, sphere.position.y + 1.5, sphere.position.z);
+
+                // Adjust crown height based on whether it's a house or sphere
+                const crownYOffset = sphere.userData.isHouse ? 2.0 : 1.5;
+                crown.position.set(sphere.position.x, sphere.position.y + crownYOffset, sphere.position.z);
+
+                // Hide inner sphere if this is a house
+                if (sphere.userData.isHouse) {
+                    sphere.children.forEach(child => {
+                        if (child.userData.isInnerSphere) {
+                            child.visible = false;
+                        }
+                    });
+                }
 
                 scene.add(crown);
                 crownSprites[slot] = crown;
