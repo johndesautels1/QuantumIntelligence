@@ -2838,12 +2838,12 @@
             let activeMetricGroup = 'all';
             let currentPersona = 'balanced';
 
-            // Feature #15: Deal-Breaker Rules
+            // Feature #15: Deal-Breaker Rules (More lenient for testing)
             let dealBreakerRules = {
-                minSafety: 50,
-                minSchools: 40,
-                maxCostOfLiving: 80,
-                minCondition: 50
+                minSafety: 20,           // Only flag if safety score < 20 (very unsafe)
+                minSchools: 20,          // Only flag if school rating < 20 (very poor schools)
+                maxCostOfLiving: 150,    // Only flag if COL > 150 (extremely expensive)
+                minCondition: 20         // Only flag if condition < 20 (very poor condition)
             };
             let shockwaveObjects = { A: null, B: null, C: null };
 
@@ -7059,11 +7059,15 @@
 
                 const labels = properties.map(p => `Property ${p.letter}`);
                 const data = properties.map(p => p.prop.dimensions.lifestyle || 50);
-                const backgroundColors = [
-                    'rgba(156, 39, 176, 0.8)',
-                    'rgba(103, 58, 183, 0.8)',
-                    'rgba(63, 81, 181, 0.8)'
-                ];
+
+                // Use 5-tier color scale based on score
+                const backgroundColors = data.map(score => {
+                    if (score > 80) return 'rgba(76, 175, 80, 0.8)';       // Green
+                    if (score > 60) return 'rgba(33, 150, 243, 0.8)';      // Blue
+                    if (score > 40) return 'rgba(255, 235, 59, 0.8)';      // Yellow
+                    if (score > 20) return 'rgba(255, 152, 0, 0.8)';       // Orange
+                    return 'rgba(244, 67, 54, 0.8)';                        // Red
+                });
 
                 lifestyleChart = new Chart(ctx, {
                     type: 'polarArea',
@@ -7821,16 +7825,23 @@
 
                 const labels = properties.map(p => `Property ${p.letter}`);
                 const data = properties.map(p => p.prop.dimensions.lifestyle || 50);
-                const backgroundColors = [
-                    'rgba(156, 39, 176, 0.8)',
-                    'rgba(103, 58, 183, 0.8)',
-                    'rgba(63, 81, 181, 0.8)'
-                ];
-                const borderColors = [
-                    'rgba(156, 39, 176, 1)',
-                    'rgba(103, 58, 183, 1)',
-                    'rgba(63, 81, 181, 1)'
-                ];
+
+                // Use 5-tier color scale based on score
+                const backgroundColors = data.map(score => {
+                    if (score > 80) return 'rgba(76, 175, 80, 0.8)';       // Green
+                    if (score > 60) return 'rgba(33, 150, 243, 0.8)';      // Blue
+                    if (score > 40) return 'rgba(255, 235, 59, 0.8)';      // Yellow
+                    if (score > 20) return 'rgba(255, 152, 0, 0.8)';       // Orange
+                    return 'rgba(244, 67, 54, 0.8)';                        // Red
+                });
+
+                const borderColors = data.map(score => {
+                    if (score > 80) return 'rgba(76, 175, 80, 1)';         // Green
+                    if (score > 60) return 'rgba(33, 150, 243, 1)';        // Blue
+                    if (score > 40) return 'rgba(255, 235, 59, 1)';        // Yellow
+                    if (score > 20) return 'rgba(255, 152, 0, 1)';         // Orange
+                    return 'rgba(244, 67, 54, 1)';                          // Red
+                });
 
                 new Chart(ctx, {
                     type: 'polarArea',
