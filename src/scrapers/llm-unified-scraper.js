@@ -923,6 +923,110 @@ Only include direct property listing URLs, not search result pages.`;
     }
 
     /**
+     * 💰 COMPARE PRICES IN AREA
+     * Analyzes price differences between multiple properties in the same area
+     */
+    async comparePricesInArea(properties, area = null) {
+        console.log(`\n💰 COMPARING PRICES FOR ${properties.length} PROPERTIES`);
+
+        if (properties.length < 2) {
+            console.warn('⚠️ Need at least 2 properties to compare');
+            return null;
+        }
+
+        // Extract prices
+        const priceData = properties.map((prop, idx) => ({
+            id: String.fromCharCode(65 + idx), // A, B, C, D...
+            address: prop.address?.full_address || 'Unknown',
+            price: prop.price?.current || null,
+            pricePerSqft: prop.price?.per_sqft || null,
+            sqft: prop.property?.sqft || null,
+            bedrooms: prop.property?.bedrooms || null,
+            bathrooms: prop.property?.bathrooms || null
+        })).filter(p => p.price !== null);
+
+        if (priceData.length === 0) {
+            console.warn('⚠️ No valid price data found');
+            return null;
+        }
+
+        // Calculate statistics
+        const prices = priceData.map(p => p.price);
+        const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+        const minPrice = Math.min(...prices);
+        const maxPrice = Math.max(...prices);
+        const priceRange = maxPrice - minPrice;
+
+        // Calculate price per sqft statistics
+        const pricesPerSqft = priceData.map(p => p.pricePerSqft).filter(p => p !== null);
+        const avgPricePerSqft = pricesPerSqft.length > 0
+            ? pricesPerSqft.reduce((a, b) => a + b, 0) / pricesPerSqft.length
+            : null;
+
+        // Build comparison object
+        const comparison = {
+            area: area || 'Unspecified Area',
+            properties: priceData,
+            statistics: {
+                averagePrice: Math.round(avgPrice),
+                minPrice: minPrice,
+                maxPrice: maxPrice,
+                priceRange: priceRange,
+                averagePricePerSqft: avgPricePerSqft ? Math.round(avgPricePerSqft) : null
+            },
+            analysis: []
+        };
+
+        // Generate insights
+        priceData.forEach(prop => {
+            const priceDiff = prop.price - avgPrice;
+            const percentDiff = ((priceDiff / avgPrice) * 100).toFixed(1);
+
+            let analysis = `Property ${prop.id} (${prop.address}): $${prop.price.toLocaleString()}`;
+
+            if (Math.abs(parseFloat(percentDiff)) < 5) {
+                analysis += ` - At market average`;
+            } else if (priceDiff > 0) {
+                analysis += ` - ${percentDiff}% ABOVE average ($${Math.abs(Math.round(priceDiff)).toLocaleString()} more)`;
+            } else {
+                analysis += ` - ${Math.abs(parseFloat(percentDiff))}% BELOW average ($${Math.abs(Math.round(priceDiff)).toLocaleString()} less)`;
+            }
+
+            if (prop.pricePerSqft && avgPricePerSqft) {
+                const sqftDiff = ((prop.pricePerSqft - avgPricePerSqft) / avgPricePerSqft * 100).toFixed(1);
+                analysis += ` | $${prop.pricePerSqft}/sqft (${sqftDiff > 0 ? '+' : ''}${sqftDiff}% vs avg)`;
+            }
+
+            comparison.analysis.push(analysis);
+        });
+
+        // Find best value (lowest price per sqft)
+        if (pricesPerSqft.length > 0) {
+            const bestValue = priceData.reduce((best, curr) =>
+                (curr.pricePerSqft && (!best.pricePerSqft || curr.pricePerSqft < best.pricePerSqft)) ? curr : best
+            );
+            comparison.bestValue = `Property ${bestValue.id} - Best value at $${bestValue.pricePerSqft}/sqft`;
+        }
+
+        // Print summary
+        console.log(`\n📊 PRICE COMPARISON SUMMARY:`);
+        console.log(`   Area: ${comparison.area}`);
+        console.log(`   Average Price: $${comparison.statistics.averagePrice.toLocaleString()}`);
+        console.log(`   Price Range: $${minPrice.toLocaleString()} - $${maxPrice.toLocaleString()} (Δ$${priceRange.toLocaleString()})`);
+        if (avgPricePerSqft) {
+            console.log(`   Average $/sqft: $${avgPricePerSqft.toLocaleString()}`);
+        }
+        console.log(`\n📈 PROPERTY ANALYSIS:`);
+        comparison.analysis.forEach(a => console.log(`   ${a}`));
+        if (comparison.bestValue) {
+            console.log(`\n⭐ ${comparison.bestValue}`);
+        }
+        console.log('');
+
+        return comparison;
+    }
+
+    /**
      * 💤 SLEEP
      */
     sleep(ms) {

@@ -11,7 +11,8 @@
     "scrape:single": "node src/scrapers/examples/scrape-single-property.js",
     "scrape:batch": "node src/scrapers/examples/scrape-batch.js",
     "scrape:city": "node src/scrapers/examples/scrape-city.js",
-    "scrape:test": "node src/scrapers/examples/test-llm-scraper.js"
+    "scrape:test": "node src/scrapers/examples/test-llm-scraper.js",
+    "scrape:compare": "node src/scrapers/examples/test-price-comparison.js"
   },
   "keywords": [
     "real estate",
