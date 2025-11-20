@@ -1221,6 +1221,198 @@
             font-size: 1em;
         }
 
+        /* ========== DATA PANELS MODAL ========== */
+        .data-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 15000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .data-modal-container {
+            background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%);
+            backdrop-filter: blur(20px);
+            border: 2px solid rgba(0, 212, 255, 0.5);
+            border-radius: 20px;
+            padding: 0;
+            width: 90%;
+            max-width: 900px;
+            max-height: 85vh;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 40px rgba(0, 212, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            animation: slideIn 0.3s ease;
+            overflow: hidden;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .data-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 25px;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.3);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .data-modal-close {
+            background: rgba(255, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+            line-height: 1;
+            transition: all 0.3s ease;
+            pointer-events: auto !important;
+        }
+
+        .data-modal-close:hover {
+            background: rgba(255, 0, 0, 0.9);
+            transform: rotate(90deg);
+        }
+
+        .data-modal-tabs {
+            display: flex;
+            gap: 8px;
+            padding: 15px 20px;
+            background: rgba(0, 0, 0, 0.15);
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+            overflow-x: auto;
+            flex-wrap: wrap;
+        }
+
+        .data-tab {
+            padding: 10px 18px;
+            background: rgba(128, 128, 128, 0.3);
+            border: 1px solid rgba(128, 128, 128, 0.4);
+            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            pointer-events: auto !important;
+        }
+
+        .data-tab:hover {
+            background: rgba(0, 150, 255, 0.4);
+            border-color: rgba(0, 212, 255, 0.6);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .data-tab.active {
+            background: linear-gradient(135deg, #00D4FF, #0066FF);
+            border-color: #00D4FF;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+        }
+
+        .data-modal-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            min-height: 400px;
+            max-height: calc(85vh - 220px);
+        }
+
+        .data-modal-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .data-modal-content::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+
+        .data-modal-content::-webkit-scrollbar-thumb {
+            background: rgba(0, 212, 255, 0.5);
+            border-radius: 4px;
+        }
+
+        .data-modal-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 212, 255, 0.7);
+        }
+
+        .data-modal-footer {
+            padding: 15px 25px;
+            border-top: 1px solid rgba(0, 212, 255, 0.3);
+            background: rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        /* Make panels display properly inside modal */
+        #modal-panel-container .comparison-panel,
+        #modal-panel-container .roi-panel,
+        #modal-panel-container .radar-chart-panel,
+        #modal-panel-container .col-chart-panel,
+        #modal-panel-container .crime-widget,
+        #modal-panel-container .notes-panel {
+            position: relative !important;
+            transform: none !important;
+            opacity: 1 !important;
+            display: block !important;
+            pointer-events: all !important;
+            left: auto !important;
+            right: auto !important;
+            bottom: auto !important;
+            top: auto !important;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Responsive modal */
+        @media (max-width: 768px) {
+            .data-modal-container {
+                width: 95%;
+                max-height: 90vh;
+            }
+
+            .data-modal-tabs {
+                flex-wrap: wrap;
+                gap: 6px;
+                padding: 10px;
+            }
+
+            .data-tab {
+                padding: 8px 12px;
+                font-size: 0.8em;
+            }
+
+            .data-modal-content {
+                padding: 15px;
+                min-height: 300px;
+            }
+        }
+
         /* Cinematic Mode */
         body.cinematic-mode #canvas-container {
             width: 100%;
@@ -1785,31 +1977,11 @@
                 </button>
             </div>
 
-            <!-- Panel Toggle Buttons -->
+            <!-- Consolidated Data Panels Button -->
             <div class="panel-toggle-buttons" role="region" aria-label="Panel visibility controls">
-                <button class="panel-toggle-btn" id="toggle-comparison" onclick="togglePanel('comparison')"
-                        aria-label="Toggle property comparison panel">
-                    📊 Property Comparison
-                </button>
-                <button class="panel-toggle-btn" id="toggle-col" onclick="togglePanel('col')"
-                        aria-label="Toggle cost of living panel">
-                    💵 Cost of Living
-                </button>
-                <button class="panel-toggle-btn" id="toggle-crime" onclick="togglePanel('crime')"
-                        aria-label="Toggle crime comparison panel">
-                    🔫 Crime Comparison
-                </button>
-                <button class="panel-toggle-btn" id="toggle-metric" onclick="togglePanel('metric')"
-                        aria-label="Toggle metric comparison panel">
-                    📡 Metric Comparison
-                </button>
-                <button class="panel-toggle-btn" id="toggle-roi" onclick="togglePanel('roi')"
-                        aria-label="Toggle ROI projections panel">
-                    📈 ROI Projections
-                </button>
-                <button class="panel-toggle-btn" id="toggle-notes" onclick="togglePanel('notes')"
-                        aria-label="Toggle property notes panel">
-                    📝 Property Notes
+                <button class="panel-toggle-btn" id="toggle-data-panels" onclick="openDataPanelsModal()"
+                        aria-label="Open data panels modal with 6 analysis tabs">
+                    📊 Data Panels
                 </button>
             </div>
 
@@ -2159,6 +2331,59 @@
                                    border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
                         Go to Dashboard
                     </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Panels Modal (Consolidated 6-in-1 Interface) -->
+        <div id="data-panels-modal" class="data-modal-overlay" style="display: none;">
+            <div class="data-modal-container">
+                <!-- Modal Header -->
+                <div class="data-modal-header">
+                    <h2 style="margin: 0; color: #FFD700; font-size: 1.5em;">📊 Data Panels</h2>
+                    <button onclick="closeDataPanelsModal()" class="data-modal-close"
+                            aria-label="Close data panels modal">×</button>
+                </div>
+
+                <!-- Tab Navigation -->
+                <div class="data-modal-tabs" role="tablist" aria-label="Data panel categories">
+                    <button class="data-tab active" id="tab-comparison" onclick="switchDataTab('comparison')"
+                            role="tab" aria-selected="true" aria-controls="panel-comparison">
+                        📊 Comparison
+                    </button>
+                    <button class="data-tab" id="tab-col" onclick="switchDataTab('col')"
+                            role="tab" aria-selected="false" aria-controls="panel-col">
+                        💵 Cost of Living
+                    </button>
+                    <button class="data-tab" id="tab-crime" onclick="switchDataTab('crime')"
+                            role="tab" aria-selected="false" aria-controls="panel-crime">
+                        🔫 Crime
+                    </button>
+                    <button class="data-tab" id="tab-metric" onclick="switchDataTab('metric')"
+                            role="tab" aria-selected="false" aria-controls="panel-metric">
+                        📡 Metrics
+                    </button>
+                    <button class="data-tab" id="tab-roi" onclick="switchDataTab('roi')"
+                            role="tab" aria-selected="false" aria-controls="panel-roi">
+                        📈 ROI
+                    </button>
+                    <button class="data-tab" id="tab-notes" onclick="switchDataTab('notes')"
+                            role="tab" aria-selected="false" aria-controls="panel-notes">
+                        📝 Notes
+                    </button>
+                </div>
+
+                <!-- Modal Content Area -->
+                <div class="data-modal-content" id="data-modal-content-area">
+                    <!-- Panel content will be dynamically moved here -->
+                    <div id="modal-panel-container"></div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="data-modal-footer">
+                    <p style="margin: 0; font-size: 0.85em; color: rgba(255, 255, 255, 0.7);">
+                        💡 Switch tabs to view different analysis panels | ESC to close
+                    </p>
                 </div>
             </div>
         </div>
@@ -3479,6 +3704,202 @@
                 vibrate('tap');
             };
 
+            // ========== DATA PANELS MODAL CONTROLS ==========
+
+            // Track current active tab
+            let currentDataTab = 'comparison';
+
+            // Open the consolidated Data Panels modal
+            window.openDataPanelsModal = function() {
+                const modal = document.getElementById('data-panels-modal');
+                if (!modal) {
+                    console.error('❌ Data panels modal not found');
+                    return;
+                }
+
+                // Show modal
+                modal.style.display = 'flex';
+
+                // Load the default tab (comparison)
+                switchDataTab('comparison');
+
+                // Vibration feedback
+                vibrate('tap');
+
+                // Accessibility announcement
+                announceToScreenReader('Data panels modal opened. Use tab keys to navigate, ESC to close.');
+
+                console.log('📊 Data panels modal opened');
+            };
+
+            // Close the Data Panels modal
+            window.closeDataPanelsModal = function() {
+                const modal = document.getElementById('data-panels-modal');
+                if (!modal) return;
+
+                // Hide modal
+                modal.style.display = 'none';
+
+                // Clear modal content
+                const container = document.getElementById('modal-panel-container');
+                if (container) {
+                    container.innerHTML = '';
+                }
+
+                // Vibration feedback
+                vibrate('tap');
+
+                // Accessibility announcement
+                announceToScreenReader('Data panels modal closed');
+
+                console.log('📊 Data panels modal closed');
+            };
+
+            // Switch between data tabs inside the modal
+            window.switchDataTab = function(tabName) {
+                console.log(`🔄 Switching to tab: ${tabName}`);
+
+                currentDataTab = tabName;
+
+                // Update tab button styles
+                document.querySelectorAll('.data-tab').forEach(tab => {
+                    tab.classList.remove('active');
+                    tab.setAttribute('aria-selected', 'false');
+                });
+
+                const activeTab = document.getElementById(`tab-${tabName}`);
+                if (activeTab) {
+                    activeTab.classList.add('active');
+                    activeTab.setAttribute('aria-selected', 'true');
+                }
+
+                // Get the modal container
+                const container = document.getElementById('modal-panel-container');
+                if (!container) {
+                    console.error('❌ Modal panel container not found');
+                    return;
+                }
+
+                // Clear container
+                container.innerHTML = '';
+
+                // Map tab names to panel IDs and update functions
+                const panelMap = {
+                    'comparison': {
+                        id: 'comparison-panel',
+                        updateFn: updateComparisonPanel,
+                        label: 'Property Comparison'
+                    },
+                    'col': {
+                        id: 'col-chart-panel',
+                        updateFn: createCOLChart,
+                        label: 'Cost of Living Comparison'
+                    },
+                    'crime': {
+                        id: 'crime-widget',
+                        updateFn: updateCrimeWidget,
+                        label: 'Crime Safety Levels'
+                    },
+                    'metric': {
+                        id: 'radar-chart-panel',
+                        updateFn: createRadarChart,
+                        label: 'Metric Radar Chart'
+                    },
+                    'roi': {
+                        id: 'roi-panel',
+                        updateFn: updateComparisonPanel,
+                        label: 'ROI Projections'
+                    },
+                    'notes': {
+                        id: 'notes-panel',
+                        updateFn: updateNotesDisplay,
+                        label: 'Property Notes'
+                    }
+                };
+
+                const panelInfo = panelMap[tabName];
+                if (!panelInfo) {
+                    console.error(`❌ Unknown tab: ${tabName}`);
+                    return;
+                }
+
+                // Find the original panel
+                const originalPanel = document.getElementById(panelInfo.id);
+                if (!originalPanel) {
+                    console.error(`❌ Panel not found: ${panelInfo.id}`);
+                    container.innerHTML = `<p style="text-align: center; color: rgba(255,255,255,0.7);">Panel "${panelInfo.label}" not available</p>`;
+                    return;
+                }
+
+                // Clone the panel and insert into modal
+                const clonedPanel = originalPanel.cloneNode(true);
+                clonedPanel.style.display = 'block';
+                clonedPanel.style.opacity = '1';
+                clonedPanel.style.transform = 'none';
+                clonedPanel.style.position = 'relative';
+                container.appendChild(clonedPanel);
+
+                // Call the update function to populate data
+                if (typeof panelInfo.updateFn === 'function') {
+                    try {
+                        panelInfo.updateFn();
+                        console.log(`✅ Updated ${tabName} panel data`);
+                    } catch (err) {
+                        console.warn(`⚠️ Could not update ${tabName} panel:`, err.message);
+                    }
+                }
+
+                // Special handling for notes panel - restore event listeners
+                if (tabName === 'notes') {
+                    // Re-attach note-taking event listeners to cloned elements
+                    const noteTabs = clonedPanel.querySelectorAll('.notes-tab');
+                    noteTabs.forEach((tab, index) => {
+                        const slot = ['A', 'B', 'C'][index];
+                        tab.onclick = () => selectNotesProperty(slot);
+                    });
+
+                    const emojiButtons = clonedPanel.querySelectorAll('.emoji-btn');
+                    emojiButtons.forEach(btn => {
+                        const emoji = btn.getAttribute('onclick')?.match(/'([^']+)'/g);
+                        if (emoji && emoji.length >= 2) {
+                            const slot = emoji[0].replace(/'/g, '');
+                            const emojiChar = emoji[1].replace(/'/g, '');
+                            btn.onclick = () => addEmoji(slot, emojiChar);
+                        }
+                    });
+
+                    const textareas = clonedPanel.querySelectorAll('.notes-textarea');
+                    textareas.forEach(textarea => {
+                        const slot = textarea.id.replace('notes-', '');
+                        textarea.oninput = () => saveNotes(slot);
+                    });
+
+                    const closeBtn = clonedPanel.querySelector('button[onclick*="toggleNotesPanel"]');
+                    if (closeBtn) {
+                        closeBtn.style.display = 'none'; // Hide close button (modal has its own)
+                    }
+                }
+
+                // Vibration feedback
+                vibrate('tap');
+
+                // Accessibility announcement
+                announceToScreenReader(`Switched to ${panelInfo.label} tab`);
+
+                console.log(`✅ Loaded ${tabName} panel into modal`);
+            };
+
+            // ESC key to close modal
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' || e.key === 'Esc') {
+                    const modal = document.getElementById('data-panels-modal');
+                    if (modal && modal.style.display === 'flex') {
+                        closeDataPanelsModal();
+                    }
+                }
+            });
+
+            console.log('✅ Data panels modal functions created');
             console.log('✅ Tools menu and panel toggle functions created');
 
             // ===== INITIALIZATION =====
