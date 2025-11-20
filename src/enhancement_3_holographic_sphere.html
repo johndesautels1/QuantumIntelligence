@@ -1860,7 +1860,7 @@
             <!-- TOOLS Master Dropdown Menu -->
             <button class="mode-toggle" id="tools-master-btn" onclick="toggleToolsMenu()"
                     aria-label="Open/close tools menu"
-                    style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(0, 212, 255, 0.4)); font-weight: bold; font-size: 1.1em;">
+                    style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(0, 212, 255, 0.4)); font-weight: bold;">
                 🛠️ TOOLS
             </button>
 
@@ -4471,6 +4471,17 @@
                 if (propertyA) selectProperty('A', propertyA.id);
                 if (propertyB) selectProperty('B', propertyB.id);
                 if (propertyC) selectProperty('C', propertyC.id);
+
+                // Recreate gravity indicators if gravity is enabled
+                if (gravityEnabled) {
+                    ['A', 'B', 'C'].forEach(slot => {
+                        const sphere = slot === 'A' ? sphereA : slot === 'B' ? sphereB : sphereC;
+                        const property = slot === 'A' ? propertyA : slot === 'B' ? propertyB : propertyC;
+                        if (sphere && property) {
+                            createGravityIndicator(slot, sphere, property);
+                        }
+                    });
+                }
 
                 // Save preference
                 localStorage.setItem('clues_use3DModels', use3DModels);
