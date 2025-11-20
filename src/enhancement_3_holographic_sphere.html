@@ -1302,22 +1302,23 @@
 
         .data-modal-tabs {
             display: flex;
-            gap: 8px;
+            gap: 4px;
             padding: 15px 20px;
             background: rgba(0, 0, 0, 0.15);
             border-bottom: 1px solid rgba(0, 212, 255, 0.2);
             overflow-x: auto;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
         }
 
         .data-tab {
-            padding: 10px 18px;
+            padding: 3px 5px;
             background: rgba(128, 128, 128, 0.3);
             border: 1px solid rgba(128, 128, 128, 0.4);
-            border-radius: 8px;
+            border-left: 3px solid rgba(128, 128, 128, 0.4);
+            border-radius: 6px;
             color: rgba(255, 255, 255, 0.7);
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 0.6em;
             font-weight: 500;
             transition: all 0.3s ease;
             white-space: nowrap;
@@ -2134,25 +2135,6 @@
                             role="radio" aria-checked="false" aria-label="Nomad persona">✈️ Nomad</button>
                 </div>
 
-                <h3>📊 Metric Groups</h3>
-                <div class="metric-group-tabs" role="tablist" aria-label="Metric group filters">
-                    <button class="metric-group-tab active" onclick="toggleMetricGroup('all')"
-                            role="tab" aria-selected="true" aria-label="Show all metrics">All</button>
-                    <button class="metric-group-tab" onclick="toggleMetricGroup('location')"
-                            role="tab" aria-selected="false" aria-label="Show location metrics">📍 Location</button>
-                    <button class="metric-group-tab" onclick="toggleMetricGroup('financial')"
-                            role="tab" aria-selected="false" aria-label="Show financial metrics">💰 Financial</button>
-                    <button class="metric-group-tab" onclick="toggleMetricGroup('lifestyle')"
-                            role="tab" aria-selected="false" aria-label="Show lifestyle metrics">🌟 Lifestyle</button>
-                    <button class="metric-group-tab" onclick="toggleMetricGroup('safety')"
-                            role="tab" aria-selected="false" aria-label="Show safety metrics">🛡️ Safety</button>
-                </div>
-
-                <h3>Metrics to Display</h3>
-                <div class="metric-filters" id="metric-filters-container" role="group" aria-label="Metric visibility toggles">
-                    <!-- Dynamically populated from METRICS_CONFIG -->
-                </div>
-
                 <!-- Feature #9: Time Travel Control -->
                 <div class="time-travel-control">
                     <h3>⏰ Time Travel</h3>
@@ -2353,40 +2335,85 @@
             <!-- Comparison Panel (Feature #6) -->
             <div class="comparison-panel" id="comparison-panel" role="region" aria-label="Property comparison metrics">
                 <h3>📊 Property Comparison</h3>
+
+                <!-- Metric Filter Controls -->
+                <div style="background: rgba(0, 0, 0, 0.3); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 10px 0; color: #FFD700; font-size: 0.95em;">🎯 Metrics to Include in Smart Score</h4>
+                    <div class="metric-filters" id="metric-filters-container" role="group" aria-label="Metric visibility toggles">
+                        <!-- Dynamically populated from METRICS_CONFIG -->
+                    </div>
+                </div>
+
                 <div id="comparison-content">
                     <p style="text-align: center; opacity: 0.7;">Select 2 or more properties to compare</p>
                 </div>
             </div>
 
-            <!-- ROI Projection Panel -->
-            <div class="roi-panel" id="roi-panel" role="region" aria-label="ROI projections">
-                <h3>📈 ROI Projections</h3>
-                <div id="roi-content">
-                    <p style="text-align: center; opacity: 0.7;">Select 2 or more properties to compare</p>
+            <!-- Location Panel -->
+            <div class="comparison-panel" id="location-panel" role="region" aria-label="Property location information">
+                <h3>📍 Location</h3>
+                <div id="location-content">
+                    <p style="text-align: center; opacity: 0.7; padding: 40px 20px;">
+                        Location data will be displayed here.<br>
+                        <span style="font-size: 0.85em; opacity: 0.6;">(Feature coming soon)</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Property Condition Panel -->
+            <div class="comparison-panel" id="condition-panel" role="region" aria-label="Property condition information">
+                <h3>🏠 Condition</h3>
+                <div id="condition-content">
+                    <p style="text-align: center; opacity: 0.7; padding: 40px 20px;">
+                        Condition data will be displayed here.<br>
+                        <span style="font-size: 0.85em; opacity: 0.6;">(Feature coming soon)</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Lifestyle Panel -->
+            <div class="comparison-panel" id="lifestyle-panel" role="region" aria-label="Property lifestyle information">
+                <h3>🎨 Lifestyle</h3>
+                <div id="lifestyle-content">
+                    <p style="text-align: center; opacity: 0.7; padding: 40px 20px;">
+                        Lifestyle data will be displayed here.<br>
+                        <span style="font-size: 0.85em; opacity: 0.6;">(Feature coming soon)</span>
+                    </p>
                 </div>
             </div>
 
             <!-- Radar Chart Panel (Feature #7) -->
             <div class="radar-chart-panel" id="radar-chart-panel" role="region" aria-label="Property metrics radar chart">
-                <h3>📡 Metric Comparison</h3>
+                <h3>📡 Metrics</h3>
                 <div id="radar-chart-container">
                     <canvas id="radar-chart"></canvas>
                 </div>
             </div>
 
-            <!-- Crime Danger Widget -->
-            <div class="crime-widget" id="crime-widget" role="region" aria-label="Crime safety levels">
-                <h4>🔫 Crime Safety</h4>
-                <div class="crime-level" id="crime-level">
-                    <p style="text-align: center; opacity: 0.7; font-size: 0.85em;">Select properties to view</p>
+            <!-- Cost-of-Living Bar Chart -->
+            <div class="col-chart-panel" id="col-chart-panel" role="region" aria-label="Cost of living comparison">
+                <h3>💵 Cost of Living</h3>
+                <div id="col-chart-container">
+                    <canvas id="col-chart"></canvas>
                 </div>
             </div>
 
-            <!-- Cost-of-Living Bar Chart -->
-            <div class="col-chart-panel" id="col-chart-panel" role="region" aria-label="Cost of living comparison">
-                <h3>💵 Cost of Living Comparison</h3>
-                <div id="col-chart-container">
-                    <canvas id="col-chart"></canvas>
+            <!-- Education Panel -->
+            <div class="comparison-panel" id="education-panel" role="region" aria-label="Education information">
+                <h3>🎓 Education</h3>
+                <div id="education-content">
+                    <p style="text-align: center; opacity: 0.7; padding: 40px 20px;">
+                        Education data will be displayed here.<br>
+                        <span style="font-size: 0.85em; opacity: 0.6;">(Feature coming soon)</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Crime Danger Widget -->
+            <div class="crime-widget" id="crime-widget" role="region" aria-label="Crime safety levels">
+                <h4>🔫 Crime</h4>
+                <div class="crime-level" id="crime-level">
+                    <p style="text-align: center; opacity: 0.7; font-size: 0.85em;">Select properties to view</p>
                 </div>
             </div>
 
@@ -2541,21 +2568,37 @@
                             role="tab" aria-selected="true" aria-controls="panel-comparison">
                         📊 Comparison
                     </button>
+                    <button class="data-tab" id="tab-location" onclick="switchDataTab('location')"
+                            role="tab" aria-selected="false" aria-controls="panel-location">
+                        📍 Location
+                    </button>
+                    <button class="data-tab" id="tab-condition" onclick="switchDataTab('condition')"
+                            role="tab" aria-selected="false" aria-controls="panel-condition">
+                        🏠 Condition
+                    </button>
+                    <button class="data-tab" id="tab-lifestyle" onclick="switchDataTab('lifestyle')"
+                            role="tab" aria-selected="false" aria-controls="panel-lifestyle">
+                        🎨 Lifestyle
+                    </button>
                     <button class="data-tab" id="tab-col" onclick="switchDataTab('col')"
                             role="tab" aria-selected="false" aria-controls="panel-col">
-                        💵 Cost of Living
+                        💵 COL
+                    </button>
+                    <button class="data-tab" id="tab-education" onclick="switchDataTab('education')"
+                            role="tab" aria-selected="false" aria-controls="panel-education">
+                        🎓 Education
                     </button>
                     <button class="data-tab" id="tab-crime" onclick="switchDataTab('crime')"
                             role="tab" aria-selected="false" aria-controls="panel-crime">
                         🔫 Crime
                     </button>
-                    <button class="data-tab" id="tab-metric" onclick="switchDataTab('metric')"
-                            role="tab" aria-selected="false" aria-controls="panel-metric">
-                        📡 Metrics
-                    </button>
                     <button class="data-tab" id="tab-roi" onclick="switchDataTab('roi')"
                             role="tab" aria-selected="false" aria-controls="panel-roi">
                         📈 ROI
+                    </button>
+                    <button class="data-tab" id="tab-metric" onclick="switchDataTab('metric')"
+                            role="tab" aria-selected="false" aria-controls="panel-metric">
+                        📡 Metrics
                     </button>
                     <button class="data-tab" id="tab-notes" onclick="switchDataTab('notes')"
                             role="tab" aria-selected="false" aria-controls="panel-notes">
@@ -2589,10 +2632,11 @@
             'use strict';
 
             // ===== CONFIG-DRIVEN METRICS (v3.2) =====
+            // Order matches tab order: Location, Condition, Lifestyle, Cost of Living, Education, Crime, ROI
             const METRICS_CONFIG = {
                 location: {
                     key: 'location',
-                    label: 'Location Score',
+                    label: 'Location',
                     group: 'location',
                     icon: '📍',
                     description: 'Overall desirability of location based on proximity to amenities, walkability, public transit access, and neighborhood appeal',
@@ -2601,39 +2645,21 @@
                 },
                 condition: {
                     key: 'condition',
-                    label: 'Property Condition',
+                    label: 'Condition',
                     group: 'financial',
                     icon: '🏠',
                     description: 'Physical condition rating including structural integrity, age, maintenance level, and needed repairs',
                     unit: '/100',
                     format: (val) => Math.round(val)
                 },
-                schools: {
-                    key: 'schools',
-                    label: 'School Quality',
+                lifestyle: {
+                    key: 'lifestyle',
+                    label: 'Lifestyle',
                     group: 'lifestyle',
-                    icon: '🎓',
-                    description: 'Quality of nearby schools based on test scores, ratings, graduation rates, and educational resources',
+                    icon: '🎨',
+                    description: 'Overall lifestyle quality including entertainment, dining, culture, recreation, and social opportunities',
                     unit: '/100',
                     format: (val) => Math.round(val)
-                },
-                safety: {
-                    key: 'safety',
-                    label: 'Safety Rating',
-                    group: 'safety',
-                    icon: '🛡️',
-                    description: 'Neighborhood safety score based on crime statistics, police presence, lighting, and community programs',
-                    unit: '/100',
-                    format: (val) => Math.round(val)
-                },
-                roi: {
-                    key: 'roi',
-                    label: 'ROI Projection',
-                    group: 'financial',
-                    icon: '📈',
-                    description: 'Projected return on investment based on historical appreciation, rental potential, and market trends',
-                    unit: '%',
-                    format: (val) => val.toFixed(1) + '%'
                 },
                 costOfLiving: {
                     key: 'costOfLiving',
@@ -2643,6 +2669,33 @@
                     description: 'Relative cost of living index including housing, utilities, groceries, transportation, and healthcare (100 = national average, lower is better)',
                     unit: ' index',
                     format: (val) => Math.round(val)
+                },
+                schools: {
+                    key: 'schools',
+                    label: 'Education',
+                    group: 'lifestyle',
+                    icon: '🎓',
+                    description: 'Quality of nearby schools based on test scores, ratings, graduation rates, and educational resources',
+                    unit: '/100',
+                    format: (val) => Math.round(val)
+                },
+                crime: {
+                    key: 'crime',
+                    label: 'Crime',
+                    group: 'safety',
+                    icon: '🔫',
+                    description: 'Neighborhood safety score based on crime statistics, police presence, lighting, and community programs (higher is safer)',
+                    unit: '/100',
+                    format: (val) => Math.round(val)
+                },
+                roi: {
+                    key: 'roi',
+                    label: 'ROI',
+                    group: 'financial',
+                    icon: '📈',
+                    description: 'Projected return on investment based on historical appreciation, rental potential, and market trends',
+                    unit: '%',
+                    format: (val) => val.toFixed(1) + '%'
                 }
             };
 
@@ -2650,22 +2703,74 @@
                 location: {
                     label: 'Location & Access',
                     icon: '📍',
-                    description: 'Geographic desirability and accessibility'
+                    description: 'Geographic desirability and accessibility',
+                    color: 'rgba(255, 87, 34, 0.8)',      // Deep Orange
+                    bgColor: 'rgba(255, 87, 34, 0.2)'
                 },
                 financial: {
                     label: 'Financial Metrics',
                     icon: '💰',
-                    description: 'Investment value and costs'
+                    description: 'Investment value and costs',
+                    color: 'rgba(76, 175, 80, 0.8)',      // Green
+                    bgColor: 'rgba(76, 175, 80, 0.2)'
                 },
                 lifestyle: {
                     label: 'Lifestyle Factors',
                     icon: '🌟',
-                    description: 'Quality of life considerations'
+                    description: 'Quality of life considerations',
+                    color: 'rgba(156, 39, 176, 0.8)',     // Purple
+                    bgColor: 'rgba(156, 39, 176, 0.2)'
                 },
                 safety: {
                     label: 'Safety & Security',
                     icon: '🛡️',
-                    description: 'Security and risk factors'
+                    description: 'Security and risk factors',
+                    color: 'rgba(244, 67, 54, 0.8)',      // Red
+                    bgColor: 'rgba(244, 67, 54, 0.2)'
+                }
+            };
+
+            // Category color mapping for tabs and radar chart
+            const CATEGORY_COLORS = {
+                'comparison': {
+                    primary: 'rgba(33, 150, 243, 0.8)',      // Blue
+                    bg: 'rgba(33, 150, 243, 0.2)'
+                },
+                'location': {
+                    primary: 'rgba(255, 87, 34, 0.8)',       // Deep Orange
+                    bg: 'rgba(255, 87, 34, 0.2)'
+                },
+                'condition': {
+                    primary: 'rgba(121, 85, 72, 0.8)',       // Brown
+                    bg: 'rgba(121, 85, 72, 0.2)'
+                },
+                'lifestyle': {
+                    primary: 'rgba(156, 39, 176, 0.8)',      // Purple
+                    bg: 'rgba(156, 39, 176, 0.2)'
+                },
+                'col': {
+                    primary: 'rgba(255, 193, 7, 0.8)',       // Amber
+                    bg: 'rgba(255, 193, 7, 0.2)'
+                },
+                'education': {
+                    primary: 'rgba(3, 169, 244, 0.8)',       // Light Blue
+                    bg: 'rgba(3, 169, 244, 0.2)'
+                },
+                'crime': {
+                    primary: 'rgba(244, 67, 54, 0.8)',       // Red
+                    bg: 'rgba(244, 67, 54, 0.2)'
+                },
+                'roi': {
+                    primary: 'rgba(76, 175, 80, 0.8)',       // Green
+                    bg: 'rgba(76, 175, 80, 0.2)'
+                },
+                'metric': {
+                    primary: 'rgba(0, 188, 212, 0.8)',       // Cyan
+                    bg: 'rgba(0, 188, 212, 0.2)'
+                },
+                'notes': {
+                    primary: 'rgba(255, 235, 59, 0.8)',      // Yellow
+                    bg: 'rgba(255, 235, 59, 0.2)'
                 }
             };
 
@@ -2682,12 +2787,13 @@
                         name: cluesProperty.address?.full_address || cluesProperty.basic?.address || 'Unknown Property',
                         price: cluesProperty.price?.current || cluesProperty.financial?.listingPrice || 0,
 
-                        // Map CLUES 8-category scores to v3.2 6-metric format
+                        // Map CLUES 8-category scores to v3.2 expanded format
                         dimensions: {
                             location: byCategory.location?.score || Math.random() * 30 + 70,
                             condition: byCategory.property_physical?.score || Math.random() * 30 + 70,
+                            lifestyle: byCategory.lifestyle?.score || Math.random() * 30 + 70,
                             schools: cluesProperty.schools?.averageRating ? cluesProperty.schools.averageRating * 10 : Math.random() * 30 + 70,
-                            safety: (100 - (cluesProperty.location?.crimeRate || 20)) || Math.random() * 30 + 70,
+                            crime: (100 - (cluesProperty.location?.crimeRate || 20)) || Math.random() * 30 + 70,
                             roi: byCategory.investment?.score || Math.random() * 15 + 5,
                             // Feature #31: Cost of Living (inverted - lower cost = higher score)
                             costOfLiving: cluesProperty.location?.costOfLivingIndex ? (200 - cluesProperty.location.costOfLivingIndex) : Math.random() * 30 + 70
@@ -2720,18 +2826,19 @@
             let metricFilters = {
                 location: true,
                 condition: true,
+                lifestyle: true,
                 schools: true,
-                safety: true,
+                crime: true,
                 roi: true,
                 costOfLiving: true
             };
 
             const PERSONA_WEIGHTS = {
-                balanced: { location: 1.0, condition: 1.0, schools: 1.0, safety: 1.0, roi: 1.0, costOfLiving: 1.0 },
-                retiree: { location: 1.2, condition: 1.3, schools: 0.5, safety: 1.5, roi: 0.8, costOfLiving: 1.4 },
-                family: { location: 1.0, condition: 1.2, schools: 1.8, safety: 1.6, roi: 0.7, costOfLiving: 1.3 },
-                investor: { location: 0.8, condition: 0.9, schools: 0.6, safety: 0.8, roi: 2.0, costOfLiving: 0.6 },
-                nomad: { location: 1.3, condition: 0.7, schools: 0.3, safety: 1.2, roi: 1.1, costOfLiving: 1.2 }
+                balanced: { location: 1.0, condition: 1.0, lifestyle: 1.0, schools: 1.0, crime: 1.0, roi: 1.0, costOfLiving: 1.0 },
+                retiree: { location: 1.2, condition: 1.3, lifestyle: 1.4, schools: 0.5, crime: 1.5, roi: 0.8, costOfLiving: 1.4 },
+                family: { location: 1.0, condition: 1.2, lifestyle: 1.3, schools: 1.8, crime: 1.6, roi: 0.7, costOfLiving: 1.3 },
+                investor: { location: 0.8, condition: 0.9, lifestyle: 0.6, schools: 0.6, crime: 0.8, roi: 2.0, costOfLiving: 0.6 },
+                nomad: { location: 1.3, condition: 0.7, lifestyle: 1.5, schools: 0.3, crime: 1.2, roi: 1.1, costOfLiving: 1.2 }
             };
 
             // ========== FEATURE #10: 3D PROPERTY MODEL SYSTEM ==========
@@ -4099,12 +4206,22 @@
                 document.querySelectorAll('.data-tab').forEach(tab => {
                     tab.classList.remove('active');
                     tab.setAttribute('aria-selected', 'false');
+                    // Set category color for left border
+                    const tabId = tab.id.replace('tab-', '');
+                    if (CATEGORY_COLORS[tabId]) {
+                        tab.style.borderLeftColor = CATEGORY_COLORS[tabId].primary;
+                    }
                 });
 
                 const activeTab = document.getElementById(`tab-${tabName}`);
                 if (activeTab) {
                     activeTab.classList.add('active');
                     activeTab.setAttribute('aria-selected', 'true');
+                    // Highlight active tab with brighter border
+                    if (CATEGORY_COLORS[tabName]) {
+                        activeTab.style.borderLeftColor = CATEGORY_COLORS[tabName].primary.replace('0.8', '1');
+                        activeTab.style.boxShadow = `0 4px 15px ${CATEGORY_COLORS[tabName].bg}`;
+                    }
                 }
 
                 // Get the modal container
@@ -4130,25 +4247,45 @@
                         updateFn: updateComparisonPanel,
                         label: 'Property Comparison'
                     },
+                    'location': {
+                        id: 'location-panel',
+                        updateFn: null, // No update function needed yet - placeholder
+                        label: 'Location'
+                    },
+                    'condition': {
+                        id: 'condition-panel',
+                        updateFn: null, // Placeholder for future function
+                        label: 'Condition'
+                    },
+                    'lifestyle': {
+                        id: 'lifestyle-panel',
+                        updateFn: null, // Placeholder for future function
+                        label: 'Lifestyle'
+                    },
                     'col': {
                         id: 'col-chart-panel',
                         updateFn: createCOLChart,
-                        label: 'Cost of Living Comparison'
+                        label: 'Cost of Living'
+                    },
+                    'education': {
+                        id: 'education-panel',
+                        updateFn: null, // Placeholder for future function
+                        label: 'Education'
                     },
                     'crime': {
                         id: 'crime-widget',
                         updateFn: updateCrimeWidget,
-                        label: 'Crime Safety Levels'
+                        label: 'Crime'
+                    },
+                    'roi': {
+                        id: 'comparison-panel',
+                        updateFn: updateComparisonPanel,
+                        label: 'ROI'
                     },
                     'metric': {
                         id: 'radar-chart-panel',
                         updateFn: createRadarChart,
-                        label: 'Metric Radar Chart'
-                    },
-                    'roi': {
-                        id: 'roi-panel',
-                        updateFn: updateComparisonPanel,
-                        label: 'ROI Projections'
+                        label: 'Metrics'
                     },
                     'notes': {
                         id: 'notes-panel',
@@ -4330,19 +4467,19 @@
                         id: 'demo1',
                         name: 'Oceanfront Estate',
                         price: 2500000,
-                        dimensions: { location: 95, condition: 92, schools: 88, safety: 90, roi: 12, costOfLiving: 65 }
+                        dimensions: { location: 95, condition: 92, lifestyle: 90, schools: 88, crime: 90, roi: 12, costOfLiving: 65 }
                     },
                     {
                         id: 'demo2',
                         name: 'Mountain Villa',
                         price: 1800000,
-                        dimensions: { location: 85, condition: 88, schools: 92, safety: 95, roi: 8, costOfLiving: 80 }
+                        dimensions: { location: 85, condition: 88, lifestyle: 82, schools: 92, crime: 95, roi: 8, costOfLiving: 80 }
                     },
                     {
                         id: 'demo3',
                         name: 'Downtown Loft',
                         price: 950000,
-                        dimensions: { location: 98, condition: 95, schools: 70, safety: 75, roi: 15, costOfLiving: 55 }
+                        dimensions: { location: 98, condition: 95, lifestyle: 96, schools: 70, crime: 75, roi: 15, costOfLiving: 55 }
                     }
                 ];
             }
@@ -4848,6 +4985,7 @@
                     propertyA = property;
                     if (sphereA) {
                         sphereA.visible = true; // SHOW 3D object when selected
+                        updateSphereColor(sphereA, propertyA); // Update color based on Smart Score
                         console.log(`✅ Property A selected - sphereA visible: ${sphereA.visible}, isHouse: ${sphereA.userData.isHouse}, isSphere: ${sphereA.userData.isSphere}`);
                     }
                 }
@@ -4855,6 +4993,7 @@
                     propertyB = property;
                     if (sphereB) {
                         sphereB.visible = true; // SHOW 3D object when selected
+                        updateSphereColor(sphereB, propertyB); // Update color based on Smart Score
                         console.log(`✅ Property B selected - sphereB visible: ${sphereB.visible}, isHouse: ${sphereB.userData.isHouse}, isSphere: ${sphereB.userData.isSphere}`);
                     }
                 }
@@ -4862,6 +5001,7 @@
                     propertyC = property;
                     if (sphereC) {
                         sphereC.visible = true; // SHOW 3D object when selected
+                        updateSphereColor(sphereC, propertyC); // Update color based on Smart Score
                         console.log(`✅ Property C selected - sphereC visible: ${sphereC.visible}, isHouse: ${sphereC.userData.isHouse}, isSphere: ${sphereC.userData.isSphere}`);
                     }
                 }
@@ -4921,11 +5061,17 @@
 
                 // Feature #25: Recalculate winner with new persona weights
                 calculateWinner();
+
+                // Update comparison table to reflect new Smart Scores
+                updateComparisonPanel();
             };
 
             // ===== METRIC FILTERING =====
             window.toggleMetric = function(metricKey) {
                 metricFilters[metricKey] = !metricFilters[metricKey];
+
+                console.log(`🎯 TOGGLE METRIC: ${metricKey} = ${metricFilters[metricKey]}`);
+                console.log('   Current metricFilters state:', JSON.stringify(metricFilters, null, 2));
 
                 // Feature #18: Vibration feedback
                 vibrate('tap');
@@ -4938,7 +5084,14 @@
                 }
 
                 // Feature #25: Recalculate winner when metrics change
+                console.log('   Calling calculateWinner()...');
                 calculateWinner();
+
+                // Update comparison table to reflect new Smart Scores
+                console.log('   Calling updateComparisonPanel()...');
+                updateComparisonPanel();
+
+                console.log('✅ Metric toggle complete');
             };
 
             window.toggleMetricGroup = function(groupName) {
@@ -5070,6 +5223,11 @@
 
                 winnerProperty = winner.slot;
                 console.log(`🏆 Winner: Property ${winner.slot} with score ${winner.score.toFixed(1)}`);
+
+                // Update sphere/house colors based on new Smart Scores
+                if (propertyA && sphereA) updateSphereColor(sphereA, propertyA);
+                if (propertyB && sphereB) updateSphereColor(sphereB, propertyB);
+                if (propertyC && sphereC) updateSphereColor(sphereC, propertyC);
 
                 // Update visual indicators
                 updateCrownVisuals();
@@ -5260,6 +5418,81 @@
                 applyGravityPositioning();
             }
 
+            // ===== SMART SCORE COLOR CALCULATION =====
+            function getSmartScoreColor(property) {
+                if (!property) return 0xCCCCCC; // Gray if no property
+
+                // Calculate Smart Score (same as comparison table)
+                const weights = PERSONA_WEIGHTS[currentPersona];
+                let totalScore = 0;
+                let totalWeight = 0;
+
+                Object.keys(METRICS_CONFIG).forEach(metricKey => {
+                    if (metricFilters[metricKey]) {
+                        const value = property.dimensions[metricKey];
+                        const weight = weights[metricKey] || 1.0;
+                        totalScore += value * weight;
+                        totalWeight += weight;
+                    }
+                });
+
+                const smartScore = totalWeight > 0 ? totalScore / totalWeight : 0;
+
+                // Apply 5-tier color coding: 0-20 red, 21-40 orange, 41-60 yellow, 61-80 blue, 81-100 green
+                if (smartScore > 80) {
+                    return 0x4CAF50; // Green (81-100)
+                } else if (smartScore > 60) {
+                    return 0x2196F3; // Blue (61-80)
+                } else if (smartScore > 40) {
+                    return 0xFFEB3B; // Yellow (41-60)
+                } else if (smartScore > 20) {
+                    return 0xFF9800; // Orange (21-40)
+                } else {
+                    return 0xF44336; // Red (0-20)
+                }
+            }
+
+            function updateSphereColor(sphere, property) {
+                if (!sphere || !property) return;
+
+                const color = getSmartScoreColor(property);
+
+                // Update house body color (houses are THREE.Group objects)
+                if (sphere.userData.isHouse) {
+                    // Update the main body mesh
+                    if (sphere.userData.bodyMesh) {
+                        sphere.userData.bodyMesh.material.color.setHex(color);
+                        sphere.userData.bodyMesh.material.emissive.setHex(color);
+                        sphere.userData.bodyMesh.material.emissiveIntensity = 0.3;
+                        sphere.userData.bodyMesh.material.needsUpdate = true;
+                    }
+
+                    // Update all children (inner sphere, body, etc.)
+                    sphere.traverse((child) => {
+                        if (child.isMesh && child.userData.isInnerSphere) {
+                            // Update inner sphere
+                            child.material.color.setHex(color);
+                            child.material.emissive.setHex(color);
+                            child.material.emissiveIntensity = 0.4;
+                            child.material.needsUpdate = true;
+                        }
+                    });
+                }
+
+                // Update sphere color (classic sphere mode)
+                if (sphere.userData.isSphere && sphere.material) {
+                    sphere.material.color.setHex(color);
+                    sphere.material.emissive.setHex(color);
+                    sphere.material.emissiveIntensity = 0.4;
+                    sphere.material.needsUpdate = true;
+                }
+
+                // Store color for reference
+                sphere.userData.originalColor = color;
+
+                console.log(`🎨 Updated color for ${property.name}: Smart Score based color = ${color.toString(16)}`);
+            }
+
             // ===== FEATURE #31: PHYSICS-BASED GRAVITY POSITIONING =====
             let gravityEnabled = true;
             let gravityIndicators = { A: null, B: null, C: null };
@@ -5276,30 +5509,52 @@
                 properties.forEach(({ sphere, property, slot, baseX }) => {
                     if (!sphere || !property) return;
 
-                    // Get cost of living score (0-100, lower cost = higher score)
-                    const colScore = property.dimensions.costOfLiving || 70;
+                    // Calculate OVERALL weighted score (SAME AS SMART SCORE - must match!)
+                    const weights = PERSONA_WEIGHTS[currentPersona];
+                    let totalScore = 0;
+                    let totalWeight = 0;
 
-                    // Convert to gravity effect: high COL (expensive) = sink down, low COL (cheap) = float up
-                    // Score: 100 (cheapest) → Y = +2.0 (float up - light/affordable)
-                    // Score: 50 (average) → Y = 0 (neutral)
-                    // Score: 0 (most expensive) → Y = -2.0 (sink down - heavy cost burden)
-                    const gravityOffset = ((colScore - 50) / 50) * 2.0; // Range: -2.0 to +2.0
+                    Object.keys(METRICS_CONFIG).forEach(metricKey => {
+                        if (metricFilters[metricKey]) {
+                            const value = property.dimensions[metricKey];
+                            const weight = weights[metricKey] || 1.0;
+                            totalScore += value * weight;
+                            totalWeight += weight;  // Sum the weights, not count metrics!
+                        }
+                    });
+
+                    // Normalize by TOTAL WEIGHT (same formula as Smart Score in comparison table)
+                    const overallScore = totalWeight > 0 ? totalScore / totalWeight : 70;
+
+                    // Convert overall score to vertical position
+                    // High score (80+) = float UP to top (green)
+                    // Low score (0-20) = sink DOWN to bottom (red)
+                    // Score 100 → Y = +2.5 (top)
+                    // Score 50 → Y = 0 (middle)
+                    // Score 0 → Y = -2.5 (bottom)
+                    const gravityOffset = ((overallScore - 50) / 50) * 2.5; // Range: -2.5 to +2.5
 
                     // Smoothly animate to target Y position
                     const targetY = gravityOffset;
                     sphere.position.y += (targetY - sphere.position.y) * 0.05; // Smooth easing
 
-                    // Update gravity indicator
-                    updateGravityIndicator(sphere, slot, colScore, gravityOffset);
+                    // Update gravity indicator with overall score
+                    updateGravityIndicator(sphere, slot, overallScore, gravityOffset);
                 });
 
                 // Update connected objects (crowns, photo rings) to follow spheres
                 updateConnectedObjects();
             }
 
-            function updateGravityIndicator(sphere, slot, colScore, gravityOffset) {
-                // Remove old indicator
+            function updateGravityIndicator(sphere, slot, overallScore, gravityOffset) {
+                // Remove old indicator (including label and rod)
                 if (gravityIndicators[slot]) {
+                    if (gravityIndicators[slot].userData.label) {
+                        scene.remove(gravityIndicators[slot].userData.label);
+                    }
+                    if (gravityIndicators[slot].userData.rod) {
+                        scene.remove(gravityIndicators[slot].userData.rod);
+                    }
                     scene.remove(gravityIndicators[slot]);
                 }
 
@@ -5311,13 +5566,30 @@
                 ];
                 lineGeometry.setFromPoints(points);
 
-                // Color based on direction: green (floating/cheap) vs red (sinking/expensive)
-                const color = gravityOffset > 0 ? 0x00ff88 : 0xff3b30; // Green up, red down
+                // Color based on 5-tier system
+                let color, colorHex;
+                if (overallScore >= 81) {
+                    color = 0x4CAF50; // Green
+                    colorHex = '#4CAF50';
+                } else if (overallScore >= 61) {
+                    color = 0x2196F3; // Blue
+                    colorHex = '#2196F3';
+                } else if (overallScore >= 41) {
+                    color = 0xFFEB3B; // Yellow
+                    colorHex = '#FFEB3B';
+                } else if (overallScore >= 21) {
+                    color = 0xFF9800; // Orange
+                    colorHex = '#FF9800';
+                } else {
+                    color = 0xF44336; // Red
+                    colorHex = '#F44336';
+                }
+
                 const lineMaterial = new THREE.LineBasicMaterial({
                     color: color,
-                    opacity: 0.4,
+                    opacity: 0.6,
                     transparent: true,
-                    linewidth: 2
+                    linewidth: 3
                 });
 
                 const line = new THREE.Line(lineGeometry, lineMaterial);
@@ -5325,30 +5597,60 @@
                 scene.add(line);
                 gravityIndicators[slot] = line;
 
-                // Add text sprite showing COL score at base (doubled size)
+                // Add text sprite showing overall score at base
                 const canvas = document.createElement('canvas');
-                canvas.width = 256; // Doubled from 128
-                canvas.height = 128; // Doubled from 64
+                canvas.width = 256;
+                canvas.height = 128;
                 const ctx = canvas.getContext('2d');
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
                 ctx.fillRect(0, 0, 256, 128);
-                ctx.fillStyle = gravityOffset > 0 ? '#00ff88' : '#ff3b30';
-                ctx.font = 'bold 40px Arial'; // Doubled from 20px
+                ctx.fillStyle = colorHex;
+                ctx.font = 'bold 40px Arial';
                 ctx.textAlign = 'center';
-                ctx.fillText(`COL: ${Math.round(colScore)}`, 128, 50); // Adjusted positions
-                ctx.font = '28px Arial'; // Doubled from 14px
+                ctx.fillText(`Score: ${Math.round(overallScore)}`, 128, 50);
+                ctx.font = '28px Arial';
                 ctx.fillStyle = 'white';
-                ctx.fillText(gravityOffset > 0 ? 'Affordable' : 'Expensive', 128, 90); // Adjusted positions
+
+                // Label based on score tier
+                let label;
+                if (overallScore >= 81) label = 'Excellent';
+                else if (overallScore >= 61) label = 'Good';
+                else if (overallScore >= 41) label = 'Average';
+                else if (overallScore >= 21) label = 'Below Avg';
+                else label = 'Poor';
+
+                ctx.fillText(label, 128, 90);
 
                 const texture = new THREE.CanvasTexture(canvas);
                 const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
                 const labelSprite = new THREE.Sprite(spriteMaterial);
                 labelSprite.scale.set(2.0, 1.0, 1); // Doubled from 1.0, 0.5, 1
-                labelSprite.position.set(sphere.position.x, -0.3, sphere.position.z);
+
+                // Position label BELOW sphere/house with more clearance
+                const labelYPosition = sphere.position.y - 2.2; // Drop label 2.2 units below sphere center
+                labelSprite.position.set(sphere.position.x, labelYPosition, sphere.position.z);
                 scene.add(labelSprite);
 
-                // Store label with indicator for cleanup
+                // Create small connecting rod from bottom of sphere/house to label
+                const sphereBottomY = sphere.position.y - 1.0; // Approximate bottom of sphere/house
+                const rodGeometry = new THREE.BufferGeometry();
+                const rodPoints = [
+                    new THREE.Vector3(sphere.position.x, sphereBottomY, sphere.position.z), // Bottom of sphere
+                    new THREE.Vector3(sphere.position.x, labelYPosition + 0.5, sphere.position.z) // Top of label
+                ];
+                rodGeometry.setFromPoints(rodPoints);
+                const rodMaterial = new THREE.LineBasicMaterial({
+                    color: color,
+                    opacity: 0.8,
+                    transparent: true,
+                    linewidth: 2
+                });
+                const rod = new THREE.Line(rodGeometry, rodMaterial);
+                scene.add(rod);
+
+                // Store label and rod with indicator for cleanup
                 line.userData.label = labelSprite;
+                line.userData.rod = rod;
             }
 
             function updateConnectedObjects() {
@@ -5440,6 +5742,9 @@
                         if (gravityIndicators[slot].userData.label) {
                             scene.remove(gravityIndicators[slot].userData.label);
                         }
+                        if (gravityIndicators[slot].userData.rod) {
+                            scene.remove(gravityIndicators[slot].userData.rod);
+                        }
                         scene.remove(gravityIndicators[slot]);
                         gravityIndicators[slot] = null;
                     }
@@ -5502,6 +5807,9 @@
                         if (gravityIndicators[slot]) {
                             if (gravityIndicators[slot].userData.label) {
                                 scene.remove(gravityIndicators[slot].userData.label);
+                            }
+                            if (gravityIndicators[slot].userData.rod) {
+                                scene.remove(gravityIndicators[slot].userData.rod);
                             }
                             scene.remove(gravityIndicators[slot]);
                             gravityIndicators[slot] = null;
@@ -5843,6 +6151,15 @@
             // ===== FEATURE #7: DYNAMIC RADAR CHART =====
             let radarChart = null;
 
+            // Helper function to get color based on score value
+            function getScoreColor(value) {
+                if (value >= 81) return 'rgba(76, 175, 80, 1)';      // Green (81-100)
+                if (value >= 61) return 'rgba(33, 150, 243, 1)';     // Blue (61-80)
+                if (value >= 41) return 'rgba(255, 235, 59, 1)';     // Yellow (41-60)
+                if (value >= 21) return 'rgba(255, 152, 0, 1)';      // Orange (21-40)
+                return 'rgba(244, 67, 54, 1)';                        // Red (0-20)
+            }
+
             function createRadarChart() {
                 const canvas = document.getElementById('radar-chart');
                 const ctx = canvas.getContext('2d');
@@ -5877,18 +6194,22 @@
                         .filter(m => metricFilters[m.key])
                         .map(m => prop.dimensions[m.key]);
 
+                    // Generate color array for each data point based on its value
+                    const pointColors = data.map(value => getScoreColor(value));
+
                     datasets.push({
                         label: `${letter}: ${prop.name.substring(0, 15)}...`,
                         data: data,
                         backgroundColor: colors[idx].bg,
                         borderColor: colors[idx].border,
                         borderWidth: 2,
-                        pointBackgroundColor: colors[idx].border,
+                        pointBackgroundColor: pointColors,  // Value-based colors
                         pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: colors[idx].border,
-                        pointRadius: 4,
-                        pointHoverRadius: 6
+                        pointBorderWidth: 2,
+                        pointHoverBackgroundColor: pointColors,  // Keep same color on hover
+                        pointHoverBorderColor: '#fff',
+                        pointRadius: 5,
+                        pointHoverRadius: 7
                     });
                 });
 
@@ -5992,7 +6313,17 @@
                                     }
                                 },
                                 pointLabels: {
-                                    color: '#ffffff',
+                                    color: function(context) {
+                                        // Color labels based on metric category
+                                        const labelText = context.label || labels[context.index];
+                                        const metric = Object.values(METRICS_CONFIG).find(m =>
+                                            labelText.includes(m.label) || labelText.includes(m.icon)
+                                        );
+                                        if (metric && METRIC_GROUPS[metric.group]) {
+                                            return METRIC_GROUPS[metric.group].color;
+                                        }
+                                        return '#ffffff';
+                                    },
                                     font: {
                                         size: 12,
                                         weight: 'bold',
@@ -6006,8 +6337,17 @@
                                     }
                                 },
                                 angleLines: {
-                                    color: 'rgba(0, 212, 255, 0.3)',
-                                    lineWidth: 1.5
+                                    color: function(context) {
+                                        // Color angle lines based on metric category
+                                        const labelIndex = context.index;
+                                        const labelText = labels[labelIndex];
+                                        const metric = Object.values(METRICS_CONFIG).find(m => m.label === labelText);
+                                        if (metric && METRIC_GROUPS[metric.group]) {
+                                            return METRIC_GROUPS[metric.group].color.replace('0.8', '0.5');
+                                        }
+                                        return 'rgba(0, 212, 255, 0.3)';
+                                    },
+                                    lineWidth: 2
                                 }
                             }
                         },
@@ -6555,13 +6895,10 @@
 
             function updateComparisonPanel() {
                 const content = document.getElementById('comparison-content');
-                const roiContent = document.getElementById('roi-content');
                 const properties = [propertyA, propertyB, propertyC].filter(p => p !== null);
 
                 if (properties.length < 2) {
                     content.innerHTML = '<p style="text-align: center; opacity: 0.7;">Select 2 or more properties to compare</p>';
-                    roiContent.innerHTML = '<p style="text-align: center; opacity: 0.7;">Select 2 or more properties to compare</p>';
-                    document.getElementById('roi-panel').classList.remove('visible');
                     return;
                 }
 
@@ -6575,50 +6912,96 @@
                 });
                 html += '</tr></thead><tbody>';
 
-                // Add rows for each metric (except ROI)
+                // Add rows for each metric (including ROI)
                 Object.values(METRICS_CONFIG).forEach(metric => {
                     if (!metricFilters[metric.key]) return;
-                    if (metric.key === 'roi') return; // Skip ROI - goes in separate panel
 
-                    html += '<tr>';
-                    html += `<td>${metric.icon} ${metric.label}</td>`;
+                    // Special styling for ROI row (rate of return, not a score)
+                    const isROI = metric.key === 'roi';
+                    const rowClass = isROI ? ' class="roi-row"' : '';
+
+                    html += `<tr${rowClass}>`;
+                    html += `<td style="${isROI ? 'background: linear-gradient(135deg, rgba(76, 175, 80, 0.3), rgba(139, 195, 74, 0.3)); font-weight: bold; border-left: 4px solid rgba(76, 175, 80, 0.8);' : ''}">${metric.icon} ${metric.label}</td>`;
 
                     properties.forEach(prop => {
                         const value = prop.dimensions[metric.key];
-                        const scoreClass = getScoreClass(value);
                         const formatted = metric.format(value);
-                        html += `<td class="${scoreClass}">${formatted}</td>`;
+
+                        if (isROI) {
+                            // ROI uses 5-tier color system: 0-3=red, 4-5=orange, 6-7=yellow, 8-9=blue, 10+=green
+                            let roiColor;
+                            if (value >= 10) {
+                                roiColor = 'rgba(76, 175, 80, 1)'; // Green
+                            } else if (value >= 8) {
+                                roiColor = 'rgba(33, 150, 243, 1)'; // Blue
+                            } else if (value >= 6) {
+                                roiColor = 'rgba(255, 235, 59, 1)'; // Yellow
+                            } else if (value >= 4) {
+                                roiColor = 'rgba(255, 152, 0, 1)'; // Orange
+                            } else {
+                                roiColor = 'rgba(244, 67, 54, 1)'; // Red
+                            }
+                            html += `<td style="background: ${roiColor}; font-weight: bold; font-size: 1.1em; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.5);">${formatted}</td>`;
+                        } else {
+                            // Regular score-based styling
+                            const scoreClass = getScoreClass(value);
+                            html += `<td class="${scoreClass}">${formatted}</td>`;
+                        }
                     });
 
                     html += '</tr>';
                 });
 
-                html += '</tbody></table>';
-                content.innerHTML = html;
+                // Add CLUES Weighted Normalized Score row at bottom
+                html += '<tr class="final-score-row" style="border-top: 3px solid rgba(255, 215, 0, 0.5);">';
+                html += '<td style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(255, 193, 7, 0.4)); font-weight: bold; border-left: 4px solid rgba(255, 215, 0, 0.9); font-size: 1.05em;">⭐ Smart Score</td>';
 
-                // Build ROI table separately
-                let roiHtml = '<table class="comparison-table"><thead><tr>';
-                roiHtml += '<th>Property</th>';
-                roiHtml += '<th>ROI %</th>';
-                roiHtml += '</tr></thead><tbody>';
+                // Calculate weighted normalized score for each property
+                const weights = PERSONA_WEIGHTS[currentPersona];
 
-                properties.forEach((prop, idx) => {
-                    const letter = ['A', 'B', 'C'][idx];
-                    const roiValue = prop.dimensions.roi || 0;
-                    const formatted = roiValue.toFixed(1) + '%';
-                    const shortName = prop.name.substring(0, 15) + (prop.name.length > 15 ? '...' : '');
+                properties.forEach(prop => {
+                    let totalScore = 0;
+                    let totalWeight = 0;
 
-                    roiHtml += '<tr>';
-                    roiHtml += `<td>${letter}: ${shortName}</td>`;
-                    roiHtml += `<td style="background: rgba(255,255,255,0.95); color: #333; font-weight: bold;">${formatted}</td>`;
-                    roiHtml += '</tr>';
+                    Object.keys(METRICS_CONFIG).forEach(metricKey => {
+                        if (metricFilters[metricKey]) {
+                            const value = prop.dimensions[metricKey];
+                            const weight = weights[metricKey] || 1.0;
+                            totalScore += value * weight;
+                            totalWeight += weight;
+                        }
+                    });
+
+                    // Normalize: weighted sum / total weight = weighted average (0-100 scale)
+                    const normalizedScore = totalWeight > 0 ? totalScore / totalWeight : 0;
+                    const scoreRounded = Math.round(normalizedScore);
+
+                    // Apply 5-tier color coding: 0-20 red, 21-40 orange, 41-60 yellow, 61-80 blue, 81-100 green
+                    let scoreColor;
+                    if (normalizedScore > 80) {
+                        scoreColor = 'rgba(76, 175, 80, 1)'; // Green (81-100)
+                    } else if (normalizedScore > 60) {
+                        scoreColor = 'rgba(33, 150, 243, 1)'; // Blue (61-80)
+                    } else if (normalizedScore > 40) {
+                        scoreColor = 'rgba(255, 235, 59, 1)'; // Yellow (41-60)
+                    } else if (normalizedScore > 20) {
+                        scoreColor = 'rgba(255, 152, 0, 1)'; // Orange (21-40)
+                    } else {
+                        scoreColor = 'rgba(244, 67, 54, 1)'; // Red (0-20)
+                    }
+
+                    html += `<td style="background: ${scoreColor}; font-weight: bold; font-size: 1.3em; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.6); border: 2px solid rgba(255, 215, 0, 0.6);">${scoreRounded}/100</td>`;
                 });
 
-                roiHtml += '</tbody></table>';
-                roiContent.innerHTML = roiHtml;
+                html += '</tr>';
 
-                // Show ROI panel
-                document.getElementById('roi-panel').classList.add('visible');
+                // Add persona indicator row
+                html += '<tr style="background: rgba(0, 0, 0, 0.3);">';
+                html += `<td colspan="${properties.length + 1}" style="text-align: center; padding: 8px; font-size: 0.85em; color: rgba(255, 255, 255, 0.7);">Weighted for: <strong style="color: #FFD700;">${currentPersona.charAt(0).toUpperCase() + currentPersona.slice(1)}</strong> Persona</td>`;
+                html += '</tr>';
+
+                html += '</tbody></table>';
+                content.innerHTML = html;
             }
 
             // Load saved mode preference
@@ -7074,12 +7457,23 @@
                 onWindowResize();
             });
 
+            // Initialize tab category colors
+            function initTabColors() {
+                document.querySelectorAll('.data-tab').forEach(tab => {
+                    const tabId = tab.id.replace('tab-', '');
+                    if (CATEGORY_COLORS[tabId]) {
+                        tab.style.borderLeftColor = CATEGORY_COLORS[tabId].primary;
+                    }
+                });
+            }
+
             document.addEventListener('DOMContentLoaded', () => {
                 init();
                 loadDisplayModePreference();
                 loadVibrationPreference();
                 loadExperienceModePreference();
                 loadAllNotes();
+                initTabColors(); // Initialize category colors for tabs
                 // Notes display will initialize when panel is opened
 
                 // Update vibration button text based on preference
