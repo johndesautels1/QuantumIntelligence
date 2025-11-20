@@ -1284,11 +1284,22 @@
 
         .data-modal-header {
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            justify-content: flex-start;
             align-items: center;
-            padding: 20px 25px;
+            padding: 20px 25px 25px 25px;
             border-bottom: 1px solid rgba(0, 212, 255, 0.3);
             background: rgba(0, 0, 0, 0.2);
+            position: relative;
+            min-height: 140px;
+        }
+
+        .data-modal-header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 8px;
         }
 
         .data-modal-close {
@@ -2132,19 +2143,6 @@
                 <button class="controls-toggle-btn" onclick="toggleControlsPanel()" aria-label="Toggle controls panel">
                     ▼ Hide Controls
                 </button>
-                <h3>Personality Analysis</h3>
-                <div class="persona-selector" role="radiogroup" aria-label="Select buyer persona">
-                    <button class="persona-btn active" onclick="setPersona('balanced')"
-                            role="radio" aria-checked="true" aria-label="Balanced persona">⚖️ Balanced</button>
-                    <button class="persona-btn" onclick="setPersona('retiree')"
-                            role="radio" aria-checked="false" aria-label="Retiree persona">👴 Retiree</button>
-                    <button class="persona-btn" onclick="setPersona('family')"
-                            role="radio" aria-checked="false" aria-label="Family persona">👨‍👩‍👧‍👦 Family</button>
-                    <button class="persona-btn" onclick="setPersona('investor')"
-                            role="radio" aria-checked="false" aria-label="Investor persona">💼 Investor</button>
-                    <button class="persona-btn" onclick="setPersona('nomad')"
-                            role="radio" aria-checked="false" aria-label="Nomad persona">✈️ Nomad</button>
-                </div>
 
                 <!-- Feature #9: Time Travel Control -->
                 <div class="time-travel-control">
@@ -2579,8 +2577,12 @@
             <div class="data-modal-container">
                 <!-- Modal Header -->
                 <div class="data-modal-header">
-                    <h2 style="margin: 0; color: #FFD700; font-size: 1.5em;">📊 Data Panels</h2>
-                    <div style="text-align: center; font-size: 0.7em; color: rgba(255, 255, 255, 0.6); margin-top: 5px; letter-spacing: 0.3px;">
+                    <div class="data-modal-header-top">
+                        <h2 style="margin: 0; color: #FFD700; font-size: 1.5em;">📊 Data Panels</h2>
+                        <button onclick="closeDataPanelsModal()" class="data-modal-close"
+                                aria-label="Close data panels modal">×</button>
+                    </div>
+                    <div style="text-align: center; font-size: 0.7em; color: rgba(255, 255, 255, 0.6); margin-bottom: 12px; letter-spacing: 0.3px;">
                         <span style="color: #F44336;">●</span> Poor (0-20)
                         <span style="margin: 0 4px;">|</span>
                         <span style="color: #FF9800;">●</span> Less than ideal (21-40)
@@ -2591,8 +2593,22 @@
                         <span style="margin: 0 4px;">|</span>
                         <span style="color: #4CAF50;">●</span> Excellent (81-100)
                     </div>
-                    <button onclick="closeDataPanelsModal()" class="data-modal-close"
-                            aria-label="Close data panels modal">×</button>
+                    <!-- Personality Analysis (moved from Controls Panel) -->
+                    <div style="text-align: center;">
+                        <h3 style="color: #00D4FF; margin: 0 0 8px 0; font-size: 0.95em;">Personality Analysis</h3>
+                        <div class="persona-selector" role="radiogroup" aria-label="Select buyer persona">
+                            <button class="persona-btn active" onclick="setPersona('balanced')"
+                                    role="radio" aria-checked="true" aria-label="Balanced persona">⚖️ Balanced</button>
+                            <button class="persona-btn" onclick="setPersona('retiree')"
+                                    role="radio" aria-checked="false" aria-label="Retiree persona">👴 Retiree</button>
+                            <button class="persona-btn" onclick="setPersona('family')"
+                                    role="radio" aria-checked="false" aria-label="Family persona">👨‍👩‍👧‍👦 Family</button>
+                            <button class="persona-btn" onclick="setPersona('investor')"
+                                    role="radio" aria-checked="false" aria-label="Investor persona">💼 Investor</button>
+                            <button class="persona-btn" onclick="setPersona('nomad')"
+                                    role="radio" aria-checked="false" aria-label="Nomad persona">✈️ Nomad</button>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Tab Navigation -->
