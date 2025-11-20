@@ -2580,6 +2580,17 @@
                 <!-- Modal Header -->
                 <div class="data-modal-header">
                     <h2 style="margin: 0; color: #FFD700; font-size: 1.5em;">📊 Data Panels</h2>
+                    <div style="text-align: center; font-size: 0.7em; color: rgba(255, 255, 255, 0.6); margin-top: 5px; letter-spacing: 0.3px;">
+                        <span style="color: #F44336;">●</span> Poor (0-20)
+                        <span style="margin: 0 4px;">|</span>
+                        <span style="color: #FF9800;">●</span> Less than ideal (21-40)
+                        <span style="margin: 0 4px;">|</span>
+                        <span style="color: #FFEB3B;">●</span> Caution (41-60)
+                        <span style="margin: 0 4px;">|</span>
+                        <span style="color: #2196F3;">●</span> Good (61-80)
+                        <span style="margin: 0 4px;">|</span>
+                        <span style="color: #4CAF50;">●</span> Excellent (81-100)
+                    </div>
                     <button onclick="closeDataPanelsModal()" class="data-modal-close"
                             aria-label="Close data panels modal">×</button>
                 </div>
@@ -7284,21 +7295,34 @@
                         data.push(Math.round(projectedReturn * 10) / 10);
                     }
 
-                    const colors = [
-                        { line: 'rgba(255, 215, 0, 1)', fill: 'rgba(255, 215, 0, 0.2)' },      // Gold
-                        { line: 'rgba(76, 175, 80, 1)', fill: 'rgba(76, 175, 80, 0.2)' },      // Green
-                        { line: 'rgba(33, 150, 243, 1)', fill: 'rgba(33, 150, 243, 0.2)' }     // Blue
-                    ];
+                    // Use 5-tier color scale based on ROI score
+                    let lineColor, fillColor;
+                    if (roiScore > 80) {
+                        lineColor = 'rgba(76, 175, 80, 1)';      // Green - Excellent
+                        fillColor = 'rgba(76, 175, 80, 0.2)';
+                    } else if (roiScore > 60) {
+                        lineColor = 'rgba(33, 150, 243, 1)';     // Blue - Good
+                        fillColor = 'rgba(33, 150, 243, 0.2)';
+                    } else if (roiScore > 40) {
+                        lineColor = 'rgba(255, 235, 59, 1)';     // Yellow - Caution
+                        fillColor = 'rgba(255, 235, 59, 0.2)';
+                    } else if (roiScore > 20) {
+                        lineColor = 'rgba(255, 152, 0, 1)';      // Orange - Less than ideal
+                        fillColor = 'rgba(255, 152, 0, 0.2)';
+                    } else {
+                        lineColor = 'rgba(244, 67, 54, 1)';      // Red - Poor
+                        fillColor = 'rgba(244, 67, 54, 0.2)';
+                    }
 
                     return {
                         label: `Property ${p.letter} (ROI: ${Math.round(roiScore)}/100)`,
                         data: data,
-                        borderColor: colors[idx].line,
-                        backgroundColor: colors[idx].fill,
+                        borderColor: lineColor,
+                        backgroundColor: fillColor,
                         borderWidth: 4,
                         pointRadius: 6,
                         pointHoverRadius: 8,
-                        pointBackgroundColor: colors[idx].line,
+                        pointBackgroundColor: lineColor,
                         pointBorderColor: '#fff',
                         pointBorderWidth: 3,
                         fill: true,
@@ -8052,21 +8076,34 @@
                         data.push(Math.round(projectedReturn * 10) / 10);
                     }
 
-                    const colors = [
-                        { line: 'rgba(255, 215, 0, 1)', fill: 'rgba(255, 215, 0, 0.2)' },
-                        { line: 'rgba(76, 175, 80, 1)', fill: 'rgba(76, 175, 80, 0.2)' },
-                        { line: 'rgba(33, 150, 243, 1)', fill: 'rgba(33, 150, 243, 0.2)' }
-                    ];
+                    // Use 5-tier color scale based on ROI score
+                    let lineColor, fillColor;
+                    if (roiScore > 80) {
+                        lineColor = 'rgba(76, 175, 80, 1)';      // Green - Excellent
+                        fillColor = 'rgba(76, 175, 80, 0.2)';
+                    } else if (roiScore > 60) {
+                        lineColor = 'rgba(33, 150, 243, 1)';     // Blue - Good
+                        fillColor = 'rgba(33, 150, 243, 0.2)';
+                    } else if (roiScore > 40) {
+                        lineColor = 'rgba(255, 235, 59, 1)';     // Yellow - Caution
+                        fillColor = 'rgba(255, 235, 59, 0.2)';
+                    } else if (roiScore > 20) {
+                        lineColor = 'rgba(255, 152, 0, 1)';      // Orange - Less than ideal
+                        fillColor = 'rgba(255, 152, 0, 0.2)';
+                    } else {
+                        lineColor = 'rgba(244, 67, 54, 1)';      // Red - Poor
+                        fillColor = 'rgba(244, 67, 54, 0.2)';
+                    }
 
                     return {
                         label: `Property ${p.letter} (ROI: ${Math.round(roiScore)}/100)`,
                         data: data,
-                        borderColor: colors[idx].line,
-                        backgroundColor: colors[idx].fill,
+                        borderColor: lineColor,
+                        backgroundColor: fillColor,
                         borderWidth: 4,
                         pointRadius: 6,
                         pointHoverRadius: 8,
-                        pointBackgroundColor: colors[idx].line,
+                        pointBackgroundColor: lineColor,
                         pointBorderColor: '#fff',
                         pointBorderWidth: 3,
                         fill: true,
