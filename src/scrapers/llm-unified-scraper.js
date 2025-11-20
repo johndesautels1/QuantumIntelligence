@@ -170,10 +170,8 @@ export class UnifiedLLMScraper {
                     content: prompt
                 }],
                 tools: [{
-                    type: 'computer_20241022',
-                    name: 'computer',
-                    display_width_px: 1920,
-                    display_height_px: 1080
+                    type: 'web_search_20250305',
+                    name: 'web_search'
                 }]
             });
 
@@ -305,7 +303,7 @@ export class UnifiedLLMScraper {
         const prompt = this.buildExtractionPrompt(url);
 
         try {
-            const model = this.gemini.getGenerativeModel({ model: 'gemini-1.5-pro' });
+            const model = this.gemini.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
 
             const result = await model.generateContent([{
                 text: prompt
@@ -707,7 +705,7 @@ Ratings are 0-10 scale. Distance in miles.`;
 
         try {
             // Use Gemini for school data (fast and cheap)
-            const model = this.gemini.getGenerativeModel({ model: 'gemini-1.5-pro' });
+            const model = this.gemini.getGenerativeModel({ model: 'gemini-2.0-flash-exp' });
             const result = await model.generateContent([{ text: prompt }]);
             const response = await result.response;
             const text = response.text();
