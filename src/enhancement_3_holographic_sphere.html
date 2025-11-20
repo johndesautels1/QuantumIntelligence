@@ -3137,10 +3137,86 @@
                 vibrate('tap');
             };
 
-            // Toggle notes panel (legacy compatibility)
+            // Toggle all panels
             window.togglePanel = function(panelType) {
                 if (panelType === 'notes') {
                     toggleNotesPanel();
+                    return;
+                }
+
+                if (panelType === 'comparison') {
+                    const panel = document.getElementById('comparison-panel');
+                    const btn = document.getElementById('toggle-comparison');
+                    if (panel.classList.contains('visible')) {
+                        panel.classList.remove('visible');
+                        if (btn) btn.classList.remove('active');
+                    } else {
+                        panel.classList.add('visible');
+                        if (btn) btn.classList.add('active');
+                        updateComparisonPanel();
+                    }
+                    vibrate('tap');
+                    return;
+                }
+
+                if (panelType === 'roi') {
+                    const panel = document.getElementById('roi-panel');
+                    const btn = document.getElementById('toggle-roi');
+                    if (panel.classList.contains('visible')) {
+                        panel.classList.remove('visible');
+                        if (btn) btn.classList.remove('active');
+                    } else {
+                        panel.classList.add('visible');
+                        if (btn) btn.classList.add('active');
+                        updateComparisonPanel();
+                    }
+                    vibrate('tap');
+                    return;
+                }
+
+                if (panelType === 'metric') {
+                    const panel = document.getElementById('radar-chart-panel');
+                    const btn = document.getElementById('toggle-metric');
+                    if (panel.classList.contains('visible')) {
+                        panel.classList.remove('visible');
+                        if (btn) btn.classList.remove('active');
+                    } else {
+                        panel.classList.add('visible');
+                        if (btn) btn.classList.add('active');
+                        createRadarChart();
+                    }
+                    vibrate('tap');
+                    return;
+                }
+
+                if (panelType === 'col') {
+                    const panel = document.getElementById('col-chart-panel');
+                    const btn = document.getElementById('toggle-col');
+                    if (panel.style.display === 'block') {
+                        panel.style.display = 'none';
+                        if (btn) btn.classList.remove('active');
+                    } else {
+                        panel.style.display = 'block';
+                        if (btn) btn.classList.add('active');
+                        createCOLChart();
+                    }
+                    vibrate('tap');
+                    return;
+                }
+
+                if (panelType === 'crime') {
+                    const panel = document.getElementById('crime-widget');
+                    const btn = document.getElementById('toggle-crime');
+                    if (panel.style.display === 'block') {
+                        panel.style.display = 'none';
+                        if (btn) btn.classList.remove('active');
+                    } else {
+                        panel.style.display = 'block';
+                        if (btn) btn.classList.add('active');
+                        updateCrimeWidget();
+                    }
+                    vibrate('tap');
+                    return;
                 }
             };
 
