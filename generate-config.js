@@ -5,7 +5,7 @@
  * This script runs during Vercel build to create config.js from secure environment variables
  */
 
-const fs = require('fs');
+import fs from 'fs';
 
 const configContent = `/**
  * API Configuration
