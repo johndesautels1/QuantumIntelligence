@@ -1342,6 +1342,23 @@
             overflow-y: auto;
             min-height: 400px;
             max-height: calc(85vh - 220px);
+            position: relative;
+        }
+
+        /* Fade animation for tab content switching */
+        #modal-panel-container {
+            animation: fadeInContent 0.3s ease;
+        }
+
+        @keyframes fadeInContent {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .data-modal-content::-webkit-scrollbar {
@@ -1385,8 +1402,76 @@
             right: auto !important;
             bottom: auto !important;
             top: auto !important;
-            max-width: 100%;
-            margin: 0 auto;
+
+            /* ===== UNIFIED SIZING FOR CONSISTENT MODAL APPEARANCE ===== */
+            width: 100% !important;
+            max-width: 800px !important;
+            height: auto !important;
+            min-height: 450px !important;
+            max-height: calc(85vh - 280px) !important;
+            margin: 0 auto !important;
+            padding: 20px !important;
+
+            /* Unified styling */
+            background: rgba(255, 255, 255, 0.05) !important;
+            backdrop-filter: blur(20px) !important;
+            border-radius: 15px !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            box-shadow: none !important;
+        }
+
+        /* Chart containers inside modal panels - ensure they fill space properly */
+        #modal-panel-container #radar-chart-container,
+        #modal-panel-container #col-chart-container {
+            width: 100% !important;
+            height: 400px !important;
+            max-height: 400px !important;
+        }
+
+        #modal-panel-container canvas {
+            max-width: 100% !important;
+            max-height: 400px !important;
+        }
+
+        /* Crime widget adjustments for modal */
+        #modal-panel-container .crime-widget {
+            width: 100% !important;
+            max-width: 500px !important;
+            min-height: 300px !important;
+        }
+
+        #modal-panel-container .crime-widget h4 {
+            font-size: 1.2em !important;
+        }
+
+        #modal-panel-container .crime-item {
+            font-size: 1em !important;
+            padding: 12px 16px !important;
+        }
+
+        /* Notes panel adjustments for modal */
+        #modal-panel-container .notes-panel {
+            min-height: 450px !important;
+        }
+
+        #modal-panel-container .notes-textarea {
+            min-height: 200px !important;
+            font-size: 1em !important;
+        }
+
+        /* Comparison/ROI table adjustments */
+        #modal-panel-container .comparison-table th {
+            font-size: 0.9em !important;
+            padding: 10px 8px !important;
+        }
+
+        #modal-panel-container .comparison-table td {
+            font-size: 0.95em !important;
+            padding: 12px 8px !important;
+        }
+
+        #modal-panel-container .comparison-table td:first-child {
+            font-size: 0.9em !important;
         }
 
         /* Responsive modal */
@@ -3782,6 +3867,12 @@
 
                 // Clear container
                 container.innerHTML = '';
+
+                // Restart fade animation by removing and re-adding
+                container.style.animation = 'none';
+                setTimeout(() => {
+                    container.style.animation = 'fadeInContent 0.3s ease';
+                }, 10);
 
                 // Map tab names to panel IDs and update functions
                 const panelMap = {
