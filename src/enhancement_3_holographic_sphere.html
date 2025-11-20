@@ -927,6 +927,17 @@
             }
         }
 
+        @keyframes hawk-pulse {
+            0%, 100% {
+                box-shadow: 0 8px 24px rgba(255, 59, 48, 0.4), 0 0 20px rgba(255, 59, 48, 0.3);
+                transform: translateX(-50%) scale(1);
+            }
+            50% {
+                box-shadow: 0 12px 32px rgba(255, 59, 48, 0.6), 0 0 40px rgba(255, 59, 48, 0.5);
+                transform: translateX(-50%) scale(1.02);
+            }
+        }
+
         @keyframes fadeInScale {
             from {
                 opacity: 0;
@@ -2819,6 +2830,8 @@
             // ===== GLOBAL STATE =====
             let scene, camera, renderer, controls;
             let sphereA, sphereB, sphereC;
+            let redXOverlayA, redXOverlayB, redXOverlayC; // Red X overlays for deal-breakers
+            let hawkAlertA, hawkAlertB, hawkAlertC; // HAWK Alert DOM elements
             let PROPERTIES = [];
             let propertyA = null, propertyB = null, propertyC = null;
             let autoRotating = false;
@@ -5006,6 +5019,9 @@
 
                 // Show alert for first violation
                 showAlert(`⚠️ Deal-breaker: Property ${slot} - ${violations[0]}`, 'error');
+
+                // NEW: Add Red X overlay and HAWK Alert banner
+                createRedXOverlay(slot, sphere, violations);
             }
 
             function removeShockwave(slot) {
@@ -5014,6 +5030,191 @@
                     shockwaveObjects[slot] = null;
                 }
             }
+
+            // ===== RED X OVERLAY FOR DEAL-BREAKERS =====
+            function createRedXOverlay(slot, sphere, violations) {
+                // Remove existing overlay
+                removeRedXOverlay(slot);
+
+                // Create a sprite with a large red X
+                const canvas = document.createElement('canvas');
+                canvas.width = 512;
+                canvas.height = 512;
+                const ctx = canvas.getContext('2d');
+
+                // Draw large red X
+                ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
+                ctx.beginPath();
+                ctx.arc(256, 256, 256, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Draw white X
+                ctx.strokeStyle = '#FFFFFF';
+                ctx.lineWidth = 60;
+                ctx.lineCap = 'round';
+
+                // First diagonal
+                ctx.beginPath();
+                ctx.moveTo(128, 128);
+                ctx.lineTo(384, 384);
+                ctx.stroke();
+
+                // Second diagonal
+                ctx.beginPath();
+                ctx.moveTo(384, 128);
+                ctx.lineTo(128, 384);
+                ctx.stroke();
+
+                const texture = new THREE.CanvasTexture(canvas);
+                const spriteMaterial = new THREE.SpriteMaterial({
+                    map: texture,
+                    transparent: true,
+                    opacity: 0.9
+                });
+
+                const sprite = new THREE.Sprite(spriteMaterial);
+                sprite.scale.set(2.5, 2.5, 1); // Large enough to cover sphere/house
+                sprite.position.copy(sphere.position);
+                sprite.position.z += 0.5; // Slightly in front
+
+                scene.add(sprite);
+
+                // Store reference
+                if (slot === 'A') redXOverlayA = sprite;
+                if (slot === 'B') redXOverlayB = sprite;
+                if (slot === 'C') redXOverlayC = sprite;
+
+                console.log(`🚫 Red X overlay added for Property ${slot}`);
+
+                // Also create HAWK Alert banner
+                createHawkAlert(slot, violations);
+            }
+
+            function removeRedXOverlay(slot) {
+                let overlay = null;
+                if (slot === 'A') overlay = redXOverlayA;
+                if (slot === 'B') overlay = redXOverlayB;
+                if (slot === 'C') overlay = redXOverlayC;
+
+                if (overlay) {
+                    scene.remove(overlay);
+                    if (slot === 'A') redXOverlayA = null;
+                    if (slot === 'B') redXOverlayB = null;
+                    if (slot === 'C') redXOverlayC = null;
+                }
+
+                // Also remove HAWK Alert
+                removeHawkAlert(slot);
+            }
+
+            // ===== HAWK ALERT BANNER =====
+            function createHawkAlert(slot, violations) {
+                // Remove existing alert
+                removeHawkAlert(slot);
+
+                // Get container for this slot
+                const slotSelector = slot === 'A' ? '#slot-a' : slot === 'B' ? '#slot-b' : '#slot-c';
+                const slotContainer = document.querySelector(slotSelector);
+                if (!slotContainer) return;
+
+                // Create HAWK Alert banner
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'hawk-alert-banner';
+                alertDiv.style.cssText = `
+                    position: absolute;
+                    top: 10px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: linear-gradient(135deg, #FF3B30 0%, #FF6B6B 100%);
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 12px;
+                    box-shadow: 0 8px 24px rgba(255, 59, 48, 0.4), 0 0 20px rgba(255, 59, 48, 0.3);
+                    z-index: 1000;
+                    min-width: 280px;
+                    max-width: 350px;
+                    border: 2px solid rgba(255, 255, 255, 0.3);
+                    animation: hawk-pulse 2s ease-in-out infinite;
+                `;
+
+                alertDiv.innerHTML = `
+                    <div style="display: flex; align-items: flex-start; gap: 12px;">
+                        <div style="font-size: 32px; flex-shrink: 0;">🦅</div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: bold; font-size: 16px; margin-bottom: 8px;">
+                                ⚠️ HAWK ALERT - Property ${slot}
+                            </div>
+                            <div style="font-size: 13px; opacity: 0.95; margin-bottom: 12px;">
+                                <strong>Deal-Breaker Detected:</strong><br>
+                                ${violations.map(v => `• ${v}`).join('<br>')}
+                            </div>
+                            <button
+                                onclick="deletePropertyFromComparison('${slot}')"
+                                style="
+                                    background: white;
+                                    color: #FF3B30;
+                                    border: none;
+                                    padding: 8px 16px;
+                                    border-radius: 6px;
+                                    font-weight: bold;
+                                    font-size: 13px;
+                                    cursor: pointer;
+                                    width: 100%;
+                                    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+                                    transition: all 0.2s;
+                                "
+                                onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.3)';"
+                                onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.2)';"
+                            >
+                                🗑️ Remove from Comparison
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                // Add to slot container
+                slotContainer.style.position = 'relative'; // Ensure positioning context
+                slotContainer.appendChild(alertDiv);
+
+                // Store reference
+                if (slot === 'A') hawkAlertA = alertDiv;
+                if (slot === 'B') hawkAlertB = alertDiv;
+                if (slot === 'C') hawkAlertC = alertDiv;
+
+                console.log(`🦅 HAWK Alert created for Property ${slot}`);
+            }
+
+            function removeHawkAlert(slot) {
+                let alert = null;
+                if (slot === 'A') alert = hawkAlertA;
+                if (slot === 'B') alert = hawkAlertB;
+                if (slot === 'C') alert = hawkAlertC;
+
+                if (alert && alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                    if (slot === 'A') hawkAlertA = null;
+                    if (slot === 'B') hawkAlertB = null;
+                    if (slot === 'C') hawkAlertC = null;
+                }
+            }
+
+            // ===== DELETE PROPERTY FROM COMPARISON =====
+            window.deletePropertyFromComparison = function(slot) {
+                console.log(`🗑️ Deleting Property ${slot} from comparison`);
+
+                // Clear the property
+                selectProperty(slot, null);
+
+                // Remove all visual indicators
+                removeRedXOverlay(slot);
+                removeShockwave(slot);
+
+                // Show success message
+                showAlert(`Property ${slot} removed from comparison`, 'success');
+
+                // Announce to screen reader
+                announceToScreenReader(`Property ${slot} removed due to deal-breaker violations`);
+            };
 
             // ===== PROPERTY SELECTION =====
             window.selectProperty = function(slot, propertyId) {
