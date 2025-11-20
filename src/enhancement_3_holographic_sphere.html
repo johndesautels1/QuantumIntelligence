@@ -5448,6 +5448,15 @@
                         if (voiceEnabled && recognition) {
                             recognition.start();
                         }
+                    } else if (event.error === 'not-allowed') {
+                        // Microphone permission denied
+                        voiceEnabled = false;
+                        const voiceToggle = document.getElementById('voice-toggle');
+                        if (voiceToggle) {
+                            voiceToggle.textContent = '🎤 Voice: OFF';
+                            voiceToggle.style.background = '';
+                        }
+                        showAlert('Microphone access denied. Please allow microphone access in browser settings.', 'error');
                     }
                 };
 
