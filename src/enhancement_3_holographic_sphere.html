@@ -4559,25 +4559,44 @@
             window.toggleCinemaMode = function(forceState = null) {
                 cinemaMode = forceState !== null ? forceState : !cinemaMode;
 
+                // Get all elements to hide in cinema mode
                 const header = document.querySelector('.header');
-                const selectorColumn = document.querySelector('.selector-column');
+                const selectorColumns = document.querySelectorAll('.selector-column'); // ALL property selectors (A, B, C)
+                const propertySelector = document.querySelector('.property-selector'); // Parent container
                 const importBtn = document.getElementById('import-properties-btn');
                 const photoBtn = document.getElementById('photo-upload-master-btn');
                 const videoBtn = document.getElementById('video-upload-master-btn');
                 const toolsBtn = document.getElementById('tools-master-btn');
+                const toolsDropdown = document.getElementById('tools-dropdown');
+                const dataPanelsBtn = document.getElementById('toggle-data-panels');
+                const panelToggleButtons = document.querySelector('.panel-toggle-buttons');
+                const controlsPanel = document.getElementById('controls-panel');
+                const videoUploadPanel = document.getElementById('video-upload-panel');
 
-                const elementsToHide = [header, selectorColumn, importBtn, photoBtn, videoBtn, toolsBtn].filter(el => el);
+                // Build array of single elements
+                const singleElements = [header, propertySelector, importBtn, photoBtn, videoBtn, toolsBtn,
+                                        toolsDropdown, dataPanelsBtn, panelToggleButtons, controlsPanel,
+                                        videoUploadPanel].filter(el => el);
 
                 if (cinemaMode) {
-                    // Hide UI elements for cinema mode
-                    elementsToHide.forEach(el => {
+                    // Hide single elements
+                    singleElements.forEach(el => {
+                        el.dataset.originalDisplay = el.style.display || '';
+                        el.style.display = 'none';
+                    });
+                    // Hide all selector columns (Property A, B, C)
+                    selectorColumns.forEach(el => {
                         el.dataset.originalDisplay = el.style.display || '';
                         el.style.display = 'none';
                     });
                     showAlert('🎬 Cinema Mode ON - Triple-click house to exit', 'success');
                 } else {
-                    // Restore UI elements
-                    elementsToHide.forEach(el => {
+                    // Restore single elements
+                    singleElements.forEach(el => {
+                        el.style.display = el.dataset.originalDisplay || '';
+                    });
+                    // Restore all selector columns
+                    selectorColumns.forEach(el => {
                         el.style.display = el.dataset.originalDisplay || '';
                     });
                     showAlert('🎬 Cinema Mode OFF', 'info');
