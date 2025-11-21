@@ -6372,6 +6372,22 @@
                     }
                     // Hide video control bar when property is deselected
                     hideVideoControlBar(slot);
+                    // Remove gravity indicator (score tag, rod, and line) when property is deselected
+                    if (gravityIndicators[slot]) {
+                        if (gravityIndicators[slot].userData.label) {
+                            scene.remove(gravityIndicators[slot].userData.label);
+                        }
+                        if (gravityIndicators[slot].userData.rod) {
+                            scene.remove(gravityIndicators[slot].userData.rod);
+                        }
+                        scene.remove(gravityIndicators[slot]);
+                        gravityIndicators[slot] = null;
+                    }
+                    // Remove gravity rings when property is deselected
+                    if (gravityRings[slot]) {
+                        gravityRings[slot].forEach(ring => scene.remove(ring));
+                        gravityRings[slot] = [];
+                    }
                     announceToScreenReader(`Property ${slot} cleared`);
                     return;
                 }
