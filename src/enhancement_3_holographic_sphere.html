@@ -3471,13 +3471,11 @@
                 if (typeof THREE !== 'undefined' && THREE.GLTFLoader) {
                     try {
                         gltfLoader = new THREE.GLTFLoader();
-                        console.log('✅ GLTF Loader initialized for 3D property models');
+
                     } catch (e) {
                         console.warn('⚠️ GLTFLoader failed to initialize:', e);
-                        console.log('📦 Using procedural houses instead (no problem!)');
                     }
                 } else {
-                    console.log('📦 GLTFLoader not available - using procedural 3D houses (works great!)');
                 }
             }
 
@@ -3490,22 +3488,20 @@
 
                 // Check cache first
                 if (modelCache[modelPath]) {
-                    console.log(`📦 Using cached model: ${modelPath}`);
                     onSuccess(modelCache[modelPath].clone());
                     return;
                 }
 
-                console.log(`🏠 Loading 3D model: ${modelPath}`);
                 gltfLoader.load(
                     modelPath,
                     (gltf) => {
-                        console.log(`✅ Model loaded successfully: ${modelPath}`);
+
                         modelCache[modelPath] = gltf.scene;
                         onSuccess(gltf.scene.clone());
                     },
                     (progress) => {
                         const percent = Math.round((progress.loaded / progress.total) * 100);
-                        console.log(`Loading ${modelPath}: ${percent}%`);
+
                     },
                     (error) => {
                         console.error(`❌ Failed to load model ${modelPath}:`, error);
@@ -3524,7 +3520,6 @@
 
                 // Get renderer's max anisotropy for MAXIMUM quality
                 const maxAnisotropy = renderer ? renderer.capabilities.getMaxAnisotropy() : 16;
-                console.log(`🎨 Using maximum anisotropy: ${maxAnisotropy}`);
 
                 // Create materials array for each face (order: +X, -X, +Y, -Y, +Z, -Z)
                 // That's: Right, Left, Top, Bottom, Front, Back
@@ -3543,7 +3538,7 @@
                         loadedTexture.generateMipmaps = true;
                         loadedTexture.needsUpdate = true;
 
-                        console.log(`✅ Ultra-HD texture loaded for ${faceNames[i]} face`);
+
                     });
 
                     // Pre-configure texture settings
@@ -3767,61 +3762,54 @@
 
             // Feature #10: Print helpful guide for adding custom 3D models
             function print3DModelGuide() {
-                console.log('%c🏠 CLUES™ 3D Property Model System', 'font-size: 16px; font-weight: bold; color: #00D4FF;');
-                console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #00D4FF;');
-                console.log('');
-                console.log('%c✨ Feature #10 Active: Your properties can now levitate as 3D houses!', 'font-weight: bold; color: #00FF88;');
-                console.log('');
-                console.log('%c📋 How to Add Your Own 3D Models:', 'font-weight: bold; color: #FFD700;');
-                console.log('');
-                console.log('1️⃣  %cGet Free 3D House Models:', 'font-weight: bold;');
-                console.log('   • Poly Haven: https://polyhaven.com/models (CC0 License)');
-                console.log('   • Sketchfab: https://sketchfab.com/3d-models (Filter: Downloadable, Free)');
-                console.log('   • Google 3D Warehouse: https://3dwarehouse.sketchfab.com/');
-                console.log('   • TurboSquid Free: https://www.turbosquid.com/Search/3D-Models/free/house');
-                console.log('');
-                console.log('2️⃣  %cConvert Photos to 3D (AI Tools):', 'font-weight: bold;');
-                console.log('   • Luma AI: https://lumalabs.ai/ (Photo → 3D GLTF)');
-                console.log('   • Polycam: https://poly.cam/ (Mobile app, free tier)');
-                console.log('   • Meshroom (Free): https://alicevision.org/#meshroom (Desktop photogrammetry)');
-                console.log('   • 3DF Zephyr Free: https://www.3dflow.net/3df-zephyr-free/');
-                console.log('');
-                console.log('3️⃣  %cSave Models to Your Project:', 'font-weight: bold;');
-                console.log('   • Create folder: assets/models/properties/');
-                console.log('   • Save as: my_house.glb or my_house.gltf');
-                console.log('   • Supported formats: .gltf, .glb (recommended)');
-                console.log('');
-                console.log('4️⃣  %cAdd to CODE (lines 2036-2048):', 'font-weight: bold;');
-                console.log('   const MODEL_PATHS = {');
-                console.log('       \'my_property_123\': \'assets/models/properties/my_house.glb\',');
-                console.log('       \'123_main_st\': \'assets/models/properties/colonial.glb\',');
-                console.log('       // Add more here...');
-                console.log('   };');
-                console.log('');
-                console.log('%c💡 Tips:', 'font-weight: bold; color: #00D4FF;');
-                console.log('   • Optimize models: Keep under 5MB for web performance');
-                console.log('   • Use .glb (binary) instead of .gltf for faster loading');
-                console.log('   • Scale: Models auto-scale to ~1 unit (adjust in replace3DModel function)');
-                console.log('   • Current mode: ' + (use3DModels ? '%c3D Houses ON ✅' : '%cSpheres ON ⚪'),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                     use3DModels ? 'color: #00FF88; font-weight: bold;' : 'color: #FFD700;');
-                console.log('');
-                console.log('%c🔧 Functions Available:', 'font-weight: bold; color: #FFD700;');
-                console.log('   • toggle3DModels() - Switch between 3D houses and spheres');
-                console.log('   • replace3DModel(slot, property) - Load external GLTF model');
-                console.log('   • detectHouseStyle(property) - Auto-detect style from property name/price');
-                console.log('');
-                console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #00D4FF;');
+
+
+
+
+
+
             }
 
             // ========== FEATURE #10b: PHOTO UPLOAD & TEXTURE MAPPING ==========
             // Upload real property photos and apply them as textures to 3D models
 
-            console.log('🔧 Initializing photo upload functions...');
 
             try {
                 // Toggle photo upload panel
                 window.togglePhotoUpload = function() {
-                console.log('📸 togglePhotoUpload called');
                 const panel = document.getElementById('photo-upload-panel');
 
                 if (!panel) {
@@ -3830,18 +3818,15 @@
                 }
 
                 const isVisible = panel.style.display === 'flex';
-                console.log(`📸 Panel current state: ${isVisible ? 'VISIBLE' : 'HIDDEN'}`);
 
                 if (isVisible) {
                     panel.style.display = 'none';
-                    console.log('📸 Panel CLOSED');
                 } else {
                     // Force panel to be visible
                     panel.style.display = 'flex';
                     panel.style.visibility = 'visible';
                     panel.style.opacity = '1';
 
-                    console.log('📸 Panel OPENED (display: flex)');
 
                     // Hide other panels
                     const comparisonPanel = document.getElementById('comparison-panel');
@@ -3851,7 +3836,6 @@
 
                     // Log final computed styles for debugging
                     const styles = window.getComputedStyle(panel);
-                    console.log('📸 Panel computed styles:', {
                         display: styles.display,
                         position: styles.position,
                         top: styles.top,
@@ -3863,7 +3847,6 @@
                         opacity: styles.opacity
                     });
 
-                    console.log('📸 Panel should now be visible! Look for bright cyan border on right side.');
                 }
 
                 vibrate('tap');
@@ -3871,7 +3854,6 @@
 
             // Select which property slot to upload photo for
             window.selectUploadSlot = function(slot, evt) {
-                console.log(`🔵 selectUploadSlot called with slot: ${slot}`);
                 currentUploadSlot = slot;
 
                 // Update tab styling
@@ -3895,19 +3877,16 @@
                 });
 
                 vibrate('tap');
-                console.log(`📸 Switched to Property ${slot} upload tab`);
             };
 
             // Handle MULTIPLE photo file uploads
             window.handlePhotoUpload = function(slot, inputElement) {
-                console.log(`📸 handlePhotoUpload called for slot ${slot}`);
                 const files = inputElement.files;
                 if (!files || files.length === 0) {
-                    console.log('❌ No files selected');
+
                     return;
                 }
 
-                console.log(`📁 ${files.length} file(s) selected`);
                 uploadedPhotos[slot] = []; // Clear previous photos
 
                 const preview = document.getElementById(`photo-preview-${slot}`);
@@ -3932,7 +3911,7 @@
                 });
 
                 const totalValidFiles = validFiles.length;
-                console.log(`✅ ${totalValidFiles} valid image file(s) to load`);
+
 
                 // Feature #19: Track photo uploads for badges
                 if (totalValidFiles > 0 && typeof trackPhotoUpload === 'function') {
@@ -3954,7 +3933,7 @@
                     reader.onload = function(e) {
                         photoUrls.push(e.target.result);
                         loadedCount++;
-                        console.log(`✅ Loaded ${loadedCount}/${totalValidFiles}: ${file.name}`);
+
 
                         // When all files loaded, update preview
                         if (loadedCount === totalValidFiles) {
@@ -4040,7 +4019,6 @@
 
                             showAlert(`${photoUrls.length} photo(s) uploaded for Property ${slot}!`, 'success');
                             vibrate('success');
-                            console.log(`📸 ${photoUrls.length} photos uploaded for slot ${slot}`);
                         }
                     };
 
@@ -4059,7 +4037,6 @@
                     return;
                 }
 
-                console.log(`🎨 Replacing house with ${uploadedPhotos[slot].length} crystal clear photo(s) for Property ${slot}...`);
 
                 if (!use3DModels) {
                     showAlert('Please enable 3D Houses mode first!', 'info');
@@ -4095,7 +4072,6 @@
                 const primaryPhotoUrl = uploadedPhotos[slot][0];
                 const photoCount = uploadedPhotos[slot].length;
 
-                console.log(`🎨 Replacing procedural house with photo display for Property ${slot} (1 of ${photoCount})...`);
 
                 // REMOVE the old procedural house from scene
                 scene.remove(currentHouse);
@@ -4105,11 +4081,9 @@
                 if (photoCount >= 2) {
                     // Create 3D cube with photos on each face
                     photoDisplay = createPhotoCube(uploadedPhotos[slot], originalColor);
-                    console.log(`📦 Created Ultra-HD photo cube with ${photoCount} photos mapped to faces`);
                 } else {
                     // Single photo - use plane
                     photoDisplay = createPhotoDisplay(primaryPhotoUrl, originalColor);
-                    console.log(`🖼️ Created Ultra-HD single photo display`);
                 }
 
                 // Position it where the old house was
@@ -4150,7 +4124,7 @@
                 };
                 animateGlow();
 
-                console.log(`✅ Procedural house REPLACED with crystal clear photo display for ${slot} (${photoCount} total)`);
+
 
                 // Show auto-cycle button if multiple photos uploaded
                 if (photoCount > 1) {
@@ -4173,7 +4147,7 @@
                 if (slot === 'C') house = sphereC;
 
                 if (!house || !house.userData.uploadedPhotos || house.userData.uploadedPhotos.length <= 1) {
-                    console.log(`No multiple photos to cycle for Property ${slot}`);
+
                     return;
                 }
 
@@ -4182,7 +4156,6 @@
                 const newIndex = house.userData.currentPhotoIndex;
                 const newPhotoUrl = photos[newIndex];
 
-                console.log(`🔄 Cycling to photo ${newIndex + 1}/${photos.length} for Property ${slot}`);
 
                 // Load and apply new texture
                 const textureLoader = new THREE.TextureLoader();
@@ -4235,7 +4208,6 @@
                     }, 3000);
 
                     showAlert('Auto-cycling photos every 3 seconds', 'info');
-                    console.log('🔄 Auto-cycle enabled');
                 } else {
                     btn.textContent = '🔄 Auto-Cycle: OFF';
                     btn.style.background = 'linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(138, 43, 226, 0.3))';
@@ -4246,7 +4218,6 @@
                     }
 
                     showAlert('Auto-cycling disabled', 'info');
-                    console.log('🔄 Auto-cycle disabled');
                 }
 
                 announceToScreenReader(`Photo auto-cycling ${autoCycleEnabled ? 'enabled' : 'disabled'}`);
@@ -4282,7 +4253,7 @@
                 }
             });
 
-            console.log('✅ All photo upload functions created successfully!');
+
 
             } catch (error) {
                 console.error('❌❌❌ FATAL ERROR in photo upload functions:', error);
@@ -4290,7 +4261,6 @@
             }
 
             // Verify functions are accessible globally
-            console.log('✅ Photo upload functions defined:', {
                 togglePhotoUpload: typeof window.togglePhotoUpload,
                 selectUploadSlot: typeof window.selectUploadSlot,
                 handlePhotoUpload: typeof window.handlePhotoUpload,
@@ -4308,12 +4278,10 @@
                     dropdown.style.display = 'flex';
                     btn.style.background = 'linear-gradient(135deg, rgba(255, 215, 0, 0.7), rgba(0, 212, 255, 0.7))';
                     btn.textContent = '🛠️ TOOLS ▲';
-                    console.log('🛠️ Tools menu opened');
                 } else {
                     dropdown.style.display = 'none';
                     btn.style.background = 'linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(0, 212, 255, 0.4))';
                     btn.textContent = '🛠️ TOOLS';
-                    console.log('🛠️ Tools menu closed');
                 }
 
                 vibrate('tap');
@@ -4329,14 +4297,12 @@
                     if (btn) {
                         btn.style.background = 'linear-gradient(135deg, rgba(0, 212, 255, 0.7), rgba(138, 43, 226, 0.7))';
                     }
-                    console.log('📸 Photo upload panel opened');
                     announceToScreenReader('Photo upload panel opened');
                 } else {
                     panel.style.display = 'none';
                     if (btn) {
                         btn.style.background = 'linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(138, 43, 226, 0.3))';
                     }
-                    console.log('📸 Photo upload panel closed');
                     announceToScreenReader('Photo upload panel closed');
                 }
 
@@ -4408,11 +4374,9 @@
 
                 if (panel.style.display === 'none' || panel.style.display === '') {
                     panel.style.display = 'flex';
-                    console.log('🎬 Video upload panel opened');
                     announceToScreenReader('Video upload panel opened');
                 } else {
                     panel.style.display = 'none';
-                    console.log('🎬 Video upload panel closed');
                     announceToScreenReader('Video upload panel closed');
                 }
 
@@ -4450,7 +4414,6 @@
                 });
 
                 vibrate('tap');
-                console.log(`🎬 Selected video slot: ${slot}`);
             };
 
             // Handle video file upload
@@ -4471,7 +4434,6 @@
                     return;
                 }
 
-                console.log(`🎬 Uploading video for slot ${slot}: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
                 showAlert(`Uploading video: ${file.name}...`, 'info');
 
                 try {
@@ -4527,7 +4489,6 @@
                     return;
                 }
 
-                console.log(`🎬 Applying video texture to Property ${slot}`);
 
                 // Create video element for texture with MAXIMUM QUALITY settings
                 const video = document.createElement('video');
@@ -4617,7 +4578,6 @@
                     // Update play button to show Pause
                     const playBtn = document.getElementById(`play-btn-${slot}`);
                     if (playBtn) playBtn.innerHTML = '⏸️ Pause';
-                }).catch(e => console.log('Autoplay prevented:', e));
             };
 
             // Toggle video play/pause on house click
@@ -4838,11 +4798,10 @@
                                 applyBtn.style.opacity = '1';
                             }
 
-                            console.log(`🎬 Loaded saved video for slot ${slot}: ${saved.fileName}`);
                         }
                     }
                 } catch (e) {
-                    console.log('No saved videos found or error loading:', e);
+
                 }
             }
 
@@ -5027,11 +4986,11 @@
                 try {
                     // Initialize shared data adapter
                     await window.sharedDataAdapter.init();
-                    console.log('✅ sharedDataAdapter initialized');
+
 
                     // Load properties from IndexedDB
                     const loadedProperties = await window.sharedDataAdapter.getPropertiesFor5DExplorer('balanced');
-                    console.log(`✅ Loaded ${loadedProperties.length} properties from database`);
+
 
                     savedPropertiesCache = loadedProperties;
 
@@ -5104,7 +5063,7 @@
                     return;
                 }
 
-                console.log(`Assigning property to slot ${slot}:`, property);
+
 
                 // Add property to PROPERTIES array if not already there
                 if (!PROPERTIES.find(p => p.id === property.id)) {
@@ -5155,7 +5114,6 @@
                 const file = event.target.files[0];
                 if (!file) return;
 
-                console.log('📂 File selected:', file.name);
                 showAlert(`Loading ${file.name}...`, 'info');
 
                 try {
@@ -5251,7 +5209,7 @@
                     }
                 };
 
-                console.log(`Assigning uploaded property to slot ${slot}:`, normalizedProperty);
+
 
                 // Add to PROPERTIES array
                 if (!PROPERTIES.find(p => p.id === normalizedProperty.id)) {
@@ -5368,14 +5326,12 @@
                         updateNotesDisplay();
                     }
 
-                    console.log('📝 Notes panel opened - notes loaded from localStorage');
                     announceToScreenReader('Notes panel opened');
                 } else {
                     panel.style.display = 'none';
                     if (btn) {
                         btn.style.background = 'rgba(255, 255, 255, 0.1)';
                     }
-                    console.log('📝 Notes panel closed');
                     announceToScreenReader('Notes panel closed');
                 }
 
@@ -5407,7 +5363,6 @@
                 // Accessibility announcement
                 announceToScreenReader('Data panels modal opened. Use tab keys to navigate, ESC to close.');
 
-                console.log('📊 Data panels modal opened');
             };
 
             // Close the Data Panels modal
@@ -5430,12 +5385,10 @@
                 // Accessibility announcement
                 announceToScreenReader('Data panels modal closed');
 
-                console.log('📊 Data panels modal closed');
             };
 
             // Switch between data tabs inside the modal
             window.switchDataTab = function(tabName) {
-                console.log(`🔄 Switching to tab: ${tabName}`);
 
                 currentDataTab = tabName;
 
@@ -5564,28 +5517,28 @@
                     const clonedCanvas = clonedPanel.querySelector('#col-chart');
                     if (clonedCanvas) {
                         createCOLChartOnCanvas(clonedCanvas);
-                        console.log(`✅ Rendered COL chart on cloned canvas`);
+
                     }
                 } else if (tabName === 'metric') {
                     // Radar Chart - render on cloned canvas
                     const clonedCanvas = clonedPanel.querySelector('#radar-chart');
                     if (clonedCanvas) {
                         createRadarChartOnCanvas(clonedCanvas);
-                        console.log(`✅ Rendered radar chart on cloned canvas`);
+
                     }
                 } else if (tabName === 'location') {
                     // Location Chart - render on cloned canvas
                     const clonedCanvas = clonedPanel.querySelector('#location-chart');
                     if (clonedCanvas) {
                         createLocationChartOnCanvas(clonedCanvas);
-                        console.log(`✅ Rendered Location chart on cloned canvas`);
+
                     }
                 } else if (tabName === 'marketvalue') {
                     // Market Value Chart - render on cloned canvas
                     const clonedCanvas = clonedPanel.querySelector('#marketvalue-chart');
                     if (clonedCanvas) {
                         createMarketValueChartOnCanvas(clonedCanvas);
-                        console.log(`✅ Rendered Market Value chart on cloned canvas`);
+
                     }
                     // Update details section
                     const detailsDiv = clonedPanel.querySelector('#marketvalue-details');
@@ -5597,35 +5550,35 @@
                     const clonedCanvas = clonedPanel.querySelector('#condition-chart');
                     if (clonedCanvas) {
                         createConditionChartOnCanvas(clonedCanvas);
-                        console.log(`✅ Rendered Condition chart on cloned canvas`);
+
                     }
                 } else if (tabName === 'lifestyle') {
                     // Lifestyle Chart - render on cloned canvas
                     const clonedCanvas = clonedPanel.querySelector('#lifestyle-chart');
                     if (clonedCanvas) {
                         createLifestyleChartOnCanvas(clonedCanvas);
-                        console.log(`✅ Rendered Lifestyle chart on cloned canvas`);
+
                     }
                 } else if (tabName === 'education') {
                     // Education Chart - render on cloned canvas
                     const clonedCanvas = clonedPanel.querySelector('#education-chart');
                     if (clonedCanvas) {
                         createEducationChartOnCanvas(clonedCanvas);
-                        console.log(`✅ Rendered Education chart on cloned canvas`);
+
                     }
                 } else if (tabName === 'roi') {
                     // ROI Chart - render on cloned canvas
                     const clonedCanvas = clonedPanel.querySelector('#roi-chart');
                     if (clonedCanvas) {
                         createROIChartOnCanvas(clonedCanvas);
-                        console.log(`✅ Rendered ROI chart on cloned canvas`);
+
                     }
                 } else {
                     // Call the update function for non-chart panels
                     if (typeof panelInfo.updateFn === 'function') {
                         try {
                             panelInfo.updateFn();
-                            console.log(`✅ Updated ${tabName} panel data`);
+
                         } catch (err) {
                             console.warn(`⚠️ Could not update ${tabName} panel:`, err.message);
                         }
@@ -5671,7 +5624,7 @@
                 // Accessibility announcement
                 announceToScreenReader(`Switched to ${panelInfo.label} tab`);
 
-                console.log(`✅ Loaded ${tabName} panel into modal`);
+
             };
 
             // ESC key to close modal
@@ -5684,8 +5637,8 @@
                 }
             });
 
-            console.log('✅ Data panels modal functions created');
-            console.log('✅ Tools menu and panel toggle functions created');
+
+
 
             // ===== INITIALIZATION =====
             async function init() {
@@ -5707,7 +5660,7 @@
 
                     // Fetch real properties from CLUES
                     const cluesProperties = await dataManager.getAllProperties();
-                    console.log(`Loaded ${cluesProperties.length} properties from CLUES`);
+
 
                     // Map to sphere format
                     PROPERTIES = cluesProperties
@@ -5845,7 +5798,6 @@
 
                 // CRITICAL: Enable maximum texture quality
                 const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
-                console.log(`🎨 GPU supports max anisotropy: ${maxAnisotropy}`);
 
                 // Enable better color rendering
                 renderer.outputEncoding = THREE.sRGBEncoding;
@@ -5924,7 +5876,6 @@
                             if (sphere?.userData?.hasVideo) {
                                 window.toggleHouseVideo(slot);
                             } else {
-                                console.log(`🏠 Clicked Property ${slot} (no video attached)`);
                             }
                         }
                     }
@@ -6023,8 +5974,7 @@
 
             // Feature #10: Create 3D property models (ENHANCED - replaces createSpheres)
             function create3DModels() {
-                console.log('🏠 Feature #10: Creating 3D property models...');
-                console.log(`   Mode: ${use3DModels ? '3D Houses' : 'Classic Spheres'}`);
+
 
                 const colors = [0x00D4FF, 0x00FF88, 0xFFD700]; // Cyan, Green, Gold
                 const positions = [
@@ -6052,7 +6002,7 @@
                         if (slot === 'B') sphereB = house;
                         if (slot === 'C') sphereC = house;
 
-                        console.log(`   ✅ Created 3D house for slot ${slot} (initially hidden)`);
+
                     } else {
                         // Classic sphere fallback
                         const geometry = new THREE.SphereGeometry(1, 32, 32);
@@ -6073,7 +6023,7 @@
                         if (slot === 'B') sphereB = sphere;
                         if (slot === 'C') sphereC = sphere;
 
-                        console.log(`   ✅ Created sphere for slot ${slot}`);
+
                     }
                 });
             }
@@ -6086,7 +6036,7 @@
                 const modelPath = MODEL_PATHS[style];
 
                 if (!modelPath) {
-                    console.log(`No external model for style "${style}" - using procedural house`);
+
                     return;
                 }
 
@@ -6132,7 +6082,7 @@
                         if (slot === 'B') sphereB = model;
                         if (slot === 'C') sphereC = model;
 
-                        console.log(`✅ Replaced slot ${slot} with ${style} model`);
+
                         announceToScreenReader(`Loaded 3D ${style} house model for property ${slot}`);
                     },
                     (error) => {
@@ -6269,7 +6219,6 @@
             }
 
             function populateMetricFilters() {
-                console.log('📋 populateMetricFilters() called');
                 const container = document.getElementById('metric-filters-container');
 
                 if (!container) {
@@ -6277,7 +6226,7 @@
                     return;
                 }
 
-                console.log('✅ Container found:', container);
+
                 container.innerHTML = '';
 
                 let checkboxCount = 0;
@@ -6291,7 +6240,7 @@
                     checkbox.id = `filter-${metric.key}`;
                     checkbox.checked = true;
                     checkbox.onchange = () => {
-                        console.log(`✅ Checkbox clicked: ${metric.key}`);
+
                         toggleMetric(metric.key);
                     };
                     checkbox.setAttribute('aria-label', `Toggle ${metric.label}`);
@@ -6313,7 +6262,7 @@
                     checkboxCount++;
                 });
 
-                console.log(`✅ Created ${checkboxCount} metric checkboxes`);
+
             }
 
             // ===== FEATURE #9: TIME TRAVEL =====
@@ -6516,7 +6465,6 @@
                 if (slot === 'B') redXOverlayB = sprite;
                 if (slot === 'C') redXOverlayC = sprite;
 
-                console.log(`🚫 Red X overlay added for Property ${slot}`);
 
                 // Also create HAWK Alert banner
                 createHawkAlert(slot, violations);
@@ -6613,7 +6561,6 @@
                 if (slot === 'B') hawkAlertB = alertDiv;
                 if (slot === 'C') hawkAlertC = alertDiv;
 
-                console.log(`🦅 HAWK Alert created for Property ${slot}`);
             }
 
             function removeHawkAlert(slot) {
@@ -6632,7 +6579,6 @@
 
             // ===== DELETE PROPERTY FROM COMPARISON =====
             window.deletePropertyFromComparison = function(slot) {
-                console.log(`🗑️ Deleting Property ${slot} from comparison`);
 
                 // Clear the property
                 selectProperty(slot, null);
@@ -6696,7 +6642,6 @@
                 // This ensures marketValue dimension is always current based on pricing data
                 if (property.price && property.estimatedValue) {
                     property.dimensions.marketValue = calculateMarketValueScore(property.price, property.estimatedValue);
-                    console.log(`📊 Market Value Score calculated: ${property.dimensions.marketValue} (Price: $${property.price.toLocaleString()}, Est. Value: $${property.estimatedValue.toLocaleString()}, Ratio: ${(property.price / property.estimatedValue * 100).toFixed(1)}%)`);
                 } else if (!property.dimensions.marketValue) {
                     property.dimensions.marketValue = 50; // Default to middle if no data
                 }
@@ -6707,7 +6652,7 @@
                     if (sphereA) {
                         sphereA.visible = true; // SHOW 3D object when selected
                         updateSphereColor(sphereA, propertyA); // Update color based on Smart Score
-                        console.log(`✅ Property A selected - sphereA visible: ${sphereA.visible}, isHouse: ${sphereA.userData.isHouse}, isSphere: ${sphereA.userData.isSphere}`);
+
                     }
                 }
                 if (slot === 'B') {
@@ -6715,7 +6660,7 @@
                     if (sphereB) {
                         sphereB.visible = true; // SHOW 3D object when selected
                         updateSphereColor(sphereB, propertyB); // Update color based on Smart Score
-                        console.log(`✅ Property B selected - sphereB visible: ${sphereB.visible}, isHouse: ${sphereB.userData.isHouse}, isSphere: ${sphereB.userData.isSphere}`);
+
                     }
                 }
                 if (slot === 'C') {
@@ -6723,7 +6668,7 @@
                     if (sphereC) {
                         sphereC.visible = true; // SHOW 3D object when selected
                         updateSphereColor(sphereC, propertyC); // Update color based on Smart Score
-                        console.log(`✅ Property C selected - sphereC visible: ${sphereC.visible}, isHouse: ${sphereC.userData.isHouse}, isSphere: ${sphereC.userData.isSphere}`);
+
                     }
                 }
 
@@ -6782,7 +6727,6 @@
                     timestamp: Date.now()
                 };
                 localStorage.setItem('clues_user_state', JSON.stringify(state));
-                console.log('💾 User state saved:', state);
             }
 
             function restoreUserState() {
@@ -6791,7 +6735,6 @@
                     if (!saved) return;
 
                     const state = JSON.parse(saved);
-                    console.log('📂 Restoring user state:', state);
 
                     // Restore property selections
                     if (state.propertyA) {
@@ -6852,7 +6795,7 @@
                         });
                     }
 
-                    console.log('✅ User state restored successfully');
+
                 } catch (e) {
                     console.error('Failed to restore user state:', e);
                 }
@@ -6905,8 +6848,7 @@
             window.toggleMetric = function(metricKey) {
                 metricFilters[metricKey] = !metricFilters[metricKey];
 
-                console.log(`🎯 TOGGLE METRIC: ${metricKey} = ${metricFilters[metricKey]}`);
-                console.log('   Current metricFilters state:', JSON.stringify(metricFilters, null, 2));
+
 
                 // Feature #18: Vibration feedback
                 vibrate('tap');
@@ -6919,17 +6861,17 @@
                 }
 
                 // Feature #25: Recalculate winner when metrics change
-                console.log('   Calling calculateWinner()...');
+
                 calculateWinner();
 
                 // Update comparison table to reflect new Smart Scores
-                console.log('   Calling updateComparisonPanel()...');
+
                 updateComparisonPanel();
 
                 // Save state
                 saveUserState();
 
-                console.log('✅ Metric toggle complete');
+
             };
 
             window.toggleMetricGroup = function(groupName) {
@@ -7060,7 +7002,6 @@
                 );
 
                 winnerProperty = winner.slot;
-                console.log(`🏆 Winner: Property ${winner.slot} with score ${winner.score.toFixed(1)}`);
 
                 // Update sphere/house colors based on new Smart Scores
                 if (propertyA && sphereA) updateSphereColor(sphereA, propertyA);
@@ -7186,13 +7127,13 @@
                 gravityRings[slot] = [];
 
                 if (!property) {
-                    console.log(`Feature #31: No property for slot ${slot}, skipping rings`);
+
                     return;
                 }
 
                 // Get cost of living score (0-100, lower cost = higher score)
                 const colScore = property.dimensions.costOfLiving || 70;
-                console.log(`Feature #31: Creating gravity rings for ${property.name} (slot ${slot}), COL score: ${colScore}`);
+
 
                 // Calculate ring size based on COL (inverted - high cost = larger gravity field)
                 // Convert score back to cost: higher score = lower cost = smaller rings
@@ -7211,7 +7152,7 @@
                 }
 
                 // Create concentric rings
-                console.log(`Feature #31: Creating ${numRings} rings with max radius ${maxRadius.toFixed(2)}, color: ${ringColor.toString(16)}`);
+
                 for (let i = 0; i < numRings; i++) {
                     const radius = ((i + 1) / numRings) * maxRadius;
                     const ringGeometry = new THREE.RingGeometry(radius - 0.1, radius + 0.1, 64);
@@ -7232,9 +7173,9 @@
 
                     scene.add(ring);
                     gravityRings[slot].push(ring);
-                    console.log(`Feature #31: Ring ${i+1}/${numRings} created at radius ${radius.toFixed(2)} for slot ${slot}`);
+
                 }
-                console.log(`Feature #31: Total rings in scene for slot ${slot}: ${gravityRings[slot].length}`);
+
             }
 
             function updateAllGravityRings() {
@@ -7328,7 +7269,6 @@
                 // Store color for reference
                 sphere.userData.originalColor = color;
 
-                console.log(`🎨 Updated color for ${property.name}: Smart Score based color = ${color.toString(16)}`);
             }
 
             // ===== FEATURE #31: PHYSICS-BASED GRAVITY POSITIONING =====
@@ -7642,17 +7582,16 @@
                 create3DModels();
 
                 // Reapply selections (this will make visible the ones that were selected)
-                console.log('🔄 Reapplying property selections after toggle...');
                 if (propertyA) {
-                    console.log('   Restoring Property A:', propertyA.name);
+
                     selectProperty('A', propertyA.id);
                 }
                 if (propertyB) {
-                    console.log('   Restoring Property B:', propertyB.name);
+
                     selectProperty('B', propertyB.id);
                 }
                 if (propertyC) {
-                    console.log('   Restoring Property C:', propertyC.name);
+
                     selectProperty('C', propertyC.id);
                 }
 
@@ -7808,7 +7747,6 @@
             function saveAllNotes() {
                 try {
                     localStorage.setItem('holosphere_property_notes', JSON.stringify(propertyNotes));
-                    console.log('💾 Notes auto-saved to browser localStorage');
                     // Visual feedback that save happened
                     const hint = document.querySelector('.notes-hint');
                     if (hint) {
@@ -7860,7 +7798,6 @@
                     URL.revokeObjectURL(url);
 
                     showAlert('Notes exported to file! 📥', 'success');
-                    console.log('📥 Notes exported to file');
                 } catch (error) {
                     console.error('Error exporting notes:', error);
                     showAlert('Failed to export notes', 'error');
@@ -7988,7 +7925,6 @@
 
                 // Visual feedback for desktop testing (when vibration not supported)
                 if (!supportsVibration) {
-                    console.log(`🔔 Vibration: ${pattern} (desktop simulation)`);
                     // Flash the body border briefly for visual feedback
                     document.body.style.outline = '3px solid rgba(0, 212, 255, 0.8)';
                     setTimeout(() => {
@@ -10250,7 +10186,7 @@
 
                 recognition.onresult = (event) => {
                     const transcript = event.results[event.results.length - 1][0].transcript.toLowerCase().trim();
-                    console.log('Voice command:', transcript);
+
                     handleVoiceCommand(transcript);
                 };
 
@@ -10279,7 +10215,7 @@
                         try {
                             recognition.start();
                         } catch (e) {
-                            console.log('Recognition restart failed:', e);
+
                         }
                     }
                 };
@@ -10616,7 +10552,7 @@
                         });
                     });
 
-                    console.log('Touch optimizations initialized for mobile device');
+
                 }
             }
 
@@ -10634,7 +10570,7 @@
                 }
 
                 document.body.setAttribute('data-layout', layout);
-                console.log(`Layout detected: ${layout} (${width}px)`);
+
 
                 // Adjust Three.js camera for mobile
                 if (layout === 'mobile' || layout === 'mobile-small') {
