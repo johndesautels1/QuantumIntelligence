@@ -942,14 +942,28 @@
                 z-index: 1 !important; /* Below header and selectors */
             }
 
-            /* ===== SEARCH NEIGHBORHOOD - ATTACH TO CONTROLS ===== */
+            /* ===== HOME SEARCH BUTTON - MATCH OTHER BUTTONS ===== */
             .search-widget {
                 position: relative !important;
                 bottom: auto !important;
                 left: auto !important;
                 transform: none !important;
                 width: 100% !important;
-                margin: 10px 0 !important;
+                margin: 0 !important;
+                display: flex !important;
+                justify-content: center !important;
+            }
+
+            .search-toggle-btn {
+                width: calc(100% - 20px) !important;
+                max-width: 100% !important;
+                min-width: 220px !important;
+                padding: 10px 20px !important;
+                margin: 0 10px !important;
+                transform: none !important;
+                font-size: 0.9em !important;
+                border-radius: 10px !important;
+                background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%) !important;
             }
 
             /* ===== HIDE TIME TRAVEL FROM MAIN VIEW (moved to modal) ===== */

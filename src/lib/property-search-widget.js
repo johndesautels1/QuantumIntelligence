@@ -26,7 +26,7 @@ export class PropertySearchWidget {
         const widgetHtml = `
         <div id="property-search-widget" class="search-widget">
             <button onclick="PropertySearchWidget.toggle()" class="search-toggle-btn">
-                🏘️ Search Neighborhood
+                🏠 HOME SEARCH
             </button>
 
             <div id="search-panel" class="search-panel" style="display:none;">
