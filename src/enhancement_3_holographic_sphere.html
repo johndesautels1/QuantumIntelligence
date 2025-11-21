@@ -3794,7 +3794,7 @@
 
 
 
-                    use3DModels ? 'color: #00FF88; font-weight: bold;' : 'color: #FFD700;');
+                // 3D model mode: use3DModels variable tracks current state
 
 
 
@@ -3834,18 +3834,8 @@
                     if (comparisonPanel) comparisonPanel.style.display = 'none';
                     if (notesPanel) notesPanel.style.display = 'none';
 
-                    // Log final computed styles for debugging
-                    const styles = window.getComputedStyle(panel);
-                        display: styles.display,
-                        position: styles.position,
-                        top: styles.top,
-                        right: styles.right,
-                        width: styles.width,
-                        height: styles.height,
-                        zIndex: styles.zIndex,
-                        visibility: styles.visibility,
-                        opacity: styles.opacity
-                    });
+                    // Panel styles applied for debugging if needed
+                    // const styles = window.getComputedStyle(panel);
 
                 }
 
@@ -4260,12 +4250,9 @@
                 console.error('Stack trace:', error.stack);
             }
 
-            // Verify functions are accessible globally
-                togglePhotoUpload: typeof window.togglePhotoUpload,
-                selectUploadSlot: typeof window.selectUploadSlot,
-                handlePhotoUpload: typeof window.handlePhotoUpload,
-                applyPhotoTexture: typeof window.applyPhotoTexture
-            });
+            // Photo upload functions are now accessible globally:
+            // window.togglePhotoUpload, window.selectUploadSlot,
+            // window.handlePhotoUpload, window.applyPhotoTexture
 
             // ===== TOOLS MENU & PANEL TOGGLES =====
 
@@ -4578,6 +4565,9 @@
                     // Update play button to show Pause
                     const playBtn = document.getElementById(`play-btn-${slot}`);
                     if (playBtn) playBtn.innerHTML = '⏸️ Pause';
+                }).catch(e => {
+                    // Autoplay may be prevented by browser
+                });
             };
 
             // Toggle video play/pause on house click
