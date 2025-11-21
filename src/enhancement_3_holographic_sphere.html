@@ -5141,6 +5141,9 @@
 
                 // Show alert
                 showAlert(`Viewing data from ${currentTimeOffset === 0 ? 'now' : currentTimeOffset + ' months ago'}`, 'info');
+
+                // Save state
+                saveUserState();
             };
 
             function applyTimeOffset() {
@@ -5537,7 +5540,98 @@
 
                 // Feature #21: Update photo rings
                 updateAllPhotoRings();
+
+                // Save selected properties to localStorage
+                saveUserState();
             };
+
+            // ===== USER STATE PERSISTENCE =====
+            function saveUserState() {
+                const state = {
+                    propertyA: document.getElementById('property-a-select')?.value || '',
+                    propertyB: document.getElementById('property-b-select')?.value || '',
+                    propertyC: document.getElementById('property-c-select')?.value || '',
+                    persona: currentPersona,
+                    timeSlider: document.getElementById('time-slider')?.value || '12',
+                    metricFilters: metricFilters,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem('clues_user_state', JSON.stringify(state));
+                console.log('💾 User state saved:', state);
+            }
+
+            function restoreUserState() {
+                try {
+                    const saved = localStorage.getItem('clues_user_state');
+                    if (!saved) return;
+
+                    const state = JSON.parse(saved);
+                    console.log('📂 Restoring user state:', state);
+
+                    // Restore property selections
+                    if (state.propertyA) {
+                        const selectA = document.getElementById('property-a-select');
+                        if (selectA) {
+                            selectA.value = state.propertyA;
+                            window.selectProperty('A', state.propertyA);
+                        }
+                    }
+                    if (state.propertyB) {
+                        const selectB = document.getElementById('property-b-select');
+                        if (selectB) {
+                            selectB.value = state.propertyB;
+                            window.selectProperty('B', state.propertyB);
+                        }
+                    }
+                    if (state.propertyC) {
+                        const selectC = document.getElementById('property-c-select');
+                        if (selectC) {
+                            selectC.value = state.propertyC;
+                            window.selectProperty('C', state.propertyC);
+                        }
+                    }
+
+                    // Restore persona
+                    if (state.persona) {
+                        currentPersona = state.persona;
+                        document.querySelectorAll('.persona-btn').forEach(btn => {
+                            btn.classList.remove('active');
+                            btn.setAttribute('aria-checked', 'false');
+                            if (btn.textContent.includes(state.persona) || btn.getAttribute('onclick')?.includes(state.persona)) {
+                                btn.classList.add('active');
+                                btn.setAttribute('aria-checked', 'true');
+                            }
+                        });
+                        calculateWinner();
+                    }
+
+                    // Restore time slider
+                    if (state.timeSlider) {
+                        const slider = document.getElementById('time-slider');
+                        if (slider) {
+                            slider.value = state.timeSlider;
+                            window.updateTimeTravel(state.timeSlider);
+                        }
+                    }
+
+                    // Restore metric filters
+                    if (state.metricFilters) {
+                        Object.keys(state.metricFilters).forEach(key => {
+                            if (metricFilters.hasOwnProperty(key)) {
+                                metricFilters[key] = state.metricFilters[key];
+                                const checkbox = document.getElementById(`filter-${key}`);
+                                if (checkbox) {
+                                    checkbox.checked = metricFilters[key];
+                                }
+                            }
+                        });
+                    }
+
+                    console.log('✅ User state restored successfully');
+                } catch (e) {
+                    console.error('Failed to restore user state:', e);
+                }
+            }
 
             // ===== PERSONA SELECTION =====
             window.setPersona = function(persona, evt) {
@@ -5577,6 +5671,9 @@
                 if (radarChart) {
                     createRadarChart();
                 }
+
+                // Save state
+                saveUserState();
             };
 
             // ===== METRIC FILTERING =====
@@ -5603,6 +5700,9 @@
                 // Update comparison table to reflect new Smart Scores
                 console.log('   Calling updateComparisonPanel()...');
                 updateComparisonPanel();
+
+                // Save state
+                saveUserState();
 
                 console.log('✅ Metric toggle complete');
             };
@@ -9085,6 +9185,10 @@
                 // Feature #23: Load share stats
                 loadShareStats();
 
+                // Restore user state (properties, persona, time slider, filters)
+                setTimeout(() => {
+                    restoreUserState();
+                }, 500); // Delay to ensure all elements are ready
             });
 
             // ===== FEATURE #20: PROPERTY HISTORY TIMELINE =====
