@@ -9240,6 +9240,71 @@
                 }).join('');
             }
 
+            // ===== FEATURE #19: ACHIEVEMENT BADGES =====
+            const BADGES = [
+                { id: 'first_view', name: 'First Look', icon: '👁️', desc: 'View your first property', condition: (s) => s.views >= 1 },
+                { id: 'explorer', name: 'Explorer', icon: '🔍', desc: 'View 10 properties', condition: (s) => s.views >= 10 },
+                { id: 'researcher', name: 'Researcher', icon: '📚', desc: 'View 25 properties', condition: (s) => s.views >= 25 },
+                { id: 'first_compare', name: 'Comparator', icon: '⚖️', desc: 'Make your first comparison', condition: (s) => s.comparisons >= 1 },
+                { id: 'analyst', name: 'Analyst', icon: '📊', desc: 'Make 5 comparisons', condition: (s) => s.comparisons >= 5 },
+                { id: 'expert', name: 'Expert', icon: '🎓', desc: 'Make 15 comparisons', condition: (s) => s.comparisons >= 15 },
+                { id: 'photographer', name: 'Photographer', icon: '📸', desc: 'Upload a property photo', condition: (s) => s.photos >= 1 },
+                { id: 'curator', name: 'Curator', icon: '🖼️', desc: 'Upload 5 photos', condition: (s) => s.photos >= 5 },
+                { id: 'social', name: 'Social', icon: '📱', desc: 'Share a comparison', condition: (s) => s.shares >= 1 },
+                { id: 'influencer', name: 'Influencer', icon: '⭐', desc: 'Share 5 comparisons', condition: (s) => s.shares >= 5 },
+                { id: 'historian', name: 'Historian', icon: '📜', desc: 'Build history of 50 actions', condition: (s) => s.history >= 50 },
+                { id: 'master', name: 'Master', icon: '🏆', desc: 'Earn 10 badges', condition: (s) => s.badgesEarned >= 10 }
+            ];
+
+            let badgeStats = { views: 0, comparisons: 0, photos: 0, shares: 0, history: 0, badgesEarned: 0 };
+            let earnedBadges = new Set();
+
+            // Badge helper functions (must be defined before tracking functions)
+            function saveBadgesProgress() {
+                try {
+                    localStorage.setItem('clues_badge_stats', JSON.stringify(badgeStats));
+                    localStorage.setItem('clues_earned_badges', JSON.stringify([...earnedBadges]));
+                } catch (e) {
+                    console.error('Failed to save badges:', e);
+                }
+            }
+
+            function updateBadgesProgress() {
+                const earned = earnedBadges.size;
+                const total = BADGES.length;
+                const progressEl = document.getElementById('badges-progress');
+                const barEl = document.getElementById('badges-progress-bar');
+                if (progressEl) progressEl.textContent = `${earned}/${total}`;
+                if (barEl) barEl.style.width = `${(earned / total) * 100}%`;
+            }
+
+            function checkBadgeProgress(statKey, value) {
+                if (statKey && value !== undefined) {
+                    badgeStats[statKey] = Math.max(badgeStats[statKey] || 0, value);
+                }
+                // Check all badges
+                let newBadges = [];
+                BADGES.forEach(badge => {
+                    if (!earnedBadges.has(badge.id) && badge.condition(badgeStats)) {
+                        earnedBadges.add(badge.id);
+                        newBadges.push(badge);
+                    }
+                });
+                badgeStats.badgesEarned = earnedBadges.size;
+                saveBadgesProgress();
+                updateBadgesProgress();
+                // Show notification for new badges
+                newBadges.forEach(badge => {
+                    showAlert(`🏆 Badge Earned: ${badge.icon} ${badge.name}!`, 'success');
+                });
+                // Check master badge
+                if (earnedBadges.size >= 10 && !earnedBadges.has('master')) {
+                    earnedBadges.add('master');
+                    showAlert(`🏆 MASTER Badge Earned! You are a CLUES expert!`, 'success');
+                    saveBadgesProgress();
+                }
+            }
+
             // Track comparison function for badges
             window.trackComparison = function() {
                 if (propertyA && propertyB) {
@@ -9264,25 +9329,6 @@
                 badgeStats.photos = (badgeStats.photos || 0) + count;
                 checkBadgeProgress('photos', badgeStats.photos);
             };
-
-            // ===== FEATURE #19: ACHIEVEMENT BADGES =====
-            const BADGES = [
-                { id: 'first_view', name: 'First Look', icon: '👁️', desc: 'View your first property', condition: (s) => s.views >= 1 },
-                { id: 'explorer', name: 'Explorer', icon: '🔍', desc: 'View 10 properties', condition: (s) => s.views >= 10 },
-                { id: 'researcher', name: 'Researcher', icon: '📚', desc: 'View 25 properties', condition: (s) => s.views >= 25 },
-                { id: 'first_compare', name: 'Comparator', icon: '⚖️', desc: 'Make your first comparison', condition: (s) => s.comparisons >= 1 },
-                { id: 'analyst', name: 'Analyst', icon: '📊', desc: 'Make 5 comparisons', condition: (s) => s.comparisons >= 5 },
-                { id: 'expert', name: 'Expert', icon: '🎓', desc: 'Make 15 comparisons', condition: (s) => s.comparisons >= 15 },
-                { id: 'photographer', name: 'Photographer', icon: '📸', desc: 'Upload a property photo', condition: (s) => s.photos >= 1 },
-                { id: 'curator', name: 'Curator', icon: '🖼️', desc: 'Upload 5 photos', condition: (s) => s.photos >= 5 },
-                { id: 'social', name: 'Social', icon: '📱', desc: 'Share a comparison', condition: (s) => s.shares >= 1 },
-                { id: 'influencer', name: 'Influencer', icon: '⭐', desc: 'Share 5 comparisons', condition: (s) => s.shares >= 5 },
-                { id: 'historian', name: 'Historian', icon: '📜', desc: 'Build history of 50 actions', condition: (s) => s.history >= 50 },
-                { id: 'master', name: 'Master', icon: '🏆', desc: 'Earn 10 badges', condition: (s) => s.badgesEarned >= 10 }
-            ];
-
-            let badgeStats = { views: 0, comparisons: 0, photos: 0, shares: 0, history: 0, badgesEarned: 0 };
-            let earnedBadges = new Set();
 
             window.toggleBadgesPanel = function() {
                 const panel = document.getElementById('badges-panel');
@@ -9312,56 +9358,6 @@
                 } catch (e) {
                     console.error('Failed to load badges:', e);
                 }
-            }
-
-            function saveBadgesProgress() {
-                try {
-                    localStorage.setItem('clues_badge_stats', JSON.stringify(badgeStats));
-                    localStorage.setItem('clues_earned_badges', JSON.stringify([...earnedBadges]));
-                } catch (e) {
-                    console.error('Failed to save badges:', e);
-                }
-            }
-
-            function checkBadgeProgress(statKey, value) {
-                if (statKey && value !== undefined) {
-                    badgeStats[statKey] = Math.max(badgeStats[statKey] || 0, value);
-                }
-
-                // Check all badges
-                let newBadges = [];
-                BADGES.forEach(badge => {
-                    if (!earnedBadges.has(badge.id) && badge.condition(badgeStats)) {
-                        earnedBadges.add(badge.id);
-                        newBadges.push(badge);
-                    }
-                });
-
-                badgeStats.badgesEarned = earnedBadges.size;
-                saveBadgesProgress();
-                updateBadgesProgress();
-
-                // Show notification for new badges
-                newBadges.forEach(badge => {
-                    showAlert(`🏆 Badge Earned: ${badge.icon} ${badge.name}!`, 'success');
-                });
-
-                // Check master badge
-                if (earnedBadges.size >= 10 && !earnedBadges.has('master')) {
-                    earnedBadges.add('master');
-                    showAlert(`🏆 MASTER Badge Earned! You are a CLUES expert!`, 'success');
-                    saveBadgesProgress();
-                }
-            }
-
-            function updateBadgesProgress() {
-                const earned = earnedBadges.size;
-                const total = BADGES.length;
-                const progressEl = document.getElementById('badges-progress');
-                const barEl = document.getElementById('badges-progress-bar');
-
-                if (progressEl) progressEl.textContent = `${earned}/${total}`;
-                if (barEl) barEl.style.width = `${(earned / total) * 100}%`;
             }
 
             function renderBadges() {
