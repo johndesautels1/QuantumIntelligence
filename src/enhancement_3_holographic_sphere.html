@@ -2527,41 +2527,48 @@
                 </div>
             </div>
 
+            <!-- Green Toggle Button to show/hide header and selectors -->
+            <button class="mode-toggle" id="header-toggle-btn" onclick="toggleHeaderVisibility()"
+                    aria-label="Show header and property selectors"
+                    style="display: none; left: 20px; right: auto; min-width: 220px; background: linear-gradient(135deg, rgba(0, 255, 136, 0.6), rgba(0, 200, 100, 0.6)); font-weight: bold; border: 2px solid rgba(0, 255, 136, 0.8); z-index: 1001;">
+                ▼ Show Header & Selectors
+            </button>
+
             <!-- Mobile Action Buttons Container -->
             <div class="mobile-action-buttons">
-                <!-- IMPORT PROPERTIES Button (Top Left - TOP POSITION) -->
-                <button class="mode-toggle" id="import-properties-btn" onclick="openImportModal()"
+                <!-- 1. TOOLS Master Dropdown Menu (TOP) -->
+                <button class="mode-toggle" id="tools-master-btn" onclick="toggleToolsMenu(); hideHeaderOnAction();"
+                        aria-label="Open/close tools menu"
+                        style="left: 20px; right: auto; min-width: 220px; background: linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(0, 212, 255, 0.4)); font-weight: bold;">
+                    🛠️ TOOLS
+                </button>
+
+                <!-- 2. QR CODE Button -->
+                <button class="mode-toggle" id="qr-code-btn" onclick="showQRCode(); hideHeaderOnAction();"
+                        aria-label="Generate QR code to scan data to phone"
+                        style="left: 20px; right: auto; top: 75px; min-width: 220px; background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(200, 200, 200, 0.3)); font-weight: bold;">
+                    📱 QR CODE
+                </button>
+
+                <!-- 3. IMPORT PROPERTIES Button -->
+                <button class="mode-toggle" id="import-properties-btn" onclick="openImportModal(); hideHeaderOnAction();"
                         aria-label="Import saved properties from database"
-                        style="left: 20px; right: auto; min-width: 220px; background: linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(255, 165, 0, 0.4)); font-weight: bold;">
+                        style="left: 20px; right: auto; top: 130px; min-width: 220px; background: linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(255, 165, 0, 0.4)); font-weight: bold;">
                     📥 IMPORT PROPERTIES
                 </button>
 
-                <!-- PHOTO UPLOAD Button (Top Left - BELOW Import Properties) -->
-                <button class="mode-toggle" id="photo-upload-master-btn" onclick="togglePhotoUpload()"
+                <!-- 4. PHOTO UPLOAD Button -->
+                <button class="mode-toggle" id="photo-upload-master-btn" onclick="togglePhotoUpload(); hideHeaderOnAction();"
                         aria-label="Upload property photos"
-                        style="left: 20px; right: auto; top: 75px; min-width: 220px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.4), rgba(138, 43, 226, 0.4)); font-weight: bold;">
+                        style="left: 20px; right: auto; top: 185px; min-width: 220px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.4), rgba(138, 43, 226, 0.4)); font-weight: bold;">
                     📸 UPLOAD PHOTOS
                 </button>
 
-                <!-- VIDEO UPLOAD Button (Top Left - BELOW Upload Photos) -->
-                <button class="mode-toggle" id="video-upload-master-btn" onclick="toggleVideoUpload()"
+                <!-- 5. VIDEO UPLOAD Button -->
+                <button class="mode-toggle" id="video-upload-master-btn" onclick="toggleVideoUpload(); hideHeaderOnAction();"
                         aria-label="Upload property virtual tour videos"
-                        style="left: 20px; right: auto; top: 130px; min-width: 220px; background: linear-gradient(135deg, rgba(255, 107, 107, 0.4), rgba(138, 43, 226, 0.4)); font-weight: bold;">
+                        style="left: 20px; right: auto; top: 240px; min-width: 220px; background: linear-gradient(135deg, rgba(255, 107, 107, 0.4), rgba(138, 43, 226, 0.4)); font-weight: bold;">
                     🎬 UPLOAD VIDEOS
-                </button>
-
-                <!-- QR CODE Button (Between left buttons and center header) -->
-                <button class="mode-toggle" id="qr-code-btn" onclick="showQRCode()"
-                        aria-label="Generate QR code to scan data to phone"
-                        style="left: 260px; right: auto; top: 20px; min-width: 100px; background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(200, 200, 200, 0.3)); font-weight: bold; font-size: 0.85em;">
-                    📱 QR Code
-                </button>
-
-                <!-- TOOLS Master Dropdown Menu (Top Right) -->
-                <button class="mode-toggle" id="tools-master-btn" onclick="toggleToolsMenu()"
-                        aria-label="Open/close tools menu"
-                        style="min-width: 187px; width: 187px; background: linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(0, 212, 255, 0.4)); font-weight: bold;">
-                    🛠️ TOOLS
                 </button>
             </div>
 
@@ -4481,6 +4488,51 @@
                     dropdown.style.display = 'none';
                     btn.style.background = 'linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(0, 212, 255, 0.4))';
                     btn.textContent = '🛠️ TOOLS';
+                }
+
+                vibrate('tap');
+            };
+
+            // ===== HEADER/SELECTOR VISIBILITY TOGGLE =====
+            let headerVisible = true;
+
+            // Hide header and property selectors when action buttons clicked
+            window.hideHeaderOnAction = function() {
+                if (!headerVisible) return; // Already hidden
+
+                const header = document.querySelector('.header');
+                const propertySelector = document.querySelector('.property-selector');
+                const toggleBtn = document.getElementById('header-toggle-btn');
+
+                if (header) header.style.display = 'none';
+                if (propertySelector) propertySelector.style.display = 'none';
+                if (toggleBtn) toggleBtn.style.display = 'block';
+
+                headerVisible = false;
+                vibrate('tap');
+            };
+
+            // Toggle header visibility (show header and selectors)
+            window.toggleHeaderVisibility = function() {
+                const header = document.querySelector('.header');
+                const propertySelector = document.querySelector('.property-selector');
+                const toggleBtn = document.getElementById('header-toggle-btn');
+
+                if (headerVisible) {
+                    // Hide
+                    if (header) header.style.display = 'none';
+                    if (propertySelector) propertySelector.style.display = 'none';
+                    if (toggleBtn) {
+                        toggleBtn.style.display = 'block';
+                        toggleBtn.innerHTML = '▼ Show Header & Selectors';
+                    }
+                    headerVisible = false;
+                } else {
+                    // Show
+                    if (header) header.style.display = '';
+                    if (propertySelector) propertySelector.style.display = '';
+                    if (toggleBtn) toggleBtn.style.display = 'none';
+                    headerVisible = true;
                 }
 
                 vibrate('tap');
