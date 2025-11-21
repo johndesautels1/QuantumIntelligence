@@ -670,17 +670,22 @@
                 transform: translateY(-100%) !important;
             }
 
-            /* Panel Toggle Buttons - Mobile */
+            /* Panel Toggle Buttons - Mobile: Position above Property A */
             .panel-toggle-buttons {
-                position: relative;
-                top: auto;
-                left: auto;
-                right: auto;
+                position: fixed !important;
+                top: 105px !important;
+                left: 50% !important;
+                right: auto !important;
+                transform: translateX(-50%) !important;
                 flex-direction: row;
                 gap: 6px;
-                padding: 10px;
+                padding: 8px 15px;
                 flex-wrap: wrap;
                 justify-content: center;
+                z-index: 99 !important;
+                background: rgba(10, 22, 40, 0.85);
+                border-radius: 8px;
+                backdrop-filter: blur(10px);
             }
 
             .panel-toggle-btn {
