@@ -330,9 +330,10 @@ export class PropertySearchWidget {
         searchBtn.disabled = true;
 
         try {
-            // Call backend API
-            const widget = new PropertySearchWidget();
-            const response = await fetch(`${widget.apiBaseUrl}/api/search-properties`, {
+            // Call backend API - use same origin for Vercel deployment
+            const apiUrl = `${window.location.origin}/api/search-properties`;
+            console.log('🔍 Calling API:', apiUrl);
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ location: input, limit: limit })
