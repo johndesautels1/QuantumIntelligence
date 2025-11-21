@@ -3307,7 +3307,9 @@
                 <!-- Modal Header -->
                 <div class="data-modal-header">
                     <div class="data-modal-header-top" style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 15px;">
-                        <h2 style="margin: 0; color: #FFD700; font-size: 1.5em; flex-shrink: 0;">📊 Data Panels</h2>
+                        <!-- Close button moved to LEFT side -->
+                        <button onclick="closeDataPanelsModal()" class="data-modal-close"
+                                aria-label="Close data panels modal" style="flex-shrink: 0;">×</button>
 
                         <!-- Time Travel Control - Centered in header row -->
                         <div class="modal-time-travel" style="display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: rgba(0, 212, 255, 0.15); border-radius: 8px; border: 1px solid rgba(0, 212, 255, 0.3); flex: 1; justify-content: center; max-width: 350px;">
@@ -3326,8 +3328,7 @@
                             </div>
                         </div>
 
-                        <button onclick="closeDataPanelsModal()" class="data-modal-close"
-                                aria-label="Close data panels modal" style="flex-shrink: 0;">×</button>
+                        <h2 style="margin: 0; color: #FFD700; font-size: 1.5em; flex-shrink: 0;">📊 Data Panels</h2>
                     </div>
                     <div style="text-align: center; font-size: 0.7em; color: rgba(255, 255, 255, 0.6); margin-bottom: 12px; letter-spacing: 0.3px;">
                         <span style="color: #F44336;">●</span> Poor (0-20)
