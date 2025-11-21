@@ -72,8 +72,9 @@ export class PropertySearchWidget {
         <style>
             .search-widget {
                 position: fixed;
-                top: 150px;
-                right: 20px;
+                bottom: 180px;
+                left: 50%;
+                transform: translateX(-50%);
                 z-index: 1000;
             }
 
@@ -81,9 +82,9 @@ export class PropertySearchWidget {
                 background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
                 color: white;
                 border: none;
-                padding: 12px 20px;
+                padding: 10px 18px;
                 border-radius: 8px;
-                font-size: 16px;
+                font-size: 14px;
                 font-weight: bold;
                 cursor: pointer;
                 box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
@@ -97,9 +98,10 @@ export class PropertySearchWidget {
 
             .search-panel {
                 position: absolute;
-                top: 60px;
-                right: 0;
-                width: 400px;
+                bottom: 50px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 380px;
                 background: rgba(20, 20, 40, 0.95);
                 border: 2px solid rgba(0, 212, 255, 0.5);
                 border-radius: 12px;
