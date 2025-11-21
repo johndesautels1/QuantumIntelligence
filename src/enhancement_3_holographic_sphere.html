@@ -4382,7 +4382,7 @@
                 // Store reference
                 videoElements[slot] = video;
 
-                // Create HIGH QUALITY video texture
+                // Create MAXIMUM QUALITY video texture
                 const videoTexture = new THREE.VideoTexture(video);
                 videoTexture.minFilter = THREE.LinearFilter;
                 videoTexture.magFilter = THREE.LinearFilter;
@@ -4391,12 +4391,17 @@
                 videoTexture.generateMipmaps = false; // Better quality for video
                 videoTexture.wrapS = THREE.ClampToEdgeWrapping;
                 videoTexture.wrapT = THREE.ClampToEdgeWrapping;
+                videoTexture.anisotropy = renderer.capabilities.getMaxAnisotropy(); // Max texture quality
 
                 // Store texture reference
                 videoTextures[slot] = videoTexture;
 
-                // Create a separate plane for the video (cleaner than applying to house faces)
-                const videoPlaneGeometry = new THREE.PlaneGeometry(1.4, 1.0); // Aspect ratio close to 16:9
+                // Create a separate plane for the video - fits exactly on house front wall
+                // House body: width=1.2, height=0.8, wall top at y=0.4, wall bottom at y=-0.4
+                // Video screen should fit within the wall area (not overlap roof or ground)
+                const videoWidth = 1.1; // Slightly smaller than house width (1.2)
+                const videoHeight = 0.62; // 16:9 aspect ratio of videoWidth
+                const videoPlaneGeometry = new THREE.PlaneGeometry(videoWidth, videoHeight);
                 const videoMaterial = new THREE.MeshBasicMaterial({
                     map: videoTexture,
                     side: THREE.FrontSide,
@@ -4405,8 +4410,11 @@
                 });
                 const videoPlane = new THREE.Mesh(videoPlaneGeometry, videoMaterial);
 
-                // Position video plane on front of house
-                videoPlane.position.set(0, 0.3, 0.52); // Slightly in front
+                // Position video plane on front of house - centered on wall
+                // Wall goes from y=-0.4 to y=0.4, so center at y=0
+                // But leave room for door at bottom, so raise slightly: y=0.05
+                // Top of video at y = 0.05 + (0.62/2) = 0.36 (below roof at 0.4)
+                videoPlane.position.set(0, 0.05, 0.52); // Centered on wall, in front
                 videoPlane.userData.isVideoPlane = true;
 
                 // Remove any existing video plane
