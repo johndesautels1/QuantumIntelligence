@@ -2010,6 +2010,54 @@
             margin-left: 5px;
         }
 
+        /* Video Control Bars - Simple buttons below each video screen */
+        .video-control-bar {
+            position: absolute;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: linear-gradient(135deg, rgba(0, 100, 180, 0.9) 0%, rgba(0, 60, 120, 0.9) 100%);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 212, 255, 0.5);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+            pointer-events: auto;
+        }
+
+        .video-control-bar.active {
+            display: flex;
+        }
+
+        .video-control-bar button {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .video-control-bar button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .video-control-bar button.active {
+            background: rgba(0, 212, 255, 0.4);
+            border-color: #00D4FF;
+        }
+
+        #video-controls-A { top: 55%; left: 13%; }
+        #video-controls-B { top: 55%; left: 43%; }
+        #video-controls-C { top: 55%; left: 73%; }
+
         .photo-upload-panel h3 {
             margin: 0 0 10px 0;
             color: #00D4FF;
@@ -2199,6 +2247,23 @@
 
         <!-- 3D Canvas -->
         <div id="canvas-container"></div>
+
+        <!-- Video Control Bars - Simple controls below each video screen -->
+        <div id="video-controls-A" class="video-control-bar">
+            <button onclick="videoControlPlay('A')" id="play-btn-A">▶️ Play</button>
+            <button onclick="videoControlMute('A')" id="mute-btn-A">🔇 Unmute</button>
+            <button onclick="videoControlCinema('A')" id="cinema-btn-A">🎬 Cinema</button>
+        </div>
+        <div id="video-controls-B" class="video-control-bar">
+            <button onclick="videoControlPlay('B')" id="play-btn-B">▶️ Play</button>
+            <button onclick="videoControlMute('B')" id="mute-btn-B">🔇 Unmute</button>
+            <button onclick="videoControlCinema('B')" id="cinema-btn-B">🎬 Cinema</button>
+        </div>
+        <div id="video-controls-C" class="video-control-bar">
+            <button onclick="videoControlPlay('C')" id="play-btn-C">▶️ Play</button>
+            <button onclick="videoControlMute('C')" id="mute-btn-C">🔇 Unmute</button>
+            <button onclick="videoControlCinema('C')" id="cinema-btn-C">🎬 Cinema</button>
+        </div>
 
         <!-- UI Overlay -->
         <div class="ui-overlay">
@@ -4443,11 +4508,18 @@
                 sphere.userData.videoSlot = slot;
                 sphere.userData.videoPlane = videoPlane;
 
-                showAlert(`Video applied to Property ${slot}! Click to play/pause, double-click for sound 🎬`, 'success');
+                // Show the control bar for this slot
+                showVideoControlBar(slot);
+
+                showAlert(`Video applied to Property ${slot}! Use controls below video 🎬`, 'success');
                 vibrate('success');
 
                 // Start playing automatically (muted)
-                video.play().catch(e => console.log('Autoplay prevented:', e));
+                video.play().then(() => {
+                    // Update play button to show Pause
+                    const playBtn = document.getElementById(`play-btn-${slot}`);
+                    if (playBtn) playBtn.innerHTML = '⏸️ Pause';
+                }).catch(e => console.log('Autoplay prevented:', e));
             };
 
             // Toggle video play/pause on house click
@@ -4513,6 +4585,76 @@
 
                 vibrate('tap');
                 return cinemaMode;
+            };
+
+            // Video Control Bar Functions - Simple button controls
+            window.videoControlPlay = function(slot) {
+                const video = videoElements[slot];
+                if (!video) {
+                    showAlert(`No video loaded for Property ${slot}`, 'error');
+                    return;
+                }
+
+                const playBtn = document.getElementById(`play-btn-${slot}`);
+                if (video.paused) {
+                    video.play();
+                    if (playBtn) playBtn.innerHTML = '⏸️ Pause';
+                    showAlert('▶️ Playing', 'info');
+                } else {
+                    video.pause();
+                    if (playBtn) playBtn.innerHTML = '▶️ Play';
+                    showAlert('⏸️ Paused', 'info');
+                }
+                vibrate('tap');
+            };
+
+            window.videoControlMute = function(slot) {
+                const video = videoElements[slot];
+                if (!video) {
+                    showAlert(`No video loaded for Property ${slot}`, 'error');
+                    return;
+                }
+
+                const muteBtn = document.getElementById(`mute-btn-${slot}`);
+                video.muted = !video.muted;
+                if (video.muted) {
+                    if (muteBtn) muteBtn.innerHTML = '🔇 Unmute';
+                    showAlert('🔇 Muted', 'info');
+                } else {
+                    video.volume = 0.7;
+                    if (muteBtn) muteBtn.innerHTML = '🔊 Mute';
+                    showAlert('🔊 Sound ON', 'success');
+                }
+                vibrate('tap');
+            };
+
+            window.videoControlCinema = function(slot) {
+                const cinemaBtn = document.getElementById(`cinema-btn-${slot}`);
+                const isNowCinema = toggleCinemaMode();
+                if (cinemaBtn) {
+                    cinemaBtn.innerHTML = isNowCinema ? '🎬 Exit' : '🎬 Cinema';
+                    if (isNowCinema) {
+                        cinemaBtn.classList.add('active');
+                    } else {
+                        cinemaBtn.classList.remove('active');
+                    }
+                }
+            };
+
+            // Show video control bar for a slot
+            window.showVideoControlBar = function(slot) {
+                const controlBar = document.getElementById(`video-controls-${slot}`);
+                if (controlBar) {
+                    controlBar.classList.add('active');
+                }
+            };
+
+            // Hide video control bar for a slot
+            window.hideVideoControlBar = function(slot) {
+                const controlBar = document.getElementById(`video-controls-${slot}`);
+                if (controlBar) {
+                    controlBar.classList.remove('active');
+                }
             };
 
             // Load saved videos on init
