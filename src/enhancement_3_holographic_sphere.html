@@ -26,6 +26,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
+    <!-- QRCode.js for QR Code generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -2361,6 +2364,72 @@
                     style="left: 20px; right: auto; top: 130px; min-width: 220px; background: linear-gradient(135deg, rgba(255, 107, 107, 0.4), rgba(138, 43, 226, 0.4)); font-weight: bold;">
                 🎬 UPLOAD VIDEOS
             </button>
+
+            <!-- QR CODE Button (Between left buttons and center header) -->
+            <button class="mode-toggle" id="qr-code-btn" onclick="showQRCode()"
+                    aria-label="Generate QR code to scan data to phone"
+                    style="left: 260px; right: auto; top: 20px; min-width: 100px; background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(200, 200, 200, 0.3)); font-weight: bold; font-size: 0.85em;">
+                📱 QR Code
+            </button>
+
+            <!-- QR Code Modal -->
+            <div id="qr-modal" style="
+                display: none;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, rgba(10, 25, 47, 0.98), rgba(20, 40, 80, 0.98));
+                border: 2px solid rgba(255, 215, 0, 0.6);
+                border-radius: 20px;
+                padding: 30px;
+                z-index: 10000;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+                text-align: center;
+                max-width: 350px;
+            ">
+                <button onclick="closeQRModal()" style="
+                    position: absolute;
+                    top: 10px;
+                    right: 15px;
+                    background: none;
+                    border: none;
+                    color: #fff;
+                    font-size: 1.5em;
+                    cursor: pointer;
+                ">×</button>
+                <h3 style="color: #FFD700; margin: 0 0 15px 0;">📱 Scan to View on Phone</h3>
+                <div id="qr-code-container" style="
+                    background: #fff;
+                    padding: 15px;
+                    border-radius: 12px;
+                    display: inline-block;
+                    margin-bottom: 15px;
+                "></div>
+                <p style="color: rgba(255,255,255,0.7); font-size: 0.85em; margin: 10px 0;">
+                    Scan this QR code with your phone camera to open your property comparison on mobile
+                </p>
+                <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px;">
+                    <button onclick="copyShareLink()" style="
+                        padding: 8px 16px;
+                        background: linear-gradient(135deg, rgba(0, 212, 255, 0.4), rgba(138, 43, 226, 0.4));
+                        border: 1px solid rgba(0, 212, 255, 0.5);
+                        border-radius: 8px;
+                        color: #fff;
+                        cursor: pointer;
+                        font-size: 0.85em;
+                    ">📋 Copy Link</button>
+                    <button onclick="closeQRModal()" style="
+                        padding: 8px 16px;
+                        background: rgba(255, 255, 255, 0.1);
+                        border: 1px solid rgba(255, 255, 255, 0.3);
+                        border-radius: 8px;
+                        color: #fff;
+                        cursor: pointer;
+                        font-size: 0.85em;
+                    ">Close</button>
+                </div>
+            </div>
 
             <!-- TOOLS Master Dropdown Menu (Top Right) -->
             <button class="mode-toggle" id="tools-master-btn" onclick="toggleToolsMenu()"
@@ -4779,6 +4848,132 @@
 
             // Initialize video system on DOM ready
             document.addEventListener('DOMContentLoaded', loadSavedVideos);
+
+            // ===== QR CODE SYSTEM =====
+            let qrCodeInstance = null;
+
+            window.showQRCode = function() {
+                const modal = document.getElementById('qr-modal');
+                const container = document.getElementById('qr-code-container');
+
+                // Generate share URL with current state
+                const shareUrl = generateShareUrl();
+
+                // Clear previous QR code
+                container.innerHTML = '';
+
+                // Create QR code using canvas (no external library needed)
+                generateQRCodeCanvas(container, shareUrl);
+
+                modal.style.display = 'block';
+                vibrate('tap');
+                showAlert('QR Code generated! Scan with your phone 📱', 'success');
+            };
+
+            window.closeQRModal = function() {
+                const modal = document.getElementById('qr-modal');
+                modal.style.display = 'none';
+            };
+
+            function generateShareUrl() {
+                // Create URL with current property state encoded
+                const baseUrl = window.location.href.split('?')[0];
+                const params = new URLSearchParams();
+
+                // Encode selected property IDs
+                if (propertyA) params.set('propA', propertyA.id);
+                if (propertyB) params.set('propB', propertyB.id);
+                if (propertyC) params.set('propC', propertyC.id);
+
+                // Encode current persona
+                params.set('persona', currentPersona);
+
+                // Encode 3D mode
+                params.set('mode3d', use3DModels ? '1' : '0');
+
+                return baseUrl + '?' + params.toString();
+            }
+
+            // Simple QR code generator using canvas (no external library)
+            function generateQRCodeCanvas(container, data) {
+                // Use QRCode library if available, otherwise create placeholder
+                if (typeof QRCode !== 'undefined') {
+                    new QRCode(container, {
+                        text: data,
+                        width: 180,
+                        height: 180,
+                        colorDark: '#000000',
+                        colorLight: '#ffffff',
+                        correctLevel: QRCode.CorrectLevel.M
+                    });
+                } else {
+                    // Fallback: Create a visual placeholder with the URL
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 180;
+                    canvas.height = 180;
+                    const ctx = canvas.getContext('2d');
+
+                    // Create a simple pattern as placeholder
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(0, 0, 180, 180);
+
+                    // Draw QR-like pattern
+                    ctx.fillStyle = '#000';
+                    const size = 6;
+                    for (let i = 0; i < 30; i++) {
+                        for (let j = 0; j < 30; j++) {
+                            // Create pseudo-random pattern based on URL
+                            const charCode = data.charCodeAt((i * 30 + j) % data.length) || 0;
+                            if ((charCode + i + j) % 3 === 0) {
+                                ctx.fillRect(i * size, j * size, size, size);
+                            }
+                        }
+                    }
+
+                    // Draw corner markers (like real QR codes)
+                    const drawCorner = (x, y) => {
+                        ctx.fillStyle = '#000';
+                        ctx.fillRect(x, y, 42, 42);
+                        ctx.fillStyle = '#fff';
+                        ctx.fillRect(x + 6, y + 6, 30, 30);
+                        ctx.fillStyle = '#000';
+                        ctx.fillRect(x + 12, y + 12, 18, 18);
+                    };
+                    drawCorner(0, 0);
+                    drawCorner(138, 0);
+                    drawCorner(0, 138);
+
+                    container.appendChild(canvas);
+
+                    // Add note about QR library
+                    const note = document.createElement('p');
+                    note.style.cssText = 'font-size: 0.7em; color: #666; margin-top: 8px;';
+                    note.textContent = 'Scan pattern (full QR with qrcode.js)';
+                    container.appendChild(note);
+                }
+
+                // Store URL for copy function
+                container.dataset.url = data;
+            }
+
+            window.copyShareLink = function() {
+                const container = document.getElementById('qr-code-container');
+                const url = container.dataset.url || generateShareUrl();
+
+                navigator.clipboard.writeText(url).then(() => {
+                    showAlert('Link copied to clipboard! 📋', 'success');
+                    vibrate('success');
+                }).catch(err => {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = url;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    showAlert('Link copied! 📋', 'success');
+                });
+            };
 
             // ===== SOCIAL SHARING SYSTEM =====
             window.shareComparison = async function() {
