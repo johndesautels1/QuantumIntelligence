@@ -72,10 +72,10 @@ export class PropertySearchWidget {
         <style>
             .search-widget {
                 position: fixed;
-                bottom: 107px;
+                bottom: 20px;
                 left: 50%;
                 transform: translateX(-50%);
-                z-index: 1000;
+                z-index: 500; /* Below left-side buttons but above canvas */
             }
 
             .search-toggle-btn {

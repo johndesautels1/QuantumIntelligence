@@ -246,6 +246,15 @@
             display: contents; /* On desktop, acts as if wrapper doesn't exist */
         }
 
+        /* Ensure left-side action buttons are always above upload panels */
+        #import-properties-btn,
+        #photo-upload-master-btn,
+        #video-upload-master-btn,
+        #qr-code-btn,
+        #tools-master-btn {
+            z-index: 1000 !important; /* Above upload panels (850) */
+        }
+
         /* Panel Toggle Buttons */
         .panel-toggle-buttons {
             position: absolute;
@@ -304,6 +313,7 @@
             max-width: 800px;
             width: 90%;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 600; /* Above search widget, below panels */
         }
 
         .controls.collapsed {
@@ -1954,7 +1964,8 @@
         /* Feature #10b: Photo Upload Panel */
         .photo-upload-panel {
             position: fixed !important;
-            left: 20px !important; /* MOVED TO LEFT SIDE */
+            right: 20px !important; /* MOVED TO RIGHT SIDE - avoid left buttons */
+            left: auto !important;
             bottom: 20px !important; /* MOVED TO BOTTOM */
             width: 380px !important;
             height: auto !important;
@@ -1965,7 +1976,7 @@
             padding: 20px !important;
             border: 2px solid rgba(0, 212, 255, 0.6) !important;
             box-shadow: 0 10px 40px rgba(0, 212, 255, 0.3), 0 0 20px rgba(0, 212, 255, 0.2) !important;
-            z-index: 9999 !important; /* Very high z-index to ensure visibility */
+            z-index: 850 !important; /* Above controls, below modals */
             display: none;
             flex-direction: column;
             gap: 12px;
@@ -1973,7 +1984,7 @@
             overflow-x: hidden;
             pointer-events: auto !important; /* CRITICAL: Allow clicks */
             transform: scale(0.85) !important; /* SCALED DOWN TO 85% */
-            transform-origin: bottom left !important; /* Scale from bottom-left corner */
+            transform-origin: bottom right !important; /* Scale from bottom-right corner */
         }
 
         .photo-upload-panel * {
@@ -2002,7 +2013,8 @@
         /* Feature #10c: Video Upload Panel */
         .video-upload-panel {
             position: fixed !important;
-            left: 20px !important;
+            right: 20px !important; /* MOVED TO RIGHT SIDE - avoid left buttons */
+            left: auto !important;
             bottom: 20px !important;
             width: 380px !important;
             height: auto !important;
@@ -2013,7 +2025,7 @@
             padding: 20px !important;
             border: 2px solid rgba(255, 107, 107, 0.6) !important;
             box-shadow: 0 10px 40px rgba(255, 107, 107, 0.3), 0 0 20px rgba(255, 107, 107, 0.2) !important;
-            z-index: 9999 !important;
+            z-index: 850 !important; /* Above controls, below modals */
             display: none;
             flex-direction: column;
             gap: 12px;
@@ -2021,7 +2033,7 @@
             overflow-x: hidden;
             pointer-events: auto !important;
             transform: scale(0.85) !important;
-            transform-origin: bottom left !important;
+            transform-origin: bottom right !important; /* Scale from bottom-right corner */
         }
 
         .video-upload-panel * {
