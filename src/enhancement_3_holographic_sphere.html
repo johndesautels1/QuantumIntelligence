@@ -2553,8 +2553,17 @@
                 ▼ Show Header & Selectors
             </button>
 
+            <!-- Toggle Tools Button (hidden until property selected) -->
+            <button id="toggle-tools-btn" onclick="toggleMobileToolsVisibility()"
+                    style="display: none; position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%);
+                           background: linear-gradient(135deg, rgba(100, 100, 100, 0.8), rgba(60, 60, 60, 0.8));
+                           color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 20px;
+                           padding: 8px 20px; font-size: 0.8em; font-weight: bold; cursor: pointer; z-index: 1000;">
+                🛠️ Toggle Tools
+            </button>
+
             <!-- Mobile Action Buttons Container -->
-            <div class="mobile-action-buttons">
+            <div class="mobile-action-buttons" id="mobile-action-buttons">
                 <!-- 1. TOOLS Master Dropdown Menu (TOP) -->
                 <button class="mode-toggle" id="tools-master-btn" onclick="toggleToolsMenu(); hideHeaderOnAction();"
                         aria-label="Open/close tools menu"
@@ -6993,6 +7002,58 @@
 
                 // Save selected properties to localStorage
                 saveUserState();
+
+                // Check if mobile tools should be hidden
+                checkAndHideMobileTools();
+            };
+
+            // ===== MOBILE TOOLS AUTO-HIDE WHEN PROPERTY SELECTED =====
+            let mobileToolsHidden = false;
+
+            window.checkAndHideMobileTools = function() {
+                // Only on mobile (768px or less)
+                if (window.innerWidth > 768) return;
+
+                // Check if any property is selected
+                const hasPropertySelected = propertyA || propertyB || propertyC;
+
+                const toolsContainer = document.getElementById('mobile-action-buttons');
+                const searchWidget = document.querySelector('.search-widget');
+                const toggleBtn = document.getElementById('toggle-tools-btn');
+
+                if (hasPropertySelected && !mobileToolsHidden) {
+                    // Hide tools and show toggle button
+                    if (toolsContainer) toolsContainer.style.display = 'none';
+                    if (searchWidget) searchWidget.style.display = 'none';
+                    if (toggleBtn) toggleBtn.style.display = 'block';
+                    mobileToolsHidden = true;
+                } else if (!hasPropertySelected && mobileToolsHidden) {
+                    // Show tools and hide toggle button
+                    if (toolsContainer) toolsContainer.style.display = '';
+                    if (searchWidget) searchWidget.style.display = '';
+                    if (toggleBtn) toggleBtn.style.display = 'none';
+                    mobileToolsHidden = false;
+                }
+            };
+
+            window.toggleMobileToolsVisibility = function() {
+                const toolsContainer = document.getElementById('mobile-action-buttons');
+                const searchWidget = document.querySelector('.search-widget');
+                const toggleBtn = document.getElementById('toggle-tools-btn');
+
+                if (mobileToolsHidden) {
+                    // Show tools
+                    if (toolsContainer) toolsContainer.style.display = '';
+                    if (searchWidget) searchWidget.style.display = '';
+                    if (toggleBtn) toggleBtn.textContent = '🛠️ Hide Tools';
+                    mobileToolsHidden = false;
+                } else {
+                    // Hide tools
+                    if (toolsContainer) toolsContainer.style.display = 'none';
+                    if (searchWidget) searchWidget.style.display = 'none';
+                    if (toggleBtn) toggleBtn.textContent = '🛠️ Show Tools';
+                    mobileToolsHidden = true;
+                }
             };
 
             // ===== USER STATE PERSISTENCE =====
