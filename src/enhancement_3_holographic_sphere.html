@@ -50,51 +50,6 @@
             display: none;
         }
 
-        /* Feature #29: Light Theme Styles */
-        body.light-theme {
-            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
-        }
-
-        body.light-theme .header,
-        body.light-theme .selector-column,
-        body.light-theme .controls {
-            background: rgba(255, 255, 255, 0.85);
-            border-color: rgba(0, 0, 0, 0.15);
-        }
-
-        body.light-theme .header h1,
-        body.light-theme .selector-column h3,
-        body.light-theme .controls h3 {
-            color: #1a2847;
-        }
-
-        body.light-theme .header .subtitle {
-            color: rgba(26, 40, 71, 0.8);
-        }
-
-        body.light-theme .persona-btn,
-        body.light-theme .metric-filter,
-        body.light-theme button {
-            color: #1a2847;
-            border-color: rgba(0, 0, 0, 0.2);
-        }
-
-        body.light-theme .comparison-panel,
-        body.light-theme .roi-panel,
-        body.light-theme .radar-chart-panel,
-        body.light-theme #history-panel,
-        body.light-theme #badges-panel,
-        body.light-theme #social-panel,
-        body.light-theme #tools-dropdown {
-            background: rgba(255, 255, 255, 0.95);
-            border-color: rgba(0, 0, 0, 0.2);
-        }
-
-        body.light-theme .comparison-panel h3,
-        body.light-theme .roi-panel h3 {
-            color: #1a2847;
-        }
-
         /* Feature #28: Side-by-Side Mode */
         body.sidebyside-mode #canvas-container {
             width: 100%;
@@ -2359,12 +2314,6 @@
                     ⬛⬛ Side-by-Side: OFF
                 </button>
 
-                <!-- Dark/Light Theme (#29) -->
-                <button class="mode-toggle" id="theme-toggle" onclick="toggleTheme()"
-                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(100, 100, 100, 0.3), rgba(200, 200, 200, 0.3));"
-                        aria-label="Toggle dark/light theme">
-                    🌙 Dark Mode
-                </button>
             </div>
 
             <!-- Feature #20: Property History Timeline Panel -->
@@ -9136,8 +9085,6 @@
                 // Feature #23: Load share stats
                 loadShareStats();
 
-                // Feature #29: Load theme preference
-                loadThemePreference();
             });
 
             // ===== FEATURE #20: PROPERTY HISTORY TIMELINE =====
@@ -9529,44 +9476,6 @@
                 }
                 vibrate('tap');
             };
-
-            // ===== FEATURE #29: DARK/LIGHT THEME =====
-            let isDarkMode = true;
-
-            window.toggleTheme = function() {
-                isDarkMode = !isDarkMode;
-                const btn = document.getElementById('theme-toggle');
-                if (btn) {
-                    btn.textContent = isDarkMode ? '🌙 Dark Mode' : '☀️ Light Mode';
-                }
-
-                document.body.classList.toggle('light-theme', !isDarkMode);
-
-                // Update scene background
-                if (scene) {
-                    if (isDarkMode) {
-                        scene.background = new THREE.Color(0x0a1628);
-                    } else {
-                        scene.background = new THREE.Color(0xe8e8e8);
-                    }
-                }
-
-                // Save preference
-                localStorage.setItem('clues_theme', isDarkMode ? 'dark' : 'light');
-                showAlert(isDarkMode ? 'Dark mode enabled' : 'Light mode enabled', 'success');
-                vibrate('tap');
-            };
-
-            function loadThemePreference() {
-                const saved = localStorage.getItem('clues_theme');
-                if (saved === 'light') {
-                    isDarkMode = false;
-                    document.body.classList.add('light-theme');
-                    const btn = document.getElementById('theme-toggle');
-                    if (btn) btn.textContent = '☀️ Light Mode';
-                    if (scene) scene.background = new THREE.Color(0xe8e8e8);
-                }
-            }
 
         })(); // End namespace wrapper
     </script>
