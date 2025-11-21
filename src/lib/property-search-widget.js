@@ -82,7 +82,7 @@ export class PropertySearchWidget {
                 background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
                 color: white;
                 border: none;
-                padding: 8px 14px;
+                padding: 5px 14px;
                 border-radius: 6px;
                 font-size: 12px;
                 font-weight: bold;
@@ -100,7 +100,7 @@ export class PropertySearchWidget {
                 position: absolute;
                 bottom: 40px;
                 left: 50%;
-                transform: translateX(-50%) scale(0.7, 0.42);
+                transform: translateX(-50%) scale(0.7);
                 transform-origin: bottom center;
                 width: 380px;
                 background: rgba(20, 20, 40, 0.95);
