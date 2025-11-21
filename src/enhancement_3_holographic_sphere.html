@@ -2580,16 +2580,23 @@
                 box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
                 text-align: center;
                 max-width: 350px;
+                pointer-events: auto;
             ">
                 <button onclick="closeQRModal()" style="
                     position: absolute;
                     top: 10px;
                     right: 15px;
-                    background: none;
+                    background: rgba(255, 0, 0, 0.7);
                     border: none;
                     color: #fff;
                     font-size: 1.5em;
                     cursor: pointer;
+                    pointer-events: auto;
+                    width: 35px;
+                    height: 35px;
+                    border-radius: 50%;
+                    line-height: 1;
+                    z-index: 10001;
                 ">×</button>
                 <h3 style="color: #FFD700; margin: 0 0 15px 0;">📱 Scan to View on Phone</h3>
                 <div id="qr-code-container" style="
