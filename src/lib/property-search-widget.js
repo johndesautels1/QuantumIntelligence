@@ -72,7 +72,7 @@ export class PropertySearchWidget {
         <style>
             .search-widget {
                 position: fixed;
-                bottom: 60px;
+                bottom: 96px;
                 left: 50%;
                 transform: translateX(-50%);
                 z-index: 1000;
@@ -82,29 +82,30 @@ export class PropertySearchWidget {
                 background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
                 color: white;
                 border: none;
-                padding: 10px 18px;
-                border-radius: 8px;
-                font-size: 14px;
+                padding: 8px 14px;
+                border-radius: 6px;
+                font-size: 12px;
                 font-weight: bold;
                 cursor: pointer;
-                box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+                box-shadow: 0 3px 12px rgba(255, 107, 107, 0.4);
                 transition: all 0.3s ease;
             }
 
             .search-toggle-btn:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+                box-shadow: 0 5px 15px rgba(255, 107, 107, 0.6);
             }
 
             .search-panel {
                 position: absolute;
-                bottom: 50px;
+                bottom: 40px;
                 left: 50%;
-                transform: translateX(-50%);
+                transform: translateX(-50%) scale(0.7);
+                transform-origin: bottom center;
                 width: 380px;
                 background: rgba(20, 20, 40, 0.95);
                 border: 2px solid rgba(0, 212, 255, 0.5);
-                border-radius: 12px;
+                border-radius: 10px;
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
                 backdrop-filter: blur(10px);
             }
