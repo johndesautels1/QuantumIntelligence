@@ -7204,6 +7204,52 @@
                         }
                     });
                 });
+
+                // Update gravity indicator rods and labels to follow sphere position
+                ['A', 'B', 'C'].forEach(slot => {
+                    const sphere = slot === 'A' ? sphereA : slot === 'B' ? sphereB : sphereC;
+                    const indicator = gravityIndicators[slot];
+                    if (!sphere || !indicator) return;
+
+                    // Update the vertical line (indicator itself)
+                    if (indicator.geometry) {
+                        const positions = indicator.geometry.attributes.position.array;
+                        // Point 0: sphere position (top of line)
+                        positions[0] = sphere.position.x;
+                        positions[1] = sphere.position.y;
+                        positions[2] = sphere.position.z;
+                        // Point 1: ground level (bottom of line) - keep x and z, y stays at ground
+                        positions[3] = sphere.position.x;
+                        // positions[4] stays at ground level (already set)
+                        positions[5] = sphere.position.z;
+                        indicator.geometry.attributes.position.needsUpdate = true;
+                    }
+
+                    // Update label position
+                    if (indicator.userData.label) {
+                        const labelYPosition = sphere.position.y - 2.2;
+                        indicator.userData.label.position.set(sphere.position.x, labelYPosition, sphere.position.z);
+                    }
+
+                    // Update rod position
+                    if (indicator.userData.rod) {
+                        const rod = indicator.userData.rod;
+                        const sphereBottomY = sphere.position.y - 1.0;
+                        const labelYPosition = sphere.position.y - 2.2;
+                        const rodZ = sphere.position.z - 0.5;
+
+                        const rodPositions = rod.geometry.attributes.position.array;
+                        // Point 0: bottom of sphere
+                        rodPositions[0] = sphere.position.x;
+                        rodPositions[1] = sphereBottomY;
+                        rodPositions[2] = rodZ;
+                        // Point 1: top of label
+                        rodPositions[3] = sphere.position.x;
+                        rodPositions[4] = labelYPosition + 0.5;
+                        rodPositions[5] = rodZ;
+                        rod.geometry.attributes.position.needsUpdate = true;
+                    }
+                });
             }
 
             // Feature #10: Toggle between 3D houses and classic spheres
