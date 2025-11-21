@@ -34,8 +34,8 @@ export default async function handler(req, res) {
         const city = parts[0]?.replace(/\s+/g, '-').toLowerCase() || '';
         const state = (parts[1]?.trim() || 'FL').toLowerCase();
 
-        // Build Zillow search URL - use homes for sale format
-        const searchUrl = `https://www.zillow.com/${city}-${state}/homes/`;
+        // Build Realtor.com search URL (more scraper-friendly than Zillow)
+        const searchUrl = `https://www.realtor.com/realestateandhomes-search/${city}_${state.toUpperCase()}`;
         console.log(`🔗 Fetching: ${searchUrl}`);
 
         // Fetch the search page HTML
@@ -43,7 +43,8 @@ export default async function handler(req, res) {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.5'
+                'Accept-Language': 'en-US,en;q=0.5',
+                'Accept-Encoding': 'gzip, deflate, br'
             }
         });
 
@@ -68,28 +69,21 @@ export default async function handler(req, res) {
             });
         }
 
-        // Extract just the property data section (to reduce token usage)
-        // Zillow embeds JSON data in a script tag
-        const jsonMatch = html.match(/"listResults":\s*(\[[\s\S]*?\])\s*,\s*"mapResults"/);
+        // Extract property data from Realtor.com
+        // Realtor.com uses __NEXT_DATA__ script tag
         const searchDataMatch = html.match(/<script[^>]*id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
 
         let propertyData = [];
         let parseMethod = 'none';
 
-        if (jsonMatch) {
-            try {
-                propertyData = JSON.parse(jsonMatch[1]);
-                parseMethod = 'listResults';
-                console.log(`✅ Found ${propertyData.length} properties in JSON data`);
-            } catch (e) {
-                console.log('Could not parse listResults JSON:', e.message);
-            }
-        }
-
-        if (propertyData.length === 0 && searchDataMatch) {
+        if (searchDataMatch) {
             try {
                 const nextData = JSON.parse(searchDataMatch[1]);
-                const results = nextData?.props?.pageProps?.searchPageState?.cat1?.searchResults?.listResults || [];
+                // Realtor.com structure
+                const results = nextData?.props?.pageProps?.properties ||
+                               nextData?.props?.pageProps?.searchResults?.properties ||
+                               nextData?.props?.pageProps?.listings ||
+                               [];
                 propertyData = results;
                 parseMethod = 'NEXT_DATA';
                 console.log(`✅ Found ${propertyData.length} properties in NEXT_DATA`);
@@ -118,25 +112,25 @@ export default async function handler(req, res) {
         if (propertyData.length > 0) {
             const properties = propertyData.slice(0, limit).map((item, idx) => ({
                 address: {
-                    full_address: item.address || item.streetAddress || `Property ${idx + 1}`,
-                    street: item.streetAddress || '',
-                    city: item.addressCity || city,
-                    state: item.addressState || state,
-                    zip: item.addressZipcode || ''
+                    full_address: item.location?.address?.line || item.address?.line || `Property ${idx + 1}`,
+                    street: item.location?.address?.street || item.address?.street || '',
+                    city: item.location?.address?.city || item.address?.city || city,
+                    state: item.location?.address?.state_code || item.address?.state_code || state,
+                    zip: item.location?.address?.postal_code || item.address?.postal_code || ''
                 },
                 price: {
-                    current: item.price || item.unformattedPrice || 0,
-                    formatted: item.price ? `$${item.price.toLocaleString()}` : 'N/A'
+                    current: item.list_price || item.price || 0,
+                    formatted: item.list_price ? `$${item.list_price.toLocaleString()}` : 'N/A'
                 },
                 property: {
-                    bedrooms: item.beds || 0,
-                    bathrooms: item.baths || 0,
-                    sqft: item.area || item.livingArea || 0,
-                    type: item.homeType || 'House'
+                    bedrooms: item.description?.beds || item.beds || 0,
+                    bathrooms: item.description?.baths || item.baths || 0,
+                    sqft: item.description?.sqft || item.sqft || 0,
+                    type: item.description?.type || item.prop_type || 'House'
                 },
-                url: item.detailUrl || item.hdpUrl || '',
-                image: item.imgSrc || item.carouselPhotos?.[0]?.url || '',
-                source: 'zillow'
+                url: item.permalink ? `https://www.realtor.com${item.permalink}` : '',
+                image: item.primary_photo?.href || item.photos?.[0]?.href || '',
+                source: 'realtor'
             }));
 
             return res.status(200).json({
@@ -147,7 +141,7 @@ export default async function handler(req, res) {
                     city: city,
                     state: state,
                     found: properties.length,
-                    source: 'zillow_json'
+                    source: 'realtor_json'
                 }
             });
         }
