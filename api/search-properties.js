@@ -150,37 +150,29 @@ export default async function handler(req, res) {
             geminiApiKey: process.env.GEMINI_API_KEY
         });
 
-        // Build search URLs
-        const searchUrls = buildSearchUrls(location, filters);
-        console.log(`🔗 Search URL: ${searchUrls.primary}`);
+        // Parse location to extract city and state
+        const parts = location.split(',').map(s => s.trim());
+        const city = parts[0] || parts[1] || location;
+        const state = parts.find(p => p.match(/^[A-Z]{2}$/i)) || 'FL';
 
-        // Extract listing URLs using LLM
-        const listingUrls = await extractListingUrls(scraper, searchUrls.primary, limit);
+        console.log(`🔍 Searching: City="${city}", State="${state}"`);
 
-        if (listingUrls.length === 0) {
+        // Use the existing scrapeCity method
+        const properties = await scraper.scrapeCity(city, state, {
+            maxProperties: limit,
+            preferredLLM: llm,
+            enrichData: enrichData
+        });
+
+        if (!properties || properties.length === 0) {
             return res.status(404).json({
                 error: 'No properties found',
-                message: `Could not find any properties in ${location}. Try a different location or broader search.`,
-                searchUrls: searchUrls
+                message: `Could not find any properties in ${city}, ${state}. Try a different location.`,
+                searchedLocation: { city, state }
             });
         }
 
-        console.log(`🏠 Scraping ${listingUrls.length} properties...`);
-
-        // Scrape all properties in parallel
-        const scrapePromises = listingUrls.map(url =>
-            scraper.scrapeProperty(url, {
-                preferredLLM: llm,
-                enrichData: enrichData
-            }).catch(error => {
-                console.error(`❌ Failed to scrape ${url}:`, error.message);
-                return null;
-            })
-        );
-
-        const properties = (await Promise.all(scrapePromises)).filter(p => p !== null);
-
-        console.log(`✅ Successfully scraped ${properties.length}/${listingUrls.length} properties`);
+        console.log(`✅ Successfully scraped ${properties.length} properties`);
 
         // Get cost stats
         const stats = scraper.getStats();
@@ -191,11 +183,10 @@ export default async function handler(req, res) {
             properties: properties,
             metadata: {
                 location: location,
-                found: listingUrls.length,
-                scraped: properties.length,
-                failed: listingUrls.length - properties.length,
+                city: city,
+                state: state,
+                found: properties.length,
                 cost: stats.costs.total,
-                searchUrl: searchUrls.primary,
                 timestamp: new Date().toISOString()
             }
         });
