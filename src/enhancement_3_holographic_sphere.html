@@ -2718,8 +2718,9 @@
                         <strong style="color: #FFD700;">🎮 How to Use:</strong>
                         <ul style="margin: 8px 0 0 20px; padding: 0; color: rgba(255, 255, 255, 0.9);">
                             <li>Upload video → Click "Apply to 3D House"</li>
-                            <li>Click the 3D house to <strong style="color: #00FF88;">play/pause</strong></li>
-                            <li>Video plays on the front face of the house!</li>
+                            <li><strong style="color: #00FF88;">Single-click</strong> house = Play/Pause</li>
+                            <li><strong style="color: #00D4FF;">Double-click</strong> house = Sound ON/OFF</li>
+                            <li>Video displays as HD screen on house front!</li>
                         </ul>
                     </div>
                 </div>
@@ -4366,67 +4367,64 @@
 
                 console.log(`🎬 Applying video texture to Property ${slot}`);
 
-                // Create video element for texture
+                // Create video element for texture with HIGH QUALITY settings
                 const video = document.createElement('video');
                 video.src = videoUrl;
                 video.loop = true;
-                video.muted = true; // Required for autoplay
+                video.muted = true; // Start muted for autoplay, user can unmute
                 video.playsInline = true;
                 video.crossOrigin = 'anonymous';
+                video.preload = 'auto';
+                // Set video to full resolution
+                video.width = 1920;
+                video.height = 1080;
 
                 // Store reference
                 videoElements[slot] = video;
 
-                // Create video texture
+                // Create HIGH QUALITY video texture
                 const videoTexture = new THREE.VideoTexture(video);
                 videoTexture.minFilter = THREE.LinearFilter;
                 videoTexture.magFilter = THREE.LinearFilter;
                 videoTexture.format = THREE.RGBAFormat;
+                videoTexture.encoding = THREE.sRGBEncoding;
+                videoTexture.generateMipmaps = false; // Better quality for video
+                videoTexture.wrapS = THREE.ClampToEdgeWrapping;
+                videoTexture.wrapT = THREE.ClampToEdgeWrapping;
 
                 // Store texture reference
                 videoTextures[slot] = videoTexture;
 
-                // Apply to the house/sphere
-                if (sphere.userData.isHouse || sphere.children.length > 0) {
-                    // For house models, apply to all mesh children
-                    sphere.traverse((child) => {
-                        if (child.isMesh) {
-                            // Create material array for cube faces
-                            const videoMaterial = new THREE.MeshBasicMaterial({
-                                map: videoTexture,
-                                side: THREE.FrontSide
-                            });
+                // Create a separate plane for the video (cleaner than applying to house faces)
+                const videoPlaneGeometry = new THREE.PlaneGeometry(1.4, 1.0); // Aspect ratio close to 16:9
+                const videoMaterial = new THREE.MeshBasicMaterial({
+                    map: videoTexture,
+                    side: THREE.FrontSide,
+                    transparent: false,
+                    toneMapped: false // Preserve video colors
+                });
+                const videoPlane = new THREE.Mesh(videoPlaneGeometry, videoMaterial);
 
-                            // Apply video material to front face only (index 4 for BoxGeometry)
-                            if (child.geometry.type === 'BoxGeometry') {
-                                const originalMaterial = child.material;
-                                child.material = [
-                                    originalMaterial, // right
-                                    originalMaterial, // left
-                                    originalMaterial, // top
-                                    originalMaterial, // bottom
-                                    videoMaterial,    // front - VIDEO
-                                    originalMaterial  // back
-                                ];
-                            } else {
-                                // For other geometries, replace material
-                                child.material = videoMaterial;
-                            }
-                        }
-                    });
-                } else {
-                    // For spheres, apply to material directly
-                    sphere.material = new THREE.MeshBasicMaterial({
-                        map: videoTexture,
-                        side: THREE.DoubleSide
-                    });
-                }
+                // Position video plane on front of house
+                videoPlane.position.set(0, 0.3, 0.52); // Slightly in front
+                videoPlane.userData.isVideoPlane = true;
+
+                // Remove any existing video plane
+                sphere.children.forEach(child => {
+                    if (child.userData && child.userData.isVideoPlane) {
+                        sphere.remove(child);
+                    }
+                });
+
+                // Add video plane to house
+                sphere.add(videoPlane);
 
                 // Mark as having video
                 sphere.userData.hasVideo = true;
                 sphere.userData.videoSlot = slot;
+                sphere.userData.videoPlane = videoPlane;
 
-                showAlert(`Video applied to Property ${slot}! Click house to play/pause 🎬`, 'success');
+                showAlert(`Video applied to Property ${slot}! Click to play/pause, double-click for sound 🎬`, 'success');
                 vibrate('success');
 
                 // Start playing automatically (muted)
@@ -4440,10 +4438,26 @@
 
                 if (video.paused) {
                     video.play();
-                    showAlert('▶️ Video playing', 'info');
+                    showAlert('▶️ Video playing (click again to pause)', 'info');
                 } else {
                     video.pause();
                     showAlert('⏸️ Video paused', 'info');
+                }
+                vibrate('tap');
+                return true;
+            };
+
+            // Toggle video sound on/off
+            window.toggleHouseVideoSound = function(slot) {
+                const video = videoElements[slot];
+                if (!video) return false;
+
+                video.muted = !video.muted;
+                if (video.muted) {
+                    showAlert('🔇 Video muted', 'info');
+                } else {
+                    video.volume = 0.7; // Set reasonable volume
+                    showAlert('🔊 Sound ON - Volume 70%', 'success');
                 }
                 vibrate('tap');
                 return true;
@@ -5366,6 +5380,36 @@
                                 window.toggleHouseVideo(slot);
                             } else {
                                 console.log(`🏠 Clicked Property ${slot} (no video attached)`);
+                            }
+                        }
+                    }
+                });
+
+                // Add double-click handler for sound toggle
+                renderer.domElement.addEventListener('dblclick', (event) => {
+                    // Calculate mouse position in normalized device coordinates
+                    const rect = renderer.domElement.getBoundingClientRect();
+                    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+                    // Update raycaster
+                    raycaster.setFromCamera(mouse, camera);
+
+                    // Check for intersections with property spheres/houses
+                    const objectsToCheck = [sphereA, sphereB, sphereC].filter(obj => obj !== null);
+                    const intersects = raycaster.intersectObjects(objectsToCheck, true);
+
+                    if (intersects.length > 0) {
+                        // Determine which slot was double-clicked
+                        let slot = null;
+                        if (isDescendant(sphereA, intersects[0].object)) slot = 'A';
+                        else if (isDescendant(sphereB, intersects[0].object)) slot = 'B';
+                        else if (isDescendant(sphereC, intersects[0].object)) slot = 'C';
+
+                        if (slot) {
+                            const sphere = slot === 'A' ? sphereA : slot === 'B' ? sphereB : sphereC;
+                            if (sphere?.userData?.hasVideo) {
+                                window.toggleHouseVideoSound(slot);
                             }
                         }
                     }
