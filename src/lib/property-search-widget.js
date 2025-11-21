@@ -72,7 +72,7 @@ export class PropertySearchWidget {
         <style>
             .search-widget {
                 position: fixed;
-                bottom: 102px;
+                bottom: 105px;
                 left: 50%;
                 transform: translateX(-50%);
                 z-index: 1000;
