@@ -84,7 +84,7 @@ export class PropertySearchWidget {
                 border: none;
                 padding: 8px 14px;
                 border-radius: 6px;
-                font-size: 12px;
+                font-size: 14px;
                 font-weight: bold;
                 cursor: pointer;
                 box-shadow: 0 3px 12px rgba(255, 107, 107, 0.4);
