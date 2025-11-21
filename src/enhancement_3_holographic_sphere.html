@@ -2367,9 +2367,9 @@
             <div id="history-panel" style="
                 position: fixed;
                 left: 20px;
-                top: 140px;
-                width: 380px;
-                max-height: 500px;
+                bottom: 20px;
+                width: 350px;
+                max-height: 400px;
                 background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%);
                 backdrop-filter: blur(20px);
                 border: 2px solid rgba(138, 43, 226, 0.5);
@@ -2422,10 +2422,10 @@
             <!-- Feature #19: Achievement Badges Panel -->
             <div id="badges-panel" style="
                 position: fixed;
-                right: 20px;
-                top: 140px;
-                width: 380px;
-                max-height: 500px;
+                left: 20px;
+                bottom: 20px;
+                width: 350px;
+                max-height: 400px;
                 background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%);
                 backdrop-filter: blur(20px);
                 border: 2px solid rgba(255, 215, 0, 0.5);
@@ -2459,9 +2459,10 @@
             <!-- Feature #23: Social Sharing Panel -->
             <div id="social-panel" style="
                 position: fixed;
-                right: 20px;
-                top: 200px;
-                width: 320px;
+                left: 20px;
+                bottom: 20px;
+                width: 350px;
+                max-height: 400px;
                 background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%);
                 backdrop-filter: blur(20px);
                 border: 2px solid rgba(29, 161, 242, 0.5);
@@ -3627,6 +3628,11 @@
                 const totalValidFiles = validFiles.length;
                 console.log(`✅ ${totalValidFiles} valid image file(s) to load`);
 
+                // Feature #19: Track photo uploads for badges
+                if (totalValidFiles > 0 && typeof trackPhotoUpload === 'function') {
+                    trackPhotoUpload(totalValidFiles);
+                }
+
                 if (totalValidFiles === 0) {
                     if (preview) {
                         preview.innerHTML = `<p style="color: #FF6B6B; text-align: center;">❌ No valid image files selected</p>`;
@@ -4340,6 +4346,8 @@
                         panel.classList.add('visible');
                         if (btn) btn.classList.add('active');
                         updateComparisonPanel();
+                        // Track comparison for badges (#19)
+                        if (typeof trackComparison === 'function') trackComparison();
                     }
                     vibrate('tap');
                     return;
@@ -5537,6 +5545,11 @@
 
                 // Feature #18: Vibration feedback
                 vibrate('select');
+
+                // Feature #19/#20: Track view for history and badges
+                if (typeof trackPropertyView === 'function') {
+                    trackPropertyView(propertyId, property.name, slot);
+                }
 
                 announceToScreenReader(`Property ${slot} changed to ${property.name}`);
                 showAlert(`Selected: ${property.name}`, 'success');
@@ -9227,16 +9240,29 @@
                 }).join('');
             }
 
-            // Hook into selectProperty to track views
-            const originalSelectProperty = window.selectProperty;
-            window.selectProperty = function(slot, propertyId) {
-                originalSelectProperty(slot, propertyId);
-                if (propertyId) {
-                    const property = PROPERTIES.find(p => p.id === propertyId);
-                    if (property) {
-                        addToHistory('view', { propertyId: propertyId, name: property.name, slot: slot });
-                    }
+            // Track comparison function for badges
+            window.trackComparison = function() {
+                if (propertyA && propertyB) {
+                    badgeStats.comparisons = (badgeStats.comparisons || 0) + 1;
+                    checkBadgeProgress('comparisons', badgeStats.comparisons);
+                    addToHistory('comparison', {
+                        properties: [propertyA?.name, propertyB?.name, propertyC?.name].filter(Boolean),
+                        type: 'compared'
+                    });
                 }
+            };
+
+            // Track property view for history and badges
+            window.trackPropertyView = function(propertyId, propertyName, slot) {
+                addToHistory('view', { propertyId: propertyId, name: propertyName, slot: slot });
+                badgeStats.views = (badgeStats.views || 0) + 1;
+                checkBadgeProgress('views', badgeStats.views);
+            };
+
+            // Track photo upload for badges
+            window.trackPhotoUpload = function(count) {
+                badgeStats.photos = (badgeStats.photos || 0) + count;
+                checkBadgeProgress('photos', badgeStats.photos);
             };
 
             // ===== FEATURE #19: ACHIEVEMENT BADGES =====
