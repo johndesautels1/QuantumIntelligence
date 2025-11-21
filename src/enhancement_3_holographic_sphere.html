@@ -6370,6 +6370,8 @@
                         propertyC = null;
                         if (sphereC) sphereC.visible = false; // HIDE 3D object when cleared
                     }
+                    // Hide video control bar when property is deselected
+                    hideVideoControlBar(slot);
                     announceToScreenReader(`Property ${slot} cleared`);
                     return;
                 }
@@ -7272,6 +7274,8 @@
                     btn.style.background = '';
                     // Hide inner sphere toggle button
                     if (innerSphereBtn) innerSphereBtn.style.display = 'none';
+                    // Hide all video control bars - videos only work on houses
+                    ['A', 'B', 'C'].forEach(slot => hideVideoControlBar(slot));
                     showAlert('Switched to Classic Spheres', 'success');
                 }
 
