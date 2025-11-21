@@ -100,7 +100,7 @@ export class PropertySearchWidget {
                 position: absolute;
                 bottom: 40px;
                 left: 50%;
-                transform: translateX(-50%) scale(0.7);
+                transform: translateX(-50%) scale(0.7, 0.42);
                 transform-origin: bottom center;
                 width: 380px;
                 background: rgba(20, 20, 40, 0.95);
