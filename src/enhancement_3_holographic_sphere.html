@@ -241,6 +241,11 @@
             color: white;
         }
 
+        /* Mobile Action Buttons Container - Desktop: transparent wrapper, no effect */
+        .mobile-action-buttons {
+            display: contents; /* On desktop, acts as if wrapper doesn't exist */
+        }
+
         /* Panel Toggle Buttons */
         .panel-toggle-buttons {
             position: absolute;
@@ -770,6 +775,86 @@
             .comparison-table th,
             .comparison-table td {
                 padding: 6px 4px;
+            }
+
+            /* ===== MOBILE BUTTON LAYOUT FIX ===== */
+            /* Mobile action buttons container - stacks buttons vertically */
+            .mobile-action-buttons {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                padding: 10px;
+                background: rgba(0, 0, 0, 0.3);
+                border-radius: 10px;
+                margin: 10px;
+            }
+
+            /* Override inline styles for left-side action buttons */
+            #import-properties-btn,
+            #photo-upload-master-btn,
+            #video-upload-master-btn,
+            #qr-code-btn {
+                position: relative !important;
+                top: auto !important;
+                left: auto !important;
+                right: auto !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: unset !important;
+                margin: 0 !important;
+                display: block !important;
+            }
+
+            /* Tools button - full width on mobile */
+            #tools-master-btn {
+                position: relative !important;
+                top: auto !important;
+                left: auto !important;
+                right: auto !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: unset !important;
+                margin: 0 !important;
+            }
+
+            /* Tools dropdown - mobile positioning */
+            #tools-dropdown {
+                position: fixed !important;
+                top: auto !important;
+                bottom: 80px !important;
+                left: 10px !important;
+                right: 10px !important;
+                width: auto !important;
+                max-height: 60vh !important;
+                overflow-y: auto !important;
+                transform: none !important;
+            }
+
+            /* Mobile button container - stack all action buttons */
+            .ui-overlay {
+                display: flex;
+                flex-direction: column;
+                pointer-events: none;
+            }
+
+            .ui-overlay > * {
+                pointer-events: auto;
+            }
+
+            /* QR Modal - mobile friendly */
+            #qr-modal {
+                width: 90% !important;
+                max-width: 320px !important;
+                padding: 20px !important;
+            }
+
+            /* History panel - mobile */
+            #history-panel {
+                left: 10px !important;
+                right: 10px !important;
+                width: auto !important;
+                bottom: 10px !important;
+                max-height: 50vh !important;
             }
         }
 
@@ -2344,33 +2429,43 @@
                 </div>
             </div>
 
-            <!-- IMPORT PROPERTIES Button (Top Left - TOP POSITION) -->
-            <button class="mode-toggle" id="import-properties-btn" onclick="openImportModal()"
-                    aria-label="Import saved properties from database"
-                    style="left: 20px; right: auto; min-width: 220px; background: linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(255, 165, 0, 0.4)); font-weight: bold;">
-                📥 IMPORT PROPERTIES
-            </button>
+            <!-- Mobile Action Buttons Container -->
+            <div class="mobile-action-buttons">
+                <!-- IMPORT PROPERTIES Button (Top Left - TOP POSITION) -->
+                <button class="mode-toggle" id="import-properties-btn" onclick="openImportModal()"
+                        aria-label="Import saved properties from database"
+                        style="left: 20px; right: auto; min-width: 220px; background: linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(255, 165, 0, 0.4)); font-weight: bold;">
+                    📥 IMPORT PROPERTIES
+                </button>
 
-            <!-- PHOTO UPLOAD Button (Top Left - BELOW Import Properties) -->
-            <button class="mode-toggle" id="photo-upload-master-btn" onclick="togglePhotoUpload()"
-                    aria-label="Upload property photos"
-                    style="left: 20px; right: auto; top: 75px; min-width: 220px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.4), rgba(138, 43, 226, 0.4)); font-weight: bold;">
-                📸 UPLOAD PHOTOS
-            </button>
+                <!-- PHOTO UPLOAD Button (Top Left - BELOW Import Properties) -->
+                <button class="mode-toggle" id="photo-upload-master-btn" onclick="togglePhotoUpload()"
+                        aria-label="Upload property photos"
+                        style="left: 20px; right: auto; top: 75px; min-width: 220px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.4), rgba(138, 43, 226, 0.4)); font-weight: bold;">
+                    📸 UPLOAD PHOTOS
+                </button>
 
-            <!-- VIDEO UPLOAD Button (Top Left - BELOW Upload Photos) -->
-            <button class="mode-toggle" id="video-upload-master-btn" onclick="toggleVideoUpload()"
-                    aria-label="Upload property virtual tour videos"
-                    style="left: 20px; right: auto; top: 130px; min-width: 220px; background: linear-gradient(135deg, rgba(255, 107, 107, 0.4), rgba(138, 43, 226, 0.4)); font-weight: bold;">
-                🎬 UPLOAD VIDEOS
-            </button>
+                <!-- VIDEO UPLOAD Button (Top Left - BELOW Upload Photos) -->
+                <button class="mode-toggle" id="video-upload-master-btn" onclick="toggleVideoUpload()"
+                        aria-label="Upload property virtual tour videos"
+                        style="left: 20px; right: auto; top: 130px; min-width: 220px; background: linear-gradient(135deg, rgba(255, 107, 107, 0.4), rgba(138, 43, 226, 0.4)); font-weight: bold;">
+                    🎬 UPLOAD VIDEOS
+                </button>
 
-            <!-- QR CODE Button (Between left buttons and center header) -->
-            <button class="mode-toggle" id="qr-code-btn" onclick="showQRCode()"
-                    aria-label="Generate QR code to scan data to phone"
-                    style="left: 260px; right: auto; top: 20px; min-width: 100px; background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(200, 200, 200, 0.3)); font-weight: bold; font-size: 0.85em;">
-                📱 QR Code
-            </button>
+                <!-- QR CODE Button (Between left buttons and center header) -->
+                <button class="mode-toggle" id="qr-code-btn" onclick="showQRCode()"
+                        aria-label="Generate QR code to scan data to phone"
+                        style="left: 260px; right: auto; top: 20px; min-width: 100px; background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(200, 200, 200, 0.3)); font-weight: bold; font-size: 0.85em;">
+                    📱 QR Code
+                </button>
+
+                <!-- TOOLS Master Dropdown Menu (Top Right) -->
+                <button class="mode-toggle" id="tools-master-btn" onclick="toggleToolsMenu()"
+                        aria-label="Open/close tools menu"
+                        style="min-width: 187px; width: 187px; background: linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(0, 212, 255, 0.4)); font-weight: bold;">
+                    🛠️ TOOLS
+                </button>
+            </div>
 
             <!-- QR Code Modal -->
             <div id="qr-modal" style="
@@ -2430,13 +2525,6 @@
                     ">Close</button>
                 </div>
             </div>
-
-            <!-- TOOLS Master Dropdown Menu (Top Right) -->
-            <button class="mode-toggle" id="tools-master-btn" onclick="toggleToolsMenu()"
-                    aria-label="Open/close tools menu"
-                    style="min-width: 187px; width: 187px; background: linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(0, 212, 255, 0.4)); font-weight: bold;">
-                🛠️ TOOLS
-            </button>
 
             <!-- Tools Dropdown Container -->
             <div id="tools-dropdown" style="
