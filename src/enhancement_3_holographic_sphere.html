@@ -3327,10 +3327,6 @@
                         </div>
 
                     </div>
-                    <!-- Close button positioned on LEFT side, above the 'a' in Data -->
-                    <button onclick="closeDataPanelsModal()" class="data-modal-close"
-                            aria-label="Close data panels modal"
-                            style="position: absolute; top: 10px; left: 70px; width: 11px; height: 11px; min-width: 11px; min-height: 11px; max-width: 11px; max-height: 11px; font-size: 8px; line-height: 11px; padding: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center;">×</button>
                     <div style="text-align: center; font-size: 0.7em; color: rgba(255, 255, 255, 0.6); margin-bottom: 12px; letter-spacing: 0.3px;">
                         <span style="color: #F44336;">●</span> Poor (0-20)
                         <span style="margin: 0 4px;">|</span>
@@ -3416,7 +3412,11 @@
                 </div>
 
                 <!-- Modal Footer -->
-                <div class="data-modal-footer">
+                <div class="data-modal-footer" style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                    <button onclick="closeDataPanelsModal()"
+                            style="background: rgba(255, 0, 0, 0.8); color: white; border: none; border-radius: 8px; padding: 8px 20px; font-size: 0.9em; font-weight: bold; cursor: pointer;">
+                        ✕ Close
+                    </button>
                     <p style="margin: 0; font-size: 0.85em; color: rgba(255, 255, 255, 0.7);">
                         💡 Switch tabs to view different analysis panels | ESC to close
                     </p>
