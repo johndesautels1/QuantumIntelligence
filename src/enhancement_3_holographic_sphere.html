@@ -3299,10 +3299,28 @@
             <div class="data-modal-container">
                 <!-- Modal Header -->
                 <div class="data-modal-header">
-                    <div class="data-modal-header-top">
-                        <h2 style="margin: 0; color: #FFD700; font-size: 1.5em;">📊 Data Panels</h2>
+                    <div class="data-modal-header-top" style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 15px;">
+                        <h2 style="margin: 0; color: #FFD700; font-size: 1.5em; flex-shrink: 0;">📊 Data Panels</h2>
+
+                        <!-- Time Travel Control - Centered in header row -->
+                        <div class="modal-time-travel" style="display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: rgba(0, 212, 255, 0.15); border-radius: 8px; border: 1px solid rgba(0, 212, 255, 0.3); flex: 1; justify-content: center; max-width: 350px;">
+                            <span style="color: #00D4FF; font-size: 0.85em; font-weight: bold; white-space: nowrap;">⏰ Time Travel</span>
+                            <div style="display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 150px;">
+                                <div class="modal-time-display" id="modal-time-display" style="font-size: 0.7em; color: #00FF88; font-weight: bold;">Current Data</div>
+                                <input type="range" min="0" max="12" value="12" step="1"
+                                       style="width: 100%; height: 4px; margin: 2px 0;"
+                                       id="modal-time-slider"
+                                       oninput="updateTimeTravel(this.value); document.getElementById('time-slider').value = this.value;"
+                                       aria-label="Select time period for property data">
+                                <div style="display: flex; justify-content: space-between; width: 100%; font-size: 0.55em; color: rgba(255,255,255,0.6);">
+                                    <span>1Y Ago</span>
+                                    <span>Now</span>
+                                </div>
+                            </div>
+                        </div>
+
                         <button onclick="closeDataPanelsModal()" class="data-modal-close"
-                                aria-label="Close data panels modal">×</button>
+                                aria-label="Close data panels modal" style="flex-shrink: 0;">×</button>
                     </div>
                     <div style="text-align: center; font-size: 0.7em; color: rgba(255, 255, 255, 0.6); margin-bottom: 12px; letter-spacing: 0.3px;">
                         <span style="color: #F44336;">●</span> Poor (0-20)
@@ -3329,21 +3347,6 @@
                                     role="radio" aria-checked="false" aria-label="Investor persona">💼 Investor</button>
                             <button class="persona-btn" onclick="setPersona('nomad', event)"
                                     role="radio" aria-checked="false" aria-label="Nomad persona">✈️ Nomad</button>
-                        </div>
-                    </div>
-
-                    <!-- Time Travel Control (Mobile: moved here from main view) -->
-                    <div class="modal-time-travel" style="text-align: center; margin-bottom: 10px; padding: 8px; background: rgba(0, 212, 255, 0.1); border-radius: 8px; border: 1px solid rgba(0, 212, 255, 0.3);">
-                        <h4 style="color: #00D4FF; margin: 0 0 5px 0; font-size: 0.8em;">⏰ Time Travel</h4>
-                        <div class="modal-time-display" id="modal-time-display" style="font-size: 0.75em; color: #00FF88; font-weight: bold; margin-bottom: 5px;">Current Data</div>
-                        <input type="range" min="0" max="12" value="12" step="1"
-                               style="width: 80%; max-width: 200px; height: 4px;"
-                               id="modal-time-slider"
-                               oninput="updateTimeTravel(this.value); document.getElementById('time-slider').value = this.value;"
-                               aria-label="Select time period for property data">
-                        <div style="display: flex; justify-content: space-between; width: 80%; max-width: 200px; margin: 3px auto 0; font-size: 0.65em; color: rgba(255,255,255,0.7);">
-                            <span>1 Yr Ago</span>
-                            <span>Now</span>
                         </div>
                     </div>
                 </div>
