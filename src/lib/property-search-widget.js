@@ -286,7 +286,7 @@ export class PropertySearchWidget {
         // Add enter key support
         document.getElementById('neighborhood-input').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                this.search();
+                PropertySearchWidget.search();
             }
         });
 
