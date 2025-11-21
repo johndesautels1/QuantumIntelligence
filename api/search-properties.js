@@ -123,30 +123,28 @@ export default async function handler(req, res) {
             });
         }
 
-        // Fallback: Use Claude API directly via fetch (no SDK import)
-        console.log('📝 Using Claude to parse HTML...');
+        // Fallback: Use Grok API directly via fetch (no SDK import)
+        console.log('📝 Using Grok to parse HTML...');
 
-        const apiKey = process.env.ANTHROPIC_API_KEY;
+        const apiKey = process.env.GROK_API_KEY;
         if (!apiKey) {
             return res.status(500).json({
                 error: 'API key missing',
-                message: 'ANTHROPIC_API_KEY not configured'
+                message: 'GROK_API_KEY not configured'
             });
         }
 
         // Take a reasonable chunk of HTML (first 30KB)
         const htmlChunk = html.substring(0, 30000);
 
-        const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
+        const grokResponse = await fetch('https://api.x.ai/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-api-key': apiKey,
-                'anthropic-version': '2023-06-01'
+                'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'claude-3-haiku-20240307',
-                max_tokens: 2000,
+                model: 'grok-beta',
                 messages: [{
                     role: 'user',
                     content: `Extract the first ${limit} property listings from this real estate search page HTML. Return ONLY valid JSON in this exact format:
@@ -170,19 +168,19 @@ ${htmlChunk}`
             })
         });
 
-        if (!claudeResponse.ok) {
-            const errorText = await claudeResponse.text();
-            console.error('Claude API error:', errorText);
+        if (!grokResponse.ok) {
+            const errorText = await grokResponse.text();
+            console.error('Grok API error:', errorText);
             return res.status(500).json({
                 error: 'LLM parsing failed',
                 message: 'Could not parse property data'
             });
         }
 
-        const claudeData = await claudeResponse.json();
-        const claudeText = claudeData.content?.[0]?.text || '';
+        const grokData = await grokResponse.json();
+        const grokText = grokData.choices?.[0]?.message?.content || '';
 
-        const parsed = JSON.parse(claudeText.match(/\{[\s\S]*\}/)?.[0] || '{"properties":[]}');
+        const parsed = JSON.parse(grokText.match(/\{[\s\S]*\}/)?.[0] || '{"properties":[]}');
 
         const properties = (parsed.properties || []).slice(0, limit).map((item, idx) => ({
             address: {
@@ -203,7 +201,7 @@ ${htmlChunk}`
                 type: 'House'
             },
             url: item.url || '',
-            source: 'zillow_claude'
+            source: 'zillow_grok'
         }));
 
         if (properties.length === 0) {
@@ -221,7 +219,7 @@ ${htmlChunk}`
                 city: city,
                 state: state,
                 found: properties.length,
-                source: 'zillow_claude'
+                source: 'zillow_grok'
             }
         });
 
