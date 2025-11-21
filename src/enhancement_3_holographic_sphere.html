@@ -50,6 +50,56 @@
             display: none;
         }
 
+        /* Feature #29: Light Theme Styles */
+        body.light-theme {
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+        }
+
+        body.light-theme .header,
+        body.light-theme .selector-column,
+        body.light-theme .controls {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+
+        body.light-theme .header h1,
+        body.light-theme .selector-column h3,
+        body.light-theme .controls h3 {
+            color: #1a2847;
+        }
+
+        body.light-theme .header .subtitle {
+            color: rgba(26, 40, 71, 0.8);
+        }
+
+        body.light-theme .persona-btn,
+        body.light-theme .metric-filter,
+        body.light-theme button {
+            color: #1a2847;
+            border-color: rgba(0, 0, 0, 0.2);
+        }
+
+        body.light-theme .comparison-panel,
+        body.light-theme .roi-panel,
+        body.light-theme .radar-chart-panel,
+        body.light-theme #history-panel,
+        body.light-theme #badges-panel,
+        body.light-theme #social-panel,
+        body.light-theme #tools-dropdown {
+            background: rgba(255, 255, 255, 0.95);
+            border-color: rgba(0, 0, 0, 0.2);
+        }
+
+        body.light-theme .comparison-panel h3,
+        body.light-theme .roi-panel h3 {
+            color: #1a2847;
+        }
+
+        /* Feature #28: Side-by-Side Mode */
+        body.sidebyside-mode #canvas-container {
+            width: 100%;
+        }
+
         .help-text {
             font-size: 0.75em;
             color: rgba(255, 255, 255, 0.6);
@@ -2276,6 +2326,188 @@
                         aria-label="Automatically cycle through uploaded photos">
                     🔄 Auto-Cycle: OFF
                 </button>
+
+                <!-- Property History Timeline (#20) -->
+                <button class="mode-toggle" id="history-toggle" onclick="toggleHistoryPanel()"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(138, 43, 226, 0.3), rgba(0, 212, 255, 0.3));"
+                        aria-label="View property history timeline">
+                    📜 History Timeline
+                </button>
+
+                <!-- Achievement Badges (#19) -->
+                <button class="mode-toggle" id="badges-toggle" onclick="toggleBadgesPanel()"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 136, 0, 0.3));"
+                        aria-label="View achievement badges">
+                    🏆 Achievements
+                </button>
+
+                <!-- Social Sharing (#23) -->
+                <button class="mode-toggle" id="social-share-toggle" onclick="toggleSocialPanel()"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(0, 119, 181, 0.3), rgba(29, 161, 242, 0.3));"
+                        aria-label="Share to social media">
+                    📱 Social Share
+                </button>
+
+                <!-- Side-by-Side View (#28) -->
+                <button class="mode-toggle" id="sidebyside-toggle" onclick="toggleSideBySide()"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 212, 255, 0.3));"
+                        aria-label="Toggle side-by-side comparison view">
+                    ⬛⬛ Side-by-Side: OFF
+                </button>
+
+                <!-- Dark/Light Theme (#29) -->
+                <button class="mode-toggle" id="theme-toggle" onclick="toggleTheme()"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(100, 100, 100, 0.3), rgba(200, 200, 200, 0.3));"
+                        aria-label="Toggle dark/light theme">
+                    🌙 Dark Mode
+                </button>
+            </div>
+
+            <!-- Feature #20: Property History Timeline Panel -->
+            <div id="history-panel" style="
+                position: fixed;
+                left: 20px;
+                top: 140px;
+                width: 380px;
+                max-height: 500px;
+                background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%);
+                backdrop-filter: blur(20px);
+                border: 2px solid rgba(138, 43, 226, 0.5);
+                border-radius: 15px;
+                padding: 20px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+                z-index: 850;
+                display: none;
+                overflow-y: auto;
+            ">
+                <button onclick="toggleHistoryPanel()" style="position: absolute; top: 10px; right: 10px; background: rgba(255, 0, 0, 0.7); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 18px; font-weight: bold; line-height: 1;" aria-label="Close history panel">×</button>
+                <h3 style="color: #FFD700; margin-bottom: 15px; font-size: 1.1em;">📜 Property History Timeline</h3>
+
+                <!-- History Stats -->
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <div style="flex: 1; background: rgba(138, 43, 226, 0.2); border-radius: 8px; padding: 10px; text-align: center;">
+                        <div style="font-size: 1.5em; color: #8A2BE2;" id="history-total-views">0</div>
+                        <div style="font-size: 0.75em; color: rgba(255,255,255,0.7);">Total Views</div>
+                    </div>
+                    <div style="flex: 1; background: rgba(0, 212, 255, 0.2); border-radius: 8px; padding: 10px; text-align: center;">
+                        <div style="font-size: 1.5em; color: #00D4FF;" id="history-total-comparisons">0</div>
+                        <div style="font-size: 0.75em; color: rgba(255,255,255,0.7);">Comparisons</div>
+                    </div>
+                    <div style="flex: 1; background: rgba(255, 215, 0, 0.2); border-radius: 8px; padding: 10px; text-align: center;">
+                        <div style="font-size: 1.5em; color: #FFD700;" id="history-unique-props">0</div>
+                        <div style="font-size: 0.75em; color: rgba(255,255,255,0.7);">Unique Props</div>
+                    </div>
+                </div>
+
+                <!-- Filter Tabs -->
+                <div style="display: flex; gap: 5px; margin-bottom: 15px;">
+                    <button onclick="filterHistory('all')" class="history-filter-btn active" data-filter="all" style="flex: 1; padding: 8px; background: rgba(138, 43, 226, 0.4); border: 1px solid rgba(138, 43, 226, 0.6); border-radius: 5px; color: white; cursor: pointer; font-size: 0.8em;">All</button>
+                    <button onclick="filterHistory('views')" class="history-filter-btn" data-filter="views" style="flex: 1; padding: 8px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 5px; color: white; cursor: pointer; font-size: 0.8em;">Views</button>
+                    <button onclick="filterHistory('comparisons')" class="history-filter-btn" data-filter="comparisons" style="flex: 1; padding: 8px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 5px; color: white; cursor: pointer; font-size: 0.8em;">Comparisons</button>
+                </div>
+
+                <!-- Timeline List -->
+                <div id="history-timeline" style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="text-align: center; color: rgba(255,255,255,0.5); padding: 20px;">
+                        No history yet. Start viewing properties!
+                    </div>
+                </div>
+
+                <!-- Clear History Button -->
+                <button onclick="clearPropertyHistory()" style="width: 100%; margin-top: 15px; padding: 10px; background: rgba(255, 0, 0, 0.2); border: 1px solid rgba(255, 0, 0, 0.5); border-radius: 8px; color: #FF6B6B; cursor: pointer; font-size: 0.85em;">
+                    🗑️ Clear All History
+                </button>
+            </div>
+
+            <!-- Feature #19: Achievement Badges Panel -->
+            <div id="badges-panel" style="
+                position: fixed;
+                right: 20px;
+                top: 140px;
+                width: 380px;
+                max-height: 500px;
+                background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%);
+                backdrop-filter: blur(20px);
+                border: 2px solid rgba(255, 215, 0, 0.5);
+                border-radius: 15px;
+                padding: 20px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+                z-index: 850;
+                display: none;
+                overflow-y: auto;
+            ">
+                <button onclick="toggleBadgesPanel()" style="position: absolute; top: 10px; right: 10px; background: rgba(255, 0, 0, 0.7); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 18px; font-weight: bold; line-height: 1;" aria-label="Close badges panel">×</button>
+                <h3 style="color: #FFD700; margin-bottom: 15px; font-size: 1.1em;">🏆 Your Achievements</h3>
+
+                <!-- Badge Progress -->
+                <div style="background: rgba(255, 215, 0, 0.1); border-radius: 8px; padding: 10px; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <span style="color: rgba(255,255,255,0.9); font-size: 0.85em;">Progress</span>
+                        <span style="color: #FFD700; font-weight: bold;" id="badges-progress">0/12</span>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.2); border-radius: 10px; height: 8px; overflow: hidden;">
+                        <div id="badges-progress-bar" style="background: linear-gradient(90deg, #FFD700, #FF8800); height: 100%; width: 0%; transition: width 0.5s ease;"></div>
+                    </div>
+                </div>
+
+                <!-- Badge Grid -->
+                <div id="badges-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                    <!-- Badges will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Feature #23: Social Sharing Panel -->
+            <div id="social-panel" style="
+                position: fixed;
+                right: 20px;
+                top: 200px;
+                width: 320px;
+                background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%);
+                backdrop-filter: blur(20px);
+                border: 2px solid rgba(29, 161, 242, 0.5);
+                border-radius: 15px;
+                padding: 20px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+                z-index: 850;
+                display: none;
+            ">
+                <button onclick="toggleSocialPanel()" style="position: absolute; top: 10px; right: 10px; background: rgba(255, 0, 0, 0.7); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 18px; font-weight: bold; line-height: 1;" aria-label="Close social panel">×</button>
+                <h3 style="color: #1DA1F2; margin-bottom: 15px; font-size: 1.1em;">📱 Share Your Comparison</h3>
+
+                <p style="color: rgba(255,255,255,0.7); font-size: 0.85em; margin-bottom: 15px;">Share your property analysis with friends and family!</p>
+
+                <!-- Social Buttons -->
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button onclick="shareToTwitter()" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; background: #1DA1F2; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 0.95em; font-weight: bold;">
+                        <span style="font-size: 1.2em;">𝕏</span> Share on X/Twitter
+                    </button>
+                    <button onclick="shareToFacebook()" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; background: #1877F2; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 0.95em; font-weight: bold;">
+                        <span style="font-size: 1.2em;">f</span> Share on Facebook
+                    </button>
+                    <button onclick="shareToLinkedIn()" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; background: #0077B5; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 0.95em; font-weight: bold;">
+                        <span style="font-size: 1.2em;">in</span> Share on LinkedIn
+                    </button>
+                    <button onclick="copyShareLink()" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; color: white; cursor: pointer; font-size: 0.95em; font-weight: bold;">
+                        <span style="font-size: 1.2em;">🔗</span> Copy Link
+                    </button>
+                    <button onclick="shareViaEmail()" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; background: rgba(255,136,0,0.8); border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 0.95em; font-weight: bold;">
+                        <span style="font-size: 1.2em;">✉️</span> Email Comparison
+                    </button>
+                </div>
+
+                <!-- Share Stats -->
+                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2);">
+                    <div style="display: flex; justify-content: space-around; text-align: center;">
+                        <div>
+                            <div style="font-size: 1.3em; color: #1DA1F2;" id="share-count">0</div>
+                            <div style="font-size: 0.75em; color: rgba(255,255,255,0.6);">Times Shared</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 1.3em; color: #FFD700;" id="comparison-saves">0</div>
+                            <div style="font-size: 0.75em; color: rgba(255,255,255,0.6);">Comparisons Saved</div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Photo Upload Panel -->
@@ -8858,7 +9090,439 @@
                 // Feature #12: Initialize responsive features
                 detectLayout();
                 initTouchOptimizations();
+
+                // Feature #19: Initialize badges
+                initBadges();
+                loadBadgesProgress();
+
+                // Feature #20: Load history
+                loadPropertyHistory();
+
+                // Feature #23: Load share stats
+                loadShareStats();
+
+                // Feature #29: Load theme preference
+                loadThemePreference();
             });
+
+            // ===== FEATURE #20: PROPERTY HISTORY TIMELINE =====
+            let propertyHistory = [];
+            let historyFilter = 'all';
+
+            window.toggleHistoryPanel = function() {
+                const panel = document.getElementById('history-panel');
+                const isVisible = panel.style.display === 'block';
+                panel.style.display = isVisible ? 'none' : 'block';
+                if (!isVisible) {
+                    renderHistoryTimeline();
+                }
+                vibrate('tap');
+            };
+
+            window.filterHistory = function(filter) {
+                historyFilter = filter;
+                document.querySelectorAll('.history-filter-btn').forEach(btn => {
+                    btn.style.background = btn.dataset.filter === filter
+                        ? 'rgba(138, 43, 226, 0.4)'
+                        : 'rgba(255, 255, 255, 0.1)';
+                    btn.style.borderColor = btn.dataset.filter === filter
+                        ? 'rgba(138, 43, 226, 0.6)'
+                        : 'rgba(255, 255, 255, 0.3)';
+                });
+                renderHistoryTimeline();
+            };
+
+            window.clearPropertyHistory = function() {
+                if (confirm('Clear all property history?')) {
+                    propertyHistory = [];
+                    localStorage.removeItem('clues_property_history');
+                    renderHistoryTimeline();
+                    updateHistoryStats();
+                    showAlert('History cleared', 'success');
+                    checkBadgeProgress('historian', 0);
+                }
+            };
+
+            function loadPropertyHistory() {
+                try {
+                    const saved = localStorage.getItem('clues_property_history');
+                    if (saved) {
+                        propertyHistory = JSON.parse(saved);
+                    }
+                    updateHistoryStats();
+                } catch (e) {
+                    console.error('Failed to load history:', e);
+                }
+            }
+
+            function savePropertyHistory() {
+                try {
+                    localStorage.setItem('clues_property_history', JSON.stringify(propertyHistory.slice(-100))); // Keep last 100
+                } catch (e) {
+                    console.error('Failed to save history:', e);
+                }
+            }
+
+            function addToHistory(type, data) {
+                const entry = {
+                    type: type, // 'view' or 'comparison'
+                    timestamp: Date.now(),
+                    data: data
+                };
+                propertyHistory.push(entry);
+                savePropertyHistory();
+                updateHistoryStats();
+                checkBadgeProgress('historian', propertyHistory.length);
+            }
+
+            function updateHistoryStats() {
+                const views = propertyHistory.filter(h => h.type === 'view').length;
+                const comparisons = propertyHistory.filter(h => h.type === 'comparison').length;
+                const uniqueProps = new Set(propertyHistory.map(h => h.data?.propertyId || h.data?.name)).size;
+
+                const viewsEl = document.getElementById('history-total-views');
+                const compsEl = document.getElementById('history-total-comparisons');
+                const uniqueEl = document.getElementById('history-unique-props');
+
+                if (viewsEl) viewsEl.textContent = views;
+                if (compsEl) compsEl.textContent = comparisons;
+                if (uniqueEl) uniqueEl.textContent = uniqueProps;
+            }
+
+            function renderHistoryTimeline() {
+                const container = document.getElementById('history-timeline');
+                if (!container) return;
+
+                let filtered = propertyHistory;
+                if (historyFilter === 'views') {
+                    filtered = propertyHistory.filter(h => h.type === 'view');
+                } else if (historyFilter === 'comparisons') {
+                    filtered = propertyHistory.filter(h => h.type === 'comparison');
+                }
+
+                if (filtered.length === 0) {
+                    container.innerHTML = `<div style="text-align: center; color: rgba(255,255,255,0.5); padding: 20px;">
+                        No ${historyFilter === 'all' ? '' : historyFilter} history yet. Start viewing properties!
+                    </div>`;
+                    return;
+                }
+
+                // Show most recent first, limit to 20
+                const recent = filtered.slice(-20).reverse();
+                container.innerHTML = recent.map(entry => {
+                    const time = new Date(entry.timestamp);
+                    const timeStr = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const dateStr = time.toLocaleDateString([], { month: 'short', day: 'numeric' });
+                    const icon = entry.type === 'view' ? '👁️' : '⚖️';
+                    const color = entry.type === 'view' ? '#8A2BE2' : '#00D4FF';
+                    const name = entry.data?.name || entry.data?.propertyId || 'Property';
+
+                    return `<div style="display: flex; gap: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; border-left: 3px solid ${color};">
+                        <div style="font-size: 1.2em;">${icon}</div>
+                        <div style="flex: 1;">
+                            <div style="color: white; font-size: 0.9em; font-weight: 500;">${name}</div>
+                            <div style="color: rgba(255,255,255,0.6); font-size: 0.75em;">${entry.type === 'view' ? 'Viewed' : 'Compared'} • ${dateStr} ${timeStr}</div>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+
+            // Hook into selectProperty to track views
+            const originalSelectProperty = window.selectProperty;
+            window.selectProperty = function(slot, propertyId) {
+                originalSelectProperty(slot, propertyId);
+                if (propertyId) {
+                    const property = PROPERTIES.find(p => p.id === propertyId);
+                    if (property) {
+                        addToHistory('view', { propertyId: propertyId, name: property.name, slot: slot });
+                    }
+                }
+            };
+
+            // ===== FEATURE #19: ACHIEVEMENT BADGES =====
+            const BADGES = [
+                { id: 'first_view', name: 'First Look', icon: '👁️', desc: 'View your first property', condition: (s) => s.views >= 1 },
+                { id: 'explorer', name: 'Explorer', icon: '🔍', desc: 'View 10 properties', condition: (s) => s.views >= 10 },
+                { id: 'researcher', name: 'Researcher', icon: '📚', desc: 'View 25 properties', condition: (s) => s.views >= 25 },
+                { id: 'first_compare', name: 'Comparator', icon: '⚖️', desc: 'Make your first comparison', condition: (s) => s.comparisons >= 1 },
+                { id: 'analyst', name: 'Analyst', icon: '📊', desc: 'Make 5 comparisons', condition: (s) => s.comparisons >= 5 },
+                { id: 'expert', name: 'Expert', icon: '🎓', desc: 'Make 15 comparisons', condition: (s) => s.comparisons >= 15 },
+                { id: 'photographer', name: 'Photographer', icon: '📸', desc: 'Upload a property photo', condition: (s) => s.photos >= 1 },
+                { id: 'curator', name: 'Curator', icon: '🖼️', desc: 'Upload 5 photos', condition: (s) => s.photos >= 5 },
+                { id: 'social', name: 'Social', icon: '📱', desc: 'Share a comparison', condition: (s) => s.shares >= 1 },
+                { id: 'influencer', name: 'Influencer', icon: '⭐', desc: 'Share 5 comparisons', condition: (s) => s.shares >= 5 },
+                { id: 'historian', name: 'Historian', icon: '📜', desc: 'Build history of 50 actions', condition: (s) => s.history >= 50 },
+                { id: 'master', name: 'Master', icon: '🏆', desc: 'Earn 10 badges', condition: (s) => s.badgesEarned >= 10 }
+            ];
+
+            let badgeStats = { views: 0, comparisons: 0, photos: 0, shares: 0, history: 0, badgesEarned: 0 };
+            let earnedBadges = new Set();
+
+            window.toggleBadgesPanel = function() {
+                const panel = document.getElementById('badges-panel');
+                const isVisible = panel.style.display === 'block';
+                panel.style.display = isVisible ? 'none' : 'block';
+                if (!isVisible) {
+                    renderBadges();
+                }
+                vibrate('tap');
+            };
+
+            function initBadges() {
+                renderBadges();
+            }
+
+            function loadBadgesProgress() {
+                try {
+                    const saved = localStorage.getItem('clues_badge_stats');
+                    if (saved) {
+                        badgeStats = JSON.parse(saved);
+                    }
+                    const earned = localStorage.getItem('clues_earned_badges');
+                    if (earned) {
+                        earnedBadges = new Set(JSON.parse(earned));
+                    }
+                    updateBadgesProgress();
+                } catch (e) {
+                    console.error('Failed to load badges:', e);
+                }
+            }
+
+            function saveBadgesProgress() {
+                try {
+                    localStorage.setItem('clues_badge_stats', JSON.stringify(badgeStats));
+                    localStorage.setItem('clues_earned_badges', JSON.stringify([...earnedBadges]));
+                } catch (e) {
+                    console.error('Failed to save badges:', e);
+                }
+            }
+
+            function checkBadgeProgress(statKey, value) {
+                if (statKey && value !== undefined) {
+                    badgeStats[statKey] = Math.max(badgeStats[statKey] || 0, value);
+                }
+
+                // Check all badges
+                let newBadges = [];
+                BADGES.forEach(badge => {
+                    if (!earnedBadges.has(badge.id) && badge.condition(badgeStats)) {
+                        earnedBadges.add(badge.id);
+                        newBadges.push(badge);
+                    }
+                });
+
+                badgeStats.badgesEarned = earnedBadges.size;
+                saveBadgesProgress();
+                updateBadgesProgress();
+
+                // Show notification for new badges
+                newBadges.forEach(badge => {
+                    showAlert(`🏆 Badge Earned: ${badge.icon} ${badge.name}!`, 'success');
+                });
+
+                // Check master badge
+                if (earnedBadges.size >= 10 && !earnedBadges.has('master')) {
+                    earnedBadges.add('master');
+                    showAlert(`🏆 MASTER Badge Earned! You are a CLUES expert!`, 'success');
+                    saveBadgesProgress();
+                }
+            }
+
+            function updateBadgesProgress() {
+                const earned = earnedBadges.size;
+                const total = BADGES.length;
+                const progressEl = document.getElementById('badges-progress');
+                const barEl = document.getElementById('badges-progress-bar');
+
+                if (progressEl) progressEl.textContent = `${earned}/${total}`;
+                if (barEl) barEl.style.width = `${(earned / total) * 100}%`;
+            }
+
+            function renderBadges() {
+                const grid = document.getElementById('badges-grid');
+                if (!grid) return;
+
+                grid.innerHTML = BADGES.map(badge => {
+                    const earned = earnedBadges.has(badge.id);
+                    return `<div style="
+                        background: ${earned ? 'linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 136, 0, 0.3))' : 'rgba(255, 255, 255, 0.05)'};
+                        border: 1px solid ${earned ? 'rgba(255, 215, 0, 0.5)' : 'rgba(255, 255, 255, 0.2)'};
+                        border-radius: 10px;
+                        padding: 12px 8px;
+                        text-align: center;
+                        opacity: ${earned ? 1 : 0.5};
+                        transition: all 0.3s ease;
+                    " title="${badge.desc}">
+                        <div style="font-size: 1.8em; margin-bottom: 5px;">${badge.icon}</div>
+                        <div style="color: ${earned ? '#FFD700' : 'rgba(255,255,255,0.6)'}; font-size: 0.75em; font-weight: bold;">${badge.name}</div>
+                    </div>`;
+                }).join('');
+            }
+
+            // ===== FEATURE #23: SOCIAL SHARING =====
+            let shareStats = { shares: 0, saves: 0 };
+
+            window.toggleSocialPanel = function() {
+                const panel = document.getElementById('social-panel');
+                const isVisible = panel.style.display === 'block';
+                panel.style.display = isVisible ? 'none' : 'block';
+                vibrate('tap');
+            };
+
+            function loadShareStats() {
+                try {
+                    const saved = localStorage.getItem('clues_share_stats');
+                    if (saved) {
+                        shareStats = JSON.parse(saved);
+                    }
+                    updateShareStats();
+                } catch (e) {
+                    console.error('Failed to load share stats:', e);
+                }
+            }
+
+            function saveShareStats() {
+                try {
+                    localStorage.setItem('clues_share_stats', JSON.stringify(shareStats));
+                } catch (e) {
+                    console.error('Failed to save share stats:', e);
+                }
+            }
+
+            function updateShareStats() {
+                const countEl = document.getElementById('share-count');
+                const savesEl = document.getElementById('comparison-saves');
+                if (countEl) countEl.textContent = shareStats.shares;
+                if (savesEl) savesEl.textContent = shareStats.saves;
+            }
+
+            function getShareText() {
+                let text = 'Check out my property comparison on CLUES! ';
+                if (propertyA) text += `${propertyA.name}`;
+                if (propertyB) text += ` vs ${propertyB.name}`;
+                if (propertyC) text += ` vs ${propertyC.name}`;
+                return text;
+            }
+
+            window.shareToTwitter = function() {
+                const text = encodeURIComponent(getShareText());
+                const url = encodeURIComponent(window.location.href);
+                window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank', 'width=600,height=400');
+                incrementShare();
+            };
+
+            window.shareToFacebook = function() {
+                const url = encodeURIComponent(window.location.href);
+                window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'width=600,height=400');
+                incrementShare();
+            };
+
+            window.shareToLinkedIn = function() {
+                const url = encodeURIComponent(window.location.href);
+                const title = encodeURIComponent('CLUES Property Comparison');
+                window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'width=600,height=400');
+                incrementShare();
+            };
+
+            window.copyShareLink = function() {
+                const url = window.location.href;
+                navigator.clipboard.writeText(url).then(() => {
+                    showAlert('Link copied to clipboard!', 'success');
+                    incrementShare();
+                }).catch(() => {
+                    showAlert('Failed to copy link', 'error');
+                });
+            };
+
+            window.shareViaEmail = function() {
+                const subject = encodeURIComponent('Check out my CLUES Property Comparison');
+                const body = encodeURIComponent(getShareText() + '\n\n' + window.location.href);
+                window.location.href = `mailto:?subject=${subject}&body=${body}`;
+                incrementShare();
+            };
+
+            function incrementShare() {
+                shareStats.shares++;
+                saveShareStats();
+                updateShareStats();
+                checkBadgeProgress('shares', shareStats.shares);
+                addToHistory('comparison', { type: 'shared', properties: [propertyA?.name, propertyB?.name, propertyC?.name].filter(Boolean) });
+            }
+
+            // ===== FEATURE #28: SIDE-BY-SIDE VIEW =====
+            let sideBySideMode = false;
+
+            window.toggleSideBySide = function() {
+                sideBySideMode = !sideBySideMode;
+                const btn = document.getElementById('sidebyside-toggle');
+                if (btn) {
+                    btn.textContent = sideBySideMode ? '⬛⬛ Side-by-Side: ON' : '⬛⬛ Side-by-Side: OFF';
+                }
+
+                const container = document.getElementById('canvas-container');
+                if (sideBySideMode) {
+                    // Apply side-by-side layout
+                    document.body.classList.add('sidebyside-mode');
+                    if (camera) {
+                        camera.position.z = 10; // Pull back for wider view
+                    }
+                    // Spread spheres horizontally
+                    if (sphereA) sphereA.position.x = -4;
+                    if (sphereB) sphereB.position.x = 0;
+                    if (sphereC) sphereC.position.x = 4;
+                    showAlert('Side-by-Side view enabled', 'success');
+                } else {
+                    // Restore default layout
+                    document.body.classList.remove('sidebyside-mode');
+                    if (camera) {
+                        camera.position.z = 6;
+                    }
+                    // Restore default positions
+                    if (sphereA) sphereA.position.x = -2.5;
+                    if (sphereB) sphereB.position.x = 0;
+                    if (sphereC) sphereC.position.x = 2.5;
+                    showAlert('Default view restored', 'success');
+                }
+                vibrate('tap');
+            };
+
+            // ===== FEATURE #29: DARK/LIGHT THEME =====
+            let isDarkMode = true;
+
+            window.toggleTheme = function() {
+                isDarkMode = !isDarkMode;
+                const btn = document.getElementById('theme-toggle');
+                if (btn) {
+                    btn.textContent = isDarkMode ? '🌙 Dark Mode' : '☀️ Light Mode';
+                }
+
+                document.body.classList.toggle('light-theme', !isDarkMode);
+
+                // Update scene background
+                if (scene) {
+                    if (isDarkMode) {
+                        scene.background = new THREE.Color(0x0a1628);
+                    } else {
+                        scene.background = new THREE.Color(0xe8e8e8);
+                    }
+                }
+
+                // Save preference
+                localStorage.setItem('clues_theme', isDarkMode ? 'dark' : 'light');
+                showAlert(isDarkMode ? 'Dark mode enabled' : 'Light mode enabled', 'success');
+                vibrate('tap');
+            };
+
+            function loadThemePreference() {
+                const saved = localStorage.getItem('clues_theme');
+                if (saved === 'light') {
+                    isDarkMode = false;
+                    document.body.classList.add('light-theme');
+                    const btn = document.getElementById('theme-toggle');
+                    if (btn) btn.textContent = '☀️ Light Mode';
+                    if (scene) scene.background = new THREE.Color(0xe8e8e8);
+                }
+            }
 
         })(); // End namespace wrapper
     </script>
