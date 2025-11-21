@@ -2841,15 +2841,15 @@
                     <div style="text-align: center; margin-bottom: 15px;">
                         <h3 style="color: #00D4FF; margin: 0 0 8px 0; font-size: 0.95em;">Buyer Profile Analysis</h3>
                         <div class="persona-selector" role="radiogroup" aria-label="Select buyer persona">
-                            <button class="persona-btn active" onclick="setPersona('balanced')"
+                            <button class="persona-btn active" onclick="setPersona('balanced', event)"
                                     role="radio" aria-checked="true" aria-label="Balanced persona">⚖️ Balanced</button>
-                            <button class="persona-btn" onclick="setPersona('retiree')"
+                            <button class="persona-btn" onclick="setPersona('retiree', event)"
                                     role="radio" aria-checked="false" aria-label="Retiree persona">👴 Retiree</button>
-                            <button class="persona-btn" onclick="setPersona('family')"
+                            <button class="persona-btn" onclick="setPersona('family', event)"
                                     role="radio" aria-checked="false" aria-label="Family persona">👨‍👩‍👧‍👦 Family</button>
-                            <button class="persona-btn" onclick="setPersona('investor')"
+                            <button class="persona-btn" onclick="setPersona('investor', event)"
                                     role="radio" aria-checked="false" aria-label="Investor persona">💼 Investor</button>
-                            <button class="persona-btn" onclick="setPersona('nomad')"
+                            <button class="persona-btn" onclick="setPersona('nomad', event)"
                                     role="radio" aria-checked="false" aria-label="Nomad persona">✈️ Nomad</button>
                         </div>
                     </div>
@@ -5587,19 +5587,29 @@
             };
 
             // ===== PERSONA SELECTION =====
-            window.setPersona = function(persona) {
+            window.setPersona = function(persona, evt) {
                 currentPersona = persona;
 
                 // Feature #18: Vibration feedback
                 vibrate('tap');
 
-                // Update ARIA states
+                // Update ARIA states - use passed event or window.event for IE compatibility
+                const clickEvent = evt || window.event;
                 document.querySelectorAll('.persona-btn').forEach(btn => {
                     btn.classList.remove('active');
                     btn.setAttribute('aria-checked', 'false');
                 });
-                event.target.classList.add('active');
-                event.target.setAttribute('aria-checked', 'true');
+                if (clickEvent && clickEvent.target) {
+                    clickEvent.target.classList.add('active');
+                    clickEvent.target.setAttribute('aria-checked', 'true');
+                } else {
+                    // Fallback: find button by persona name
+                    const btn = document.querySelector(`.persona-btn[onclick*="${persona}"]`);
+                    if (btn) {
+                        btn.classList.add('active');
+                        btn.setAttribute('aria-checked', 'true');
+                    }
+                }
 
                 announceToScreenReader(`Analysis persona changed to ${persona}`);
                 showAlert(`Persona: ${persona}`, 'success');
@@ -5609,6 +5619,11 @@
 
                 // Update comparison table to reflect new Smart Scores
                 updateComparisonPanel();
+
+                // Update radar chart if visible
+                if (radarChart) {
+                    createRadarChart();
+                }
             };
 
             // ===== METRIC FILTERING =====
