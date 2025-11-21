@@ -2016,14 +2016,16 @@
             display: none;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            padding: 6px 12px;
+            gap: 5px;
+            padding: 4px 8px;
             background: linear-gradient(135deg, rgba(0, 100, 180, 0.9) 0%, rgba(0, 60, 120, 0.9) 100%);
-            border-radius: 20px;
+            border-radius: 12px;
             border: 1px solid rgba(0, 212, 255, 0.5);
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
             z-index: 1000;
             pointer-events: auto;
+            transform: scale(0.60);
+            transform-origin: center center;
         }
 
         .video-control-bar.active {
@@ -2054,9 +2056,9 @@
             border-color: #00D4FF;
         }
 
-        #video-controls-A { top: 55%; left: 13%; }
-        #video-controls-B { top: 55%; left: 43%; }
-        #video-controls-C { top: 55%; left: 73%; }
+        #video-controls-A { top: 55%; left: 15.5%; }
+        #video-controls-B { top: 55%; left: 45.5%; }
+        #video-controls-C { top: 55%; left: 75.5%; }
 
         .photo-upload-panel h3 {
             margin: 0 0 10px 0;
@@ -4437,6 +4439,7 @@
                 video.src = videoUrl;
                 video.loop = true;
                 video.muted = true; // Start muted for autoplay, user can unmute
+                video.volume = 0.7; // Pre-set volume so unmute works immediately
                 video.playsInline = true;
                 video.crossOrigin = 'anonymous';
                 video.preload = 'auto';
