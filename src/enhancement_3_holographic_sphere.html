@@ -4367,7 +4367,7 @@
 
                 console.log(`🎬 Applying video texture to Property ${slot}`);
 
-                // Create video element for texture with HIGH QUALITY settings
+                // Create video element for texture with MAXIMUM QUALITY settings
                 const video = document.createElement('video');
                 video.src = videoUrl;
                 video.loop = true;
@@ -4375,9 +4375,10 @@
                 video.playsInline = true;
                 video.crossOrigin = 'anonymous';
                 video.preload = 'auto';
-                // Set video to full resolution
-                video.width = 1920;
-                video.height = 1080;
+                // Set video to 4K resolution for maximum quality
+                video.width = 3840;
+                video.height = 2160;
+                video.style.imageRendering = 'high-quality';
 
                 // Store reference
                 videoElements[slot] = video;
@@ -4479,6 +4480,39 @@
                 }
                 vibrate('tap');
                 return true;
+            };
+
+            // Cinema Mode - hide/show header and property dropdowns for better video viewing
+            let cinemaMode = false;
+            window.toggleCinemaMode = function(forceState = null) {
+                cinemaMode = forceState !== null ? forceState : !cinemaMode;
+
+                const header = document.querySelector('.header');
+                const selectorColumn = document.querySelector('.selector-column');
+                const importBtn = document.getElementById('import-properties-btn');
+                const photoBtn = document.getElementById('photo-upload-master-btn');
+                const videoBtn = document.getElementById('video-upload-master-btn');
+                const toolsBtn = document.getElementById('tools-master-btn');
+
+                const elementsToHide = [header, selectorColumn, importBtn, photoBtn, videoBtn, toolsBtn].filter(el => el);
+
+                if (cinemaMode) {
+                    // Hide UI elements for cinema mode
+                    elementsToHide.forEach(el => {
+                        el.dataset.originalDisplay = el.style.display || '';
+                        el.style.display = 'none';
+                    });
+                    showAlert('🎬 Cinema Mode ON - Triple-click house to exit', 'success');
+                } else {
+                    // Restore UI elements
+                    elementsToHide.forEach(el => {
+                        el.style.display = el.dataset.originalDisplay || '';
+                    });
+                    showAlert('🎬 Cinema Mode OFF', 'info');
+                }
+
+                vibrate('tap');
+                return cinemaMode;
             };
 
             // Load saved videos on init
@@ -5432,6 +5466,55 @@
                         }
                     }
                 });
+
+                // Triple-click detection for cinema mode
+                let clickCount = 0;
+                let clickTimer = null;
+                let lastClickedSlot = null;
+
+                renderer.domElement.addEventListener('click', (event) => {
+                    // Get clicked slot
+                    const rect = renderer.domElement.getBoundingClientRect();
+                    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+                    raycaster.setFromCamera(mouse, camera);
+
+                    const objectsToCheck = [sphereA, sphereB, sphereC].filter(obj => obj !== null);
+                    const intersects = raycaster.intersectObjects(objectsToCheck, true);
+
+                    if (intersects.length > 0) {
+                        let slot = null;
+                        if (isDescendant(sphereA, intersects[0].object)) slot = 'A';
+                        else if (isDescendant(sphereB, intersects[0].object)) slot = 'B';
+                        else if (isDescendant(sphereC, intersects[0].object)) slot = 'C';
+
+                        if (slot) {
+                            const sphere = slot === 'A' ? sphereA : slot === 'B' ? sphereB : sphereC;
+                            if (sphere?.userData?.hasVideo) {
+                                // Track clicks for triple-click
+                                if (lastClickedSlot === slot) {
+                                    clickCount++;
+                                } else {
+                                    clickCount = 1;
+                                    lastClickedSlot = slot;
+                                }
+
+                                clearTimeout(clickTimer);
+                                clickTimer = setTimeout(() => {
+                                    clickCount = 0;
+                                    lastClickedSlot = null;
+                                }, 500); // Reset after 500ms
+
+                                // Triple-click toggles cinema mode
+                                if (clickCount >= 3) {
+                                    window.toggleCinemaMode();
+                                    clickCount = 0;
+                                    lastClickedSlot = null;
+                                }
+                            }
+                        }
+                    }
+                }, true); // Use capture to run before other click handler
 
                 // Helper function to check if object is descendant
                 function isDescendant(parent, child) {
