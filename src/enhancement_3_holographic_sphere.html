@@ -2054,9 +2054,10 @@
             border-color: #00D4FF;
         }
 
-        #video-controls-A { top: 55%; left: 16.67%; transform: translateX(-50%) scale(0.60); }
-        #video-controls-B { top: 55%; left: 50%; transform: translateX(-50%) scale(0.60); }
-        #video-controls-C { top: 55%; left: 83.33%; transform: translateX(-50%) scale(0.60); }
+        /* Positions set dynamically by updateVideoControlBarPosition() based on 3D house location */
+        #video-controls-A, #video-controls-B, #video-controls-C {
+            /* Initial position - will be overridden by JS when shown */
+        }
 
         .photo-upload-panel h3 {
             margin: 0 0 10px 0;
@@ -4661,12 +4662,48 @@
                 }
             };
 
-            // Show video control bar for a slot
+            // Show video control bar for a slot - positioned below the actual 3D house
             window.showVideoControlBar = function(slot) {
                 const controlBar = document.getElementById(`video-controls-${slot}`);
                 if (controlBar) {
                     controlBar.classList.add('active');
+                    // Position below the actual 3D house
+                    updateVideoControlBarPosition(slot);
                 }
+            };
+
+            // Update video control bar position based on 3D house screen position
+            window.updateVideoControlBarPosition = function(slot) {
+                const controlBar = document.getElementById(`video-controls-${slot}`);
+                const sphere = slot === 'A' ? sphereA : slot === 'B' ? sphereB : sphereC;
+
+                if (!controlBar || !sphere || !camera || !renderer) return;
+
+                // Get the 3D position of the house and project to screen coordinates
+                const vector = new THREE.Vector3();
+                vector.setFromMatrixPosition(sphere.matrixWorld);
+
+                // Offset down to position below the house (house is roughly 1.5 units tall)
+                vector.y -= 1.2;
+
+                // Project to screen coordinates
+                vector.project(camera);
+
+                // Convert to screen pixels
+                const canvas = renderer.domElement;
+                const widthHalf = canvas.clientWidth / 2;
+                const heightHalf = canvas.clientHeight / 2;
+
+                const screenX = (vector.x * widthHalf) + widthHalf;
+                const screenY = -(vector.y * heightHalf) + heightHalf;
+
+                // Account for canvas offset (top: 96px)
+                const canvasRect = canvas.getBoundingClientRect();
+
+                // Position the control bar centered below the house
+                controlBar.style.left = (canvasRect.left + screenX) + 'px';
+                controlBar.style.top = (canvasRect.top + screenY) + 'px';
+                controlBar.style.transform = 'translateX(-50%) scale(0.60)';
             };
 
             // Hide video control bar for a slot
@@ -5901,6 +5938,14 @@
 
                 // Feature #21: Photo ring animation DISABLED (feature removed per user request)
                 // Skipping photo ring animation - improves performance
+
+                // Update video control bar positions to follow 3D houses
+                ['A', 'B', 'C'].forEach(slot => {
+                    const controlBar = document.getElementById(`video-controls-${slot}`);
+                    if (controlBar && controlBar.classList.contains('active')) {
+                        updateVideoControlBarPosition(slot);
+                    }
+                });
 
                 if (controls) controls.update();
                 renderer.render(scene, camera);
