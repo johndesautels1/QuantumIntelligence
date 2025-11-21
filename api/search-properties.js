@@ -58,19 +58,31 @@ export default async function handler(req, res) {
         const html = await response.text();
         console.log(`✅ Fetched ${html.length} bytes of HTML`);
 
+        // Check if we got a CAPTCHA or block page
+        if (html.includes('captcha') || html.includes('blocked') || html.includes('Access Denied')) {
+            console.log('❌ Zillow blocked the request (CAPTCHA/block detected)');
+            return res.status(503).json({
+                error: 'Service temporarily unavailable',
+                message: 'Zillow blocked our request. Try again in a few minutes.',
+                debug: { htmlLength: html.length, blocked: true }
+            });
+        }
+
         // Extract just the property data section (to reduce token usage)
         // Zillow embeds JSON data in a script tag
         const jsonMatch = html.match(/"listResults":\s*(\[[\s\S]*?\])\s*,\s*"mapResults"/);
         const searchDataMatch = html.match(/<script[^>]*id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
 
         let propertyData = [];
+        let parseMethod = 'none';
 
         if (jsonMatch) {
             try {
                 propertyData = JSON.parse(jsonMatch[1]);
+                parseMethod = 'listResults';
                 console.log(`✅ Found ${propertyData.length} properties in JSON data`);
             } catch (e) {
-                console.log('Could not parse listResults JSON');
+                console.log('Could not parse listResults JSON:', e.message);
             }
         }
 
@@ -79,10 +91,27 @@ export default async function handler(req, res) {
                 const nextData = JSON.parse(searchDataMatch[1]);
                 const results = nextData?.props?.pageProps?.searchPageState?.cat1?.searchResults?.listResults || [];
                 propertyData = results;
+                parseMethod = 'NEXT_DATA';
                 console.log(`✅ Found ${propertyData.length} properties in NEXT_DATA`);
             } catch (e) {
-                console.log('Could not parse NEXT_DATA');
+                console.log('Could not parse NEXT_DATA:', e.message);
             }
+        }
+
+        // If still no data, return debug info
+        if (propertyData.length === 0) {
+            console.log('❌ No property data found in HTML');
+            return res.status(404).json({
+                error: 'No properties found',
+                message: `Could not find properties in ${location}. The page may have changed or blocked our request.`,
+                debug: {
+                    htmlLength: html.length,
+                    hasListResults: !!jsonMatch,
+                    hasNextData: !!searchDataMatch,
+                    parseMethod: parseMethod,
+                    htmlSample: html.substring(0, 500)
+                }
+            });
         }
 
         // If we found structured data, use it directly
