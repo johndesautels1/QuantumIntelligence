@@ -72,7 +72,7 @@ export class PropertySearchWidget {
         <style>
             .search-widget {
                 position: fixed;
-                bottom: 96px;
+                bottom: 102px;
                 left: 50%;
                 transform: translateX(-50%);
                 z-index: 1000;
@@ -89,11 +89,11 @@ export class PropertySearchWidget {
                 cursor: pointer;
                 box-shadow: 0 3px 12px rgba(255, 107, 107, 0.4);
                 transition: all 0.3s ease;
-                transform: scaleY(0.6);
+                transform: scaleY(0.68);
             }
 
             .search-toggle-btn:hover {
-                transform: scaleY(0.6) translateY(-2px);
+                transform: scaleY(0.68) translateY(-2px);
                 box-shadow: 0 5px 15px rgba(255, 107, 107, 0.6);
             }
 
