@@ -3,8 +3,6 @@
  * Vercel Serverless Function - Searches for properties using web scraping + LLM parsing
  */
 
-import Anthropic from '@anthropic-ai/sdk';
-
 export default async function handler(req, res) {
     // Enable CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -125,22 +123,33 @@ export default async function handler(req, res) {
             });
         }
 
-        // Fallback: Use Claude to extract from HTML
+        // Fallback: Use Claude API directly via fetch (no SDK import)
         console.log('📝 Using Claude to parse HTML...');
 
-        const anthropic = new Anthropic({
-            apiKey: process.env.ANTHROPIC_API_KEY
-        });
+        const apiKey = process.env.ANTHROPIC_API_KEY;
+        if (!apiKey) {
+            return res.status(500).json({
+                error: 'API key missing',
+                message: 'ANTHROPIC_API_KEY not configured'
+            });
+        }
 
-        // Take a reasonable chunk of HTML (first 50KB)
-        const htmlChunk = html.substring(0, 50000);
+        // Take a reasonable chunk of HTML (first 30KB)
+        const htmlChunk = html.substring(0, 30000);
 
-        const message = await anthropic.messages.create({
-            model: 'claude-3-haiku-20240307',
-            max_tokens: 2000,
-            messages: [{
-                role: 'user',
-                content: `Extract the first ${limit} property listings from this HTML. Return ONLY valid JSON:
+        const claudeResponse = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': apiKey,
+                'anthropic-version': '2023-06-01'
+            },
+            body: JSON.stringify({
+                model: 'claude-3-haiku-20240307',
+                max_tokens: 2000,
+                messages: [{
+                    role: 'user',
+                    content: `Extract the first ${limit} property listings from this real estate search page HTML. Return ONLY valid JSON in this exact format:
 
 {
   "properties": [
@@ -157,11 +166,23 @@ export default async function handler(req, res) {
 
 HTML:
 ${htmlChunk}`
-            }]
+                }]
+            })
         });
 
-        const claudeResponse = message.content[0].text;
-        const parsed = JSON.parse(claudeResponse.match(/\{[\s\S]*\}/)?.[0] || '{"properties":[]}');
+        if (!claudeResponse.ok) {
+            const errorText = await claudeResponse.text();
+            console.error('Claude API error:', errorText);
+            return res.status(500).json({
+                error: 'LLM parsing failed',
+                message: 'Could not parse property data'
+            });
+        }
+
+        const claudeData = await claudeResponse.json();
+        const claudeText = claudeData.content?.[0]?.text || '';
+
+        const parsed = JSON.parse(claudeText.match(/\{[\s\S]*\}/)?.[0] || '{"properties":[]}');
 
         const properties = (parsed.properties || []).slice(0, limit).map((item, idx) => ({
             address: {
