@@ -4414,13 +4414,23 @@
                 // Wall goes from y=-0.4 to y=0.4, so center at y=0
                 // But leave room for door at bottom, so raise slightly: y=0.05
                 // Top of video at y = 0.05 + (0.62/2) = 0.36 (below roof at 0.4)
-                videoPlane.position.set(0, 0.05, 0.52); // Centered on wall, in front
+                // z: 0.54 puts video in FRONT of door (0.52) and windows (0.52)
+                videoPlane.position.set(0, 0.05, 0.54); // In front of door/windows
                 videoPlane.userData.isVideoPlane = true;
 
-                // Remove any existing video plane
+                // Remove any existing video plane and hide door/windows that would show through
                 sphere.children.forEach(child => {
                     if (child.userData && child.userData.isVideoPlane) {
                         sphere.remove(child);
+                    }
+                    // Hide door and windows when video is displayed
+                    if (child.geometry) {
+                        const pos = child.position;
+                        // Door is at z=0.52, windows are at z=0.52
+                        if (pos.z >= 0.5 && pos.z <= 0.53) {
+                            child.userData.wasVisible = child.visible;
+                            child.visible = false;
+                        }
                     }
                 });
 
@@ -6849,11 +6859,13 @@
                 scene.add(labelSprite);
 
                 // Create small connecting rod from bottom of sphere/house to label
+                // Position rod at BACK of house (z - 0.5) so it doesn't show on front/video
                 const sphereBottomY = sphere.position.y - 1.0; // Approximate bottom of sphere/house
+                const rodZ = sphere.position.z - 0.5; // Move rod to back of house
                 const rodGeometry = new THREE.BufferGeometry();
                 const rodPoints = [
-                    new THREE.Vector3(sphere.position.x, sphereBottomY, sphere.position.z), // Bottom of sphere
-                    new THREE.Vector3(sphere.position.x, labelYPosition + 0.5, sphere.position.z) // Top of label
+                    new THREE.Vector3(sphere.position.x, sphereBottomY, rodZ), // Bottom of sphere (back)
+                    new THREE.Vector3(sphere.position.x, labelYPosition + 0.5, rodZ) // Top of label (back)
                 ];
                 rodGeometry.setFromPoints(rodPoints);
                 const rodMaterial = new THREE.LineBasicMaterial({
