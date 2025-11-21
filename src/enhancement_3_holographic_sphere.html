@@ -2024,8 +2024,6 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
             z-index: 1000;
             pointer-events: auto;
-            transform: scale(0.60);
-            transform-origin: center center;
         }
 
         .video-control-bar.active {
@@ -2056,9 +2054,9 @@
             border-color: #00D4FF;
         }
 
-        #video-controls-A { top: 55%; left: 12.5%; }
-        #video-controls-B { top: 55%; left: 42.5%; }
-        #video-controls-C { top: 55%; left: 72.5%; }
+        #video-controls-A { top: 55%; left: 16.67%; transform: translateX(-50%) scale(0.60); }
+        #video-controls-B { top: 55%; left: 50%; transform: translateX(-50%) scale(0.60); }
+        #video-controls-C { top: 55%; left: 83.33%; transform: translateX(-50%) scale(0.60); }
 
         .photo-upload-panel h3 {
             margin: 0 0 10px 0;
