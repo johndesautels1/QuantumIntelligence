@@ -32,10 +32,10 @@ export default async function handler(req, res) {
         // Parse location
         const parts = location.split(',').map(s => s.trim());
         const city = parts[0]?.replace(/\s+/g, '-').toLowerCase() || '';
-        const state = (parts[1]?.trim() || 'FL').toUpperCase();
+        const state = (parts[1]?.trim() || 'FL').toLowerCase();
 
-        // Build Zillow search URL
-        const searchUrl = `https://www.zillow.com/${city}-${state}/`;
+        // Build Zillow search URL - use homes for sale format
+        const searchUrl = `https://www.zillow.com/${city}-${state}/homes/`;
         console.log(`🔗 Fetching: ${searchUrl}`);
 
         // Fetch the search page HTML
