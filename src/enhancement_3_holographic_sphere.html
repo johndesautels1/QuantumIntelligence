@@ -1911,6 +1911,105 @@
             background: linear-gradient(135deg, #00FF88, #8A2BE2);
         }
 
+        /* Feature #10c: Video Upload Panel */
+        .video-upload-panel {
+            position: fixed !important;
+            left: 20px !important;
+            bottom: 20px !important;
+            width: 380px !important;
+            height: auto !important;
+            max-height: 550px !important;
+            background: linear-gradient(135deg, rgba(40, 10, 30, 0.98) 0%, rgba(71, 26, 50, 0.98) 100%) !important;
+            backdrop-filter: blur(20px) !important;
+            border-radius: 15px !important;
+            padding: 20px !important;
+            border: 2px solid rgba(255, 107, 107, 0.6) !important;
+            box-shadow: 0 10px 40px rgba(255, 107, 107, 0.3), 0 0 20px rgba(255, 107, 107, 0.2) !important;
+            z-index: 9999 !important;
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            pointer-events: auto !important;
+            transform: scale(0.85) !important;
+            transform-origin: bottom left !important;
+        }
+
+        .video-upload-panel * {
+            pointer-events: auto !important;
+        }
+
+        .video-upload-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .video-upload-panel::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+        }
+
+        .video-upload-panel::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #FF6B6B, #8A2BE2);
+            border-radius: 4px;
+        }
+
+        .video-upload-panel::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #FF8E53, #8A2BE2);
+        }
+
+        .video-upload-panel h3 {
+            margin: 0 0 10px 0;
+            color: #FF6B6B;
+            font-size: 1.1em;
+        }
+
+        .video-preview-container {
+            position: relative;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .video-preview-container video {
+            width: 100%;
+            max-height: 180px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .video-play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 107, 107, 0.8);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .video-play-overlay:hover {
+            background: rgba(255, 107, 107, 1);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .video-play-overlay::after {
+            content: '';
+            width: 0;
+            height: 0;
+            border-left: 20px solid white;
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+            margin-left: 5px;
+        }
+
         .photo-upload-panel h3 {
             margin: 0 0 10px 0;
             color: #00D4FF;
@@ -2188,6 +2287,13 @@
                     aria-label="Upload property photos"
                     style="left: 20px; right: auto; top: 75px; min-width: 220px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.4), rgba(138, 43, 226, 0.4)); font-weight: bold;">
                 📸 UPLOAD PHOTOS
+            </button>
+
+            <!-- VIDEO UPLOAD Button (Top Left - BELOW Upload Photos) -->
+            <button class="mode-toggle" id="video-upload-master-btn" onclick="toggleVideoUpload()"
+                    aria-label="Upload property virtual tour videos"
+                    style="left: 20px; right: auto; top: 115px; min-width: 220px; background: linear-gradient(135deg, rgba(255, 107, 107, 0.4), rgba(138, 43, 226, 0.4)); font-weight: bold;">
+                🎬 UPLOAD VIDEOS
             </button>
 
             <!-- TOOLS Master Dropdown Menu (Top Right) -->
@@ -2534,6 +2640,87 @@
                             <li><a href="https://poly.cam/" target="_blank" style="color: #00D4FF; font-weight: bold;">Polycam</a> - Mobile app (50 scans free)</li>
                         </ul>
                         <span style="color: rgba(255, 255, 255, 0.8); font-size: 0.9em;">Then download the .glb file and add to MODEL_PATHS!</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video Upload Panel -->
+            <div class="video-upload-panel" id="video-upload-panel" role="region" aria-label="Upload property virtual tour videos">
+                <button onclick="toggleVideoUpload()" style="position: absolute; top: 10px; right: 10px; background: rgba(255, 0, 0, 0.7); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 18px; font-weight: bold; line-height: 1; z-index: 10000;" aria-label="Close video upload panel">×</button>
+                <h3 style="color: #FF6B6B;">🎬 Upload Virtual Tour Videos</h3>
+                <p style="font-size: 0.85em; color: rgba(255, 255, 255, 0.9); margin-bottom: 10px; line-height: 1.4;">
+                    <strong style="color: #FF8E53;">🏠 3D House Video Mapping:</strong><br>
+                    • Upload MP4/WebM virtual tour video<br>
+                    • Video plays on house front face<br>
+                    • <em style="color: #FFD700;">Click house to play/pause!</em>
+                </p>
+
+                <div class="upload-tabs">
+                    <button class="upload-tab video-tab active" onclick="selectVideoUploadSlot('A', event); return false;">Property A</button>
+                    <button class="upload-tab video-tab" onclick="selectVideoUploadSlot('B', event); return false;">Property B</button>
+                    <button class="upload-tab video-tab" onclick="selectVideoUploadSlot('C', event); return false;">Property C</button>
+                </div>
+
+                <div id="video-upload-content" style="color: #FFFFFF;">
+                    <!-- Property A video upload -->
+                    <input type="file" id="video-input-A" accept="video/mp4,video/webm,video/ogg" onchange="handleVideoUpload('A', this)"
+                           style="margin: 10px 0; display: block; width: 100%; color: white; background: rgba(255, 255, 255, 0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.3);">
+                    <p style="font-size: 0.75em; color: rgba(255, 200, 0, 0.9); margin: -5px 0 10px 0; line-height: 1.3;">
+                        🎥 <strong>Supported:</strong> MP4, WebM, OGG (max 100MB)<br>
+                        💡 <strong>Tip:</strong> Use virtual tour or walkthrough videos!
+                    </p>
+
+                    <div id="video-preview-A" class="video-preview-container" style="margin: 10px 0; display: none;">
+                        <video id="video-element-A" controls muted style="width: 100%; max-height: 180px; border-radius: 8px;"></video>
+                        <p id="video-name-A" style="color: rgba(255, 255, 255, 0.7); font-size: 0.8em; text-align: center; margin-top: 5px;"></p>
+                    </div>
+                    <div id="video-placeholder-A" style="margin: 10px 0; padding: 30px; background: rgba(0, 0, 0, 0.3); border-radius: 8px; text-align: center;">
+                        <p style="color: rgba(255, 255, 255, 0.5); font-size: 0.85em;">🎬 No video uploaded yet</p>
+                    </div>
+
+                    <button onclick="applyVideoTexture('A')" id="apply-video-btn-A" class="apply-video-btn" style="margin-top: 10px; padding: 10px 20px; background: linear-gradient(135deg, #FF6B6B, #8A2BE2); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1em; opacity: 0.5;" disabled>
+                        🎬 Apply Video to 3D House
+                    </button>
+
+                    <!-- Property B video upload (hidden by default) -->
+                    <input type="file" id="video-input-B" accept="video/mp4,video/webm,video/ogg" onchange="handleVideoUpload('B', this)"
+                           style="margin: 10px 0; display: none; width: 100%; color: white; background: rgba(255, 255, 255, 0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.3);">
+
+                    <div id="video-preview-B" class="video-preview-container" style="margin: 10px 0; display: none;">
+                        <video id="video-element-B" controls muted style="width: 100%; max-height: 180px; border-radius: 8px;"></video>
+                        <p id="video-name-B" style="color: rgba(255, 255, 255, 0.7); font-size: 0.8em; text-align: center; margin-top: 5px;"></p>
+                    </div>
+                    <div id="video-placeholder-B" style="margin: 10px 0; padding: 30px; background: rgba(0, 0, 0, 0.3); border-radius: 8px; text-align: center; display: none;">
+                        <p style="color: rgba(255, 255, 255, 0.5); font-size: 0.85em;">🎬 No video uploaded yet</p>
+                    </div>
+
+                    <button onclick="applyVideoTexture('B')" id="apply-video-btn-B" class="apply-video-btn" style="margin-top: 10px; padding: 10px 20px; background: linear-gradient(135deg, #00FF88, #8A2BE2); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1em; display: none; opacity: 0.5;" disabled>
+                        🎬 Apply Video to 3D House
+                    </button>
+
+                    <!-- Property C video upload (hidden by default) -->
+                    <input type="file" id="video-input-C" accept="video/mp4,video/webm,video/ogg" onchange="handleVideoUpload('C', this)"
+                           style="margin: 10px 0; display: none; width: 100%; color: white; background: rgba(255, 255, 255, 0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.3);">
+
+                    <div id="video-preview-C" class="video-preview-container" style="margin: 10px 0; display: none;">
+                        <video id="video-element-C" controls muted style="width: 100%; max-height: 180px; border-radius: 8px;"></video>
+                        <p id="video-name-C" style="color: rgba(255, 255, 255, 0.7); font-size: 0.8em; text-align: center; margin-top: 5px;"></p>
+                    </div>
+                    <div id="video-placeholder-C" style="margin: 10px 0; padding: 30px; background: rgba(0, 0, 0, 0.3); border-radius: 8px; text-align: center; display: none;">
+                        <p style="color: rgba(255, 255, 255, 0.5); font-size: 0.85em;">🎬 No video uploaded yet</p>
+                    </div>
+
+                    <button onclick="applyVideoTexture('C')" id="apply-video-btn-C" class="apply-video-btn" style="margin-top: 10px; padding: 10px 20px; background: linear-gradient(135deg, #FFD700, #8A2BE2); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1em; display: none; opacity: 0.5;" disabled>
+                        🎬 Apply Video to 3D House
+                    </button>
+
+                    <div style="margin-top: 15px; padding: 12px; background: rgba(255, 107, 107, 0.15); border-radius: 8px; font-size: 0.85em; color: #FFFFFF; border: 1px solid rgba(255, 107, 107, 0.3);">
+                        <strong style="color: #FFD700;">🎮 How to Use:</strong>
+                        <ul style="margin: 8px 0 0 20px; padding: 0; color: rgba(255, 255, 255, 0.9);">
+                            <li>Upload video → Click "Apply to 3D House"</li>
+                            <li>Click the 3D house to <strong style="color: #00FF88;">play/pause</strong></li>
+                            <li>Video plays on the front face of the house!</li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -3993,6 +4180,314 @@
                 vibrate('tap');
             };
 
+            // ===== VIDEO UPLOAD SYSTEM =====
+            // Storage for uploaded videos (using IndexedDB for large files)
+            const uploadedVideos = { A: null, B: null, C: null };
+            const videoTextures = { A: null, B: null, C: null };
+            const videoElements = { A: null, B: null, C: null };
+            let currentVideoSlot = 'A';
+
+            // Initialize IndexedDB for video storage
+            let videoDB = null;
+            const VIDEO_DB_NAME = 'CLUESVideoStorage';
+            const VIDEO_STORE_NAME = 'videos';
+
+            function initVideoDatabase() {
+                return new Promise((resolve, reject) => {
+                    const request = indexedDB.open(VIDEO_DB_NAME, 1);
+                    request.onerror = () => reject(request.error);
+                    request.onsuccess = () => {
+                        videoDB = request.result;
+                        resolve(videoDB);
+                    };
+                    request.onupgradeneeded = (event) => {
+                        const db = event.target.result;
+                        if (!db.objectStoreNames.contains(VIDEO_STORE_NAME)) {
+                            db.createObjectStore(VIDEO_STORE_NAME, { keyPath: 'slot' });
+                        }
+                    };
+                });
+            }
+
+            // Save video to IndexedDB
+            async function saveVideoToStorage(slot, videoBlob, fileName) {
+                if (!videoDB) await initVideoDatabase();
+                return new Promise((resolve, reject) => {
+                    const transaction = videoDB.transaction([VIDEO_STORE_NAME], 'readwrite');
+                    const store = transaction.objectStore(VIDEO_STORE_NAME);
+                    const request = store.put({ slot, videoBlob, fileName, timestamp: Date.now() });
+                    request.onsuccess = () => resolve();
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
+            // Load video from IndexedDB
+            async function loadVideoFromStorage(slot) {
+                if (!videoDB) await initVideoDatabase();
+                return new Promise((resolve, reject) => {
+                    const transaction = videoDB.transaction([VIDEO_STORE_NAME], 'readonly');
+                    const store = transaction.objectStore(VIDEO_STORE_NAME);
+                    const request = store.get(slot);
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            }
+
+            // Toggle video upload panel
+            window.toggleVideoUpload = function() {
+                const panel = document.getElementById('video-upload-panel');
+                const photoPanel = document.getElementById('photo-upload-panel');
+
+                // Close photo panel if open
+                if (photoPanel && photoPanel.style.display === 'flex') {
+                    photoPanel.style.display = 'none';
+                }
+
+                if (panel.style.display === 'none' || panel.style.display === '') {
+                    panel.style.display = 'flex';
+                    console.log('🎬 Video upload panel opened');
+                    announceToScreenReader('Video upload panel opened');
+                } else {
+                    panel.style.display = 'none';
+                    console.log('🎬 Video upload panel closed');
+                    announceToScreenReader('Video upload panel closed');
+                }
+
+                vibrate('tap');
+            };
+
+            // Select video upload slot (A, B, or C)
+            window.selectVideoUploadSlot = function(slot, event) {
+                currentVideoSlot = slot;
+
+                // Update tab active states
+                document.querySelectorAll('.upload-tab.video-tab').forEach(tab => tab.classList.remove('active'));
+                if (event && event.target) {
+                    event.target.classList.add('active');
+                }
+
+                // Show/hide appropriate inputs and previews
+                ['A', 'B', 'C'].forEach(s => {
+                    const input = document.getElementById(`video-input-${s}`);
+                    const preview = document.getElementById(`video-preview-${s}`);
+                    const placeholder = document.getElementById(`video-placeholder-${s}`);
+                    const btn = document.getElementById(`apply-video-btn-${s}`);
+
+                    if (s === slot) {
+                        if (input) input.style.display = 'block';
+                        if (placeholder && !uploadedVideos[s]) placeholder.style.display = 'block';
+                        if (preview && uploadedVideos[s]) preview.style.display = 'block';
+                        if (btn) btn.style.display = 'block';
+                    } else {
+                        if (input) input.style.display = 'none';
+                        if (preview) preview.style.display = 'none';
+                        if (placeholder) placeholder.style.display = 'none';
+                        if (btn) btn.style.display = 'none';
+                    }
+                });
+
+                vibrate('tap');
+                console.log(`🎬 Selected video slot: ${slot}`);
+            };
+
+            // Handle video file upload
+            window.handleVideoUpload = async function(slot, input) {
+                const file = input.files[0];
+                if (!file) return;
+
+                // Check file size (max 100MB)
+                const maxSize = 100 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    showAlert('Video too large! Max 100MB', 'error');
+                    return;
+                }
+
+                // Check file type
+                if (!file.type.startsWith('video/')) {
+                    showAlert('Please select a video file', 'error');
+                    return;
+                }
+
+                console.log(`🎬 Uploading video for slot ${slot}: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
+                showAlert(`Uploading video: ${file.name}...`, 'info');
+
+                try {
+                    // Create object URL for preview
+                    const videoUrl = URL.createObjectURL(file);
+                    uploadedVideos[slot] = videoUrl;
+
+                    // Save to IndexedDB for persistence
+                    await saveVideoToStorage(slot, file, file.name);
+
+                    // Update preview
+                    const preview = document.getElementById(`video-preview-${slot}`);
+                    const placeholder = document.getElementById(`video-placeholder-${slot}`);
+                    const videoElement = document.getElementById(`video-element-${slot}`);
+                    const videoName = document.getElementById(`video-name-${slot}`);
+                    const applyBtn = document.getElementById(`apply-video-btn-${slot}`);
+
+                    if (videoElement) {
+                        videoElement.src = videoUrl;
+                        videoElement.load();
+                    }
+                    if (videoName) {
+                        videoName.textContent = `📹 ${file.name}`;
+                    }
+                    if (preview) preview.style.display = 'block';
+                    if (placeholder) placeholder.style.display = 'none';
+                    if (applyBtn) {
+                        applyBtn.disabled = false;
+                        applyBtn.style.opacity = '1';
+                    }
+
+                    showAlert(`Video uploaded for Property ${slot}! ✅`, 'success');
+                    vibrate('success');
+
+                } catch (error) {
+                    console.error('Video upload error:', error);
+                    showAlert('Failed to upload video', 'error');
+                }
+            };
+
+            // Apply video texture to 3D house model
+            window.applyVideoTexture = function(slot) {
+                const sphere = slot === 'A' ? sphereA : slot === 'B' ? sphereB : sphereC;
+                const videoUrl = uploadedVideos[slot];
+
+                if (!sphere) {
+                    showAlert(`Please select Property ${slot} first`, 'error');
+                    return;
+                }
+
+                if (!videoUrl) {
+                    showAlert('Please upload a video first', 'error');
+                    return;
+                }
+
+                console.log(`🎬 Applying video texture to Property ${slot}`);
+
+                // Create video element for texture
+                const video = document.createElement('video');
+                video.src = videoUrl;
+                video.loop = true;
+                video.muted = true; // Required for autoplay
+                video.playsInline = true;
+                video.crossOrigin = 'anonymous';
+
+                // Store reference
+                videoElements[slot] = video;
+
+                // Create video texture
+                const videoTexture = new THREE.VideoTexture(video);
+                videoTexture.minFilter = THREE.LinearFilter;
+                videoTexture.magFilter = THREE.LinearFilter;
+                videoTexture.format = THREE.RGBAFormat;
+
+                // Store texture reference
+                videoTextures[slot] = videoTexture;
+
+                // Apply to the house/sphere
+                if (sphere.userData.isHouse || sphere.children.length > 0) {
+                    // For house models, apply to all mesh children
+                    sphere.traverse((child) => {
+                        if (child.isMesh) {
+                            // Create material array for cube faces
+                            const videoMaterial = new THREE.MeshBasicMaterial({
+                                map: videoTexture,
+                                side: THREE.FrontSide
+                            });
+
+                            // Apply video material to front face only (index 4 for BoxGeometry)
+                            if (child.geometry.type === 'BoxGeometry') {
+                                const originalMaterial = child.material;
+                                child.material = [
+                                    originalMaterial, // right
+                                    originalMaterial, // left
+                                    originalMaterial, // top
+                                    originalMaterial, // bottom
+                                    videoMaterial,    // front - VIDEO
+                                    originalMaterial  // back
+                                ];
+                            } else {
+                                // For other geometries, replace material
+                                child.material = videoMaterial;
+                            }
+                        }
+                    });
+                } else {
+                    // For spheres, apply to material directly
+                    sphere.material = new THREE.MeshBasicMaterial({
+                        map: videoTexture,
+                        side: THREE.DoubleSide
+                    });
+                }
+
+                // Mark as having video
+                sphere.userData.hasVideo = true;
+                sphere.userData.videoSlot = slot;
+
+                showAlert(`Video applied to Property ${slot}! Click house to play/pause 🎬`, 'success');
+                vibrate('success');
+
+                // Start playing automatically (muted)
+                video.play().catch(e => console.log('Autoplay prevented:', e));
+            };
+
+            // Toggle video play/pause on house click
+            window.toggleHouseVideo = function(slot) {
+                const video = videoElements[slot];
+                if (!video) return false;
+
+                if (video.paused) {
+                    video.play();
+                    showAlert('▶️ Video playing', 'info');
+                } else {
+                    video.pause();
+                    showAlert('⏸️ Video paused', 'info');
+                }
+                vibrate('tap');
+                return true;
+            };
+
+            // Load saved videos on init
+            async function loadSavedVideos() {
+                try {
+                    await initVideoDatabase();
+                    for (const slot of ['A', 'B', 'C']) {
+                        const saved = await loadVideoFromStorage(slot);
+                        if (saved && saved.videoBlob) {
+                            const videoUrl = URL.createObjectURL(saved.videoBlob);
+                            uploadedVideos[slot] = videoUrl;
+
+                            // Update UI
+                            const preview = document.getElementById(`video-preview-${slot}`);
+                            const placeholder = document.getElementById(`video-placeholder-${slot}`);
+                            const videoElement = document.getElementById(`video-element-${slot}`);
+                            const videoName = document.getElementById(`video-name-${slot}`);
+                            const applyBtn = document.getElementById(`apply-video-btn-${slot}`);
+
+                            if (videoElement) {
+                                videoElement.src = videoUrl;
+                            }
+                            if (videoName) {
+                                videoName.textContent = `📹 ${saved.fileName}`;
+                            }
+                            if (applyBtn) {
+                                applyBtn.disabled = false;
+                                applyBtn.style.opacity = '1';
+                            }
+
+                            console.log(`🎬 Loaded saved video for slot ${slot}: ${saved.fileName}`);
+                        }
+                    }
+                } catch (e) {
+                    console.log('No saved videos found or error loading:', e);
+                }
+            }
+
+            // Initialize video system on DOM ready
+            document.addEventListener('DOMContentLoaded', loadSavedVideos);
+
             // ===== SOCIAL SHARING SYSTEM =====
             window.shareComparison = async function() {
                 try {
@@ -4829,6 +5324,63 @@
 
                 // Handle window resize
                 window.addEventListener('resize', onWindowResize);
+
+                // Add click handler for 3D objects (video play/pause)
+                const raycaster = new THREE.Raycaster();
+                const mouse = new THREE.Vector2();
+
+                renderer.domElement.addEventListener('click', (event) => {
+                    // Calculate mouse position in normalized device coordinates
+                    const rect = renderer.domElement.getBoundingClientRect();
+                    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+                    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+                    // Update raycaster
+                    raycaster.setFromCamera(mouse, camera);
+
+                    // Check for intersections with property spheres/houses
+                    const objectsToCheck = [sphereA, sphereB, sphereC].filter(obj => obj !== null);
+                    const intersects = raycaster.intersectObjects(objectsToCheck, true);
+
+                    if (intersects.length > 0) {
+                        // Find the parent object (sphereA, sphereB, or sphereC)
+                        let clickedObject = intersects[0].object;
+                        while (clickedObject.parent && clickedObject.parent !== scene) {
+                            if (clickedObject === sphereA || clickedObject === sphereB || clickedObject === sphereC) break;
+                            clickedObject = clickedObject.parent;
+                        }
+
+                        // Determine which slot was clicked
+                        let slot = null;
+                        if (clickedObject === sphereA || sphereA?.children?.includes(clickedObject) || isDescendant(sphereA, intersects[0].object)) {
+                            slot = 'A';
+                        } else if (clickedObject === sphereB || sphereB?.children?.includes(clickedObject) || isDescendant(sphereB, intersects[0].object)) {
+                            slot = 'B';
+                        } else if (clickedObject === sphereC || sphereC?.children?.includes(clickedObject) || isDescendant(sphereC, intersects[0].object)) {
+                            slot = 'C';
+                        }
+
+                        if (slot) {
+                            const sphere = slot === 'A' ? sphereA : slot === 'B' ? sphereB : sphereC;
+                            if (sphere?.userData?.hasVideo) {
+                                window.toggleHouseVideo(slot);
+                            } else {
+                                console.log(`🏠 Clicked Property ${slot} (no video attached)`);
+                            }
+                        }
+                    }
+                });
+
+                // Helper function to check if object is descendant
+                function isDescendant(parent, child) {
+                    if (!parent || !child) return false;
+                    let current = child;
+                    while (current) {
+                        if (current === parent) return true;
+                        current = current.parent;
+                    }
+                    return false;
+                }
             }
 
             // Feature #10: Create 3D property models (ENHANCED - replaces createSpheres)
