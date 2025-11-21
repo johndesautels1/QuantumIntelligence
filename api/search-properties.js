@@ -1,183 +1,197 @@
 /**
- * 🔍 SEARCH PROPERTIES API ENDPOINT (METHOD B)
- * Vercel Serverless Function - Searches neighborhood and returns top properties
- *
- * Usage: POST /api/search-properties
- * Body: { location: "Belle Vista, St Pete Beach, FL 33706", limit: 3, filters: {...} }
+ * 🔍 SEARCH PROPERTIES API ENDPOINT
+ * Vercel Serverless Function - Searches for properties using web scraping + LLM parsing
  */
 
-import { UnifiedLLMScraper } from '../src/scrapers/llm-unified-scraper.js';
+import Anthropic from '@anthropic-ai/sdk';
 
-// CORS headers
-const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-};
+export default async function handler(req, res) {
+    // Enable CORS
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
-/**
- * Build search URLs for different real estate sites
- */
-function buildSearchUrls(location, filters = {}) {
-    const {
-        minPrice = null,
-        maxPrice = null,
-        beds = null,
-        baths = null,
-        propertyType = 'house'
-    } = filters;
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
 
-    // Parse location
-    const parts = location.split(',').map(s => s.trim());
-    const city = parts[0]?.replace(/\s+/g, '-') || '';
-    const state = parts[1]?.replace(/\s+/g, '-') || 'FL';
-    const zip = parts[2]?.trim() || '';
+    if (req.method !== 'POST') {
+        return res.status(405).json({ error: 'Method not allowed', message: 'Use POST' });
+    }
 
-    // Build Zillow search URL
-    const zillowUrl = `https://www.zillow.com/homes/${city}-${state}${zip ? `-${zip}` : ''}_rb/`;
+    try {
+        const { location, limit = 3 } = req.body;
 
-    // Build Redfin search URL
-    const redfinUrl = `https://www.redfin.com/city/${city}/${state}`;
+        if (!location) {
+            return res.status(400).json({
+                error: 'Missing location',
+                message: 'Please provide a location (e.g., "St Pete Beach, FL")'
+            });
+        }
 
-    // Build Trulia search URL
-    const truliaUrl = `https://www.trulia.com/${state}/${city}/`;
+        console.log(`🔍 Searching for ${limit} properties in: ${location}`);
 
-    return {
-        zillow: zillowUrl,
-        redfin: redfinUrl,
-        trulia: truliaUrl,
-        primary: zillowUrl // Default to Zillow
-    };
-}
+        // Parse location
+        const parts = location.split(',').map(s => s.trim());
+        const city = parts[0]?.replace(/\s+/g, '-').toLowerCase() || '';
+        const state = (parts[1]?.trim() || 'FL').toUpperCase();
 
-/**
- * Use LLM to extract property listing URLs from search page
- */
-async function extractListingUrls(scraper, searchUrl, limit = 3) {
-    console.log(`🔍 Searching for listings at: ${searchUrl}`);
+        // Build Zillow search URL
+        const searchUrl = `https://www.zillow.com/${city}-${state}/`;
+        console.log(`🔗 Fetching: ${searchUrl}`);
 
-    const prompt = `Visit this real estate search page and extract the URLs of the first ${limit} property listings you find:
+        // Fetch the search page HTML
+        const response = await fetch(searchUrl, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.5'
+            }
+        });
 
-Search URL: ${searchUrl}
+        if (!response.ok) {
+            console.error(`❌ Failed to fetch: ${response.status}`);
+            return res.status(404).json({
+                error: 'Location not found',
+                message: `Could not find properties in ${location}. Try a different location.`
+            });
+        }
 
-Return ONLY a JSON array of property listing URLs (full URLs, not relative paths):
+        const html = await response.text();
+        console.log(`✅ Fetched ${html.length} bytes of HTML`);
+
+        // Extract just the property data section (to reduce token usage)
+        // Zillow embeds JSON data in a script tag
+        const jsonMatch = html.match(/"listResults":\s*(\[[\s\S]*?\])\s*,\s*"mapResults"/);
+        const searchDataMatch = html.match(/<script[^>]*id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
+
+        let propertyData = [];
+
+        if (jsonMatch) {
+            try {
+                propertyData = JSON.parse(jsonMatch[1]);
+                console.log(`✅ Found ${propertyData.length} properties in JSON data`);
+            } catch (e) {
+                console.log('Could not parse listResults JSON');
+            }
+        }
+
+        if (propertyData.length === 0 && searchDataMatch) {
+            try {
+                const nextData = JSON.parse(searchDataMatch[1]);
+                const results = nextData?.props?.pageProps?.searchPageState?.cat1?.searchResults?.listResults || [];
+                propertyData = results;
+                console.log(`✅ Found ${propertyData.length} properties in NEXT_DATA`);
+            } catch (e) {
+                console.log('Could not parse NEXT_DATA');
+            }
+        }
+
+        // If we found structured data, use it directly
+        if (propertyData.length > 0) {
+            const properties = propertyData.slice(0, limit).map((item, idx) => ({
+                address: {
+                    full_address: item.address || item.streetAddress || `Property ${idx + 1}`,
+                    street: item.streetAddress || '',
+                    city: item.addressCity || city,
+                    state: item.addressState || state,
+                    zip: item.addressZipcode || ''
+                },
+                price: {
+                    current: item.price || item.unformattedPrice || 0,
+                    formatted: item.price ? `$${item.price.toLocaleString()}` : 'N/A'
+                },
+                property: {
+                    bedrooms: item.beds || 0,
+                    bathrooms: item.baths || 0,
+                    sqft: item.area || item.livingArea || 0,
+                    type: item.homeType || 'House'
+                },
+                url: item.detailUrl || item.hdpUrl || '',
+                image: item.imgSrc || item.carouselPhotos?.[0]?.url || '',
+                source: 'zillow'
+            }));
+
+            return res.status(200).json({
+                success: true,
+                properties: properties,
+                metadata: {
+                    location: location,
+                    city: city,
+                    state: state,
+                    found: properties.length,
+                    source: 'zillow_json'
+                }
+            });
+        }
+
+        // Fallback: Use Claude to extract from HTML
+        console.log('📝 Using Claude to parse HTML...');
+
+        const anthropic = new Anthropic({
+            apiKey: process.env.ANTHROPIC_API_KEY
+        });
+
+        // Take a reasonable chunk of HTML (first 50KB)
+        const htmlChunk = html.substring(0, 50000);
+
+        const message = await anthropic.messages.create({
+            model: 'claude-3-haiku-20240307',
+            max_tokens: 2000,
+            messages: [{
+                role: 'user',
+                content: `Extract the first ${limit} property listings from this HTML. Return ONLY valid JSON:
+
 {
-  "urls": [
-    "https://www.zillow.com/homedetails/123-Main-St...",
-    "https://www.zillow.com/homedetails/456-Oak-Ave...",
-    ...
+  "properties": [
+    {
+      "address": "123 Main St, City, ST 12345",
+      "price": 450000,
+      "bedrooms": 3,
+      "bathrooms": 2,
+      "sqft": 1800,
+      "url": "https://..."
+    }
   ]
 }
 
-Extract exactly ${limit} URLs. Return ONLY the JSON, no other text.`;
-
-    try {
-        // Use Grok (fast and cheap for web browsing)
-        const response = await scraper.grok.chat.completions.create({
-            model: 'grok-beta',
-            messages: [{
-                role: 'system',
-                content: 'You are a real estate listing URL extractor. Return ONLY valid JSON.'
-            }, {
-                role: 'user',
-                content: prompt
+HTML:
+${htmlChunk}`
             }]
         });
 
-        const content = response.choices[0]?.message?.content?.trim() || '';
+        const claudeResponse = message.content[0].text;
+        const parsed = JSON.parse(claudeResponse.match(/\{[\s\S]*\}/)?.[0] || '{"properties":[]}');
 
-        // Remove markdown code blocks
-        const cleanContent = content.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+        const properties = (parsed.properties || []).slice(0, limit).map((item, idx) => ({
+            address: {
+                full_address: item.address || `Property ${idx + 1}`,
+                street: '',
+                city: city,
+                state: state,
+                zip: ''
+            },
+            price: {
+                current: item.price || 0,
+                formatted: item.price ? `$${item.price.toLocaleString()}` : 'N/A'
+            },
+            property: {
+                bedrooms: item.bedrooms || 0,
+                bathrooms: item.bathrooms || 0,
+                sqft: item.sqft || 0,
+                type: 'House'
+            },
+            url: item.url || '',
+            source: 'zillow_claude'
+        }));
 
-        // Extract JSON
-        const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-            console.warn('⚠️ No JSON found in LLM response');
-            return [];
-        }
-
-        const data = JSON.parse(jsonMatch[0]);
-        const urls = data.urls || [];
-
-        console.log(`✅ Found ${urls.length} listing URLs`);
-        return urls.slice(0, limit);
-
-    } catch (error) {
-        console.error('❌ URL extraction failed:', error.message);
-        return [];
-    }
-}
-
-export default async function handler(req, res) {
-    // Handle CORS preflight
-    if (req.method === 'OPTIONS') {
-        return res.status(200).json({});
-    }
-
-    // Only allow POST
-    if (req.method !== 'POST') {
-        return res.status(405).json({
-            error: 'Method not allowed',
-            message: 'Use POST to search properties'
-        });
-    }
-
-    try {
-        const {
-            location,
-            limit = 3,
-            filters = {},
-            llm = 'auto',
-            enrichData = true
-        } = req.body;
-
-        // Validate location
-        if (!location || typeof location !== 'string') {
-            return res.status(400).json({
-                error: 'Invalid request',
-                message: 'Location parameter is required (e.g., "Belle Vista, St Pete Beach, FL 33706")'
-            });
-        }
-
-        console.log(`🏘️ Searching properties in: ${location}`);
-        console.log(`📊 Limit: ${limit} properties`);
-
-        // Initialize scraper
-        const scraper = new UnifiedLLMScraper({
-            anthropicApiKey: process.env.ANTHROPIC_API_KEY,
-            openaiApiKey: process.env.OPENAI_API_KEY,
-            grokApiKey: process.env.GROK_API_KEY,
-            geminiApiKey: process.env.GEMINI_API_KEY
-        });
-
-        // Parse location to extract city and state
-        const parts = location.split(',').map(s => s.trim());
-        const city = parts[0] || parts[1] || location;
-        const state = parts.find(p => p.match(/^[A-Z]{2}$/i)) || 'FL';
-
-        console.log(`🔍 Searching: City="${city}", State="${state}"`);
-
-        // Use the existing scrapeCity method
-        const properties = await scraper.scrapeCity(city, state, {
-            maxProperties: limit,
-            preferredLLM: llm,
-            enrichData: enrichData
-        });
-
-        if (!properties || properties.length === 0) {
+        if (properties.length === 0) {
             return res.status(404).json({
                 error: 'No properties found',
-                message: `Could not find any properties in ${city}, ${state}. Try a different location.`,
-                searchedLocation: { city, state }
+                message: `Could not find properties in ${location}. Try searching for a larger area like "St Petersburg, FL".`
             });
         }
 
-        console.log(`✅ Successfully scraped ${properties.length} properties`);
-
-        // Get cost stats
-        const stats = scraper.getStats();
-
-        // Return success
         return res.status(200).json({
             success: true,
             properties: properties,
@@ -186,27 +200,15 @@ export default async function handler(req, res) {
                 city: city,
                 state: state,
                 found: properties.length,
-                cost: stats.costs.total,
-                timestamp: new Date().toISOString()
+                source: 'zillow_claude'
             }
         });
 
     } catch (error) {
         console.error('❌ Search error:', error);
-
         return res.status(500).json({
             error: 'Search failed',
-            message: error.message,
-            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            message: error.message
         });
     }
 }
-
-// Vercel config
-export const config = {
-    api: {
-        bodyParser: true,
-        externalResolver: true,
-    },
-    maxDuration: 300, // 5 minutes for multiple properties
-};
