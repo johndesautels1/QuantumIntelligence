@@ -6833,14 +6833,20 @@
             window.updateTimeTravel = function(value) {
                 currentTimeOffset = 12 - parseInt(value);
                 const timeDisplay = document.getElementById('time-display');
+                const modalTimeDisplay = document.getElementById('modal-time-display');
 
+                let displayText;
                 if (currentTimeOffset === 0) {
-                    timeDisplay.textContent = 'Current Data';
+                    displayText = 'Current Data';
                 } else if (currentTimeOffset === 1) {
-                    timeDisplay.textContent = '1 Month Ago';
+                    displayText = '1 Month Ago';
                 } else {
-                    timeDisplay.textContent = `${currentTimeOffset} Months Ago`;
+                    displayText = `${currentTimeOffset} Months Ago`;
                 }
+
+                // Update both displays (hidden footer + visible modal)
+                if (timeDisplay) timeDisplay.textContent = displayText;
+                if (modalTimeDisplay) modalTimeDisplay.textContent = displayText;
 
                 // Apply time offset to all properties
                 applyTimeOffset();
