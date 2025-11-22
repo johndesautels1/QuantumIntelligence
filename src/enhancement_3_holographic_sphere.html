@@ -3036,34 +3036,34 @@
                 bottom: 20px;
                 top: auto;
                 width: 323px;
-                max-height: 467px;
+                height: 364px;
                 background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%);
                 backdrop-filter: blur(20px);
                 border: 2px solid rgba(255, 215, 0, 0.5);
                 border-radius: 15px;
-                padding: 13px;
+                padding: 10px;
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
                 z-index: 850;
                 display: none;
                 overflow-y: auto;
                 pointer-events: auto;
             ">
-                <button onclick="toggleBadgesPanel()" style="position: absolute; top: 10px; right: 10px; background: rgba(255, 0, 0, 0.9); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 18px; font-weight: bold; line-height: 1; z-index: 1000; pointer-events: auto;" aria-label="Close badges panel">×</button>
-                <h3 style="color: #FFD700; margin-bottom: 15px; font-size: 1.1em;">🏆 Your Achievements</h3>
+                <button onclick="toggleBadgesPanel()" style="position: absolute; top: 6px; right: 6px; background: rgba(255, 0, 0, 0.9); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1; z-index: 1000; pointer-events: auto;" aria-label="Close badges panel">×</button>
+                <h3 style="color: #FFD700; margin-bottom: 8px; font-size: 0.95em;">🏆 Your Achievements</h3>
 
                 <!-- Badge Progress -->
-                <div style="background: rgba(255, 215, 0, 0.1); border-radius: 8px; padding: 10px; margin-bottom: 15px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                        <span style="color: rgba(255,255,255,0.9); font-size: 0.85em;">Progress</span>
-                        <span style="color: #FFD700; font-weight: bold;" id="badges-progress">0/12</span>
+                <div style="background: rgba(255, 215, 0, 0.1); border-radius: 6px; padding: 6px; margin-bottom: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+                        <span style="color: rgba(255,255,255,0.9); font-size: 0.7em;">Progress</span>
+                        <span style="color: #FFD700; font-weight: bold; font-size: 0.7em;" id="badges-progress">0/12</span>
                     </div>
-                    <div style="background: rgba(255,255,255,0.2); border-radius: 10px; height: 8px; overflow: hidden;">
+                    <div style="background: rgba(255,255,255,0.2); border-radius: 6px; height: 6px; overflow: hidden;">
                         <div id="badges-progress-bar" style="background: linear-gradient(90deg, #FFD700, #FF8800); height: 100%; width: 0%; transition: width 0.5s ease;"></div>
                     </div>
                 </div>
 
                 <!-- Badge Grid -->
-                <div id="badges-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                <div id="badges-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
                     <!-- Badges will be populated by JavaScript -->
                 </div>
             </div>
@@ -3075,52 +3075,52 @@
                 bottom: 20px;
                 top: auto;
                 width: 323px;
-                max-height: 467px;
+                height: 364px;
                 background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%);
                 backdrop-filter: blur(20px);
                 border: 2px solid rgba(29, 161, 242, 0.5);
                 border-radius: 15px;
-                padding: 13px;
+                padding: 10px;
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
                 z-index: 850;
                 display: none;
                 overflow-y: auto;
                 pointer-events: auto;
             ">
-                <button onclick="toggleSocialPanel()" style="position: absolute; top: 10px; right: 10px; background: rgba(255, 0, 0, 0.9); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 18px; font-weight: bold; line-height: 1; z-index: 1000; pointer-events: auto;" aria-label="Close social panel">×</button>
-                <h3 style="color: #1DA1F2; margin-bottom: 15px; font-size: 1.1em;">📱 Share Your Comparison</h3>
+                <button onclick="toggleSocialPanel()" style="position: absolute; top: 6px; right: 6px; background: rgba(255, 0, 0, 0.9); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1; z-index: 1000; pointer-events: auto;" aria-label="Close social panel">×</button>
+                <h3 style="color: #1DA1F2; margin-bottom: 6px; font-size: 0.95em;">📱 Share Your Comparison</h3>
 
-                <p style="color: rgba(255,255,255,0.7); font-size: 0.85em; margin-bottom: 15px;">Share your property analysis with friends and family!</p>
+                <p style="color: rgba(255,255,255,0.7); font-size: 0.7em; margin-bottom: 8px;">Share your property analysis with friends and family!</p>
 
                 <!-- Social Buttons -->
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                    <button onclick="shareToTwitter()" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; background: #1DA1F2; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 0.95em; font-weight: bold;">
-                        <span style="font-size: 1.2em;">𝕏</span> Share on X/Twitter
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <button onclick="shareToTwitter()" style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: #1DA1F2; border: none; border-radius: 6px; color: white; cursor: pointer; font-size: 0.8em; font-weight: bold;">
+                        <span style="font-size: 1em;">𝕏</span> Share on X/Twitter
                     </button>
-                    <button onclick="shareToFacebook()" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; background: #1877F2; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 0.95em; font-weight: bold;">
-                        <span style="font-size: 1.2em;">f</span> Share on Facebook
+                    <button onclick="shareToFacebook()" style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: #1877F2; border: none; border-radius: 6px; color: white; cursor: pointer; font-size: 0.8em; font-weight: bold;">
+                        <span style="font-size: 1em;">f</span> Share on Facebook
                     </button>
-                    <button onclick="shareToLinkedIn()" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; background: #0077B5; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 0.95em; font-weight: bold;">
-                        <span style="font-size: 1.2em;">in</span> Share on LinkedIn
+                    <button onclick="shareToLinkedIn()" style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: #0077B5; border: none; border-radius: 6px; color: white; cursor: pointer; font-size: 0.8em; font-weight: bold;">
+                        <span style="font-size: 1em;">in</span> Share on LinkedIn
                     </button>
-                    <button onclick="copyShareLink()" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; color: white; cursor: pointer; font-size: 0.95em; font-weight: bold;">
-                        <span style="font-size: 1.2em;">🔗</span> Copy Link
+                    <button onclick="copyShareLink()" style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; color: white; cursor: pointer; font-size: 0.8em; font-weight: bold;">
+                        <span style="font-size: 1em;">🔗</span> Copy Link
                     </button>
-                    <button onclick="shareViaEmail()" style="display: flex; align-items: center; gap: 10px; padding: 12px 15px; background: rgba(255,136,0,0.8); border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 0.95em; font-weight: bold;">
-                        <span style="font-size: 1.2em;">✉️</span> Email Comparison
+                    <button onclick="shareViaEmail()" style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: rgba(255,136,0,0.8); border: none; border-radius: 6px; color: white; cursor: pointer; font-size: 0.8em; font-weight: bold;">
+                        <span style="font-size: 1em;">✉️</span> Email Comparison
                     </button>
                 </div>
 
                 <!-- Share Stats -->
-                <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.2);">
+                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.2);">
                     <div style="display: flex; justify-content: space-around; text-align: center;">
                         <div>
-                            <div style="font-size: 1.3em; color: #1DA1F2;" id="share-count">0</div>
-                            <div style="font-size: 0.75em; color: rgba(255,255,255,0.6);">Times Shared</div>
+                            <div style="font-size: 1em; color: #1DA1F2;" id="share-count">0</div>
+                            <div style="font-size: 0.65em; color: rgba(255,255,255,0.6);">Times Shared</div>
                         </div>
                         <div>
-                            <div style="font-size: 1.3em; color: #FFD700;" id="comparison-saves">0</div>
-                            <div style="font-size: 0.75em; color: rgba(255,255,255,0.6);">Comparisons Saved</div>
+                            <div style="font-size: 1em; color: #FFD700;" id="comparison-saves">0</div>
+                            <div style="font-size: 0.65em; color: rgba(255,255,255,0.6);">Comparisons Saved</div>
                         </div>
                     </div>
                 </div>
