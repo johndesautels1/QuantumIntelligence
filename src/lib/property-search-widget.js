@@ -70,16 +70,18 @@ export class PropertySearchWidget {
         </div>
 
         <style>
+            /* Desktop: Position above Property A/B/C selectors */
             .search-widget {
                 position: fixed;
-                bottom: 116px; /* Raised 1 inch (96px) from original 20px */
+                top: 140px; /* Below header, above property selectors */
                 left: 50%;
                 transform: translateX(-50%);
-                z-index: 500; /* Below left-side buttons but above canvas */
+                z-index: 500;
             }
 
             .search-toggle-btn {
-                background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+                /* History Timeline color: purple/cyan gradient */
+                background: linear-gradient(135deg, rgba(138, 43, 226, 0.8), rgba(0, 212, 255, 0.6));
                 color: white;
                 border: none;
                 padding: 10px 20px;
@@ -87,28 +89,73 @@ export class PropertySearchWidget {
                 font-size: 0.9em;
                 font-weight: bold;
                 cursor: pointer;
-                box-shadow: 0 3px 12px rgba(255, 107, 107, 0.4);
+                box-shadow: inset 0 2px 4px rgba(138, 43, 226, 0.3), 0 3px 12px rgba(138, 43, 226, 0.4);
                 transition: all 0.3s ease;
-                min-width: 220px; /* Match other buttons */
+                min-width: 220px;
             }
 
             .search-toggle-btn:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 5px 15px rgba(255, 107, 107, 0.6);
+                box-shadow: inset 0 2px 4px rgba(138, 43, 226, 0.3), 0 5px 15px rgba(138, 43, 226, 0.6);
             }
 
+            /* Mobile: Position below header, above Analytics Dashboard */
+            @media (max-width: 768px) {
+                .search-widget {
+                    position: fixed;
+                    top: 85px; /* Below header on mobile */
+                    left: 50%;
+                    transform: translateX(-50%);
+                    z-index: 600;
+                }
+
+                .search-toggle-btn {
+                    min-width: 200px;
+                    padding: 8px 16px;
+                    font-size: 0.85em;
+                }
+            }
+
+            @media (max-width: 480px) {
+                .search-widget {
+                    top: 75px;
+                }
+
+                .search-toggle-btn {
+                    min-width: 180px;
+                    padding: 8px 14px;
+                    font-size: 0.8em;
+                }
+            }
+
+            /* Desktop: Panel opens downward (button is at top) */
             .search-panel {
                 position: absolute;
-                bottom: 40px;
+                top: 50px; /* Opens below the button */
                 left: 50%;
                 transform: translateX(-50%) scale(0.91);
-                transform-origin: bottom center;
+                transform-origin: top center;
                 width: 380px;
                 background: rgba(20, 20, 40, 0.95);
-                border: 2px solid rgba(0, 212, 255, 0.5);
+                border: 2px solid rgba(138, 43, 226, 0.5);
                 border-radius: 10px;
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
                 backdrop-filter: blur(10px);
+            }
+
+            /* Mobile: Panel opens downward too */
+            @media (max-width: 768px) {
+                .search-panel {
+                    width: 320px;
+                    top: 45px;
+                }
+            }
+
+            @media (max-width: 480px) {
+                .search-panel {
+                    width: 280px;
+                    top: 40px;
+                }
             }
 
             .search-header {
