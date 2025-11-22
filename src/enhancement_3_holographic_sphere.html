@@ -3157,71 +3157,63 @@
 
             <!-- Photo Upload Panel -->
             <div class="photo-upload-panel" id="photo-upload-panel" role="region" aria-label="Upload property photos">
-                <button onclick="togglePhotoUpload()" style="position: absolute; top: 10px; right: 10px; background: rgba(255, 0, 0, 0.7); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 18px; font-weight: bold; line-height: 1; z-index: 10000;" aria-label="Close photo upload panel">×</button>
-                <h3 style="color: #FFD700;">📸 Upload Ultra-HD Property Photos</h3>
-                <p style="font-size: 0.85em; color: rgba(255, 255, 255, 0.9); margin-bottom: 10px; line-height: 1.4;">
-                    <strong style="color: #00FF88;">📦 Multi-Photo Cube Mapping:</strong><br>
-                    • Upload 2-6 photos for crystal-clear 3D cube<br>
-                    • Photos map to: Front, Back, Left, Right, Top, Bottom<br>
-                    • <em style="color: #FFD700;">Tip: Include aerial/drone shot for top face!</em>
+                <button onclick="togglePhotoUpload()" style="position: absolute; top: 6px; right: 6px; background: rgba(255, 0, 0, 0.7); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1; z-index: 10000;" aria-label="Close photo upload panel">×</button>
+                <h3 style="color: #FFD700; font-size: 0.95em; margin: 0 0 6px 0;">📸 Upload Ultra-HD Property Photos</h3>
+                <p style="font-size: 0.7em; color: rgba(255, 255, 255, 0.9); margin-bottom: 6px; line-height: 1.25;">
+                    <strong style="color: #00FF88;">📦 Cube Mapping:</strong> Upload 2-6 photos for 3D cube • <em style="color: #FFD700;">Include aerial shot!</em>
                 </p>
 
-                <div class="upload-tabs">
-                    <button class="upload-tab active" onclick="selectUploadSlot('A', event); return false;">Property A</button>
-                    <button class="upload-tab" onclick="selectUploadSlot('B', event); return false;">Property B</button>
-                    <button class="upload-tab" onclick="selectUploadSlot('C', event); return false;">Property C</button>
+                <div class="upload-tabs" style="margin-bottom: 6px;">
+                    <button class="upload-tab active" onclick="selectUploadSlot('A', event); return false;" style="padding: 4px 8px; font-size: 0.75em;">Property A</button>
+                    <button class="upload-tab" onclick="selectUploadSlot('B', event); return false;" style="padding: 4px 8px; font-size: 0.75em;">Property B</button>
+                    <button class="upload-tab" onclick="selectUploadSlot('C', event); return false;" style="padding: 4px 8px; font-size: 0.75em;">Property C</button>
                 </div>
 
                 <div id="upload-content" style="color: #FFFFFF;">
                     <!-- Property A upload -->
                     <input type="file" id="photo-input-A" accept="image/*" multiple onchange="handlePhotoUpload('A', this)"
-                           style="margin: 10px 0; display: block; width: 100%; color: white; background: rgba(255, 255, 255, 0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.3);">
-                    <p style="font-size: 0.75em; color: rgba(255, 200, 0, 0.9); margin: -5px 0 10px 0; line-height: 1.3;">
-                        💡 <strong>1 photo</strong> = Single plane | <strong>2-6 photos</strong> = Ultra-HD 3D cube<br>
-                        🎯 Order: Front → Back → Left → Right → Top → Bottom
+                           style="margin: 4px 0; display: block; width: 100%; color: white; background: rgba(255, 255, 255, 0.1); padding: 5px; border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.3); font-size: 0.7em;">
+                    <p style="font-size: 0.65em; color: rgba(255, 200, 0, 0.9); margin: 2px 0 6px 0; line-height: 1.2;">
+                        💡 1 photo = plane | 2-6 = 3D cube • 🎯 Front→Back→Left→Right→Top→Bottom
                     </p>
 
-                    <div id="photo-preview-A" style="margin: 10px 0; max-width: 100%; max-height: 200px; overflow: hidden; border-radius: 8px; background: rgba(0, 0, 0, 0.3); padding: 10px;">
-                        <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.85em; text-align: center;">📷 No photo uploaded yet</p>
+                    <div id="photo-preview-A" style="margin: 6px 0; max-width: 100%; max-height: 100px; overflow: hidden; border-radius: 6px; background: rgba(0, 0, 0, 0.3); padding: 8px;">
+                        <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.7em; text-align: center; margin: 0;">📷 No photo uploaded yet</p>
                     </div>
 
-                    <button onclick="applyPhotoTexture('A')" id="apply-btn-A" class="apply-photo-btn" style="margin-top: 10px; padding: 10px 20px; background: linear-gradient(135deg, #00D4FF, #8A2BE2); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1em;">
+                    <button onclick="applyPhotoTexture('A')" id="apply-btn-A" class="apply-photo-btn" style="margin-top: 6px; padding: 6px 12px; background: linear-gradient(135deg, #00D4FF, #8A2BE2); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 0.8em;">
                         ✨ Apply Photo to 3D Model
                     </button>
 
                     <!-- Property B upload (hidden by default) -->
                     <input type="file" id="photo-input-B" accept="image/*" multiple onchange="handlePhotoUpload('B', this)"
-                           style="margin: 10px 0; display: none; width: 100%; color: white; background: rgba(255, 255, 255, 0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.3);">
-                    <p id="hint-B" style="font-size: 0.8em; color: rgba(255, 200, 0, 0.9); margin: -5px 0 10px 0; display: none;">💡 Select multiple photos for better 3D effect!</p>
+                           style="margin: 4px 0; display: none; width: 100%; color: white; background: rgba(255, 255, 255, 0.1); padding: 5px; border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.3); font-size: 0.7em;">
+                    <p id="hint-B" style="font-size: 0.65em; color: rgba(255, 200, 0, 0.9); margin: 2px 0 6px 0; display: none;">💡 Select multiple photos for better 3D effect!</p>
 
-                    <div id="photo-preview-B" style="margin: 10px 0; max-width: 100%; max-height: 200px; overflow: hidden; border-radius: 8px; background: rgba(0, 0, 0, 0.3); padding: 10px; display: none;">
-                        <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.85em; text-align: center;">📷 No photo uploaded yet</p>
+                    <div id="photo-preview-B" style="margin: 6px 0; max-width: 100%; max-height: 100px; overflow: hidden; border-radius: 6px; background: rgba(0, 0, 0, 0.3); padding: 8px; display: none;">
+                        <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.7em; text-align: center; margin: 0;">📷 No photo uploaded yet</p>
                     </div>
 
-                    <button onclick="applyPhotoTexture('B')" id="apply-btn-B" class="apply-photo-btn" style="margin-top: 10px; padding: 10px 20px; background: linear-gradient(135deg, #00FF88, #8A2BE2); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1em; display: none;">
+                    <button onclick="applyPhotoTexture('B')" id="apply-btn-B" class="apply-photo-btn" style="margin-top: 6px; padding: 6px 12px; background: linear-gradient(135deg, #00FF88, #8A2BE2); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 0.8em; display: none;">
                         ✨ Apply Photo to 3D Model
                     </button>
 
                     <!-- Property C upload (hidden by default) -->
                     <input type="file" id="photo-input-C" accept="image/*" multiple onchange="handlePhotoUpload('C', this)"
-                           style="margin: 10px 0; display: none; width: 100%; color: white; background: rgba(255, 255, 255, 0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.3);">
-                    <p id="hint-C" style="font-size: 0.8em; color: rgba(255, 200, 0, 0.9); margin: -5px 0 10px 0; display: none;">💡 Select multiple photos for better 3D effect!</p>
+                           style="margin: 4px 0; display: none; width: 100%; color: white; background: rgba(255, 255, 255, 0.1); padding: 5px; border-radius: 4px; border: 1px solid rgba(255, 255, 255, 0.3); font-size: 0.7em;">
+                    <p id="hint-C" style="font-size: 0.65em; color: rgba(255, 200, 0, 0.9); margin: 2px 0 6px 0; display: none;">💡 Select multiple photos for better 3D effect!</p>
 
-                    <div id="photo-preview-C" style="margin: 10px 0; max-width: 100%; max-height: 200px; overflow: hidden; border-radius: 8px; background: rgba(0, 0, 0, 0.3); padding: 10px; display: none;">
-                        <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.85em; text-align: center;">📷 No photo uploaded yet</p>
+                    <div id="photo-preview-C" style="margin: 6px 0; max-width: 100%; max-height: 100px; overflow: hidden; border-radius: 6px; background: rgba(0, 0, 0, 0.3); padding: 8px; display: none;">
+                        <p style="color: rgba(255, 255, 255, 0.7); font-size: 0.7em; text-align: center; margin: 0;">📷 No photo uploaded yet</p>
                     </div>
 
-                    <button onclick="applyPhotoTexture('C')" id="apply-btn-C" class="apply-photo-btn" style="margin-top: 10px; padding: 10px 20px; background: linear-gradient(135deg, #FFD700, #8A2BE2); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 1em; display: none;">
+                    <button onclick="applyPhotoTexture('C')" id="apply-btn-C" class="apply-photo-btn" style="margin-top: 6px; padding: 6px 12px; background: linear-gradient(135deg, #FFD700, #8A2BE2); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 0.8em; display: none;">
                         ✨ Apply Photo to 3D Model
                     </button>
 
-                    <div style="margin-top: 15px; padding: 12px; background: rgba(0, 212, 255, 0.15); border-radius: 8px; font-size: 0.85em; color: #FFFFFF; border: 1px solid rgba(0, 212, 255, 0.3);">
-                        <strong style="color: #FFD700;">💡 Pro Tip:</strong> <span style="color: rgba(255, 255, 255, 0.9);">For best 3D conversion, upload to:</span>
-                        <ul style="margin: 8px 0 0 20px; padding: 0; color: rgba(255, 255, 255, 0.9);">
-                            <li><a href="https://lumalabs.ai/" target="_blank" style="color: #00D4FF; font-weight: bold;">Luma AI</a> - Best quality (free)</li>
-                            <li><a href="https://poly.cam/" target="_blank" style="color: #00D4FF; font-weight: bold;">Polycam</a> - Mobile app (50 scans free)</li>
-                        </ul>
-                        <span style="color: rgba(255, 255, 255, 0.8); font-size: 0.9em;">Then download the .glb file and add to MODEL_PATHS!</span>
+                    <div style="margin-top: 8px; padding: 8px; background: rgba(0, 212, 255, 0.15); border-radius: 6px; font-size: 0.7em; color: #FFFFFF; border: 1px solid rgba(0, 212, 255, 0.3);">
+                        <strong style="color: #FFD700;">💡 Pro Tip:</strong>
+                        <span style="color: rgba(255, 255, 255, 0.9);"> <a href="https://lumalabs.ai/" target="_blank" style="color: #00D4FF;">Luma AI</a> or <a href="https://poly.cam/" target="_blank" style="color: #00D4FF;">Polycam</a> for 3D conversion → download .glb file</span>
                     </div>
                 </div>
             </div>
@@ -3461,46 +3453,46 @@
                         overflow-y: auto;
                         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);">
 
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h2 style="color: #FFD700; margin: 0;">📥 Import Properties</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <h3 style="color: #FFD700; margin: 0; font-size: 0.95em;">📥 Import Properties</h3>
                     <button onclick="closeImportModal()"
                             style="background: rgba(255, 0, 0, 0.7); color: white; border: none;
-                                   border-radius: 50%; width: 35px; height: 35px; cursor: pointer;
-                                   font-size: 20px; font-weight: bold;">×</button>
+                                   border-radius: 50%; width: 22px; height: 22px; cursor: pointer;
+                                   font-size: 14px; font-weight: bold; line-height: 1;">×</button>
                 </div>
 
                 <!-- Dual Source Tabs -->
-                <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <div style="display: flex; gap: 6px; margin-bottom: 8px;">
                     <button id="import-tab-saved" onclick="switchImportTab('saved')"
-                            style="flex: 1; padding: 12px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.4), rgba(138, 43, 226, 0.4));
-                                   border: 2px solid rgba(0, 212, 255, 0.6); border-radius: 10px; color: white;
-                                   font-weight: bold; cursor: pointer; transition: all 0.3s;">
-                        💾 Saved Properties
+                            style="flex: 1; padding: 6px 8px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.4), rgba(138, 43, 226, 0.4));
+                                   border: 1px solid rgba(0, 212, 255, 0.6); border-radius: 6px; color: white;
+                                   font-weight: bold; cursor: pointer; font-size: 0.75em;">
+                        💾 Saved
                     </button>
                     <button id="import-tab-upload" onclick="switchImportTab('upload')"
-                            style="flex: 1; padding: 12px; background: rgba(255, 255, 255, 0.1);
-                                   border: 2px solid rgba(255, 255, 255, 0.3); border-radius: 10px; color: white;
-                                   font-weight: bold; cursor: pointer; transition: all 0.3s;">
-                        📤 Upload File
+                            style="flex: 1; padding: 6px 8px; background: rgba(255, 255, 255, 0.1);
+                                   border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 6px; color: white;
+                                   font-weight: bold; cursor: pointer; font-size: 0.75em;">
+                        📤 Upload
                     </button>
                 </div>
 
                 <!-- Tab Content: Saved Properties -->
                 <div id="import-content-saved" style="display: block;">
-                    <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 20px;">
-                        Select a property from your database and assign it to a slot (A, B, or C).
+                    <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 8px; font-size: 0.7em;">
+                        Select a property and assign to slot A, B, or C.
                     </p>
 
-                <div id="import-properties-list" style="display: grid; gap: 15px;">
+                <div id="import-properties-list" style="display: grid; gap: 8px; max-height: 280px; overflow-y: auto;">
                     <!-- Properties will be loaded here -->
                 </div>
 
-                <div id="import-no-properties" style="display: none; text-align: center; padding: 40px; color: rgba(255, 255, 255, 0.7);">
-                    <p style="font-size: 1.2em; margin-bottom: 15px;">No saved properties found.</p>
-                    <p style="font-size: 0.9em; margin-bottom: 20px;">Either import from the dashboard or upload a file using the "Upload File" tab above.</p>
+                <div id="import-no-properties" style="display: none; text-align: center; padding: 20px; color: rgba(255, 255, 255, 0.7);">
+                    <p style="font-size: 0.85em; margin-bottom: 8px;">No saved properties found.</p>
+                    <p style="font-size: 0.7em; margin-bottom: 10px;">Import from dashboard or use "Upload" tab.</p>
                     <button onclick="window.location.href='../index.html'"
-                            style="padding: 10px 20px; background: linear-gradient(135deg, #00d4ff, #0099cc);
-                                   border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
+                            style="padding: 6px 12px; background: linear-gradient(135deg, #00d4ff, #0099cc);
+                                   border: none; border-radius: 6px; color: white; font-weight: 600; cursor: pointer; font-size: 0.75em;">
                         Go to Dashboard
                     </button>
                 </div>
@@ -3508,31 +3500,31 @@
 
                 <!-- Tab Content: Upload File -->
                 <div id="import-content-upload" style="display: none;">
-                    <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 20px;">
-                        Upload a JSON or CSV file containing property data. You can export properties from the main dashboard.
+                    <p style="color: rgba(255, 255, 255, 0.9); margin-bottom: 8px; font-size: 0.7em;">
+                        Upload JSON or CSV file with property data.
                     </p>
 
                     <div style="background: rgba(0, 212, 255, 0.1); border: 2px dashed rgba(0, 212, 255, 0.5);
-                                border-radius: 15px; padding: 30px; text-align: center; margin-bottom: 20px;">
+                                border-radius: 8px; padding: 15px; text-align: center; margin-bottom: 8px;">
                         <input type="file" id="property-file-input" accept=".json,.csv"
                                style="display: none;" onchange="handlePropertyFileUpload(event)">
                         <button onclick="document.getElementById('property-file-input').click()"
-                                style="padding: 15px 30px; background: linear-gradient(135deg, #00D4FF, #8A2BE2);
-                                       border: none; border-radius: 10px; color: white; font-weight: bold;
-                                       cursor: pointer; font-size: 1.1em; box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);">
+                                style="padding: 8px 16px; background: linear-gradient(135deg, #00D4FF, #8A2BE2);
+                                       border: none; border-radius: 6px; color: white; font-weight: bold;
+                                       cursor: pointer; font-size: 0.8em;">
                             📂 Choose File
                         </button>
-                        <p style="color: rgba(255, 255, 255, 0.7); margin-top: 15px; font-size: 0.9em;">
-                            Supported formats: JSON, CSV
+                        <p style="color: rgba(255, 255, 255, 0.7); margin-top: 8px; font-size: 0.65em; margin-bottom: 0;">
+                            Formats: JSON, CSV
                         </p>
                     </div>
 
                     <div id="upload-file-preview" style="display: none; background: rgba(255, 255, 255, 0.05);
-                                                          border: 1px solid rgba(0, 212, 255, 0.3); border-radius: 10px;
-                                                          padding: 20px;">
-                        <h4 style="color: #FFD700; margin-top: 0;">📄 File Loaded:</h4>
-                        <p id="upload-filename" style="color: rgba(255, 255, 255, 0.9); margin-bottom: 15px;"></p>
-                        <div id="upload-properties-list" style="display: grid; gap: 15px; max-height: 400px; overflow-y: auto;">
+                                                          border: 1px solid rgba(0, 212, 255, 0.3); border-radius: 6px;
+                                                          padding: 10px;">
+                        <h4 style="color: #FFD700; margin: 0 0 6px 0; font-size: 0.8em;">📄 File Loaded:</h4>
+                        <p id="upload-filename" style="color: rgba(255, 255, 255, 0.9); margin-bottom: 8px; font-size: 0.7em;"></p>
+                        <div id="upload-properties-list" style="display: grid; gap: 8px; max-height: 200px; overflow-y: auto;">
                             <!-- Uploaded properties will appear here -->
                         </div>
                     </div>
