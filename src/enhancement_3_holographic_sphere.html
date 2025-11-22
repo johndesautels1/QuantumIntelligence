@@ -6017,7 +6017,7 @@
                     // Create toggle button inside the chart
                     const toggleBtn = document.createElement('button');
                     toggleBtn.className = 'chart-fullscreen-btn';
-                    toggleBtn.innerHTML = isChartFullScreen ? '✕ Toggle/Off' : '⛶ Toggle/Full-Screen';
+                    toggleBtn.innerHTML = isChartFullScreen ? '✕<br>Off' : '⛶<br>Full';
                     toggleBtn.style.cssText = `
                         position: absolute;
                         top: 8px;
@@ -6026,14 +6026,17 @@
                         color: white;
                         border: none;
                         border-radius: 4px;
-                        padding: 4px 8px;
-                        font-size: 0.65em;
+                        padding: 4px 6px;
+                        font-size: 0.6em;
                         font-weight: bold;
                         cursor: pointer;
                         pointer-events: auto !important;
                         z-index: 10001;
                         box-shadow: 0 2px 8px rgba(0,0,0,0.3);
                         transition: all 0.2s ease;
+                        line-height: 1.2;
+                        text-align: center;
+                        min-width: 32px;
                     `;
 
                     const handleToggle = function(e) {
@@ -6100,7 +6103,7 @@
 
                     // Update button inside chart
                     if (toggleBtn) {
-                        toggleBtn.innerHTML = '✕ Toggle/Off';
+                        toggleBtn.innerHTML = '✕<br>Off';
                         toggleBtn.style.background = 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)';
                     }
 
@@ -6124,7 +6127,7 @@
 
                     // Update button inside chart
                     if (toggleBtn) {
-                        toggleBtn.innerHTML = '⛶ Toggle/Full-Screen';
+                        toggleBtn.innerHTML = '⛶<br>Full';
                         toggleBtn.style.background = 'linear-gradient(135deg, #00D4FF 0%, #0099CC 100%)';
                     }
 
