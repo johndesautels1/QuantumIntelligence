@@ -6022,7 +6022,12 @@
                     if (tabName !== 'notes') {
                         fullscreenBtn.style.display = 'inline-block';
                         fullscreenBtn.textContent = '🔲 Toggle Full Screen';
-                        console.log('✅ Fullscreen button now visible for tab:', tabName);
+                        // Ensure onclick is set
+                        fullscreenBtn.onclick = function() {
+                            console.log('🔲 Button onclick fired!');
+                            toggleChartFullScreen();
+                        };
+                        console.log('✅ Fullscreen button now visible for tab:', tabName, '| onclick:', typeof fullscreenBtn.onclick);
                     } else {
                         fullscreenBtn.style.display = 'none';
                         console.log('🔲 Fullscreen button hidden for notes tab');
