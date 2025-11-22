@@ -670,24 +670,29 @@
                 transform: translateY(-100%) !important;
             }
 
-            /* Panel Toggle Buttons - Mobile: Position above Property A */
+            /* Panel Toggle Buttons - Mobile: Position above Property A
+               MATH: Header ends at ~73px, Property A starts at ~220px
+               Available gap = 147px, Button height = 40px
+               Equal spacing = (147 - 40) / 2 = 53.5px
+               Button top = 73 + 53.5 = 126.5px ≈ 127px */
             .panel-toggle-buttons {
                 position: fixed !important;
-                top: 182px !important;
+                top: 127px !important;
                 left: 50% !important;
                 right: auto !important;
                 transform: translateX(-50%) !important;
                 flex-direction: row;
                 gap: 6px;
-                padding: 10px 20px;
+                padding: 10px 15px;
                 flex-wrap: wrap;
                 justify-content: center;
                 z-index: 99 !important;
-                background: linear-gradient(135deg, rgba(0, 212, 255, 0.4), rgba(138, 43, 226, 0.4));
-                border: 2px solid rgba(0, 212, 255, 0.6);
+                background: linear-gradient(135deg, rgba(0, 212, 255, 0.85), rgba(138, 43, 226, 0.85));
+                border: 2px solid rgba(0, 212, 255, 0.9);
                 border-radius: 10px;
                 backdrop-filter: blur(10px);
-                box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+                box-shadow: 0 4px 20px rgba(0, 212, 255, 0.6);
+                min-width: 220px !important;
             }
 
             .panel-toggle-buttons .panel-toggle-btn {
@@ -695,6 +700,8 @@
                 font-weight: bold !important;
                 font-size: 1em !important;
                 text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+                min-width: 220px !important;
+                padding: 10px 15px !important;
             }
 
             .panel-toggle-btn {
