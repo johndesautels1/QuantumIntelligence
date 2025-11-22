@@ -5891,8 +5891,17 @@
                 const clonedPanel = originalPanel.cloneNode(true);
                 clonedPanel.style.display = 'block';
                 clonedPanel.style.opacity = '1';
-                clonedPanel.style.transform = 'none';
                 clonedPanel.style.position = 'relative';
+
+                // If in fullscreen mode and this is a scalable tab, scale the chart DOWN by 0.75
+                const scrollableTabs = ['comparison', 'marketvalue'];
+                if (isChartFullScreen && !scrollableTabs.includes(tabName) && tabName !== 'notes') {
+                    clonedPanel.style.transform = 'scale(0.75)';
+                    clonedPanel.style.transformOrigin = 'center center';
+                } else {
+                    clonedPanel.style.transform = 'none';
+                }
+
                 container.appendChild(clonedPanel);
 
                 // Special handling for chart panels - need to render on cloned canvas
@@ -6118,39 +6127,26 @@
                         }
                     }
 
-                    // Dynamically scale chart to fit ENTIRELY within viewport - NO SCROLLING
-                    // MAXIMIZE viewable area - use almost entire viewport
+                    // Scale DOWN charts by 0.75 to fit entirely in viewport - NO SCROLLING
                     if (shouldScale && container) {
-                        setTimeout(() => {
-                            const viewportWidth = window.innerWidth;
-                            const viewportHeight = window.innerHeight;
+                        // Find the cloned panel inside container and scale it down
+                        const clonedPanel = container.querySelector('[id$="-panel"]');
+                        if (clonedPanel) {
+                            clonedPanel.style.transform = 'scale(0.75)';
+                            clonedPanel.style.transformOrigin = 'center top';
+                        }
 
-                            // TINY margins - use 98% of viewport
-                            const availableWidth = viewportWidth * 0.98;
-                            const availableHeight = viewportHeight * 0.98;
+                        // Center the container
+                        container.style.cssText = `
+                            position: relative !important;
+                            display: flex !important;
+                            justify-content: center !important;
+                            align-items: flex-start !important;
+                            padding-top: 20px !important;
+                            overflow: hidden !important;
+                        `;
 
-                            // Get actual content dimensions
-                            const contentWidth = container.scrollWidth || container.offsetWidth || 800;
-                            const contentHeight = container.scrollHeight || container.offsetHeight || 600;
-
-                            // Calculate scale to fit ENTIRELY - NO SCROLLING ALLOWED
-                            const scaleX = availableWidth / contentWidth;
-                            const scaleY = availableHeight / contentHeight;
-                            const scaleFactor = Math.min(scaleX, scaleY);
-
-                            console.log(`📐 FULLSCREEN: viewport ${viewportWidth}x${viewportHeight}, available ${availableWidth.toFixed(0)}x${availableHeight.toFixed(0)}, content ${contentWidth}x${contentHeight}, scale: ${scaleFactor.toFixed(3)}`);
-
-                            container.style.cssText = `
-                                position: absolute !important;
-                                top: 50% !important;
-                                left: 50% !important;
-                                transform: translate(-50%, -50%) scale(${scaleFactor}) !important;
-                                transform-origin: center center !important;
-                                width: ${contentWidth}px !important;
-                                height: ${contentHeight}px !important;
-                                overflow: visible !important;
-                            `;
-                        }, 50);
+                        console.log('📐 FULLSCREEN: Applied scale(0.75) to chart panel');
                     }
 
                     // Update button inside chart
