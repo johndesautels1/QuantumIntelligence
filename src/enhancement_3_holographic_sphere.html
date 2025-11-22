@@ -3045,26 +3045,28 @@
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
                 z-index: 850;
                 display: none;
-                overflow-y: auto;
+                overflow: hidden;
                 pointer-events: auto;
             ">
-                <button onclick="toggleBadgesPanel()" style="position: absolute; top: 6px; right: 6px; background: rgba(255, 0, 0, 0.9); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1; z-index: 1000; pointer-events: auto;" aria-label="Close badges panel">×</button>
-                <h3 style="color: #FFD700; margin-bottom: 8px; font-size: 0.95em;">🏆 Your Achievements</h3>
+                <div style="transform: scale(0.8); transform-origin: top left; width: 125%; height: 125%;">
+                    <button onclick="toggleBadgesPanel()" style="position: absolute; top: 6px; right: 6px; background: rgba(255, 0, 0, 0.9); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 16px; font-weight: bold; line-height: 1; z-index: 1000; pointer-events: auto;" aria-label="Close badges panel">×</button>
+                    <h3 style="color: #FFD700; margin-bottom: 15px; font-size: 1.1em;">🏆 Your Achievements</h3>
 
-                <!-- Badge Progress -->
-                <div style="background: rgba(255, 215, 0, 0.1); border-radius: 6px; padding: 6px; margin-bottom: 8px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
-                        <span style="color: rgba(255,255,255,0.9); font-size: 0.7em;">Progress</span>
-                        <span style="color: #FFD700; font-weight: bold; font-size: 0.7em;" id="badges-progress">0/12</span>
+                    <!-- Badge Progress -->
+                    <div style="background: rgba(255, 215, 0, 0.1); border-radius: 8px; padding: 10px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                            <span style="color: rgba(255,255,255,0.9); font-size: 0.85em;">Progress</span>
+                            <span style="color: #FFD700; font-weight: bold;" id="badges-progress">0/12</span>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.2); border-radius: 10px; height: 8px; overflow: hidden;">
+                            <div id="badges-progress-bar" style="background: linear-gradient(90deg, #FFD700, #FF8800); height: 100%; width: 0%; transition: width 0.5s ease;"></div>
+                        </div>
                     </div>
-                    <div style="background: rgba(255,255,255,0.2); border-radius: 6px; height: 6px; overflow: hidden;">
-                        <div id="badges-progress-bar" style="background: linear-gradient(90deg, #FFD700, #FF8800); height: 100%; width: 0%; transition: width 0.5s ease;"></div>
-                    </div>
-                </div>
 
-                <!-- Badge Grid -->
-                <div id="badges-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;">
-                    <!-- Badges will be populated by JavaScript -->
+                    <!-- Badge Grid -->
+                    <div id="badges-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                        <!-- Badges will be populated by JavaScript -->
+                    </div>
                 </div>
             </div>
 
