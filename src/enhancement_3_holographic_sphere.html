@@ -939,6 +939,17 @@
                 max-height: calc(95vh - 180px) !important;
             }
 
+            /* Fix "Select properties" placeholder text - scale and crisp white */
+            .data-modal-content p {
+                color: #FFFFFF !important;
+                text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
+                font-size: 0.85em !important;
+                word-wrap: break-word !important;
+                overflow-wrap: break-word !important;
+                max-width: 100% !important;
+                padding: 0 10px !important;
+            }
+
             /* ===== PROPERTY SELECTORS - SMALLER ON MOBILE ===== */
             .property-selector {
                 margin: 10px 0 !important;
@@ -2562,8 +2573,8 @@
             <!-- Consolidated Data Panels Button -->
             <div class="panel-toggle-buttons" role="region" aria-label="Panel visibility controls">
                 <button class="panel-toggle-btn" id="toggle-data-panels" onclick="openDataPanelsModal()"
-                        aria-label="Open data panels modal with 6 analysis tabs">
-                    📊 Data Panels
+                        aria-label="Open Analytics Dashboard modal with analysis tabs">
+                    📊 Analytics Dashboard
                 </button>
             </div>
 
@@ -3379,7 +3390,7 @@
                 <!-- Modal Header -->
                 <div class="data-modal-header">
                     <div class="data-modal-header-top" style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 15px;">
-                        <h2 style="margin: 0; color: #FFD700; font-size: 1.5em; flex-shrink: 0;">📊 Data Panels</h2>
+                        <h2 style="margin: 0; color: #FFD700; font-size: 1.2em; flex-shrink: 0; text-align: center; line-height: 1.2;">📊 Analytics<br>Dashboard</h2>
 
                         <!-- Time Travel Control - Centered in header row -->
                         <div class="modal-time-travel" style="display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: rgba(0, 212, 255, 0.15); border-radius: 8px; border: 1px solid rgba(0, 212, 255, 0.3); flex: 1; justify-content: center; max-width: 350px;">
@@ -3387,7 +3398,7 @@
                             <div style="display: flex; flex-direction: column; align-items: center; flex: 1; max-width: 150px;">
                                 <div class="modal-time-display" id="modal-time-display" style="font-size: 0.7em; color: #00FF88; font-weight: bold;">Current Data</div>
                                 <input type="range" min="0" max="12" value="12" step="1"
-                                       style="width: 100%; height: 4px; margin: 2px 0;"
+                                       style="width: 100%; height: 8px; margin: 4px 0; accent-color: #00D4FF; cursor: pointer; background: linear-gradient(to right, #00D4FF, #00FF88); border-radius: 4px;"
                                        id="modal-time-slider"
                                        oninput="updateTimeTravel(this.value); document.getElementById('time-slider').value = this.value;"
                                        aria-label="Select time period for property data">
@@ -3404,15 +3415,15 @@
                             ✕ Close
                         </button>
                     </div>
-                    <div style="text-align: center; font-size: 0.7em; color: rgba(255, 255, 255, 0.6); margin-bottom: 12px; letter-spacing: 0.3px;">
+                    <div style="text-align: center; font-size: 0.7em; color: #FFFFFF; font-weight: bold; margin-bottom: 12px; letter-spacing: 0.3px; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
                         <span style="color: #F44336;">●</span> Poor (0-20)
-                        <span style="margin: 0 4px;">|</span>
+                        <span style="margin: 0 4px; color: #FFFFFF;">|</span>
                         <span style="color: #FF9800;">●</span> Less than ideal (21-40)
-                        <span style="margin: 0 4px;">|</span>
+                        <span style="margin: 0 4px; color: #FFFFFF;">|</span>
                         <span style="color: #FFEB3B;">●</span> Caution (41-60)
-                        <span style="margin: 0 4px;">|</span>
+                        <span style="margin: 0 4px; color: #FFFFFF;">|</span>
                         <span style="color: #2196F3;">●</span> Good (61-80)
-                        <span style="margin: 0 4px;">|</span>
+                        <span style="margin: 0 4px; color: #FFFFFF;">|</span>
                         <span style="color: #4CAF50;">●</span> Excellent (81-100)
                     </div>
                     <!-- Buyer Profile Analysis (moved from Controls Panel) -->
@@ -3489,13 +3500,16 @@
                 </div>
 
                 <!-- Modal Footer -->
-                <div class="data-modal-footer" style="display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                <div class="data-modal-footer" style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
                     <button onclick="closeDataPanelsModal()"
-                            style="background: rgba(255, 0, 0, 0.8); color: white; border: none; border-radius: 8px; padding: 8px 20px; font-size: 0.9em; font-weight: bold; cursor: pointer;">
+                            style="background: rgba(255, 0, 0, 0.8); color: white; border: none; border-radius: 6px; padding: 5px 12px; font-size: 0.75em; font-weight: bold; cursor: pointer;">
                         ✕ Close
                     </button>
-                    <p style="margin: 0; font-size: 0.85em; color: rgba(255, 255, 255, 0.7);">
-                        💡 Switch tabs to view different analysis panels | ESC to close
+                    <p style="margin: 0; font-size: 0.85em; color: #FFFFFF; font-weight: bold; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
+                        💡 Switch tabs to view different analysis panels
+                    </p>
+                    <p style="margin: 0; font-size: 0.75em; color: rgba(255, 255, 255, 0.85);">
+                        Move Time Travel Slider to see historic variable data
                     </p>
                 </div>
             </div>
