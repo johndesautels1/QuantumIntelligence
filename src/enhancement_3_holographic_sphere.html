@@ -6119,36 +6119,38 @@
                     }
 
                     // Dynamically scale chart to fit ENTIRELY within viewport - NO SCROLLING
+                    // MAXIMIZE viewable area - use almost entire viewport
                     if (shouldScale && container) {
-                        const viewportWidth = window.innerWidth;
-                        const viewportHeight = window.innerHeight;
-                        const marginHorizontal = 60; // pixels margin left/right
-                        const marginVertical = 20; // pixels margin top/bottom (smaller for more vertical space)
+                        setTimeout(() => {
+                            const viewportWidth = window.innerWidth;
+                            const viewportHeight = window.innerHeight;
 
-                        // Available space (with margin)
-                        const availableWidth = viewportWidth - (marginHorizontal * 2);
-                        const availableHeight = viewportHeight - (marginVertical * 2);
+                            // TINY margins - use 98% of viewport
+                            const availableWidth = viewportWidth * 0.98;
+                            const availableHeight = viewportHeight * 0.98;
 
-                        // Get container's scroll dimensions (full content size)
-                        const contentWidth = container.scrollWidth || container.offsetWidth || 600;
-                        const contentHeight = container.scrollHeight || container.offsetHeight || 400;
+                            // Get actual content dimensions
+                            const contentWidth = container.scrollWidth || container.offsetWidth || 800;
+                            const contentHeight = container.scrollHeight || container.offsetHeight || 600;
 
-                        // Calculate scale to fit ENTIRELY (use smaller of the two ratios)
-                        const scaleX = availableWidth / contentWidth;
-                        const scaleY = availableHeight / contentHeight;
-                        const scaleFactor = Math.min(scaleX, scaleY); // NO cap - must fit!
+                            // Calculate scale to fit ENTIRELY - NO SCROLLING ALLOWED
+                            const scaleX = availableWidth / contentWidth;
+                            const scaleY = availableHeight / contentHeight;
+                            const scaleFactor = Math.min(scaleX, scaleY);
 
-                        console.log(`📐 Fit-to-viewport: content ${contentWidth}x${contentHeight} -> available ${availableWidth}x${availableHeight}, scale: ${scaleFactor.toFixed(3)}`);
+                            console.log(`📐 FULLSCREEN: viewport ${viewportWidth}x${viewportHeight}, available ${availableWidth.toFixed(0)}x${availableHeight.toFixed(0)}, content ${contentWidth}x${contentHeight}, scale: ${scaleFactor.toFixed(3)}`);
 
-                        container.style.cssText = `
-                            position: absolute !important;
-                            top: 50% !important;
-                            left: 50% !important;
-                            transform: translate(-50%, -50%) scale(${scaleFactor}) !important;
-                            transform-origin: center center !important;
-                            width: ${contentWidth}px !important;
-                            height: ${contentHeight}px !important;
-                        `;
+                            container.style.cssText = `
+                                position: absolute !important;
+                                top: 50% !important;
+                                left: 50% !important;
+                                transform: translate(-50%, -50%) scale(${scaleFactor}) !important;
+                                transform-origin: center center !important;
+                                width: ${contentWidth}px !important;
+                                height: ${contentHeight}px !important;
+                                overflow: visible !important;
+                            `;
+                        }, 50);
                     }
 
                     // Update button inside chart
