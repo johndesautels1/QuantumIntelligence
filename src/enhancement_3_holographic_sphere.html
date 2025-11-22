@@ -3311,9 +3311,29 @@
                 pointer-events: auto;
             ">
                 <button onclick="toggleSocialPanel()" style="position: absolute; top: 6px; right: 6px; background: rgba(255, 0, 0, 0.9); color: white; border: none; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; font-size: 14px; font-weight: bold; line-height: 1; z-index: 1000; pointer-events: auto;" aria-label="Close social panel">×</button>
-                <h3 style="color: #1DA1F2; margin-bottom: 6px; font-size: 0.95em;">📱 Share Your Comparison</h3>
+                <h3 style="color: #1DA1F2; margin-bottom: 6px; font-size: 0.95em;">📱 Share Your Property</h3>
 
-                <p style="color: rgba(255,255,255,0.7); font-size: 0.7em; margin-bottom: 8px;">Share your property analysis with friends and family!</p>
+                <!-- Property Selection -->
+                <div style="margin-bottom: 10px;">
+                    <label style="color: rgba(255,255,255,0.8); font-size: 0.75em; display: block; margin-bottom: 4px;">Select Property to Share:</label>
+                    <div id="share-property-selector" style="display: flex; gap: 6px;">
+                        <button onclick="selectShareProperty('A')" id="share-prop-A" class="share-prop-btn" style="flex: 1; padding: 8px; background: rgba(255, 107, 107, 0.3); border: 2px solid rgba(255, 107, 107, 0.6); border-radius: 6px; color: white; cursor: pointer; font-size: 0.75em; font-weight: bold; transition: all 0.3s;">
+                            🏠 A
+                        </button>
+                        <button onclick="selectShareProperty('B')" id="share-prop-B" class="share-prop-btn" style="flex: 1; padding: 8px; background: rgba(78, 205, 196, 0.3); border: 2px solid rgba(78, 205, 196, 0.6); border-radius: 6px; color: white; cursor: pointer; font-size: 0.75em; font-weight: bold; transition: all 0.3s;">
+                            🏠 B
+                        </button>
+                        <button onclick="selectShareProperty('C')" id="share-prop-C" class="share-prop-btn" style="flex: 1; padding: 8px; background: rgba(255, 230, 109, 0.3); border: 2px solid rgba(255, 230, 109, 0.6); border-radius: 6px; color: white; cursor: pointer; font-size: 0.75em; font-weight: bold; transition: all 0.3s;">
+                            🏠 C
+                        </button>
+                        <button onclick="selectShareProperty('ALL')" id="share-prop-ALL" class="share-prop-btn" style="flex: 1; padding: 8px; background: rgba(138, 43, 226, 0.5); border: 2px solid rgba(138, 43, 226, 0.8); border-radius: 6px; color: white; cursor: pointer; font-size: 0.75em; font-weight: bold; transition: all 0.3s;">
+                            📊 All
+                        </button>
+                    </div>
+                    <div id="share-property-preview" style="margin-top: 6px; padding: 6px; background: rgba(255,255,255,0.05); border-radius: 6px; font-size: 0.7em; color: rgba(255,255,255,0.7); text-align: center;">
+                        Select a property above to share
+                    </div>
+                </div>
 
                 <!-- Social Buttons -->
                 <div style="display: flex; flex-direction: column; gap: 6px;">
@@ -12424,6 +12444,49 @@
                 vibrate('tap');
             };
 
+            // Selected property to share (A, B, C, or ALL)
+            let selectedShareProperty = null;
+
+            window.selectShareProperty = function(slot) {
+                selectedShareProperty = slot;
+
+                // Update button styles
+                const buttons = document.querySelectorAll('.share-prop-btn');
+                buttons.forEach(btn => {
+                    btn.style.transform = 'scale(1)';
+                    btn.style.boxShadow = 'none';
+                });
+
+                const selectedBtn = document.getElementById(`share-prop-${slot}`);
+                if (selectedBtn) {
+                    selectedBtn.style.transform = 'scale(1.05)';
+                    selectedBtn.style.boxShadow = '0 0 15px rgba(255, 255, 255, 0.5)';
+                }
+
+                // Update preview
+                const preview = document.getElementById('share-property-preview');
+                if (preview) {
+                    if (slot === 'ALL') {
+                        const names = [propertyA?.name, propertyB?.name, propertyC?.name].filter(Boolean);
+                        if (names.length > 0) {
+                            preview.innerHTML = `<strong style="color: #FFD700;">Sharing All:</strong> ${names.join(' vs ')}`;
+                        } else {
+                            preview.innerHTML = '<span style="color: #FF6B6B;">No properties selected for comparison</span>';
+                        }
+                    } else {
+                        const prop = slot === 'A' ? propertyA : slot === 'B' ? propertyB : propertyC;
+                        if (prop) {
+                            const price = prop.price ? `$${prop.price.toLocaleString()}` : '';
+                            preview.innerHTML = `<strong style="color: #FFD700;">Property ${slot}:</strong> ${prop.name} ${price ? `<span style="color: #00FF88;">${price}</span>` : ''}`;
+                        } else {
+                            preview.innerHTML = `<span style="color: #FF6B6B;">Property ${slot} not selected</span>`;
+                        }
+                    }
+                }
+
+                vibrate('tap');
+            };
+
             function loadShareStats() {
                 try {
                     const saved = localStorage.getItem('clues_share_stats');
@@ -12452,10 +12515,29 @@
             }
 
             function getShareText() {
-                let text = 'Check out my property comparison on CLUES! ';
-                if (propertyA) text += `${propertyA.name}`;
-                if (propertyB) text += ` vs ${propertyB.name}`;
-                if (propertyC) text += ` vs ${propertyC.name}`;
+                let text = 'Check out ';
+
+                // Use selected property or fall back to all
+                if (selectedShareProperty && selectedShareProperty !== 'ALL') {
+                    const prop = selectedShareProperty === 'A' ? propertyA :
+                                 selectedShareProperty === 'B' ? propertyB : propertyC;
+                    if (prop) {
+                        text += `this property on CLUES: ${prop.name}`;
+                        if (prop.price) text += ` ($${prop.price.toLocaleString()})`;
+                    } else {
+                        text += 'my property analysis on CLUES!';
+                    }
+                } else {
+                    // Share all / comparison mode
+                    text += 'my property comparison on CLUES! ';
+                    const names = [];
+                    if (propertyA) names.push(propertyA.name);
+                    if (propertyB) names.push(propertyB.name);
+                    if (propertyC) names.push(propertyC.name);
+                    if (names.length > 0) {
+                        text += names.join(' vs ');
+                    }
+                }
                 return text;
             }
 
