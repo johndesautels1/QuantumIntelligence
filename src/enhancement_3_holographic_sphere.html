@@ -671,13 +671,10 @@
             }
 
             /* Panel Toggle Buttons - Mobile: Full width like Property A/B/C fields
-               MATH: Header ends at ~73px, Property A starts at ~220px
-               Available gap = 147px, Button height = 40px
-               Equal spacing = (147 - 40) / 2 = 53.5px
-               Button top = 73 + 53.5 = 126.5px ≈ 127px */
+               MATH: Previous top was 127px, moved down 12px = 139px */
             .panel-toggle-buttons {
                 position: fixed !important;
-                top: 127px !important;
+                top: 139px !important;
                 left: 10px !important;
                 right: 10px !important;
                 width: calc(100% - 20px) !important;
@@ -695,15 +692,16 @@
                 box-shadow: none;
             }
 
+            /* Height matches Upload Photos: padding 10px 15px, font-size 0.9em */
             .panel-toggle-buttons .panel-toggle-btn {
                 color: #FFFFFF !important;
                 font-weight: bold !important;
-                font-size: 1em !important;
+                font-size: 0.9em !important;
                 text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
                 width: 100% !important;
                 min-width: unset !important;
                 max-width: 100% !important;
-                padding: 12px 15px !important;
+                padding: 10px 15px !important;
                 flex: none !important;
                 background: linear-gradient(135deg, rgba(0, 212, 255, 0.85), rgba(138, 43, 226, 0.85)) !important;
                 border: 2px solid rgba(0, 212, 255, 0.9) !important;
@@ -712,8 +710,8 @@
             }
 
             .panel-toggle-btn {
-                font-size: 1em;
-                padding: 12px 15px;
+                font-size: 0.9em;
+                padding: 10px 15px;
                 flex: none;
                 width: 100%;
                 min-width: unset;
