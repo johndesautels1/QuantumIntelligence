@@ -6119,16 +6119,39 @@
                         }
                     }
 
-                    // Scale DOWN the chart container to fit within viewport
+                    // Dynamically scale chart to fit within viewport with margin
                     if (shouldScale && container) {
-                        container.style.cssText = `
-                            position: relative;
-                            transform: scale(0.85);
-                            transform-origin: center center;
-                            max-width: 100vw;
-                            max-height: 90vh;
-                            overflow: visible;
-                        `;
+                        // Get the chart's natural dimensions
+                        const chartContent = container.firstElementChild;
+                        if (chartContent) {
+                            const viewportWidth = window.innerWidth;
+                            const viewportHeight = window.innerHeight;
+                            const margin = 40; // pixels margin around chart
+
+                            // Available space
+                            const availableWidth = viewportWidth - (margin * 2);
+                            const availableHeight = viewportHeight - (margin * 2);
+
+                            // Get chart's current dimensions
+                            const chartRect = chartContent.getBoundingClientRect();
+                            const chartWidth = chartRect.width || 400;
+                            const chartHeight = chartRect.height || 300;
+
+                            // Calculate scale factor to fit
+                            const scaleX = availableWidth / chartWidth;
+                            const scaleY = availableHeight / chartHeight;
+                            const scaleFactor = Math.min(scaleX, scaleY, 1.5); // Cap at 1.5x max
+
+                            console.log(`📐 Scaling chart: ${chartWidth}x${chartHeight} -> viewport ${availableWidth}x${availableHeight}, scale: ${scaleFactor.toFixed(2)}`);
+
+                            container.style.cssText = `
+                                position: absolute;
+                                top: 50%;
+                                left: 50%;
+                                transform: translate(-50%, -50%) scale(${scaleFactor});
+                                transform-origin: center center;
+                            `;
+                        }
                     }
 
                     // Update button inside chart
