@@ -6053,20 +6053,26 @@
                     // Show for all tabs except 'notes'
                     if (tabName !== 'notes') {
                         fullscreenBtn.style.display = 'inline-block';
-                        fullscreenBtn.innerHTML = '🔲 Toggle Full Screen';
+                        fullscreenBtn.textContent = '🔲 Toggle Full Screen';
+                        console.log('✅ Fullscreen button now visible for tab:', tabName);
                     } else {
                         fullscreenBtn.style.display = 'none';
+                        console.log('🔲 Fullscreen button hidden for notes tab');
                     }
+                } else {
+                    console.error('❌ fullscreen-toggle-btn not found in switchDataTab');
                 }
 
             };
 
             // Toggle chart fullscreen mode
             window.toggleChartFullScreen = function() {
-                console.log('🔲 Toggle Full Screen clicked!');
+                console.log('🔲 toggleChartFullScreen function called!');
 
                 const modal = document.getElementById('data-panels-modal');
+                console.log('Modal element:', modal);
                 const modalContent = modal ? modal.querySelector('.data-modal') : null;
+                console.log('Modal content element:', modalContent);
                 const fullscreenBtn = document.getElementById('fullscreen-toggle-btn');
                 const modalHeader = modal ? modal.querySelector('.data-modal-header') : null;
                 const modalTabs = modal ? modal.querySelector('.data-modal-tabs') : null;
@@ -6074,11 +6080,12 @@
                 const contentArea = document.getElementById('data-modal-content-area');
 
                 if (!modalContent) {
-                    console.error('❌ Modal content not found');
+                    console.error('❌ Modal content not found - cannot toggle fullscreen');
                     return;
                 }
 
                 isChartFullScreen = !isChartFullScreen;
+                console.log('isChartFullScreen now:', isChartFullScreen);
 
                 if (isChartFullScreen) {
                     // Enter fullscreen mode
