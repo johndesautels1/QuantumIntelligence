@@ -8812,12 +8812,14 @@
             // 📍 LOCATION CHART - 3D Glassmorphic Columns
             function createLocationChart() {
                 const canvas = document.getElementById('location-chart');
+                const contentDiv = document.getElementById('location-content');
                 if (!canvas) return;
 
                 const ctx = canvas.getContext('2d');
 
                 if (locationChart) {
                     locationChart.destroy();
+                    locationChart = null;
                 }
 
                 const properties = [
@@ -8827,11 +8829,24 @@
                 ].filter(p => p.prop !== null);
 
                 if (properties.length === 0) {
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.font = 'bold 14px Segoe UI';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('Select 2+ properties to compare', canvas.width / 2, canvas.height / 2);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    if (contentDiv) {
+                        const existingPlaceholder = contentDiv.querySelector('.chart-placeholder');
+                        if (!existingPlaceholder) {
+                            const placeholder = document.createElement('p');
+                            placeholder.className = 'chart-placeholder';
+                            placeholder.style.cssText = 'text-align: center; color: #FFFFFF; font-weight: bold; font-size: 0.9em; text-shadow: 0 1px 2px rgba(0,0,0,0.5); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%;';
+                            placeholder.textContent = 'Select 2 or more properties to compare';
+                            contentDiv.appendChild(placeholder);
+                        }
+                    }
                     return;
+                }
+
+                // Remove placeholder if it exists
+                if (contentDiv) {
+                    const placeholder = contentDiv.querySelector('.chart-placeholder');
+                    if (placeholder) placeholder.remove();
                 }
 
                 const labels = properties.map(p => `Property ${p.letter}`);
@@ -8913,12 +8928,14 @@
             // 🏠 CONDITION CHART - 3D Horizontal Bars with Depth
             function createConditionChart() {
                 const canvas = document.getElementById('condition-chart');
+                const contentDiv = document.getElementById('condition-content');
                 if (!canvas) return;
 
                 const ctx = canvas.getContext('2d');
 
                 if (conditionChart) {
                     conditionChart.destroy();
+                    conditionChart = null;
                 }
 
                 const properties = [
@@ -8928,11 +8945,24 @@
                 ].filter(p => p.prop !== null);
 
                 if (properties.length === 0) {
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.font = 'bold 14px Segoe UI';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('Select 2+ properties to compare', canvas.width / 2, canvas.height / 2);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    if (contentDiv) {
+                        const existingPlaceholder = contentDiv.querySelector('.chart-placeholder');
+                        if (!existingPlaceholder) {
+                            const placeholder = document.createElement('p');
+                            placeholder.className = 'chart-placeholder';
+                            placeholder.style.cssText = 'text-align: center; color: #FFFFFF; font-weight: bold; font-size: 0.9em; text-shadow: 0 1px 2px rgba(0,0,0,0.5); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%;';
+                            placeholder.textContent = 'Select 2 or more properties to compare';
+                            contentDiv.appendChild(placeholder);
+                        }
+                    }
                     return;
+                }
+
+                // Remove placeholder if it exists
+                if (contentDiv) {
+                    const placeholder = contentDiv.querySelector('.chart-placeholder');
+                    if (placeholder) placeholder.remove();
                 }
 
                 const labels = properties.map(p => `Property ${p.letter}`);
@@ -9012,12 +9042,14 @@
             // 🎨 LIFESTYLE CHART - 3D Polar/Donut with Glassmorphism
             function createLifestyleChart() {
                 const canvas = document.getElementById('lifestyle-chart');
+                const contentDiv = document.getElementById('lifestyle-content');
                 if (!canvas) return;
 
                 const ctx = canvas.getContext('2d');
 
                 if (lifestyleChart) {
                     lifestyleChart.destroy();
+                    lifestyleChart = null;
                 }
 
                 const properties = [
@@ -9027,11 +9059,24 @@
                 ].filter(p => p.prop !== null);
 
                 if (properties.length === 0) {
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.font = 'bold 14px Segoe UI';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('Select 2+ properties to compare', canvas.width / 2, canvas.height / 2);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    if (contentDiv) {
+                        const existingPlaceholder = contentDiv.querySelector('.chart-placeholder');
+                        if (!existingPlaceholder) {
+                            const placeholder = document.createElement('p');
+                            placeholder.className = 'chart-placeholder';
+                            placeholder.style.cssText = 'text-align: center; color: #FFFFFF; font-weight: bold; font-size: 0.9em; text-shadow: 0 1px 2px rgba(0,0,0,0.5); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%;';
+                            placeholder.textContent = 'Select 2 or more properties to compare';
+                            contentDiv.appendChild(placeholder);
+                        }
+                    }
                     return;
+                }
+
+                // Remove placeholder if it exists
+                if (contentDiv) {
+                    const placeholder = contentDiv.querySelector('.chart-placeholder');
+                    if (placeholder) placeholder.remove();
                 }
 
                 const labels = properties.map(p => `Property ${p.letter}`);
@@ -9110,12 +9155,14 @@
             // 🎓 EDUCATION CHART - 3D Doughnut with School Rating Breakdown
             function createEducationChart() {
                 const canvas = document.getElementById('education-chart');
+                const contentDiv = document.getElementById('education-content');
                 if (!canvas) return;
 
                 const ctx = canvas.getContext('2d');
 
                 if (educationChart) {
                     educationChart.destroy();
+                    educationChart = null;
                 }
 
                 const properties = [
@@ -9125,11 +9172,24 @@
                 ].filter(p => p.prop !== null);
 
                 if (properties.length === 0) {
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.font = 'bold 14px Segoe UI';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('Select 2+ properties to compare', canvas.width / 2, canvas.height / 2);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    if (contentDiv) {
+                        const existingPlaceholder = contentDiv.querySelector('.chart-placeholder');
+                        if (!existingPlaceholder) {
+                            const placeholder = document.createElement('p');
+                            placeholder.className = 'chart-placeholder';
+                            placeholder.style.cssText = 'text-align: center; color: #FFFFFF; font-weight: bold; font-size: 0.9em; text-shadow: 0 1px 2px rgba(0,0,0,0.5); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%;';
+                            placeholder.textContent = 'Select 2 or more properties to compare';
+                            contentDiv.appendChild(placeholder);
+                        }
+                    }
                     return;
+                }
+
+                // Remove placeholder if it exists
+                if (contentDiv) {
+                    const placeholder = contentDiv.querySelector('.chart-placeholder');
+                    if (placeholder) placeholder.remove();
                 }
 
                 const labels = properties.map(p => `Property ${p.letter}`);
@@ -9227,12 +9287,14 @@
             // 💰 ROI CHART - Line Chart with 5-Year Projection
             function createROIChart() {
                 const canvas = document.getElementById('roi-chart');
+                const contentDiv = document.getElementById('roi-content');
                 if (!canvas) return;
 
                 const ctx = canvas.getContext('2d');
 
                 if (roiChart) {
                     roiChart.destroy();
+                    roiChart = null;
                 }
 
                 const properties = [
@@ -9242,11 +9304,24 @@
                 ].filter(p => p.prop !== null);
 
                 if (properties.length === 0) {
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.font = 'bold 14px Segoe UI';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('Select 2+ properties to compare ROI', canvas.width / 2, canvas.height / 2);
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    if (contentDiv) {
+                        const existingPlaceholder = contentDiv.querySelector('.chart-placeholder');
+                        if (!existingPlaceholder) {
+                            const placeholder = document.createElement('p');
+                            placeholder.className = 'chart-placeholder';
+                            placeholder.style.cssText = 'text-align: center; color: #FFFFFF; font-weight: bold; font-size: 0.9em; text-shadow: 0 1px 2px rgba(0,0,0,0.5); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%;';
+                            placeholder.textContent = 'Select 2 or more properties to compare';
+                            contentDiv.appendChild(placeholder);
+                        }
+                    }
                     return;
+                }
+
+                // Remove placeholder if it exists
+                if (contentDiv) {
+                    const placeholder = contentDiv.querySelector('.chart-placeholder');
+                    if (placeholder) placeholder.remove();
                 }
 
                 const labels = properties.map(p => `Property ${p.letter}`);
@@ -9349,6 +9424,7 @@
                 }
 
                 const ctx = canvasElement.getContext('2d');
+                const contentDiv = canvasElement.parentElement;
 
                 const properties = [
                     { prop: propertyA, letter: 'A' },
@@ -9357,11 +9433,24 @@
                 ].filter(p => p.prop !== null);
 
                 if (properties.length === 0) {
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.font = 'bold 14px Segoe UI';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('Select 2+ properties to compare', canvasElement.width / 2, canvasElement.height / 2);
+                    ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+                    if (contentDiv) {
+                        const existingPlaceholder = contentDiv.querySelector('.chart-placeholder');
+                        if (!existingPlaceholder) {
+                            const placeholder = document.createElement('p');
+                            placeholder.className = 'chart-placeholder';
+                            placeholder.style.cssText = 'text-align: center; color: #FFFFFF; font-weight: bold; font-size: 0.9em; text-shadow: 0 1px 2px rgba(0,0,0,0.5); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%;';
+                            placeholder.textContent = 'Select 2 or more properties to compare';
+                            contentDiv.appendChild(placeholder);
+                        }
+                    }
                     return;
+                }
+
+                // Remove placeholder if it exists
+                if (contentDiv) {
+                    const placeholder = contentDiv.querySelector('.chart-placeholder');
+                    if (placeholder) placeholder.remove();
                 }
 
                 function getColorForScore(score) {
@@ -9450,15 +9539,29 @@
                 }
 
                 const ctx = canvasElement.getContext('2d');
+                const contentDiv = canvasElement.parentElement;
 
                 const properties = [propertyA, propertyB, propertyC].filter(p => p !== null);
 
                 if (properties.length === 0) {
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.font = 'bold 14px Segoe UI';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('Select 2+ properties to compare', canvasElement.width / 2, canvasElement.height / 2);
+                    ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+                    if (contentDiv) {
+                        const existingPlaceholder = contentDiv.querySelector('.chart-placeholder');
+                        if (!existingPlaceholder) {
+                            const placeholder = document.createElement('p');
+                            placeholder.className = 'chart-placeholder';
+                            placeholder.style.cssText = 'text-align: center; color: #FFFFFF; font-weight: bold; font-size: 0.9em; text-shadow: 0 1px 2px rgba(0,0,0,0.5); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%;';
+                            placeholder.textContent = 'Select 2 or more properties to compare';
+                            contentDiv.appendChild(placeholder);
+                        }
+                    }
                     return;
+                }
+
+                // Remove placeholder if it exists
+                if (contentDiv) {
+                    const placeholder = contentDiv.querySelector('.chart-placeholder');
+                    if (placeholder) placeholder.remove();
                 }
 
                 const labels = Object.values(METRICS_CONFIG)
@@ -9580,6 +9683,7 @@
                 }
 
                 const ctx = canvasElement.getContext('2d');
+                const contentDiv = canvasElement.parentElement;
 
                 const properties = [
                     { prop: propertyA, letter: 'A' },
@@ -9588,11 +9692,24 @@
                 ].filter(p => p.prop !== null);
 
                 if (properties.length === 0) {
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.font = 'bold 14px Segoe UI';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('Select 2+ properties to compare', canvasElement.width / 2, canvasElement.height / 2);
+                    ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+                    if (contentDiv) {
+                        const existingPlaceholder = contentDiv.querySelector('.chart-placeholder');
+                        if (!existingPlaceholder) {
+                            const placeholder = document.createElement('p');
+                            placeholder.className = 'chart-placeholder';
+                            placeholder.style.cssText = 'text-align: center; color: #FFFFFF; font-weight: bold; font-size: 0.9em; text-shadow: 0 1px 2px rgba(0,0,0,0.5); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%;';
+                            placeholder.textContent = 'Select 2 or more properties to compare';
+                            contentDiv.appendChild(placeholder);
+                        }
+                    }
                     return;
+                }
+
+                // Remove placeholder if it exists
+                if (contentDiv) {
+                    const placeholder = contentDiv.querySelector('.chart-placeholder');
+                    if (placeholder) placeholder.remove();
                 }
 
                 const data = properties.map(p => p.prop.dimensions.location || 50);
@@ -9670,6 +9787,7 @@
                 }
 
                 const ctx = canvasElement.getContext('2d');
+                const contentDiv = canvasElement.parentElement;
 
                 const properties = [
                     { prop: propertyA, letter: 'A' },
@@ -9678,11 +9796,24 @@
                 ].filter(p => p.prop !== null);
 
                 if (properties.length === 0) {
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.font = 'bold 14px Segoe UI';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('Select 2+ properties to compare', canvasElement.width / 2, canvasElement.height / 2);
+                    ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+                    if (contentDiv) {
+                        const existingPlaceholder = contentDiv.querySelector('.chart-placeholder');
+                        if (!existingPlaceholder) {
+                            const placeholder = document.createElement('p');
+                            placeholder.className = 'chart-placeholder';
+                            placeholder.style.cssText = 'text-align: center; color: #FFFFFF; font-weight: bold; font-size: 0.9em; text-shadow: 0 1px 2px rgba(0,0,0,0.5); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%;';
+                            placeholder.textContent = 'Select 2 or more properties to compare';
+                            contentDiv.appendChild(placeholder);
+                        }
+                    }
                     return;
+                }
+
+                // Remove placeholder if it exists
+                if (contentDiv) {
+                    const placeholder = contentDiv.querySelector('.chart-placeholder');
+                    if (placeholder) placeholder.remove();
                 }
 
                 const data = properties.map(p => p.prop.dimensions.condition || 50);
@@ -9765,6 +9896,7 @@
                 }
 
                 const ctx = canvasElement.getContext('2d');
+                const contentDiv = canvasElement.parentElement;
 
                 const properties = [
                     { prop: propertyA, letter: 'A' },
@@ -9773,11 +9905,24 @@
                 ].filter(p => p.prop !== null);
 
                 if (properties.length === 0) {
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.font = 'bold 14px Segoe UI';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('Select 2+ properties to compare', canvasElement.width / 2, canvasElement.height / 2);
+                    ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+                    if (contentDiv) {
+                        const existingPlaceholder = contentDiv.querySelector('.chart-placeholder');
+                        if (!existingPlaceholder) {
+                            const placeholder = document.createElement('p');
+                            placeholder.className = 'chart-placeholder';
+                            placeholder.style.cssText = 'text-align: center; color: #FFFFFF; font-weight: bold; font-size: 0.9em; text-shadow: 0 1px 2px rgba(0,0,0,0.5); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%;';
+                            placeholder.textContent = 'Select 2 or more properties to compare';
+                            contentDiv.appendChild(placeholder);
+                        }
+                    }
                     return;
+                }
+
+                // Remove placeholder if it exists
+                if (contentDiv) {
+                    const placeholder = contentDiv.querySelector('.chart-placeholder');
+                    if (placeholder) placeholder.remove();
                 }
 
                 const prices = properties.map(p => p.prop.price || 0);
@@ -9994,6 +10139,7 @@
                 }
 
                 const ctx = canvasElement.getContext('2d');
+                const contentDiv = canvasElement.parentElement;
 
                 const properties = [
                     { prop: propertyA, letter: 'A' },
@@ -10002,11 +10148,24 @@
                 ].filter(p => p.prop !== null);
 
                 if (properties.length === 0) {
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.font = 'bold 14px Segoe UI';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('Select 2+ properties to compare', canvasElement.width / 2, canvasElement.height / 2);
+                    ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+                    if (contentDiv) {
+                        const existingPlaceholder = contentDiv.querySelector('.chart-placeholder');
+                        if (!existingPlaceholder) {
+                            const placeholder = document.createElement('p');
+                            placeholder.className = 'chart-placeholder';
+                            placeholder.style.cssText = 'text-align: center; color: #FFFFFF; font-weight: bold; font-size: 0.9em; text-shadow: 0 1px 2px rgba(0,0,0,0.5); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%;';
+                            placeholder.textContent = 'Select 2 or more properties to compare';
+                            contentDiv.appendChild(placeholder);
+                        }
+                    }
                     return;
+                }
+
+                // Remove placeholder if it exists
+                if (contentDiv) {
+                    const placeholder = contentDiv.querySelector('.chart-placeholder');
+                    if (placeholder) placeholder.remove();
                 }
 
                 const labels = properties.map(p => `Property ${p.letter}`);
@@ -10099,6 +10258,7 @@
                 }
 
                 const ctx = canvasElement.getContext('2d');
+                const contentDiv = canvasElement.parentElement;
 
                 const properties = [
                     { prop: propertyA, letter: 'A' },
@@ -10107,11 +10267,24 @@
                 ].filter(p => p.prop !== null);
 
                 if (properties.length === 0) {
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.font = 'bold 14px Segoe UI';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('Select 2+ properties to compare', canvasElement.width / 2, canvasElement.height / 2);
+                    ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+                    if (contentDiv) {
+                        const existingPlaceholder = contentDiv.querySelector('.chart-placeholder');
+                        if (!existingPlaceholder) {
+                            const placeholder = document.createElement('p');
+                            placeholder.className = 'chart-placeholder';
+                            placeholder.style.cssText = 'text-align: center; color: #FFFFFF; font-weight: bold; font-size: 0.9em; text-shadow: 0 1px 2px rgba(0,0,0,0.5); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%;';
+                            placeholder.textContent = 'Select 2 or more properties to compare';
+                            contentDiv.appendChild(placeholder);
+                        }
+                    }
                     return;
+                }
+
+                // Remove placeholder if it exists
+                if (contentDiv) {
+                    const placeholder = contentDiv.querySelector('.chart-placeholder');
+                    if (placeholder) placeholder.remove();
                 }
 
                 const labels = properties.map(p => `Property ${p.letter}`);
@@ -10214,6 +10387,7 @@
                 }
 
                 const ctx = canvasElement.getContext('2d');
+                const contentDiv = canvasElement.parentElement;
 
                 const properties = [
                     { prop: propertyA, letter: 'A' },
@@ -10222,11 +10396,24 @@
                 ].filter(p => p.prop !== null);
 
                 if (properties.length === 0) {
-                    ctx.fillStyle = '#FFFFFF';
-                    ctx.font = 'bold 14px Segoe UI';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('Select 2+ properties to compare', canvasElement.width / 2, canvasElement.height / 2);
+                    ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+                    if (contentDiv) {
+                        const existingPlaceholder = contentDiv.querySelector('.chart-placeholder');
+                        if (!existingPlaceholder) {
+                            const placeholder = document.createElement('p');
+                            placeholder.className = 'chart-placeholder';
+                            placeholder.style.cssText = 'text-align: center; color: #FFFFFF; font-weight: bold; font-size: 0.9em; text-shadow: 0 1px 2px rgba(0,0,0,0.5); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 100%;';
+                            placeholder.textContent = 'Select 2 or more properties to compare';
+                            contentDiv.appendChild(placeholder);
+                        }
+                    }
                     return;
+                }
+
+                // Remove placeholder if it exists
+                if (contentDiv) {
+                    const placeholder = contentDiv.querySelector('.chart-placeholder');
+                    if (placeholder) placeholder.remove();
                 }
 
                 const labels = properties.map(p => `Property ${p.letter}`);
