@@ -2765,16 +2765,11 @@
             ">
                 <h4 style="color: #FFD700; margin: 0 0 10px 0; font-size: 0.95em; text-align: center; border-bottom: 1px solid rgba(255, 215, 0, 0.3); padding-bottom: 8px;">🛠️ Tools & Settings</h4>
 
-                <!-- Analyst Mode -->
-                <button class="mode-toggle" onclick="toggleDisplayMode()" aria-label="Toggle between cinematic and analyst mode"
-                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0;">
+                <!-- Combined View Mode (3-position cycle: Analyst → Cinematic → Expert) -->
+                <button class="mode-toggle" id="view-mode-toggle" onclick="cycleViewMode()"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, #10B981 0%, #059669 100%);"
+                        aria-label="Cycle through view modes: Analyst, Cinematic, Expert">
                     📊 Analyst Mode
-                </button>
-
-                <!-- Experience Mode -->
-                <button class="mode-toggle" id="experience-toggle" onclick="toggleExperienceMode()"
-                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0;" aria-label="Toggle between guided and expert mode">
-                    🧭 Guided Mode
                 </button>
 
                 <!-- Voice Control -->
@@ -2794,13 +2789,6 @@
                         style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 212, 255, 0.3));"
                         aria-label="Toggle cost-of-living gravity positioning">
                     🌍 Gravity: ON
-                </button>
-
-                <!-- Export PDF -->
-                <button class="mode-toggle" id="export-pdf-btn" onclick="exportToPDF()"
-                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0;"
-                        aria-label="Export comparison report to PDF">
-                    📄 Export PDF
                 </button>
 
                 <!-- 3D Houses -->
@@ -2852,6 +2840,13 @@
                         style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(0, 119, 181, 0.3), rgba(29, 161, 242, 0.3));"
                         aria-label="Share to social media">
                     📱 Social Share
+                </button>
+
+                <!-- Export PDF -->
+                <button class="mode-toggle" id="export-pdf-btn" onclick="exportToPDF()"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0;"
+                        aria-label="Export comparison report to PDF">
+                    📄 Export PDF
                 </button>
 
                 <!-- Side-by-Side View (#28) -->
@@ -10711,39 +10706,66 @@
                 });
             };
 
-            // ===== FEATURE #6: ADAPTIVE HUD DENSITY MODE =====
-            let displayMode = 'analyst'; // 'analyst' or 'cinematic'
+            // ===== COMBINED VIEW MODE (3-position cycle) =====
+            // Modes: 'analyst' → 'cinematic' → 'expert' → back to 'analyst'
+            let viewMode = 'analyst'; // 'analyst', 'cinematic', or 'expert'
 
-            window.toggleDisplayMode = function() {
+            window.cycleViewMode = function() {
                 const body = document.body;
-                const modeBtn = document.querySelector('.mode-toggle');
+                const modeBtn = document.getElementById('view-mode-toggle');
                 const comparisonPanel = document.getElementById('comparison-panel');
 
                 // Feature #18: Vibration feedback
                 vibrate('toggle');
 
-                if (displayMode === 'analyst') {
+                // Remove all mode classes first
+                body.classList.remove('analyst-mode', 'cinematic-mode', 'expert-mode', 'guided-mode');
+
+                // Cycle to next mode
+                if (viewMode === 'analyst') {
                     // Switch to Cinematic Mode
-                    displayMode = 'cinematic';
-                    body.classList.remove('analyst-mode');
+                    viewMode = 'cinematic';
                     body.classList.add('cinematic-mode');
                     modeBtn.textContent = '🎬 Cinematic Mode';
                     modeBtn.style.background = 'linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%)';
-                    comparisonPanel.classList.remove('visible');
-                    document.getElementById('radar-chart-panel').classList.remove('visible');
 
                     // Hide all data panels for immersive view
+                    comparisonPanel.classList.remove('visible');
+                    document.getElementById('radar-chart-panel').classList.remove('visible');
                     document.querySelectorAll('.comparison-panel').forEach(panel => {
                         panel.classList.remove('visible');
                     });
 
+                    // Hide tooltips in cinematic mode
+                    updateTooltipsVisibility(false);
+
                     showAlert('🎬 Cinematic Mode - Immersive 3D view', 'success');
                     announceToScreenReader('Switched to cinematic mode - large 3D view with minimal UI');
+
+                } else if (viewMode === 'cinematic') {
+                    // Switch to Expert Mode
+                    viewMode = 'expert';
+                    body.classList.add('analyst-mode', 'expert-mode');
+                    modeBtn.textContent = '🎓 Expert Mode';
+                    modeBtn.style.background = 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)';
+
+                    // Show comparison panel if properties selected (like analyst)
+                    if (propertyA && propertyB) {
+                        comparisonPanel.classList.add('visible');
+                        updateComparisonPanel();
+                    }
+                    updateRadarChartVisibility();
+
+                    // Hide tooltips in expert mode
+                    updateTooltipsVisibility(false);
+
+                    showAlert('🎓 Expert Mode - Data panels, no tooltips', 'success');
+                    announceToScreenReader('Switched to expert mode - data panels visible, tooltips hidden');
+
                 } else {
-                    // Switch to Analyst Mode
-                    displayMode = 'analyst';
-                    body.classList.remove('cinematic-mode');
-                    body.classList.add('analyst-mode');
+                    // Switch back to Analyst Mode
+                    viewMode = 'analyst';
+                    body.classList.add('analyst-mode', 'guided-mode');
                     modeBtn.textContent = '📊 Analyst Mode';
                     modeBtn.style.background = 'linear-gradient(135deg, #10B981 0%, #059669 100%)';
 
@@ -10754,76 +10776,58 @@
                     }
                     updateRadarChartVisibility();
 
-                    showAlert('📊 Analyst Mode - Data panels available', 'success');
-                    announceToScreenReader('Switched to analyst mode - detailed comparison view');
+                    // Show tooltips in analyst mode
+                    updateTooltipsVisibility(true);
+
+                    showAlert('📊 Analyst Mode - Data panels with tooltips', 'success');
+                    announceToScreenReader('Switched to analyst mode - detailed comparison view with tooltips');
                 }
 
                 // Save preference
-                localStorage.setItem('holosphere_display_mode', displayMode);
+                localStorage.setItem('holosphere_view_mode', viewMode);
             };
 
-            // ===== FEATURE #17: GUIDED VS EXPERT MODE =====
-            let experienceMode = 'guided'; // 'guided' or 'expert'
+            // Set view mode directly (for voice commands and loading preferences)
+            window.setViewMode = function(mode) {
+                if (!['analyst', 'cinematic', 'expert'].includes(mode)) return;
 
+                // Cycle until we reach the desired mode
+                while (viewMode !== mode) {
+                    cycleViewMode();
+                }
+            };
+
+            // Legacy compatibility wrappers
+            window.toggleDisplayMode = function() {
+                cycleViewMode();
+            };
             window.toggleExperienceMode = function() {
-                const body = document.body;
-                const modeBtn = document.getElementById('experience-toggle');
-
-                // Feature #18: Vibration feedback
-                vibrate('toggle');
-
-                if (experienceMode === 'guided') {
-                    // Switch to Expert Mode
-                    experienceMode = 'expert';
-                    body.classList.remove('guided-mode');
-                    body.classList.add('expert-mode');
-                    modeBtn.textContent = '🎓 Expert Mode';
-                    showAlert('Expert mode: All tooltips hidden, advanced features unlocked', 'success');
-                    announceToScreenReader('Switched to expert mode - tooltips hidden, advanced features enabled');
-                } else {
-                    // Switch to Guided Mode
-                    experienceMode = 'guided';
-                    body.classList.remove('expert-mode');
-                    body.classList.add('guided-mode');
-                    modeBtn.textContent = '🧭 Guided Mode';
-                    showAlert('Guided mode: Helpful tips and explanations enabled', 'success');
-                    announceToScreenReader('Switched to guided mode - helpful tooltips and explanations enabled');
-                }
-
-                // Save preference
-                localStorage.setItem('holosphere_experience_mode', experienceMode);
-
-                // Update UI elements visibility
-                updateExperienceModeUI();
+                cycleViewMode();
             };
 
-            function updateExperienceModeUI() {
+            function updateTooltipsVisibility(show) {
                 const tooltips = document.querySelectorAll('.metric-tooltip');
                 const helpTexts = document.querySelectorAll('.help-text');
                 const advancedControls = document.querySelectorAll('.advanced-control');
 
-                if (experienceMode === 'expert') {
-                    // Hide tooltips and help text
-                    tooltips.forEach(tip => tip.style.display = 'none');
-                    helpTexts.forEach(text => text.style.display = 'none');
-                    // Show advanced controls
-                    advancedControls.forEach(ctrl => ctrl.style.display = 'block');
-                } else {
-                    // Show tooltips and help text
+                if (show) {
                     tooltips.forEach(tip => tip.style.display = 'inline-block');
                     helpTexts.forEach(text => text.style.display = 'block');
-                    // Hide advanced controls (can be expanded later)
                     advancedControls.forEach(ctrl => ctrl.style.display = 'none');
+                } else {
+                    tooltips.forEach(tip => tip.style.display = 'none');
+                    helpTexts.forEach(text => text.style.display = 'none');
+                    advancedControls.forEach(ctrl => ctrl.style.display = 'block');
                 }
             }
 
-            // Load saved experience mode preference
-            function loadExperienceModePreference() {
-                const saved = localStorage.getItem('holosphere_experience_mode');
-                if (saved && saved !== experienceMode) {
+            // Load saved view mode preference
+            function loadViewModePreference() {
+                const saved = localStorage.getItem('holosphere_view_mode');
+                if (saved && saved !== viewMode && ['analyst', 'cinematic', 'expert'].includes(saved)) {
                     setTimeout(() => {
-                        window.toggleExperienceMode();
-                    }, 600);
+                        setViewMode(saved);
+                    }, 500);
                 }
             }
 
@@ -10946,14 +10950,9 @@
                 content.innerHTML = html;
             }
 
-            // Load saved mode preference
+            // Load saved mode preference (uses new combined view mode)
             function loadDisplayModePreference() {
-                const saved = localStorage.getItem('holosphere_display_mode');
-                if (saved && saved !== displayMode) {
-                    setTimeout(() => {
-                        window.toggleDisplayMode();
-                    }, 500);
-                }
+                loadViewModePreference();
             }
 
             // ===== START APPLICATION =====
@@ -11076,22 +11075,18 @@
                     showAlert('Switched to First-Time Buyer persona', 'success');
                 }
 
-                // Display mode commands
+                // View mode commands (combined 3-position cycle)
                 if (command.includes('analyst mode')) {
-                    if (displayMode !== 'analyst') toggleDisplayMode();
+                    setViewMode('analyst');
                     showAlert('Switched to Analyst mode', 'success');
                 } else if (command.includes('cinematic mode')) {
-                    if (displayMode !== 'cinematic') toggleDisplayMode();
+                    setViewMode('cinematic');
                     showAlert('Switched to Cinematic mode', 'success');
-                }
-
-                // Experience mode commands (Feature #17)
-                if (command.includes('guided mode') || command.includes('help mode')) {
-                    if (experienceMode !== 'guided') toggleExperienceMode();
-                    showAlert('Switched to Guided mode', 'success');
                 } else if (command.includes('expert mode') || command.includes('advanced mode')) {
-                    if (experienceMode !== 'expert') toggleExperienceMode();
+                    setViewMode('expert');
                     showAlert('Switched to Expert mode', 'success');
+                } else if (command.includes('next mode') || command.includes('cycle mode')) {
+                    cycleViewMode();
                 }
 
                 // Winner query
