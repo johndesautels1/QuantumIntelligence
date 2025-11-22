@@ -3441,16 +3441,7 @@
         </div>
 
         <!-- Import Properties Modal - Unified size/position with other modals -->
-        <div id="import-modal" style="display: none; position: fixed; left: 20px; bottom: 20px; top: auto; right: auto; width: 323px; height: 467px; z-index: 850; pointer-events: auto;">
-            <div style="background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%);
-                        backdrop-filter: blur(20px);
-                        border: 2px solid rgba(0, 212, 255, 0.5);
-                        border-radius: 15px;
-                        padding: 17px;
-                        width: 100%;
-                        height: 100%;
-                        overflow-y: auto;
-                        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);">
+        <div id="import-modal" style="display: none; position: fixed; left: 20px; bottom: 20px; top: auto; right: auto; width: 323px; height: auto; max-height: 467px; z-index: 850; pointer-events: auto; background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%); backdrop-filter: blur(20px); border-radius: 15px; padding: 17px; border: 2px solid rgba(0, 212, 255, 0.5); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6); overflow-y: auto; flex-direction: column; gap: 10px;">
 
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                     <h3 style="color: #FFD700; margin: 0; font-size: 0.95em;">📥 Import Properties</h3>
@@ -3528,7 +3519,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
         </div>
 
         <!-- Data Panels Modal (Consolidated 6-in-1 Interface) -->
