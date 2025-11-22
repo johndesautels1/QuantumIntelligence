@@ -6106,28 +6106,35 @@
                     if (modalTabs) modalTabs.style.display = 'none';
                     if (modalFooter) modalFooter.style.display = 'none';
 
-                    // Expand content area
+                    // Expand content area - 95% of viewport with 5% padding (2.5% each side)
                     if (contentArea) {
                         if (shouldScale) {
-                            // NO SCROLLING - position relative for absolute child
+                            // Use 95% of viewport, override the CSS max-height constraint
                             contentArea.style.cssText = `
-                                width: 100vw !important;
-                                height: 100vh !important;
-                                max-height: 100vh !important;
+                                width: 95vw !important;
+                                height: 95vh !important;
+                                min-height: 95vh !important;
+                                max-height: 95vh !important;
                                 overflow: hidden !important;
                                 position: relative !important;
+                                padding: 0 !important;
+                                margin: 0 auto !important;
                             `;
                         } else {
                             // Scrollable tabs (comparison, marketvalue)
                             contentArea.style.cssText = `
-                                max-height: calc(100vh - 20px) !important;
-                                height: calc(100vh - 20px) !important;
+                                width: 95vw !important;
+                                height: 95vh !important;
+                                min-height: 95vh !important;
+                                max-height: 95vh !important;
                                 overflow-y: auto !important;
+                                padding: 0 !important;
+                                margin: 0 auto !important;
                             `;
                         }
                     }
 
-                    // Scale DOWN charts by 0.75 - absolute position to center properly
+                    // Scale DOWN charts by 0.75 - centered in the expanded content area
                     if (shouldScale && container) {
                         container.style.cssText = `
                             position: absolute !important;
@@ -6136,7 +6143,7 @@
                             transform: translate(-50%, -50%) scale(0.75) !important;
                         `;
 
-                        console.log('📐 FULLSCREEN: Applied scale(0.75) with absolute centering');
+                        console.log('📐 FULLSCREEN: Content area 95%, chart scaled 0.75');
                     }
 
                     // Update button inside chart
