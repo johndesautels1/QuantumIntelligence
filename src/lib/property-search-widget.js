@@ -227,11 +227,16 @@ export class PropertySearchWidget {
                 margin-top: 5px;
                 width: 100%;
                 padding: 8px;
-                background: rgba(255, 255, 255, 0.1);
+                background: rgba(255, 255, 255, 0.9);
                 border: 1px solid rgba(255, 255, 255, 0.3);
                 border-radius: 4px;
-                color: white;
+                color: #1a2847;
                 font-size: 14px;
+            }
+
+            .search-filters select option {
+                background: white;
+                color: #1a2847;
             }
 
             .search-btn {
