@@ -6129,24 +6129,14 @@
 
                     // Scale DOWN charts by 0.75 to fit entirely in viewport - NO SCROLLING
                     if (shouldScale && container) {
-                        // Find the cloned panel inside container and scale it down
-                        const clonedPanel = container.querySelector('[id$="-panel"]');
-                        if (clonedPanel) {
-                            clonedPanel.style.transform = 'scale(0.75)';
-                            clonedPanel.style.transformOrigin = 'center top';
-                        }
-
-                        // Center the container
+                        // Scale the container itself and all its children
                         container.style.cssText = `
-                            position: relative !important;
-                            display: flex !important;
-                            justify-content: center !important;
-                            align-items: flex-start !important;
-                            padding-top: 20px !important;
-                            overflow: hidden !important;
+                            transform: scale(0.75) !important;
+                            transform-origin: center top !important;
+                            overflow: visible !important;
                         `;
 
-                        console.log('📐 FULLSCREEN: Applied scale(0.75) to chart panel');
+                        console.log('📐 FULLSCREEN: Applied scale(0.75) to container');
                     }
 
                     // Update button inside chart
