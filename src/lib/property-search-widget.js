@@ -72,7 +72,7 @@ export class PropertySearchWidget {
         <style>
             .search-widget {
                 position: fixed;
-                bottom: 20px;
+                bottom: 116px; /* Raised 1 inch (96px) from original 20px */
                 left: 50%;
                 transform: translateX(-50%);
                 z-index: 500; /* Below left-side buttons but above canvas */
@@ -82,18 +82,18 @@ export class PropertySearchWidget {
                 background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
                 color: white;
                 border: none;
-                padding: 8px 14px;
-                border-radius: 6px;
-                font-size: 14px;
+                padding: 10px 20px;
+                border-radius: 10px;
+                font-size: 0.9em;
                 font-weight: bold;
                 cursor: pointer;
                 box-shadow: 0 3px 12px rgba(255, 107, 107, 0.4);
                 transition: all 0.3s ease;
-                transform: scaleY(0.68);
+                min-width: 220px; /* Match other buttons */
             }
 
             .search-toggle-btn:hover {
-                transform: scaleY(0.68) translateY(-2px);
+                transform: translateY(-2px);
                 box-shadow: 0 5px 15px rgba(255, 107, 107, 0.6);
             }
 

@@ -2744,11 +2744,11 @@
                 </div>
             </div>
 
-            <!-- Tools Dropdown Container -->
+            <!-- Tools Dropdown Container - Positioned to match left-side buttons -->
             <div id="tools-dropdown" style="
                 position: fixed;
                 right: 20px;
-                top: 70px;
+                top: 20px;
                 display: none;
                 flex-direction: column;
                 gap: 6px;
@@ -2759,11 +2759,9 @@
                 padding: 10px;
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
                 z-index: 900;
-                min-width: 189px;
-                transform: scale(0.86);
-                transform-origin: top right;
+                min-width: 220px;
             ">
-                <h4 style="color: #FFD700; margin: 0 0 10px 0; font-size: 0.95em; text-align: center; border-bottom: 1px solid rgba(255, 215, 0, 0.3); padding-bottom: 8px;">🛠️ Tools & Settings</h4>
+                <h4 style="color: #FFD700; margin: 0 0 10px 0; font-size: 0.9em; text-align: center; border-bottom: 1px solid rgba(255, 215, 0, 0.3); padding-bottom: 8px; min-width: 200px;">🛠️ Tools & Settings</h4>
 
                 <!-- Combined View Mode (3-position cycle: Analyst → Cinematic → Expert) -->
                 <button class="mode-toggle" id="view-mode-toggle" onclick="cycleViewMode()"
@@ -2861,15 +2859,16 @@
             <!-- Feature #20: Property History Timeline Panel -->
             <div id="history-panel" style="
                 position: fixed;
-                left: 20px;
-                bottom: 20px;
-                width: 350px;
-                max-height: 400px;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                width: 280px;
+                max-height: 380px;
                 background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%);
                 backdrop-filter: blur(20px);
                 border: 2px solid rgba(138, 43, 226, 0.5);
                 border-radius: 15px;
-                padding: 20px;
+                padding: 15px;
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
                 z-index: 850;
                 display: none;
@@ -2918,15 +2917,16 @@
             <!-- Feature #19: Achievement Badges Panel -->
             <div id="badges-panel" style="
                 position: fixed;
-                left: 20px;
-                bottom: 20px;
-                width: 350px;
-                max-height: 400px;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                width: 280px;
+                max-height: 380px;
                 background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%);
                 backdrop-filter: blur(20px);
                 border: 2px solid rgba(255, 215, 0, 0.5);
                 border-radius: 15px;
-                padding: 20px;
+                padding: 15px;
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
                 z-index: 850;
                 display: none;
@@ -2956,18 +2956,20 @@
             <!-- Feature #23: Social Sharing Panel -->
             <div id="social-panel" style="
                 position: fixed;
-                left: 20px;
-                bottom: 20px;
-                width: 350px;
-                max-height: 400px;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                width: 280px;
+                max-height: 380px;
                 background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%);
                 backdrop-filter: blur(20px);
                 border: 2px solid rgba(29, 161, 242, 0.5);
                 border-radius: 15px;
-                padding: 20px;
+                padding: 15px;
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
                 z-index: 850;
                 display: none;
+                overflow-y: auto;
                 pointer-events: auto;
             ">
                 <button onclick="toggleSocialPanel()" style="position: absolute; top: 10px; right: 10px; background: rgba(255, 0, 0, 0.9); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 18px; font-weight: bold; line-height: 1; z-index: 1000; pointer-events: auto;" aria-label="Close social panel">×</button>
@@ -3006,6 +3008,58 @@
                             <div style="font-size: 0.75em; color: rgba(255,255,255,0.6);">Comparisons Saved</div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Tools & Settings Panel (for Analytics Dashboard modal) -->
+            <div id="tools-settings-panel" style="display: none; padding: 15px;">
+                <h3 style="color: #FFD700; margin-bottom: 15px; font-size: 1.1em; text-align: center;">🛠️ Tools & Settings</h3>
+                <div style="display: flex; flex-direction: column; gap: 8px; max-width: 280px; margin: 0 auto;">
+                    <!-- Voice Control -->
+                    <button class="mode-toggle" onclick="toggleVoiceControl()"
+                            style="width: 100%; padding: 10px; background: rgba(80, 80, 80, 0.5); border-radius: 8px;">
+                        🎤 Voice: OFF
+                    </button>
+                    <!-- Vibration -->
+                    <button class="mode-toggle" onclick="toggleVibration()"
+                            style="width: 100%; padding: 10px; background: linear-gradient(135deg, rgba(0, 200, 100, 0.6), rgba(0, 255, 136, 0.4)); border-radius: 8px;">
+                        📳 Vibration: ON
+                    </button>
+                    <!-- Gravity -->
+                    <button class="mode-toggle" onclick="toggleGravity()"
+                            style="width: 100%; padding: 10px; background: linear-gradient(135deg, rgba(0, 200, 100, 0.6), rgba(0, 255, 136, 0.4)); border-radius: 8px;">
+                        🌍 Gravity: ON
+                    </button>
+                    <!-- 3D Visuals -->
+                    <button class="mode-toggle" onclick="cycleVisualMode()"
+                            style="width: 100%; padding: 10px; background: linear-gradient(135deg, rgba(0, 200, 100, 0.6), rgba(0, 255, 136, 0.4)); border-radius: 8px;">
+                        🏠 3D Houses
+                    </button>
+                    <!-- History Timeline -->
+                    <button class="mode-toggle" onclick="toggleHistoryPanel()"
+                            style="width: 100%; padding: 10px; background: rgba(80, 80, 80, 0.5); border-radius: 8px;">
+                        📜 History Timeline
+                    </button>
+                    <!-- Achievements -->
+                    <button class="mode-toggle" onclick="toggleBadgesPanel()"
+                            style="width: 100%; padding: 10px; background: rgba(80, 80, 80, 0.5); border-radius: 8px;">
+                        🏆 Achievements
+                    </button>
+                    <!-- Social Share -->
+                    <button class="mode-toggle" onclick="toggleSocialPanel()"
+                            style="width: 100%; padding: 10px; background: rgba(80, 80, 80, 0.5); border-radius: 8px;">
+                        📱 Social Share
+                    </button>
+                    <!-- Export PDF -->
+                    <button class="mode-toggle" onclick="exportToPDF()"
+                            style="width: 100%; padding: 10px; background: rgba(80, 80, 80, 0.5); border-radius: 8px;">
+                        📄 Export PDF
+                    </button>
+                    <!-- Side-by-Side -->
+                    <button class="mode-toggle" onclick="toggleSideBySide()"
+                            style="width: 100%; padding: 10px; background: rgba(80, 80, 80, 0.5); border-radius: 8px;">
+                        ⬛⬛ Side-by-Side: OFF
+                    </button>
                 </div>
             </div>
 
@@ -3501,9 +3555,13 @@
                         📡 Metrics
                     </button>
                     <button class="data-tab" id="tab-notes" onclick="switchDataTab('notes')"
-                            role="tab" aria-selected="false" aria-controls="panel-notes"
-                            style="grid-column: span 5;">
+                            role="tab" aria-selected="false" aria-controls="panel-notes">
                         📝 Notes
+                    </button>
+                    <button class="data-tab" id="tab-tools" onclick="switchDataTab('tools')"
+                            role="tab" aria-selected="false" aria-controls="panel-tools"
+                            style="background: rgba(80, 80, 80, 0.5);">
+                        🛠️ Tools
                     </button>
                 </div>
 
@@ -5867,6 +5925,11 @@
                         id: 'notes-panel',
                         updateFn: updateNotesDisplay,
                         label: 'Property Notes'
+                    },
+                    'tools': {
+                        id: 'tools-settings-panel',
+                        updateFn: null,
+                        label: 'Tools & Settings'
                     }
                 };
 
@@ -11156,6 +11219,8 @@
             }
 
             // ===== FEATURE #14: EXPORT TO PDF REPORT =====
+            let pdfExportActive = false;
+
             window.exportToPDF = async function() {
                 const properties = [propertyA, propertyB, propertyC].filter(p => p !== null);
                 const btn = document.getElementById('export-pdf-btn');
@@ -11165,7 +11230,8 @@
                     return;
                 }
 
-                // Flash purple while exporting
+                // Set button to purple (active state) - stays illuminated
+                pdfExportActive = true;
                 if (btn) {
                     btn.style.background = 'linear-gradient(135deg, rgba(138, 43, 226, 0.6), rgba(180, 100, 255, 0.4))';
                     btn.style.boxShadow = 'inset 0 2px 4px rgba(138, 43, 226, 0.3), 0 2px 8px rgba(138, 43, 226, 0.2)';
@@ -11332,14 +11398,7 @@
 
                     showAlert('PDF report downloaded successfully!', 'success');
                     vibrate('success');
-
-                    // Reset button to gray after export
-                    if (btn) {
-                        setTimeout(() => {
-                            btn.style.background = 'rgba(80, 80, 80, 0.5)';
-                            btn.style.boxShadow = 'none';
-                        }, 1500);
-                    }
+                    // Button stays purple to indicate PDF was exported
 
                 } catch (error) {
                     console.error('PDF generation error:', error);
@@ -11348,7 +11407,8 @@
                     showAlert(`Failed to generate PDF: ${error.message}`, 'error');
                     vibrate('error');
 
-                    // Reset button to gray on error too
+                    // Reset button to gray on error
+                    pdfExportActive = false;
                     if (btn) {
                         btn.style.background = 'rgba(80, 80, 80, 0.5)';
                         btn.style.boxShadow = 'none';
