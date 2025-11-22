@@ -3516,12 +3516,12 @@
                 </div>
 
                 <!-- Modal Footer -->
-                <div class="data-modal-footer" style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                    <div style="display: flex; gap: 12px; align-items: center;">
-                        <button id="fullscreen-toggle-btn" onclick="toggleChartFullScreen()" style="display: none; background: linear-gradient(135deg, #00D4FF 0%, #0099CC 100%); color: white; border: none; border-radius: 6px; padding: 5px 12px; font-size: 0.75em; font-weight: bold; cursor: pointer;">
+                <div class="data-modal-footer" style="display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: auto !important; z-index: 10000;">
+                    <div style="display: flex; gap: 12px; align-items: center; pointer-events: auto !important;">
+                        <button id="fullscreen-toggle-btn" onclick="toggleChartFullScreen()" style="display: none; background: linear-gradient(135deg, #00D4FF 0%, #0099CC 100%); color: white; border: none; border-radius: 6px; padding: 5px 12px; font-size: 0.75em; font-weight: bold; cursor: pointer; pointer-events: auto !important; z-index: 10001;">
                             🔲 Toggle Full Screen
                         </button>
-                        <button id="close-modal-btn" onclick="closeDataPanelsModal()" style="background: rgba(255, 0, 0, 0.8); color: white; border: none; border-radius: 6px; padding: 5px 12px; font-size: 0.75em; font-weight: bold; cursor: pointer;">
+                        <button id="close-modal-btn" onclick="closeDataPanelsModal()" style="background: rgba(255, 0, 0, 0.8); color: white; border: none; border-radius: 6px; padding: 5px 12px; font-size: 0.75em; font-weight: bold; cursor: pointer; pointer-events: auto !important; z-index: 10001;">
                             ✕ Close
                         </button>
                     </div>
