@@ -351,6 +351,18 @@
             right: 280px;
         }
 
+        /* Tools & Settings toggle - right side of header */
+        #toggle-tools-settings {
+            top: 28px;
+            right: 310px;
+        }
+
+        /* Left buttons group toggle - left side of header */
+        #toggle-left-buttons {
+            top: 28px;
+            left: 220px;
+        }
+
         /* Controls panel */
         .controls {
             position: absolute;
@@ -2631,6 +2643,18 @@
                 📊
             </button>
 
+            <!-- Tools & Settings toggle - right side of header -->
+            <button class="micro-toggle" id="toggle-tools-settings" onclick="toggleToolsSettingsVisibility()"
+                    aria-label="Toggle Tools & Settings visibility" title="Toggle Tools">
+                🛠️
+            </button>
+
+            <!-- Left-side buttons group toggle (Header/QR/Import/Photos/Videos) -->
+            <button class="micro-toggle" id="toggle-left-buttons" onclick="toggleLeftButtonsVisibility()"
+                    aria-label="Toggle left buttons group visibility" title="Toggle Left Buttons">
+                ◀
+            </button>
+
             <!-- Property Selectors -->
             <div class="property-selector" role="region" aria-label="Property selection controls">
                 <div class="selector-column">
@@ -4781,6 +4805,73 @@
 
                 vibrate('tap');
                 showAlert(analyticsVisible ? 'Analytics Dashboard shown' : 'Analytics Dashboard hidden', 'info');
+            };
+
+            // ===== TOOLS & SETTINGS VISIBILITY TOGGLE =====
+            let toolsSettingsVisible = true;
+
+            window.toggleToolsSettingsVisibility = function() {
+                const toolsDropdown = document.getElementById('tools-dropdown');
+                const toolsMasterBtn = document.getElementById('tools-master-btn');
+                const toggleBtn = document.getElementById('toggle-tools-settings');
+
+                toolsSettingsVisible = !toolsSettingsVisible;
+
+                // Hide tools dropdown when toggled off
+                if (toolsDropdown) {
+                    if (!toolsSettingsVisible) {
+                        toolsDropdown.style.display = 'none';
+                    }
+                }
+
+                // Hide the TOOLS master button
+                if (toolsMasterBtn) {
+                    toolsMasterBtn.style.display = toolsSettingsVisible ? 'block' : 'none';
+                }
+
+                // Update toggle button state
+                if (toggleBtn) {
+                    toggleBtn.classList.toggle('off', !toolsSettingsVisible);
+                }
+
+                vibrate('tap');
+                showAlert(toolsSettingsVisible ? 'Tools & Settings shown' : 'Tools & Settings hidden', 'info');
+            };
+
+            // ===== LEFT BUTTONS GROUP VISIBILITY TOGGLE =====
+            // Controls: Show Header & Selectors, QR Code, Import Properties, Upload Photos, Upload Videos
+            let leftButtonsVisible = true;
+
+            window.toggleLeftButtonsVisibility = function() {
+                const headerToggleBtn = document.getElementById('header-toggle-btn');
+                const qrCodeBtn = document.getElementById('qr-code-btn');
+                const importBtn = document.getElementById('import-properties-btn');
+                const photoUploadBtn = document.getElementById('photo-upload-master-btn');
+                const videoUploadBtn = document.getElementById('video-upload-master-btn');
+                const mobileActionButtons = document.getElementById('mobile-action-buttons');
+                const toggleBtn = document.getElementById('toggle-left-buttons');
+
+                leftButtonsVisible = !leftButtonsVisible;
+
+                // Toggle the mobile action buttons container (contains QR, Import, Photos, Videos)
+                if (mobileActionButtons) {
+                    mobileActionButtons.style.display = leftButtonsVisible ? 'block' : 'none';
+                }
+
+                // Also hide the header toggle button if visible
+                if (headerToggleBtn && headerToggleBtn.style.display !== 'none') {
+                    headerToggleBtn.style.opacity = leftButtonsVisible ? '1' : '0';
+                    headerToggleBtn.style.pointerEvents = leftButtonsVisible ? 'auto' : 'none';
+                }
+
+                // Update toggle button state and icon
+                if (toggleBtn) {
+                    toggleBtn.classList.toggle('off', !leftButtonsVisible);
+                    toggleBtn.innerHTML = leftButtonsVisible ? '◀' : '▶';
+                }
+
+                vibrate('tap');
+                showAlert(leftButtonsVisible ? 'Left buttons shown' : 'Left buttons hidden', 'info');
             };
 
             // ===== HEADER/SELECTOR VISIBILITY TOGGLE =====
