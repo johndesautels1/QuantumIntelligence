@@ -3517,10 +3517,16 @@
 
                 <!-- Modal Footer -->
                 <div class="data-modal-footer" style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                    <button onclick="closeDataPanelsModal()"
-                            style="background: rgba(255, 0, 0, 0.8); color: white; border: none; border-radius: 6px; padding: 5px 12px; font-size: 0.75em; font-weight: bold; cursor: pointer;">
-                        ✕ Close
-                    </button>
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <button id="fullscreen-toggle-btn" onclick="toggleChartFullScreen()"
+                                style="background: linear-gradient(135deg, #00D4FF 0%, #0099CC 100%); color: white; border: none; border-radius: 6px; padding: 5px 12px; font-size: 0.75em; font-weight: bold; cursor: pointer; display: none;">
+                            🔲 Toggle Full Screen
+                        </button>
+                        <button onclick="closeDataPanelsModal()"
+                                style="background: rgba(255, 0, 0, 0.8); color: white; border: none; border-radius: 6px; padding: 5px 12px; font-size: 0.75em; font-weight: bold; cursor: pointer;">
+                            ✕ Close
+                        </button>
+                    </div>
                     <p style="margin: 0; font-size: 0.85em; color: #FFFFFF; font-weight: bold; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
                         💡 Switch tabs to view different analysis panels
                     </p>
@@ -5706,6 +5712,9 @@
             // Track current active tab
             let currentDataTab = 'comparison';
 
+            // Track fullscreen state
+            let isChartFullScreen = false;
+
             // Open the consolidated Data Panels modal
             window.openDataPanelsModal = function() {
                 const modal = document.getElementById('data-panels-modal');
@@ -5732,6 +5741,26 @@
             window.closeDataPanelsModal = function() {
                 const modal = document.getElementById('data-panels-modal');
                 if (!modal) return;
+
+                // Reset fullscreen state if active
+                if (isChartFullScreen) {
+                    isChartFullScreen = false;
+                    const modalContent = modal.querySelector('.data-modal');
+                    const modalHeader = modal.querySelector('.data-modal-header');
+                    const modalTabs = modal.querySelector('.data-modal-tabs');
+                    const contentArea = document.getElementById('data-modal-content-area');
+                    const fullscreenBtn = document.getElementById('fullscreen-toggle-btn');
+
+                    if (modalContent) modalContent.style.cssText = '';
+                    if (modalHeader) modalHeader.style.display = '';
+                    if (modalTabs) modalTabs.style.display = '';
+                    if (contentArea) contentArea.style.cssText = '';
+                    if (fullscreenBtn) {
+                        fullscreenBtn.innerHTML = '🔲 Toggle Full Screen';
+                        fullscreenBtn.style.background = 'linear-gradient(135deg, #00D4FF 0%, #0099CC 100%)';
+                        fullscreenBtn.style.display = 'none';
+                    }
+                }
 
                 // Hide modal
                 modal.style.display = 'none';
@@ -5987,7 +6016,97 @@
                 // Accessibility announcement
                 announceToScreenReader(`Switched to ${panelInfo.label} tab`);
 
+                // Show/hide fullscreen toggle button (show for chart tabs, hide for notes)
+                const fullscreenBtn = document.getElementById('fullscreen-toggle-btn');
+                if (fullscreenBtn) {
+                    // Show for all tabs except 'notes'
+                    if (tabName !== 'notes') {
+                        fullscreenBtn.style.display = 'inline-block';
+                        fullscreenBtn.innerHTML = '🔲 Toggle Full Screen';
+                    } else {
+                        fullscreenBtn.style.display = 'none';
+                    }
+                }
 
+            };
+
+            // Toggle chart fullscreen mode
+            window.toggleChartFullScreen = function() {
+                const modal = document.getElementById('data-panels-modal');
+                const modalContent = modal ? modal.querySelector('.data-modal') : null;
+                const fullscreenBtn = document.getElementById('fullscreen-toggle-btn');
+                const modalHeader = modal ? modal.querySelector('.data-modal-header') : null;
+                const modalTabs = modal ? modal.querySelector('.data-modal-tabs') : null;
+                const modalFooter = modal ? modal.querySelector('.data-modal-footer') : null;
+                const contentArea = document.getElementById('data-modal-content-area');
+
+                if (!modalContent) return;
+
+                isChartFullScreen = !isChartFullScreen;
+
+                if (isChartFullScreen) {
+                    // Enter fullscreen mode
+                    modalContent.style.cssText = `
+                        width: 100vw !important;
+                        height: 100vh !important;
+                        max-width: 100vw !important;
+                        max-height: 100vh !important;
+                        border-radius: 0 !important;
+                        margin: 0 !important;
+                    `;
+
+                    // Hide header and tabs for immersive view
+                    if (modalHeader) modalHeader.style.display = 'none';
+                    if (modalTabs) modalTabs.style.display = 'none';
+
+                    // Expand content area
+                    if (contentArea) {
+                        contentArea.style.cssText = `
+                            max-height: calc(100vh - 80px) !important;
+                            height: calc(100vh - 80px) !important;
+                        `;
+                    }
+
+                    // Update button text
+                    if (fullscreenBtn) {
+                        fullscreenBtn.innerHTML = '✕ Toggle to Close';
+                        fullscreenBtn.style.background = 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)';
+                    }
+
+                    // Vibration feedback
+                    vibrate('toggle');
+                    showAlert('🔲 Full Screen Mode - Chart expanded', 'success');
+
+                } else {
+                    // Exit fullscreen mode - restore normal modal
+                    modalContent.style.cssText = '';
+
+                    // Show header and tabs again
+                    if (modalHeader) modalHeader.style.display = '';
+                    if (modalTabs) modalTabs.style.display = '';
+
+                    // Restore content area
+                    if (contentArea) {
+                        contentArea.style.cssText = '';
+                    }
+
+                    // Update button text
+                    if (fullscreenBtn) {
+                        fullscreenBtn.innerHTML = '🔲 Toggle Full Screen';
+                        fullscreenBtn.style.background = 'linear-gradient(135deg, #00D4FF 0%, #0099CC 100%)';
+                    }
+
+                    // Vibration feedback
+                    vibrate('toggle');
+                    showAlert('📊 Back to Dashboard', 'info');
+                }
+
+                // Re-render the current tab's chart to fit new size
+                setTimeout(() => {
+                    if (currentDataTab) {
+                        switchDataTab(currentDataTab);
+                    }
+                }, 100);
             };
 
             // ESC key to close modal
