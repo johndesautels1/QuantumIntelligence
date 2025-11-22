@@ -6106,18 +6106,16 @@
                     if (modalTabs) modalTabs.style.display = 'none';
                     if (modalFooter) modalFooter.style.display = 'none';
 
-                    // Expand content area - use flexbox to center content
+                    // Expand content area
                     if (contentArea) {
                         if (shouldScale) {
-                            // NO SCROLLING - use flexbox to center vertically and horizontally
+                            // NO SCROLLING - position relative for absolute child
                             contentArea.style.cssText = `
                                 width: 100vw !important;
                                 height: 100vh !important;
                                 max-height: 100vh !important;
                                 overflow: hidden !important;
-                                display: flex !important;
-                                justify-content: center !important;
-                                align-items: center !important;
+                                position: relative !important;
                             `;
                         } else {
                             // Scrollable tabs (comparison, marketvalue)
@@ -6129,14 +6127,16 @@
                         }
                     }
 
-                    // Scale DOWN charts by 0.75 - centered in viewport
+                    // Scale DOWN charts by 0.75 - absolute position to center properly
                     if (shouldScale && container) {
                         container.style.cssText = `
-                            transform: scale(0.75) !important;
-                            transform-origin: center center !important;
+                            position: absolute !important;
+                            top: 50% !important;
+                            left: 50% !important;
+                            transform: translate(-50%, -50%) scale(0.75) !important;
                         `;
 
-                        console.log('📐 FULLSCREEN: Applied scale(0.75) centered');
+                        console.log('📐 FULLSCREEN: Applied scale(0.75) with absolute centering');
                     }
 
                     // Update button inside chart
