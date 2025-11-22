@@ -3518,12 +3518,10 @@
                 <!-- Modal Footer -->
                 <div class="data-modal-footer" style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
                     <div style="display: flex; gap: 12px; align-items: center;">
-                        <button id="fullscreen-toggle-btn" onclick="window.toggleChartFullScreen()"
-                                style="background: linear-gradient(135deg, #00D4FF 0%, #0099CC 100%); color: white; border: none; border-radius: 6px; padding: 5px 12px; font-size: 0.75em; font-weight: bold; cursor: pointer;">
+                        <button id="fullscreen-toggle-btn" style="display: none; background: linear-gradient(135deg, #00D4FF 0%, #0099CC 100%); color: white; border: none; border-radius: 6px; padding: 5px 12px; font-size: 0.75em; font-weight: bold; cursor: pointer;">
                             🔲 Toggle Full Screen
                         </button>
-                        <button onclick="closeDataPanelsModal()"
-                                style="background: rgba(255, 0, 0, 0.8); color: white; border: none; border-radius: 6px; padding: 5px 12px; font-size: 0.75em; font-weight: bold; cursor: pointer;">
+                        <button id="close-modal-btn" style="background: rgba(255, 0, 0, 0.8); color: white; border: none; border-radius: 6px; padding: 5px 12px; font-size: 0.75em; font-weight: bold; cursor: pointer;">
                             ✕ Close
                         </button>
                     </div>
@@ -5736,6 +5734,25 @@
                 announceToScreenReader('Data panels modal opened. Use tab keys to navigate, ESC to close.');
 
             };
+
+            // Wire up modal footer buttons (do this once on page load)
+            document.addEventListener('DOMContentLoaded', function() {
+                const fullscreenBtn = document.getElementById('fullscreen-toggle-btn');
+                const closeBtn = document.getElementById('close-modal-btn');
+
+                if (fullscreenBtn) {
+                    fullscreenBtn.addEventListener('click', function() {
+                        console.log('🔲 Toggle Full Screen clicked!');
+                        window.toggleChartFullScreen();
+                    });
+                }
+
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function() {
+                        window.closeDataPanelsModal();
+                    });
+                }
+            });
 
             // Close the Data Panels modal
             window.closeDataPanelsModal = function() {
