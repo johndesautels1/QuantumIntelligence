@@ -70,10 +70,11 @@ export class PropertySearchWidget {
         </div>
 
         <style>
-            /* Desktop: Position above Property A/B/C selectors */
+            /* Desktop: Position below header, above Property A/B/C selectors */
+            /* Layout: Header (24px) → 24px gap → Home Search (108px) → 24px gap → Property selectors (156px) */
             .search-widget {
                 position: fixed;
-                top: 176px; /* Lowered 3/8 inch (36px) from 140px */
+                top: 108px; /* Below header with 1/4 inch (24px) gap */
                 left: 50%;
                 transform: translateX(-50%);
                 z-index: 500;
@@ -99,11 +100,11 @@ export class PropertySearchWidget {
                 box-shadow: inset 0 2px 4px rgba(138, 43, 226, 0.3), 0 5px 15px rgba(138, 43, 226, 0.6);
             }
 
-            /* Mobile: Position below header, above Analytics Dashboard */
+            /* Mobile: Position below header with 24px gap */
             @media (max-width: 768px) {
                 .search-widget {
                     position: fixed;
-                    top: 121px; /* Lowered 3/8 inch (36px) from 85px */
+                    top: 95px; /* Below header with 24px gap on mobile */
                     left: 50%;
                     transform: translateX(-50%);
                     z-index: 600;
@@ -118,7 +119,7 @@ export class PropertySearchWidget {
 
             @media (max-width: 480px) {
                 .search-widget {
-                    top: 111px; /* Lowered 3/8 inch (36px) from 75px */
+                    top: 85px; /* Smaller header on very small screens */
                 }
 
                 .search-toggle-btn {

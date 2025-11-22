@@ -196,9 +196,10 @@
         }
 
         /* Property selectors - reduced by 25% */
+        /* Layout: Header (24px) → Home Search (108px) → 24px gap → Property selectors (156px) */
         .property-selector {
             position: absolute;
-            top: 120px;
+            top: 156px;
             left: 20px;
             right: 20px;
             display: flex;
@@ -255,10 +256,11 @@
             z-index: 1000 !important; /* Above upload panels (850) */
         }
 
-        /* Panel Toggle Buttons */
+        /* Panel Toggle Buttons (Analytics Dashboard) */
+        /* Layout: Property selectors (156px) + ~40px height + 24px gap = 220px */
         .panel-toggle-buttons {
             position: absolute;
-            top: 226px;
+            top: 220px;
             left: 20px;
             right: 20px;
             display: flex;
@@ -670,11 +672,11 @@
                 transform: translateY(-100%) !important;
             }
 
-            /* Panel Toggle Buttons - Mobile: Full width like Property A/B/C fields
-               MATH: 157px + 18px = 175px */
+            /* Panel Toggle Buttons - Mobile: Below Home Search with 24px gap
+               Layout: Home Search (95px) + ~35px button + 24px gap = 154px */
             .panel-toggle-buttons {
                 position: fixed !important;
-                top: 175px !important;
+                top: 154px !important;
                 left: 10px !important;
                 right: 10px !important;
                 width: calc(100% - 20px) !important;
