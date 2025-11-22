@@ -73,7 +73,7 @@ export class PropertySearchWidget {
             /* Desktop: Position above Property A/B/C selectors */
             .search-widget {
                 position: fixed;
-                top: 140px; /* Below header, above property selectors */
+                top: 176px; /* Lowered 3/8 inch (36px) from 140px */
                 left: 50%;
                 transform: translateX(-50%);
                 z-index: 500;
@@ -103,7 +103,7 @@ export class PropertySearchWidget {
             @media (max-width: 768px) {
                 .search-widget {
                     position: fixed;
-                    top: 85px; /* Below header on mobile */
+                    top: 121px; /* Lowered 3/8 inch (36px) from 85px */
                     left: 50%;
                     transform: translateX(-50%);
                     z-index: 600;
@@ -118,7 +118,7 @@ export class PropertySearchWidget {
 
             @media (max-width: 480px) {
                 .search-widget {
-                    top: 75px;
+                    top: 111px; /* Lowered 3/8 inch (36px) from 75px */
                 }
 
                 .search-toggle-btn {
