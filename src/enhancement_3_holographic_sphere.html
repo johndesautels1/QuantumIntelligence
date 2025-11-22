@@ -1506,11 +1506,11 @@
             background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%);
             backdrop-filter: blur(20px);
             border: 2px solid rgba(0, 212, 255, 0.5);
-            border-radius: 20px;
+            border-radius: 10px;
             padding: 0;
-            width: 90%;
-            max-width: 900px;
-            max-height: 85vh;
+            width: 95%;
+            max-width: 95vw;
+            max-height: 95vh;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 40px rgba(0, 212, 255, 0.2);
             display: flex;
             flex-direction: column;
@@ -1534,11 +1534,11 @@
             flex-direction: column;
             justify-content: flex-start;
             align-items: center;
-            padding: 20px 25px 15px 25px;
+            padding: 8px 15px 5px 15px;
             border-bottom: 1px solid rgba(0, 212, 255, 0.3);
             background: rgba(0, 0, 0, 0.2);
             position: relative;
-            min-height: 180px;
+            min-height: 60px;
         }
 
         .data-modal-header-top {
@@ -1572,13 +1572,13 @@
         .data-modal-tabs {
             display: flex;
             gap: 4px;
-            padding: 40px 20px;
+            padding: 10px 10px;
             background: rgba(0, 0, 0, 0.15);
             border-bottom: 1px solid rgba(0, 212, 255, 0.2);
             overflow-x: auto;
             flex-wrap: nowrap;
             margin-top: 0;
-            min-height: 80px;
+            min-height: 40px;
             justify-content: center;
             align-items: center;
         }
@@ -1638,10 +1638,10 @@
 
         .data-modal-content {
             flex: 1;
-            padding: 20px;
+            padding: 10px;
             overflow-y: auto;
-            min-height: 400px;
-            max-height: calc(85vh - 220px);
+            min-height: 300px;
+            max-height: calc(95vh - 120px);
             position: relative;
             margin-top: 0;
         }
@@ -5893,11 +5893,17 @@
                 clonedPanel.style.opacity = '1';
                 clonedPanel.style.position = 'relative';
 
-                // If in fullscreen mode and this is a scalable tab, scale the chart DOWN by 0.75
+                // Scale charts: 0.85 in normal mode (15% smaller), 0.75 in fullscreen mode
                 const scrollableTabs = ['comparison', 'marketvalue'];
-                if (isChartFullScreen && !scrollableTabs.includes(tabName) && tabName !== 'notes') {
-                    clonedPanel.style.transform = 'scale(0.75)';
-                    clonedPanel.style.transformOrigin = 'center center';
+                const isChartTab = !scrollableTabs.includes(tabName) && tabName !== 'notes';
+
+                if (isChartTab) {
+                    if (isChartFullScreen) {
+                        clonedPanel.style.transform = 'scale(0.75)';
+                    } else {
+                        clonedPanel.style.transform = 'scale(0.85)';
+                    }
+                    clonedPanel.style.transformOrigin = 'center top';
                 } else {
                     clonedPanel.style.transform = 'none';
                 }
