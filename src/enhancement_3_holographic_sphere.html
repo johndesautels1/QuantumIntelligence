@@ -899,44 +899,44 @@
 
             /* ===== DATA PANELS MODAL - MOBILE FIXES ===== */
             .data-modal-container {
-                width: 98% !important;
+                width: 99% !important;
                 max-width: 100% !important;
-                max-height: 95vh !important;
-                border-radius: 12px !important;
-                margin: 10px !important;
+                max-height: 98vh !important;
+                border-radius: 8px !important;
+                margin: 4px !important;
             }
 
             .data-modal-header {
-                padding: 10px 15px !important;
-                min-height: auto !important;
+                padding: 4px 8px !important;
+                min-height: 30px !important;
             }
 
             /* Tabs - 2 rows, no horizontal scroll */
             .data-modal-tabs {
                 display: grid !important;
                 grid-template-columns: repeat(5, 1fr) !important;
-                gap: 4px !important;
-                padding: 8px !important;
+                gap: 3px !important;
+                padding: 4px !important;
                 overflow-x: hidden !important;
                 flex-wrap: wrap !important;
-                min-height: auto !important;
+                min-height: 30px !important;
             }
 
             .data-tab {
-                padding: 6px 2px !important;
-                font-size: 0.55em !important;
+                padding: 4px 2px !important;
+                font-size: 0.5em !important;
                 min-width: unset !important;
                 max-width: unset !important;
                 white-space: normal !important;
                 text-align: center !important;
-                line-height: 1.2 !important;
+                line-height: 1.1 !important;
                 word-break: break-word !important;
             }
 
             .data-modal-content {
-                padding: 10px !important;
-                min-height: 200px !important;
-                max-height: calc(95vh - 180px) !important;
+                padding: 4px !important;
+                min-height: 150px !important;
+                max-height: calc(98vh - 100px) !important;
             }
 
             /* Fix "Select properties" placeholder text - scale and crisp white */
@@ -1506,11 +1506,11 @@
             background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%);
             backdrop-filter: blur(20px);
             border: 2px solid rgba(0, 212, 255, 0.5);
-            border-radius: 20px;
+            border-radius: 16px;
             padding: 0;
-            width: 90%;
-            max-width: 900px;
-            max-height: 85vh;
+            width: 96%;
+            max-width: 1200px;
+            max-height: 96vh;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 40px rgba(0, 212, 255, 0.2);
             display: flex;
             flex-direction: column;
@@ -1534,11 +1534,11 @@
             flex-direction: column;
             justify-content: flex-start;
             align-items: center;
-            padding: 20px 25px 15px 25px;
+            padding: 8px 15px 6px 15px;
             border-bottom: 1px solid rgba(0, 212, 255, 0.3);
             background: rgba(0, 0, 0, 0.2);
             position: relative;
-            min-height: 180px;
+            min-height: 50px;
         }
 
         .data-modal-header-top {
@@ -1572,13 +1572,13 @@
         .data-modal-tabs {
             display: flex;
             gap: 4px;
-            padding: 40px 20px;
+            padding: 6px 10px;
             background: rgba(0, 0, 0, 0.15);
             border-bottom: 1px solid rgba(0, 212, 255, 0.2);
             overflow-x: auto;
             flex-wrap: nowrap;
             margin-top: 0;
-            min-height: 80px;
+            min-height: 36px;
             justify-content: center;
             align-items: center;
         }
@@ -1638,10 +1638,10 @@
 
         .data-modal-content {
             flex: 1;
-            padding: 20px;
+            padding: 8px;
             overflow-y: auto;
-            min-height: 400px;
-            max-height: calc(85vh - 220px);
+            min-height: 300px;
+            max-height: calc(96vh - 120px);
             position: relative;
             margin-top: 0;
         }
@@ -1704,60 +1704,68 @@
             bottom: auto !important;
             top: auto !important;
 
-            /* ===== UNIFIED SIZING FOR CONSISTENT MODAL APPEARANCE ===== */
+            /* ===== MAXIMIZED SIZING - FIT VIEWPORT ===== */
             width: 100% !important;
-            max-width: 800px !important;
+            max-width: 100% !important;
             height: auto !important;
-            min-height: 450px !important;
-            max-height: calc(85vh - 280px) !important;
+            min-height: 200px !important;
+            max-height: calc(96vh - 140px) !important;
             margin: 0 auto !important;
-            padding: 20px !important;
+            padding: 10px !important;
 
             /* Unified styling */
             background: rgba(255, 255, 255, 0.05) !important;
             backdrop-filter: blur(20px) !important;
-            border-radius: 15px !important;
+            border-radius: 12px !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
             box-shadow: none !important;
         }
 
         /* Chart containers inside modal panels - ensure they fill space properly */
         #modal-panel-container #radar-chart-container,
-        #modal-panel-container #col-chart-container {
+        #modal-panel-container #col-chart-container,
+        #modal-panel-container #location-content,
+        #modal-panel-container #condition-content,
+        #modal-panel-container #lifestyle-content,
+        #modal-panel-container #education-content,
+        #modal-panel-container #roi-content {
             width: 100% !important;
-            height: 400px !important;
-            max-height: 400px !important;
+            height: calc(96vh - 160px) !important;
+            max-height: calc(96vh - 160px) !important;
+            padding: 5px !important;
         }
 
         #modal-panel-container canvas {
+            width: 100% !important;
+            height: 100% !important;
             max-width: 100% !important;
-            max-height: 400px !important;
+            max-height: 100% !important;
         }
 
         /* Crime widget adjustments for modal */
         #modal-panel-container .crime-widget {
             width: 100% !important;
-            max-width: 500px !important;
-            min-height: 300px !important;
+            max-width: 100% !important;
+            min-height: 200px !important;
         }
 
         #modal-panel-container .crime-widget h4 {
-            font-size: 1.2em !important;
+            font-size: 1.1em !important;
         }
 
         #modal-panel-container .crime-item {
-            font-size: 1em !important;
-            padding: 12px 16px !important;
+            font-size: 0.95em !important;
+            padding: 10px 14px !important;
         }
 
         /* Notes panel adjustments for modal */
         #modal-panel-container .notes-panel {
-            min-height: 450px !important;
+            min-height: 200px !important;
         }
 
         #modal-panel-container .notes-textarea {
-            min-height: 200px !important;
-            font-size: 1em !important;
+            min-height: 150px !important;
+            font-size: 0.95em !important;
         }
 
         /* Comparison/ROI table adjustments */
@@ -1778,24 +1786,25 @@
         /* Responsive modal */
         @media (max-width: 768px) {
             .data-modal-container {
-                width: 95%;
-                max-height: 90vh;
+                width: 98%;
+                max-height: 96vh;
             }
 
             .data-modal-tabs {
                 flex-wrap: wrap;
-                gap: 6px;
-                padding: 10px;
+                gap: 4px;
+                padding: 6px;
             }
 
             .data-tab {
-                padding: 8px 12px;
-                font-size: 0.8em;
+                padding: 6px 8px;
+                font-size: 0.7em;
             }
 
             .data-modal-content {
-                padding: 15px;
-                min-height: 300px;
+                padding: 6px;
+                min-height: 200px;
+                max-height: calc(96vh - 100px);
             }
         }
 
@@ -3183,81 +3192,66 @@
 
             <!-- Location Panel - 3D Glassmorphic Column Chart -->
             <div class="comparison-panel" id="location-panel" role="region" aria-label="Property location information">
-                <h3>📍 Location Score</h3>
-                <div id="location-content" style="position: relative; min-height: 400px; padding: 20px;">
-                    <canvas id="location-chart" style="max-width: 100%; height: 350px;"></canvas>
-                    <p style="text-align: center; opacity: 0.6; font-size: 0.85em; margin-top: 10px;">
-                        3D Glassmorphic Column Visualization
-                    </p>
+                <h3 style="margin: 5px 0; font-size: 1em;">📍 Location Score</h3>
+                <div id="location-content" style="position: relative; height: calc(100% - 40px); padding: 8px;">
+                    <canvas id="location-chart" style="width: 100%; height: 100%;"></canvas>
                 </div>
             </div>
 
             <!-- Market Value Panel - Property Pricing Analysis -->
             <div class="comparison-panel" id="marketvalue-panel" role="region" aria-label="Property market value information">
-                <h3>💰 Property Market Value</h3>
-                <div id="marketvalue-content" style="position: relative; min-height: 400px; padding: 20px;">
-                    <canvas id="marketvalue-chart" style="max-width: 100%; height: 350px;"></canvas>
-                    <div id="marketvalue-details" style="margin-top: 15px;"></div>
+                <h3 style="margin: 5px 0; font-size: 1em;">💰 Property Market Value</h3>
+                <div id="marketvalue-content" style="position: relative; height: calc(100% - 40px); padding: 8px; overflow-y: auto;">
+                    <canvas id="marketvalue-chart" style="width: 100%; height: 250px;"></canvas>
+                    <div id="marketvalue-details" style="margin-top: 8px;"></div>
                 </div>
             </div>
 
             <!-- Property Condition Panel - 3D Stacked Bar Chart -->
             <div class="comparison-panel" id="condition-panel" role="region" aria-label="Property condition information">
-                <h3>🏠 Property Condition</h3>
-                <div id="condition-content" style="position: relative; min-height: 400px; padding: 20px;">
-                    <canvas id="condition-chart" style="max-width: 100%; height: 350px;"></canvas>
-                    <p style="text-align: center; opacity: 0.6; font-size: 0.85em; margin-top: 10px;">
-                        3D Depth Bar Visualization
-                    </p>
+                <h3 style="margin: 5px 0; font-size: 1em;">🏠 Property Condition</h3>
+                <div id="condition-content" style="position: relative; height: calc(100% - 40px); padding: 8px;">
+                    <canvas id="condition-chart" style="width: 100%; height: 100%;"></canvas>
                 </div>
             </div>
 
             <!-- Lifestyle Panel - 3D Polar/Donut Chart -->
             <div class="comparison-panel" id="lifestyle-panel" role="region" aria-label="Property lifestyle information">
-                <h3>🎨 Lifestyle Quality</h3>
-                <div id="lifestyle-content" style="position: relative; min-height: 400px; padding: 20px;">
-                    <canvas id="lifestyle-chart" style="max-width: 100%; height: 350px;"></canvas>
-                    <p style="text-align: center; opacity: 0.6; font-size: 0.85em; margin-top: 10px;">
-                        3D Glassmorphic Polar Visualization
-                    </p>
+                <h3 style="margin: 5px 0; font-size: 1em;">🎨 Lifestyle Quality</h3>
+                <div id="lifestyle-content" style="position: relative; height: calc(100% - 40px); padding: 8px;">
+                    <canvas id="lifestyle-chart" style="width: 100%; height: 100%;"></canvas>
                 </div>
             </div>
 
             <!-- Radar Chart Panel (Feature #7) -->
             <div class="radar-chart-panel" id="radar-chart-panel" role="region" aria-label="Property metrics radar chart">
-                <h3>📡 Metrics</h3>
-                <div id="radar-chart-container">
-                    <canvas id="radar-chart"></canvas>
+                <h3 style="margin: 5px 0; font-size: 1em;">📡 Metrics</h3>
+                <div id="radar-chart-container" style="height: calc(100% - 40px); padding: 8px;">
+                    <canvas id="radar-chart" style="width: 100%; height: 100%;"></canvas>
                 </div>
             </div>
 
             <!-- Cost-of-Living Bar Chart -->
             <div class="col-chart-panel" id="col-chart-panel" role="region" aria-label="Cost of living comparison">
-                <h3>💵 Cost of Living</h3>
-                <div id="col-chart-container">
-                    <canvas id="col-chart"></canvas>
+                <h3 style="margin: 5px 0; font-size: 1em;">💵 Cost of Living</h3>
+                <div id="col-chart-container" style="height: calc(100% - 40px); padding: 8px;">
+                    <canvas id="col-chart" style="width: 100%; height: 100%;"></canvas>
                 </div>
             </div>
 
             <!-- Education Panel - 3D Doughnut Chart -->
             <div class="comparison-panel" id="education-panel" role="region" aria-label="Education information">
-                <h3>🎓 Education Quality</h3>
-                <div id="education-content" style="position: relative; min-height: 400px; padding: 20px;">
-                    <canvas id="education-chart" style="max-width: 100%; height: 350px;"></canvas>
-                    <p style="text-align: center; opacity: 0.6; font-size: 0.85em; margin-top: 10px;">
-                        3D Glassmorphic Doughnut Visualization
-                    </p>
+                <h3 style="margin: 5px 0; font-size: 1em;">🎓 Education Quality</h3>
+                <div id="education-content" style="position: relative; height: calc(100% - 40px); padding: 8px;">
+                    <canvas id="education-chart" style="width: 100%; height: 100%;"></canvas>
                 </div>
             </div>
 
             <!-- ROI Panel - Line Chart for Investment Returns -->
             <div class="comparison-panel" id="roi-panel" role="region" aria-label="ROI projection">
-                <h3>💰 Return on Investment (ROI)</h3>
-                <div id="roi-content" style="position: relative; min-height: 400px; padding: 20px;">
-                    <canvas id="roi-chart" style="max-width: 100%; height: 350px;"></canvas>
-                    <p style="text-align: center; opacity: 0.6; font-size: 0.85em; margin-top: 10px;">
-                        Current ROI Rate Comparison
-                    </p>
+                <h3 style="margin: 5px 0; font-size: 1em;">📈 Return on Investment (ROI)</h3>
+                <div id="roi-content" style="position: relative; height: calc(100% - 40px); padding: 8px;">
+                    <canvas id="roi-chart" style="width: 100%; height: 100%;"></canvas>
                 </div>
             </div>
 
@@ -3515,19 +3509,12 @@
                     <div id="modal-panel-container"></div>
                 </div>
 
-                <!-- Modal Footer -->
-                <div class="data-modal-footer" style="display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: auto !important; z-index: 10000;">
-                    <div style="display: flex; gap: 12px; align-items: center; pointer-events: auto !important;">
-                        <button id="close-modal-btn" onclick="closeDataPanelsModal()" style="background: rgba(255, 0, 0, 0.8); color: white; border: none; border-radius: 6px; padding: 5px 12px; font-size: 0.75em; font-weight: bold; cursor: pointer; pointer-events: auto !important; z-index: 10001;">
-                            ✕ Close
-                        </button>
-                    </div>
-                    <p style="margin: 0; font-size: 0.85em; color: #FFFFFF; font-weight: bold; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
-                        💡 Switch tabs to view different analysis panels
-                    </p>
-                    <p style="margin: 0; font-size: 0.75em; color: rgba(255, 255, 255, 0.85);">
-                        Move Time Travel Slider to see historic variable data
-                    </p>
+                <!-- Modal Footer - Compact -->
+                <div class="data-modal-footer" style="display: flex; align-items: center; justify-content: center; gap: 15px; padding: 6px 10px; pointer-events: auto !important; z-index: 10000; background: rgba(0,0,0,0.2);">
+                    <button id="close-modal-btn" onclick="closeDataPanelsModal()" style="background: rgba(255, 0, 0, 0.8); color: white; border: none; border-radius: 4px; padding: 4px 10px; font-size: 0.7em; font-weight: bold; cursor: pointer; pointer-events: auto !important;">
+                        ✕ Close
+                    </button>
+                    <span style="font-size: 0.7em; color: rgba(255,255,255,0.8);">💡 Switch tabs for different views</span>
                 </div>
             </div>
         </div>
