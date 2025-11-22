@@ -6100,14 +6100,13 @@
                     // Expand content area
                     if (contentArea) {
                         if (shouldScale) {
-                            // Scale chart tabs to fit viewport (no scrolling)
+                            // NO SCROLLING - chart must fit entirely in viewport
                             contentArea.style.cssText = `
-                                max-height: 100vh !important;
+                                width: 100vw !important;
                                 height: 100vh !important;
+                                max-height: 100vh !important;
                                 overflow: hidden !important;
-                                display: flex !important;
-                                align-items: center !important;
-                                justify-content: center !important;
+                                position: relative !important;
                             `;
                         } else {
                             // Scrollable tabs (comparison, marketvalue)
@@ -6119,39 +6118,36 @@
                         }
                     }
 
-                    // Dynamically scale chart to fit within viewport with margin
+                    // Dynamically scale chart to fit ENTIRELY within viewport - NO SCROLLING
                     if (shouldScale && container) {
-                        // Get the chart's natural dimensions
-                        const chartContent = container.firstElementChild;
-                        if (chartContent) {
-                            const viewportWidth = window.innerWidth;
-                            const viewportHeight = window.innerHeight;
-                            const margin = 40; // pixels margin around chart
+                        const viewportWidth = window.innerWidth;
+                        const viewportHeight = window.innerHeight;
+                        const margin = 60; // pixels margin around chart
 
-                            // Available space
-                            const availableWidth = viewportWidth - (margin * 2);
-                            const availableHeight = viewportHeight - (margin * 2);
+                        // Available space (with margin)
+                        const availableWidth = viewportWidth - (margin * 2);
+                        const availableHeight = viewportHeight - (margin * 2);
 
-                            // Get chart's current dimensions
-                            const chartRect = chartContent.getBoundingClientRect();
-                            const chartWidth = chartRect.width || 400;
-                            const chartHeight = chartRect.height || 300;
+                        // Get container's scroll dimensions (full content size)
+                        const contentWidth = container.scrollWidth || container.offsetWidth || 600;
+                        const contentHeight = container.scrollHeight || container.offsetHeight || 400;
 
-                            // Calculate scale factor to fit
-                            const scaleX = availableWidth / chartWidth;
-                            const scaleY = availableHeight / chartHeight;
-                            const scaleFactor = Math.min(scaleX, scaleY, 1.5); // Cap at 1.5x max
+                        // Calculate scale to fit ENTIRELY (use smaller of the two ratios)
+                        const scaleX = availableWidth / contentWidth;
+                        const scaleY = availableHeight / contentHeight;
+                        const scaleFactor = Math.min(scaleX, scaleY); // NO cap - must fit!
 
-                            console.log(`📐 Scaling chart: ${chartWidth}x${chartHeight} -> viewport ${availableWidth}x${availableHeight}, scale: ${scaleFactor.toFixed(2)}`);
+                        console.log(`📐 Fit-to-viewport: content ${contentWidth}x${contentHeight} -> available ${availableWidth}x${availableHeight}, scale: ${scaleFactor.toFixed(3)}`);
 
-                            container.style.cssText = `
-                                position: absolute;
-                                top: 50%;
-                                left: 50%;
-                                transform: translate(-50%, -50%) scale(${scaleFactor});
-                                transform-origin: center center;
-                            `;
-                        }
+                        container.style.cssText = `
+                            position: absolute !important;
+                            top: 50% !important;
+                            left: 50% !important;
+                            transform: translate(-50%, -50%) scale(${scaleFactor}) !important;
+                            transform-origin: center center !important;
+                            width: ${contentWidth}px !important;
+                            height: ${contentHeight}px !important;
+                        `;
                     }
 
                     // Update button inside chart
