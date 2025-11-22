@@ -6106,16 +6106,18 @@
                     if (modalTabs) modalTabs.style.display = 'none';
                     if (modalFooter) modalFooter.style.display = 'none';
 
-                    // Expand content area
+                    // Expand content area - use flexbox to center content
                     if (contentArea) {
                         if (shouldScale) {
-                            // NO SCROLLING - chart must fit entirely in viewport
+                            // NO SCROLLING - use flexbox to center vertically and horizontally
                             contentArea.style.cssText = `
                                 width: 100vw !important;
                                 height: 100vh !important;
                                 max-height: 100vh !important;
                                 overflow: hidden !important;
-                                position: relative !important;
+                                display: flex !important;
+                                justify-content: center !important;
+                                align-items: center !important;
                             `;
                         } else {
                             // Scrollable tabs (comparison, marketvalue)
@@ -6127,16 +6129,14 @@
                         }
                     }
 
-                    // Scale DOWN charts by 0.75 to fit entirely in viewport - NO SCROLLING
+                    // Scale DOWN charts by 0.75 - centered in viewport
                     if (shouldScale && container) {
-                        // Scale the container itself and all its children
                         container.style.cssText = `
                             transform: scale(0.75) !important;
-                            transform-origin: center top !important;
-                            overflow: visible !important;
+                            transform-origin: center center !important;
                         `;
 
-                        console.log('📐 FULLSCREEN: Applied scale(0.75) to container');
+                        console.log('📐 FULLSCREEN: Applied scale(0.75) centered');
                     }
 
                     // Update button inside chart
