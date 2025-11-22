@@ -899,16 +899,16 @@
 
             /* ===== DATA PANELS MODAL - MOBILE FIXES ===== */
             .data-modal-container {
-                width: 98% !important;
-                max-width: 100% !important;
+                width: 95% !important;
+                max-width: 95vw !important;
                 max-height: 95vh !important;
-                border-radius: 12px !important;
-                margin: 10px !important;
+                border-radius: 10px !important;
+                margin: 2.5vh 2.5vw !important;
             }
 
             .data-modal-header {
-                padding: 10px 15px !important;
-                min-height: auto !important;
+                padding: 8px 15px 5px 15px !important;
+                min-height: 60px !important;
             }
 
             /* Tabs - 2 rows, no horizontal scroll */
@@ -916,10 +916,10 @@
                 display: grid !important;
                 grid-template-columns: repeat(5, 1fr) !important;
                 gap: 4px !important;
-                padding: 8px !important;
+                padding: 10px !important;
                 overflow-x: hidden !important;
                 flex-wrap: wrap !important;
-                min-height: auto !important;
+                min-height: 40px !important;
             }
 
             .data-tab {
@@ -936,7 +936,7 @@
             .data-modal-content {
                 padding: 10px !important;
                 min-height: 200px !important;
-                max-height: calc(95vh - 180px) !important;
+                max-height: calc(95vh - 110px) !important;
             }
 
             /* Fix "Select properties" placeholder text - scale and crisp white */
@@ -1779,23 +1779,25 @@
         @media (max-width: 768px) {
             .data-modal-container {
                 width: 95%;
-                max-height: 90vh;
+                max-width: 95vw;
+                max-height: 95vh;
             }
 
             .data-modal-tabs {
                 flex-wrap: wrap;
-                gap: 6px;
+                gap: 4px;
                 padding: 10px;
             }
 
             .data-tab {
-                padding: 8px 12px;
-                font-size: 0.8em;
+                padding: 6px 8px;
+                font-size: 0.7em;
             }
 
             .data-modal-content {
-                padding: 15px;
-                min-height: 300px;
+                padding: 10px;
+                min-height: 200px;
+                max-height: calc(95vh - 110px);
             }
         }
 
