@@ -6122,11 +6122,12 @@
                     if (shouldScale && container) {
                         const viewportWidth = window.innerWidth;
                         const viewportHeight = window.innerHeight;
-                        const margin = 60; // pixels margin around chart
+                        const marginHorizontal = 60; // pixels margin left/right
+                        const marginVertical = 20; // pixels margin top/bottom (smaller for more vertical space)
 
                         // Available space (with margin)
-                        const availableWidth = viewportWidth - (margin * 2);
-                        const availableHeight = viewportHeight - (margin * 2);
+                        const availableWidth = viewportWidth - (marginHorizontal * 2);
+                        const availableHeight = viewportHeight - (marginVertical * 2);
 
                         // Get container's scroll dimensions (full content size)
                         const contentWidth = container.scrollWidth || container.offsetWidth || 600;
