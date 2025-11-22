@@ -5735,24 +5735,38 @@
 
             };
 
-            // Wire up modal footer buttons (do this once on page load)
-            document.addEventListener('DOMContentLoaded', function() {
+            // Wire up modal footer buttons immediately (script runs after HTML is parsed)
+            (function wireModalButtons() {
                 const fullscreenBtn = document.getElementById('fullscreen-toggle-btn');
                 const closeBtn = document.getElementById('close-modal-btn');
 
                 if (fullscreenBtn) {
                     fullscreenBtn.addEventListener('click', function() {
                         console.log('🔲 Toggle Full Screen clicked!');
-                        window.toggleChartFullScreen();
+                        if (typeof window.toggleChartFullScreen === 'function') {
+                            window.toggleChartFullScreen();
+                        } else {
+                            console.error('❌ toggleChartFullScreen not defined yet');
+                        }
                     });
+                    console.log('✅ Fullscreen button wired');
+                } else {
+                    console.error('❌ fullscreen-toggle-btn not found');
                 }
 
                 if (closeBtn) {
                     closeBtn.addEventListener('click', function() {
-                        window.closeDataPanelsModal();
+                        if (typeof window.closeDataPanelsModal === 'function') {
+                            window.closeDataPanelsModal();
+                        } else {
+                            console.error('❌ closeDataPanelsModal not defined yet');
+                        }
                     });
+                    console.log('✅ Close button wired');
+                } else {
+                    console.error('❌ close-modal-btn not found');
                 }
-            });
+            })();
 
             // Close the Data Panels modal
             window.closeDataPanelsModal = function() {
