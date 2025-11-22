@@ -53,6 +53,37 @@ Version 1.0.0 | Progressive Web App (PWA) | Offline-Capable | Production-Ready
 
 ---
 
+## ⚠️ CRITICAL - DO NOT DELETE HIDDEN ELEMENTS
+
+### 🚨 TIME TRAVEL CONTROL - HIDDEN BUT REQUIRED 🚨
+
+**File:** `src/enhancement_3_holographic_sphere.html`
+**Location:** Lines ~2610-2624
+**Element:** `<div class="time-travel-control" style="display: none;">`
+
+**DO NOT DELETE THIS ELEMENT!**
+
+This hidden Time Travel slider in the site footer contains critical element IDs that the backend JavaScript depends on:
+- `id="time-slider"` - Referenced by modal slider sync
+- `id="time-display"` - Referenced by `updateTimeTravel()` function
+
+**Why it's hidden:**
+- The visible Time Travel control is in the Analytics Dashboard modal (lines ~3418-3432)
+- The site footer version was hidden to reduce UI clutter
+- But deleting it would break the `updateTimeTravel()` function which calculates all 100 variables over 365 days of historical data
+
+**Backend wiring (lines ~6830-6890):**
+- `updateTimeTravel()` - Updates time display and calls `applyTimeOffset()`
+- `applyTimeOffset()` - Recalculates ALL property dimensions with time-based variations
+- Triggers: `updateRadarChartVisibility()`, `updateComparisonPanel()`, `updateCrimeWidget()`, `calculateWinner()`, `updateAllGravityRings()`, `checkDealBreakers()`
+
+**If you need to modify Time Travel:**
+1. Keep both HTML elements (hidden footer + visible modal)
+2. Or refactor JavaScript to use `modal-time-display` instead of `time-display`
+3. Test thoroughly - this affects all property scoring calculations
+
+---
+
 ## ⚠️ CRITICAL - SERVICE WORKER DISABLED FOR DEVELOPMENT (Nov 17, 2024)
 
 ### 🚨 START EVERY SESSION BY CHECKING THIS STATUS 🚨
