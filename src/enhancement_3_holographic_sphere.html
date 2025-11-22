@@ -1181,6 +1181,205 @@
             }
         }
 
+        /* ===== MOBILE FULLSCREEN MODAL SYSTEM ===== */
+        /* Mobile menu hamburger button - replaces stacked buttons */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 70px;
+            left: 10px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.8), rgba(0, 212, 255, 0.8));
+            border: 2px solid rgba(255, 215, 0, 0.9);
+            border-radius: 12px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1200;
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(255, 215, 0, 0.7);
+        }
+
+        .mobile-menu-btn.active {
+            background: linear-gradient(135deg, rgba(255, 100, 100, 0.8), rgba(255, 50, 50, 0.8));
+            border-color: rgba(255, 100, 100, 0.9);
+        }
+
+        /* Mobile menu panel */
+        .mobile-menu-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%);
+            backdrop-filter: blur(20px);
+            z-index: 1150;
+            flex-direction: column;
+            padding: 80px 20px 20px 20px;
+            overflow-y: auto;
+        }
+
+        .mobile-menu-panel.visible {
+            display: flex;
+        }
+
+        .mobile-menu-panel .menu-item {
+            width: 100%;
+            padding: 15px 20px;
+            margin: 5px 0;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(138, 43, 226, 0.3));
+            border: 1px solid rgba(0, 212, 255, 0.5);
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-menu-panel .menu-item:hover {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.5), rgba(138, 43, 226, 0.5));
+            transform: translateX(5px);
+        }
+
+        .mobile-menu-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 0, 0, 0.8);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1160;
+        }
+
+        /* Mobile fullscreen modal overlay */
+        .mobile-fullscreen-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(10, 22, 40, 0.99) 0%, rgba(26, 40, 71, 0.99) 100%);
+            backdrop-filter: blur(20px);
+            z-index: 2000;
+            overflow-y: auto;
+            padding: 60px 15px 20px 15px;
+        }
+
+        .mobile-fullscreen-modal.visible {
+            display: block;
+        }
+
+        .mobile-fullscreen-modal .mobile-close-btn {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 44px;
+            height: 44px;
+            background: rgba(255, 0, 0, 0.9);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 2001;
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.5);
+        }
+
+        .mobile-fullscreen-modal .modal-content-wrapper {
+            width: 100%;
+            max-width: 100%;
+            background: transparent;
+        }
+
+        /* Show mobile menu button only on mobile */
+        @media (max-width: 768px) {
+            .mobile-menu-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* Hide the stacked left-side buttons on mobile - use menu instead */
+            .mobile-action-buttons {
+                display: none !important;
+            }
+
+            /* Hide micro-toggles on mobile - they're too small */
+            .micro-toggle {
+                display: none !important;
+            }
+
+            /* Fullscreen modals on mobile */
+            #import-modal.mobile-fullscreen,
+            #photo-upload-panel.mobile-fullscreen,
+            #video-upload-panel.mobile-fullscreen,
+            #social-panel.mobile-fullscreen,
+            #badges-panel.mobile-fullscreen,
+            #history-panel.mobile-fullscreen,
+            #tools-dropdown.mobile-fullscreen {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                bottom: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
+                max-width: 100% !important;
+                max-height: 100% !important;
+                border-radius: 0 !important;
+                transform: none !important;
+                z-index: 2000 !important;
+                padding: 60px 15px 20px 15px !important;
+                overflow-y: auto !important;
+            }
+
+            /* Ensure close button is visible on fullscreen modals */
+            #import-modal.mobile-fullscreen > button:first-of-type,
+            #photo-upload-panel.mobile-fullscreen > button:first-of-type,
+            #video-upload-panel.mobile-fullscreen > button:first-of-type,
+            #social-panel.mobile-fullscreen > button:first-of-type,
+            #badges-panel.mobile-fullscreen > button:first-of-type,
+            #history-panel.mobile-fullscreen > button:first-of-type {
+                position: fixed !important;
+                top: 10px !important;
+                right: 10px !important;
+                width: 44px !important;
+                height: 44px !important;
+                font-size: 28px !important;
+                z-index: 2001 !important;
+            }
+
+            /* Reset content scaling for fullscreen mobile modals */
+            #import-modal.mobile-fullscreen > div,
+            #photo-upload-panel.mobile-fullscreen > div,
+            #video-upload-panel.mobile-fullscreen > div,
+            #badges-panel.mobile-fullscreen > div,
+            #social-panel.mobile-fullscreen > div {
+                transform: none !important;
+                width: 100% !important;
+                height: auto !important;
+            }
+        }
+
         /* NEW v3.2: Metric Group Tabs */
         .metric-group-tabs {
             display: flex;
@@ -2641,6 +2840,28 @@
                 <button class="back-btn" onclick="goBack()" aria-label="Back to dashboard">← Back</button>
                 <h1>🌐 Holographic Property Command Center 1000</h1>
                 <p class="subtitle">360° Multi-Dimensional Property Comparison | CLUES™ Integrated</p>
+            </div>
+
+            <!-- ===== MOBILE MENU SYSTEM ===== -->
+            <!-- Mobile Menu Button (hamburger) - only visible on mobile -->
+            <button class="mobile-menu-btn" id="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Open mobile menu">
+                ☰
+            </button>
+
+            <!-- Mobile Menu Panel - fullscreen menu for mobile -->
+            <div class="mobile-menu-panel" id="mobile-menu-panel">
+                <button class="mobile-menu-close" onclick="closeMobileMenu()">×</button>
+                <h2 style="color: #FFD700; margin-bottom: 20px; text-align: center;">📱 Menu</h2>
+
+                <button class="menu-item" onclick="mobileMenuAction('tools')">🛠️ Tools & Settings</button>
+                <button class="menu-item" onclick="mobileMenuAction('qr')">📱 QR Code</button>
+                <button class="menu-item" onclick="mobileMenuAction('import')">📥 Import Properties</button>
+                <button class="menu-item" onclick="mobileMenuAction('photos')">📸 Upload Photos</button>
+                <button class="menu-item" onclick="mobileMenuAction('videos')">🎬 Upload Videos</button>
+                <button class="menu-item" onclick="mobileMenuAction('analytics')">📊 Analytics Dashboard</button>
+                <button class="menu-item" onclick="mobileMenuAction('history')">📜 History Timeline</button>
+                <button class="menu-item" onclick="mobileMenuAction('achievements')">🏆 Achievements</button>
+                <button class="menu-item" onclick="mobileMenuAction('social')">📱 Social Share</button>
             </div>
 
             <!-- Microscopic Toggle Buttons -->
@@ -4728,6 +4949,129 @@
             // window.togglePhotoUpload, window.selectUploadSlot,
             // window.handlePhotoUpload, window.applyPhotoTexture
 
+            // ===== MOBILE MENU SYSTEM =====
+
+            // Check if we're on mobile
+            function isMobile() {
+                return window.innerWidth <= 768;
+            }
+
+            // Toggle mobile menu
+            window.toggleMobileMenu = function() {
+                const menuPanel = document.getElementById('mobile-menu-panel');
+                const menuBtn = document.getElementById('mobile-menu-btn');
+                const isVisible = menuPanel.classList.contains('visible');
+
+                if (isVisible) {
+                    menuPanel.classList.remove('visible');
+                    menuBtn.classList.remove('active');
+                    menuBtn.textContent = '☰';
+                } else {
+                    menuPanel.classList.add('visible');
+                    menuBtn.classList.add('active');
+                    menuBtn.textContent = '×';
+                }
+                vibrate('tap');
+            };
+
+            // Close mobile menu
+            window.closeMobileMenu = function() {
+                const menuPanel = document.getElementById('mobile-menu-panel');
+                const menuBtn = document.getElementById('mobile-menu-btn');
+                menuPanel.classList.remove('visible');
+                menuBtn.classList.remove('active');
+                menuBtn.textContent = '☰';
+            };
+
+            // Mobile menu action handler - opens modals fullscreen on mobile
+            window.mobileMenuAction = function(action) {
+                closeMobileMenu();
+
+                // Small delay for menu close animation
+                setTimeout(() => {
+                    switch(action) {
+                        case 'tools':
+                            openMobileFullscreenModal('tools-dropdown');
+                            break;
+                        case 'qr':
+                            showQRCode();
+                            break;
+                        case 'import':
+                            openMobileFullscreenModal('import-modal', () => openImportModal());
+                            break;
+                        case 'photos':
+                            openMobileFullscreenModal('photo-upload-panel', () => togglePhotoUpload());
+                            break;
+                        case 'videos':
+                            openMobileFullscreenModal('video-upload-panel', () => toggleVideoUpload());
+                            break;
+                        case 'analytics':
+                            openDataPanelsModal();
+                            break;
+                        case 'history':
+                            openMobileFullscreenModal('history-panel', () => toggleHistoryPanel());
+                            break;
+                        case 'achievements':
+                            openMobileFullscreenModal('badges-panel', () => toggleBadgesPanel());
+                            break;
+                        case 'social':
+                            openMobileFullscreenModal('social-panel', () => toggleSocialPanel());
+                            break;
+                    }
+                }, 150);
+            };
+
+            // Open a modal in fullscreen mode on mobile
+            window.openMobileFullscreenModal = function(modalId, openFn) {
+                const modal = document.getElementById(modalId);
+                if (!modal) return;
+
+                // Add fullscreen class for mobile
+                if (isMobile()) {
+                    modal.classList.add('mobile-fullscreen');
+                }
+
+                // Call the original open function if provided
+                if (openFn) {
+                    openFn();
+                } else {
+                    // For tools dropdown, just show it
+                    if (modalId === 'tools-dropdown') {
+                        modal.style.display = 'flex';
+                    }
+                }
+
+                // Ensure modal is visible
+                if (modal.style.display === 'none' || modal.style.display === '') {
+                    modal.style.display = 'block';
+                }
+            };
+
+            // Close mobile fullscreen modal
+            window.closeMobileFullscreenModal = function(modalId) {
+                const modal = document.getElementById(modalId);
+                if (!modal) return;
+
+                modal.classList.remove('mobile-fullscreen');
+                modal.style.display = 'none';
+            };
+
+            // Override existing close functions to handle mobile fullscreen
+            const originalToggleHistoryPanel = window.toggleHistoryPanel;
+            const originalToggleBadgesPanel = window.toggleBadgesPanel;
+            const originalToggleSocialPanel = window.toggleSocialPanel;
+
+            // Wrap close functions to remove mobile-fullscreen class
+            function wrapCloseFunction(modalId, toggleFn) {
+                return function() {
+                    const modal = document.getElementById(modalId);
+                    if (modal && modal.classList.contains('mobile-fullscreen')) {
+                        modal.classList.remove('mobile-fullscreen');
+                    }
+                    if (toggleFn) toggleFn();
+                };
+            }
+
             // ===== TOOLS MENU & PANEL TOGGLES =====
 
             // Toggle TOOLS dropdown menu
@@ -4737,12 +5081,18 @@
 
                 if (dropdown.style.display === 'none' || dropdown.style.display === '') {
                     dropdown.style.display = 'flex';
-                    btn.style.background = 'linear-gradient(135deg, rgba(255, 215, 0, 0.7), rgba(0, 212, 255, 0.7))';
-                    btn.textContent = '🛠️ TOOLS ▲';
+                    if (btn) {
+                        btn.style.background = 'linear-gradient(135deg, rgba(255, 215, 0, 0.7), rgba(0, 212, 255, 0.7))';
+                        btn.textContent = '🛠️ TOOLS ▲';
+                    }
                 } else {
                     dropdown.style.display = 'none';
-                    btn.style.background = 'linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(0, 212, 255, 0.4))';
-                    btn.textContent = '🛠️ TOOLS';
+                    // Remove mobile fullscreen class when closing
+                    dropdown.classList.remove('mobile-fullscreen');
+                    if (btn) {
+                        btn.style.background = 'linear-gradient(135deg, rgba(255, 215, 0, 0.4), rgba(0, 212, 255, 0.4))';
+                        btn.textContent = '🛠️ TOOLS';
+                    }
                 }
 
                 vibrate('tap');
@@ -4922,6 +5272,8 @@
                     if (btn) {
                         btn.style.background = 'linear-gradient(135deg, rgba(0, 212, 255, 0.3), rgba(138, 43, 226, 0.3))';
                     }
+                    // Remove mobile fullscreen class when closing
+                    panel.classList.remove('mobile-fullscreen');
                     announceToScreenReader('Photo upload panel closed');
                 }
 
@@ -4989,6 +5341,7 @@
                 // Close photo panel if open
                 if (photoPanel && photoPanel.style.display === 'flex') {
                     photoPanel.style.display = 'none';
+                    photoPanel.classList.remove('mobile-fullscreen');
                 }
 
                 if (panel.style.display === 'none' || panel.style.display === '') {
@@ -4996,6 +5349,8 @@
                     announceToScreenReader('Video upload panel opened');
                 } else {
                     panel.style.display = 'none';
+                    // Remove mobile fullscreen class when closing
+                    panel.classList.remove('mobile-fullscreen');
                     announceToScreenReader('Video upload panel closed');
                 }
 
@@ -5633,7 +5988,10 @@
             };
 
             window.closeImportModal = function() {
-                document.getElementById('import-modal').style.display = 'none';
+                const modal = document.getElementById('import-modal');
+                modal.style.display = 'none';
+                // Remove mobile fullscreen class when closing
+                modal.classList.remove('mobile-fullscreen');
                 vibrate('tap');
             };
 
@@ -11779,6 +12137,8 @@
                     // OFF: gray
                     btn.style.background = 'rgba(80, 80, 80, 0.5)';
                     btn.style.boxShadow = 'none';
+                    // Remove mobile fullscreen class when closing
+                    panel.classList.remove('mobile-fullscreen');
                 }
                 vibrate('tap');
             };
@@ -11995,6 +12355,8 @@
                     // OFF: gray
                     btn.style.background = 'rgba(80, 80, 80, 0.5)';
                     btn.style.boxShadow = 'none';
+                    // Remove mobile fullscreen class when closing
+                    panel.classList.remove('mobile-fullscreen');
                 }
                 vibrate('tap');
             };
@@ -12056,6 +12418,8 @@
                     // OFF: gray
                     btn.style.background = 'rgba(80, 80, 80, 0.5)';
                     btn.style.boxShadow = 'none';
+                    // Remove mobile fullscreen class when closing
+                    panel.classList.remove('mobile-fullscreen');
                 }
                 vibrate('tap');
             };
