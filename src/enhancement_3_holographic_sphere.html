@@ -2198,12 +2198,12 @@
             height: calc(100% - 21.7px);
         }
 
-        /* Feature #10b: Photo Upload Panel */
+        /* Feature #10b: Photo Upload Panel - Unified size/position with other modals */
         .photo-upload-panel {
             position: fixed !important;
-            right: 20px !important; /* MOVED TO RIGHT SIDE - avoid left buttons */
-            left: auto !important;
-            bottom: 20px !important; /* MOVED TO BOTTOM */
+            left: 20px !important;
+            right: auto !important;
+            bottom: 20px !important;
             width: 380px !important;
             height: auto !important;
             max-height: 550px !important;
@@ -2213,15 +2213,15 @@
             padding: 20px !important;
             border: 2px solid rgba(0, 212, 255, 0.6) !important;
             box-shadow: 0 10px 40px rgba(0, 212, 255, 0.3), 0 0 20px rgba(0, 212, 255, 0.2) !important;
-            z-index: 850 !important; /* Above controls, below modals */
+            z-index: 850 !important;
             display: none;
             flex-direction: column;
             gap: 12px;
             overflow-y: auto;
             overflow-x: hidden;
-            pointer-events: auto !important; /* CRITICAL: Allow clicks */
-            transform: scale(0.85) !important; /* SCALED DOWN TO 85% */
-            transform-origin: bottom right !important; /* Scale from bottom-right corner */
+            pointer-events: auto !important;
+            transform: scale(0.85) !important;
+            transform-origin: bottom left !important;
         }
 
         .photo-upload-panel * {
@@ -2247,11 +2247,11 @@
             background: linear-gradient(135deg, #00FF88, #8A2BE2);
         }
 
-        /* Feature #10c: Video Upload Panel */
+        /* Feature #10c: Video Upload Panel - Unified size/position with other modals */
         .video-upload-panel {
             position: fixed !important;
-            right: 20px !important; /* MOVED TO RIGHT SIDE - avoid left buttons */
-            left: auto !important;
+            left: 20px !important;
+            right: auto !important;
             bottom: 20px !important;
             width: 380px !important;
             height: auto !important;
@@ -2262,7 +2262,7 @@
             padding: 20px !important;
             border: 2px solid rgba(255, 107, 107, 0.6) !important;
             box-shadow: 0 10px 40px rgba(255, 107, 107, 0.3), 0 0 20px rgba(255, 107, 107, 0.2) !important;
-            z-index: 850 !important; /* Above controls, below modals */
+            z-index: 850 !important;
             display: none;
             flex-direction: column;
             gap: 12px;
@@ -2270,7 +2270,7 @@
             overflow-x: hidden;
             pointer-events: auto !important;
             transform: scale(0.85) !important;
-            transform-origin: bottom right !important; /* Scale from bottom-right corner */
+            transform-origin: bottom left !important;
         }
 
         .video-upload-panel * {
@@ -2929,24 +2929,25 @@
 
             </div>
 
-            <!-- Feature #20: Property History Timeline Panel -->
+            <!-- Feature #20: Property History Timeline Panel - Unified size/position -->
             <div id="history-panel" style="
                 position: fixed;
-                left: 50%;
-                top: 50%;
-                transform: translate(-50%, -50%);
-                width: 280px;
-                max-height: 380px;
+                left: 20px;
+                bottom: 20px;
+                width: 380px;
+                max-height: 550px;
                 background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%);
                 backdrop-filter: blur(20px);
                 border: 2px solid rgba(138, 43, 226, 0.5);
                 border-radius: 15px;
-                padding: 15px;
+                padding: 20px;
                 box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
                 z-index: 850;
                 display: none;
                 overflow-y: auto;
                 pointer-events: auto;
+                transform: scale(0.85);
+                transform-origin: bottom left;
             ">
                 <button onclick="toggleHistoryPanel()" style="position: absolute; top: 10px; right: 10px; background: rgba(255, 0, 0, 0.9); color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 18px; font-weight: bold; line-height: 1; z-index: 1000; pointer-events: auto;" aria-label="Close history panel">×</button>
                 <h3 style="color: #FFD700; margin-bottom: 15px; font-size: 1.1em;">📜 Property History Timeline</h3>
@@ -2987,14 +2988,16 @@
                 </button>
             </div>
 
-            <!-- Feature #19: Achievement Badges Panel -->
+            <!-- Feature #19: Achievement Badges Panel - Unified size/position with other modals -->
             <div id="badges-panel" style="
                 position: fixed;
-                left: 50%;
-                top: 50%;
-                transform: translate(-50%, -50%);
-                width: 280px;
-                max-height: 380px;
+                left: 20px;
+                bottom: 20px;
+                top: auto;
+                transform: scale(0.85);
+                transform-origin: bottom left;
+                width: 380px;
+                max-height: 550px;
                 background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%);
                 backdrop-filter: blur(20px);
                 border: 2px solid rgba(255, 215, 0, 0.5);
@@ -3026,14 +3029,16 @@
                 </div>
             </div>
 
-            <!-- Feature #23: Social Sharing Panel -->
+            <!-- Feature #23: Social Sharing Panel - Unified size/position with other modals -->
             <div id="social-panel" style="
                 position: fixed;
-                left: 50%;
-                top: 50%;
-                transform: translate(-50%, -50%);
-                width: 280px;
-                max-height: 380px;
+                left: 20px;
+                bottom: 20px;
+                top: auto;
+                transform: scale(0.85);
+                transform-origin: bottom left;
+                width: 380px;
+                max-height: 550px;
                 background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%);
                 backdrop-filter: blur(20px);
                 border: 2px solid rgba(29, 161, 242, 0.5);
@@ -3438,15 +3443,16 @@
             <span id="sr-announcements" aria-live="polite" aria-atomic="true"></span>
         </div>
 
-        <!-- Import Properties Modal -->
-        <div id="import-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 10000; align-items: center; justify-content: center;">
+        <!-- Import Properties Modal - Unified size/position with other modals -->
+        <div id="import-modal" style="display: none; position: fixed; left: 20px; bottom: 20px; top: auto; right: auto; width: 380px; max-height: 550px; transform: scale(0.85); transform-origin: bottom left; z-index: 850; pointer-events: auto;">
             <div style="background: linear-gradient(135deg, rgba(10, 22, 40, 0.98) 0%, rgba(26, 40, 71, 0.98) 100%);
                         backdrop-filter: blur(20px);
                         border: 2px solid rgba(0, 212, 255, 0.5);
-                        border-radius: 20px;
-                        padding: 30px;
-                        max-width: 800px;
-                        max-height: 80vh;
+                        border-radius: 15px;
+                        padding: 20px;
+                        width: 100%;
+                        height: 100%;
+                        max-height: 550px;
                         overflow-y: auto;
                         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);">
 
