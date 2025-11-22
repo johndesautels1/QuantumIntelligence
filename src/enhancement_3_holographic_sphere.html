@@ -1583,6 +1583,26 @@
             align-items: center;
         }
 
+        /* Make tabs scrollbar clearly visible */
+        .data-modal-tabs::-webkit-scrollbar {
+            height: 10px;
+        }
+
+        .data-modal-tabs::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+
+        .data-modal-tabs::-webkit-scrollbar-thumb {
+            background: linear-gradient(to right, #00D4FF, #00FF88);
+            border-radius: 5px;
+            border: 2px solid rgba(0, 212, 255, 0.5);
+        }
+
+        .data-modal-tabs::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to right, #00FF88, #00D4FF);
+        }
+
         .data-tab {
             padding: 3px 5px;
             background: rgba(128, 128, 128, 0.3);
@@ -3409,11 +3429,7 @@
                             </div>
                         </div>
 
-                        <!-- Desktop close button - top right corner -->
-                        <button onclick="closeDataPanelsModal()" class="desktop-close-btn"
-                                style="background: rgba(255, 0, 0, 0.8); color: white; border: none; border-radius: 6px; padding: 5px 12px; font-size: 0.8em; font-weight: bold; cursor: pointer; flex-shrink: 0;">
-                            ✕ Close
-                        </button>
+                        <!-- Desktop close button removed - use footer close button only -->
                     </div>
                     <div style="text-align: center; font-size: 0.7em; color: #FFFFFF; font-weight: bold; margin-bottom: 12px; letter-spacing: 0.3px; text-shadow: 0 1px 2px rgba(0,0,0,0.5);">
                         <span style="color: #F44336;">●</span> Poor (0-20)
