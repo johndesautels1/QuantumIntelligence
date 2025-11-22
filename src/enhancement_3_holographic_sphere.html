@@ -3518,9 +3518,6 @@
                 <!-- Modal Footer -->
                 <div class="data-modal-footer" style="display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: auto !important; z-index: 10000;">
                     <div style="display: flex; gap: 12px; align-items: center; pointer-events: auto !important;">
-                        <button id="fullscreen-toggle-btn" onclick="toggleChartFullScreen()" style="display: none; background: linear-gradient(135deg, #00D4FF 0%, #0099CC 100%); color: white; border: none; border-radius: 6px; padding: 5px 12px; font-size: 0.75em; font-weight: bold; cursor: pointer; pointer-events: auto !important; z-index: 10001;">
-                            🔲 Toggle Full Screen
-                        </button>
                         <button id="close-modal-btn" onclick="closeDataPanelsModal()" style="background: rgba(255, 0, 0, 0.8); color: white; border: none; border-radius: 6px; padding: 5px 12px; font-size: 0.75em; font-weight: bold; cursor: pointer; pointer-events: auto !important; z-index: 10001;">
                             ✕ Close
                         </button>
@@ -5744,21 +5741,17 @@
                 // Reset fullscreen state if active
                 if (isChartFullScreen) {
                     isChartFullScreen = false;
-                    const modalContent = modal.querySelector('.data-modal');
+                    const modalContent = modal.querySelector('.data-modal-container');
                     const modalHeader = modal.querySelector('.data-modal-header');
                     const modalTabs = modal.querySelector('.data-modal-tabs');
+                    const modalFooter = modal.querySelector('.data-modal-footer');
                     const contentArea = document.getElementById('data-modal-content-area');
-                    const fullscreenBtn = document.getElementById('fullscreen-toggle-btn');
 
                     if (modalContent) modalContent.style.cssText = '';
                     if (modalHeader) modalHeader.style.display = '';
                     if (modalTabs) modalTabs.style.display = '';
+                    if (modalFooter) modalFooter.style.display = '';
                     if (contentArea) contentArea.style.cssText = '';
-                    if (fullscreenBtn) {
-                        fullscreenBtn.innerHTML = '🔲 Toggle Full Screen';
-                        fullscreenBtn.style.background = 'linear-gradient(135deg, #00D4FF 0%, #0099CC 100%)';
-                        fullscreenBtn.style.display = 'none';
-                    }
                 }
 
                 // Hide modal
@@ -6015,29 +6008,47 @@
                 // Accessibility announcement
                 announceToScreenReader(`Switched to ${panelInfo.label} tab`);
 
-                // Show/hide fullscreen toggle button (show for chart tabs, hide for notes)
-                const fullscreenBtn = document.getElementById('fullscreen-toggle-btn');
-                if (fullscreenBtn) {
-                    // Show for all tabs except 'notes'
-                    if (tabName !== 'notes') {
-                        fullscreenBtn.style.display = 'inline-block';
-                        fullscreenBtn.textContent = '🔲 Toggle Full Screen';
-                        // Ensure click/touch handlers are set
-                        const handleToggle = function(e) {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            console.log('🔲 Button click/touch fired!');
-                            toggleChartFullScreen();
-                        };
-                        fullscreenBtn.onclick = handleToggle;
-                        fullscreenBtn.ontouchend = handleToggle;
-                        console.log('✅ Fullscreen button now visible for tab:', tabName, '| onclick:', typeof fullscreenBtn.onclick);
-                    } else {
-                        fullscreenBtn.style.display = 'none';
-                        console.log('🔲 Fullscreen button hidden for notes tab');
-                    }
-                } else {
-                    console.error('❌ fullscreen-toggle-btn not found in switchDataTab');
+                // Add fullscreen toggle button inside the chart container (for all tabs except notes)
+                if (tabName !== 'notes') {
+                    // Remove any existing toggle button first
+                    const existingBtn = container.querySelector('.chart-fullscreen-btn');
+                    if (existingBtn) existingBtn.remove();
+
+                    // Create toggle button inside the chart
+                    const toggleBtn = document.createElement('button');
+                    toggleBtn.className = 'chart-fullscreen-btn';
+                    toggleBtn.innerHTML = isChartFullScreen ? '✕ Toggle/Off' : '⛶ Toggle/Full-Screen';
+                    toggleBtn.style.cssText = `
+                        position: absolute;
+                        top: 8px;
+                        right: 8px;
+                        background: ${isChartFullScreen ? 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)' : 'linear-gradient(135deg, #00D4FF 0%, #0099CC 100%)'};
+                        color: white;
+                        border: none;
+                        border-radius: 4px;
+                        padding: 4px 8px;
+                        font-size: 0.65em;
+                        font-weight: bold;
+                        cursor: pointer;
+                        pointer-events: auto !important;
+                        z-index: 10001;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                        transition: all 0.2s ease;
+                    `;
+
+                    const handleToggle = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('🔲 Chart toggle button clicked!');
+                        toggleChartFullScreen();
+                    };
+                    toggleBtn.onclick = handleToggle;
+                    toggleBtn.ontouchend = handleToggle;
+
+                    // Make container relative for absolute positioning
+                    container.style.position = 'relative';
+                    container.appendChild(toggleBtn);
+                    console.log('✅ Toggle button added inside chart for tab:', tabName);
                 }
 
             };
@@ -6047,10 +6058,9 @@
                 console.log('🔲 toggleChartFullScreen function called!');
 
                 const modal = document.getElementById('data-panels-modal');
-                console.log('Modal element:', modal);
                 const modalContent = modal ? modal.querySelector('.data-modal-container') : null;
-                console.log('Modal content element:', modalContent);
-                const fullscreenBtn = document.getElementById('fullscreen-toggle-btn');
+                const container = document.getElementById('modal-panel-container');
+                const toggleBtn = container ? container.querySelector('.chart-fullscreen-btn') : null;
                 const modalHeader = modal ? modal.querySelector('.data-modal-header') : null;
                 const modalTabs = modal ? modal.querySelector('.data-modal-tabs') : null;
                 const modalFooter = modal ? modal.querySelector('.data-modal-footer') : null;
@@ -6075,45 +6085,47 @@
                         margin: 0 !important;
                     `;
 
-                    // Hide header and tabs for immersive view
+                    // Hide header, tabs, and footer for immersive view
                     if (modalHeader) modalHeader.style.display = 'none';
                     if (modalTabs) modalTabs.style.display = 'none';
+                    if (modalFooter) modalFooter.style.display = 'none';
 
                     // Expand content area
                     if (contentArea) {
                         contentArea.style.cssText = `
-                            max-height: calc(100vh - 80px) !important;
-                            height: calc(100vh - 80px) !important;
+                            max-height: calc(100vh - 20px) !important;
+                            height: calc(100vh - 20px) !important;
                         `;
                     }
 
-                    // Update button text
-                    if (fullscreenBtn) {
-                        fullscreenBtn.innerHTML = '✕ Toggle to Close';
-                        fullscreenBtn.style.background = 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)';
+                    // Update button inside chart
+                    if (toggleBtn) {
+                        toggleBtn.innerHTML = '✕ Toggle/Off';
+                        toggleBtn.style.background = 'linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%)';
                     }
 
                     // Vibration feedback
                     vibrate('toggle');
-                    showAlert('🔲 Full Screen Mode - Chart expanded', 'success');
+                    showAlert('🔲 Full Screen Mode', 'success');
 
                 } else {
                     // Exit fullscreen mode - restore normal modal
                     modalContent.style.cssText = '';
 
-                    // Show header and tabs again
+                    // Show header, tabs, and footer again
                     if (modalHeader) modalHeader.style.display = '';
                     if (modalTabs) modalTabs.style.display = '';
+                    if (modalFooter) modalFooter.style.display = '';
 
                     // Restore content area
                     if (contentArea) {
                         contentArea.style.cssText = '';
                     }
 
-                    // Update button text
-                    if (fullscreenBtn) {
-                        fullscreenBtn.innerHTML = '🔲 Toggle Full Screen';
-                        fullscreenBtn.style.background = 'linear-gradient(135deg, #00D4FF 0%, #0099CC 100%)';
+                    // Update button inside chart
+                    if (toggleBtn) {
+                        toggleBtn.innerHTML = '⛶ Toggle/Full-Screen';
+                        toggleBtn.style.background = 'linear-gradient(135deg, #00D4FF 0%, #0099CC 100%)';
                     }
 
                     // Vibration feedback
