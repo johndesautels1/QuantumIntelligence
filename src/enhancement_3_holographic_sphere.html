@@ -1799,11 +1799,19 @@
 
             /* Fix: Center buttons inside tools-dropdown on mobile */
             #tools-dropdown .mode-toggle {
+                position: relative !important;
                 right: auto !important;
                 left: auto !important;
                 margin-left: auto !important;
                 margin-right: auto !important;
                 text-align: center !important;
+                display: block !important;
+                width: 100% !important;
+            }
+
+            /* Fix: Center the tools-dropdown container itself on mobile */
+            #tools-dropdown {
+                transform-origin: center center !important;
             }
 
             .comparison-panel {
