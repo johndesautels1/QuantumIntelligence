@@ -3518,8 +3518,8 @@
                 <!-- Modal Footer -->
                 <div class="data-modal-footer" style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
                     <div style="display: flex; gap: 12px; align-items: center;">
-                        <button id="fullscreen-toggle-btn" onclick="toggleChartFullScreen()"
-                                style="background: linear-gradient(135deg, #00D4FF 0%, #0099CC 100%); color: white; border: none; border-radius: 6px; padding: 5px 12px; font-size: 0.75em; font-weight: bold; cursor: pointer; display: none;">
+                        <button id="fullscreen-toggle-btn" onclick="window.toggleChartFullScreen()"
+                                style="background: linear-gradient(135deg, #00D4FF 0%, #0099CC 100%); color: white; border: none; border-radius: 6px; padding: 5px 12px; font-size: 0.75em; font-weight: bold; cursor: pointer;">
                             🔲 Toggle Full Screen
                         </button>
                         <button onclick="closeDataPanelsModal()"
@@ -6032,6 +6032,8 @@
 
             // Toggle chart fullscreen mode
             window.toggleChartFullScreen = function() {
+                console.log('🔲 Toggle Full Screen clicked!');
+
                 const modal = document.getElementById('data-panels-modal');
                 const modalContent = modal ? modal.querySelector('.data-modal') : null;
                 const fullscreenBtn = document.getElementById('fullscreen-toggle-btn');
@@ -6040,7 +6042,10 @@
                 const modalFooter = modal ? modal.querySelector('.data-modal-footer') : null;
                 const contentArea = document.getElementById('data-modal-content-area');
 
-                if (!modalContent) return;
+                if (!modalContent) {
+                    console.error('❌ Modal content not found');
+                    return;
+                }
 
                 isChartFullScreen = !isChartFullScreen;
 
