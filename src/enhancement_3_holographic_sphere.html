@@ -2772,86 +2772,86 @@
                     📊 Analyst Mode
                 </button>
 
-                <!-- Voice Control -->
+                <!-- Voice Control - gray when OFF, green with depth when ON -->
                 <button class="mode-toggle" id="voice-toggle" onclick="toggleVoiceControl()"
-                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0;" aria-label="Toggle voice commands">
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: rgba(80, 80, 80, 0.5);"
+                        aria-label="Toggle voice commands">
                     🎤 Voice: OFF
                 </button>
 
-                <!-- Vibration -->
+                <!-- Vibration - gray when OFF, green with depth when ON -->
                 <button class="mode-toggle" id="vibration-toggle" onclick="toggleVibration()"
-                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0;" aria-label="Toggle haptic vibration feedback">
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(0, 200, 100, 0.6), rgba(0, 255, 136, 0.4)); box-shadow: inset 0 2px 4px rgba(0, 255, 136, 0.3), 0 2px 8px rgba(0, 255, 136, 0.2);"
+                        aria-label="Toggle haptic vibration feedback">
                     📳 Vibration: ON
                 </button>
 
-                <!-- Gravity -->
+                <!-- Gravity - gray when OFF, green with depth when ON -->
                 <button class="mode-toggle" id="gravity-toggle" onclick="toggleGravity()"
-                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 212, 255, 0.3));"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(0, 200, 100, 0.6), rgba(0, 255, 136, 0.4)); box-shadow: inset 0 2px 4px rgba(0, 255, 136, 0.3), 0 2px 8px rgba(0, 255, 136, 0.2);"
                         aria-label="Toggle cost-of-living gravity positioning">
                     🌍 Gravity: ON
                 </button>
 
-                <!-- 3D Houses -->
-                <button class="mode-toggle" id="model-toggle" onclick="toggle3DModels()"
-                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 136, 0, 0.3));"
-                        aria-label="Toggle between 3D house models and classic spheres">
-                    🏠 3D Houses: ON
+                <!-- 3D Visuals - cycles: Houses (green) → Spheres (green) → Visuals Off (gray) -->
+                <button class="mode-toggle" id="model-toggle" onclick="cycleVisualMode()"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(0, 200, 100, 0.6), rgba(0, 255, 136, 0.4)); box-shadow: inset 0 2px 4px rgba(0, 255, 136, 0.3), 0 2px 8px rgba(0, 255, 136, 0.2);"
+                        aria-label="Cycle through visual modes: 3D Houses, Spheres, Visuals Off">
+                    🏠 3D Houses
                 </button>
 
-                <!-- Inner Sphere Toggle -->
+                <!-- Inner Sphere Toggle (hidden) -->
                 <button class="mode-toggle" id="inner-sphere-toggle" onclick="toggleInnerSphere()"
                         style="position: relative; top: 0; right: 0; width: 100%; margin: 0; display: none;"
                         aria-label="Toggle inner sphere visibility in 3D houses">
                     ⚪ Inner Sphere: OFF
                 </button>
 
-                <!-- Upload Photos REMOVED - now a standalone button at top left -->
-
                 <!-- Share Screenshot -->
                 <button class="mode-toggle" id="share-btn" onclick="shareComparison()"
-                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 212, 255, 0.3));"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(0, 200, 100, 0.6), rgba(0, 255, 136, 0.4)); box-shadow: inset 0 2px 4px rgba(0, 255, 136, 0.3), 0 2px 8px rgba(0, 255, 136, 0.2);"
                         aria-label="Share comparison screenshot">
                     📤 Share Screenshot
                 </button>
 
-                <!-- Auto-Cycle -->
+                <!-- Auto-Cycle (hidden) -->
                 <button class="mode-toggle" id="auto-cycle-toggle" onclick="toggleAutoCycle()"
-                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(138, 43, 226, 0.3)); display: none;"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: rgba(80, 80, 80, 0.5); display: none;"
                         aria-label="Automatically cycle through uploaded photos">
                     🔄 Auto-Cycle: OFF
                 </button>
 
-                <!-- Property History Timeline (#20) -->
+                <!-- Property History Timeline - gray when OFF, purple/cyan when ON -->
                 <button class="mode-toggle" id="history-toggle" onclick="toggleHistoryPanel()"
-                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(138, 43, 226, 0.3), rgba(0, 212, 255, 0.3));"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: rgba(80, 80, 80, 0.5);"
                         aria-label="View property history timeline">
                     📜 History Timeline
                 </button>
 
-                <!-- Achievement Badges (#19) -->
+                <!-- Achievement Badges - gray when OFF, gold/orange when ON -->
                 <button class="mode-toggle" id="badges-toggle" onclick="toggleBadgesPanel()"
-                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 136, 0, 0.3));"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: rgba(80, 80, 80, 0.5);"
                         aria-label="View achievement badges">
                     🏆 Achievements
                 </button>
 
-                <!-- Social Sharing (#23) -->
+                <!-- Social Sharing - gray when OFF, orange when ON -->
                 <button class="mode-toggle" id="social-share-toggle" onclick="toggleSocialPanel()"
-                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(0, 119, 181, 0.3), rgba(29, 161, 242, 0.3));"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: rgba(80, 80, 80, 0.5);"
                         aria-label="Share to social media">
                     📱 Social Share
                 </button>
 
-                <!-- Export PDF -->
+                <!-- Export PDF - gray normally, purple when activated -->
                 <button class="mode-toggle" id="export-pdf-btn" onclick="exportToPDF()"
-                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0;"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: rgba(80, 80, 80, 0.5);"
                         aria-label="Export comparison report to PDF">
                     📄 Export PDF
                 </button>
 
-                <!-- Side-by-Side View (#28) -->
+                <!-- Side-by-Side View - gray when OFF, lavender when ON -->
                 <button class="mode-toggle" id="sidebyside-toggle" onclick="toggleSideBySide()"
-                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 212, 255, 0.3));"
+                        style="position: relative; top: 0; right: 0; width: 100%; margin: 0; background: rgba(80, 80, 80, 0.5);"
                         aria-label="Toggle side-by-side comparison view">
                     ⬛⬛ Side-by-Side: OFF
                 </button>
@@ -3770,6 +3770,7 @@
             let gltfLoader = null;
             let modelCache = {}; // Cache loaded models for performance
             let use3DModels = true; // Toggle between 3D models and spheres
+            let visualMode = 'houses'; // 'houses', 'spheres', or 'off'
             let uploadedPhotos = { A: [], B: [], C: [] }; // Store MULTIPLE uploaded photo URLs
             let currentUploadSlot = 'A'; // Track which slot is being uploaded to
 
@@ -8128,29 +8129,41 @@
                 });
             }
 
-            // Feature #10: Toggle between 3D houses and classic spheres
-            window.toggle3DModels = function() {
-                use3DModels = !use3DModels;
+            // Feature #10: Cycle through visual modes: Houses → Spheres → Visuals Off
+            window.cycleVisualMode = function() {
                 const btn = document.getElementById('model-toggle');
                 const innerSphereBtn = document.getElementById('inner-sphere-toggle');
 
                 // Vibration feedback
                 vibrate('tap');
 
-                if (use3DModels) {
-                    btn.textContent = '🏠 3D Houses: ON';
-                    btn.style.background = 'linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 136, 0, 0.3))';
-                    // Show inner sphere toggle button
-                    if (innerSphereBtn) innerSphereBtn.style.display = 'block';
-                    showAlert('Switched to 3D House Models', 'success');
-                } else {
-                    btn.textContent = '⚪ Spheres: ON';
-                    btn.style.background = '';
-                    // Hide inner sphere toggle button
+                // Cycle through modes: houses → spheres → off → houses
+                if (visualMode === 'houses') {
+                    visualMode = 'spheres';
+                    use3DModels = false;
+                    btn.textContent = '⚪ Spheres';
+                    btn.style.background = 'linear-gradient(135deg, rgba(0, 200, 100, 0.6), rgba(0, 255, 136, 0.4))';
+                    btn.style.boxShadow = 'inset 0 2px 4px rgba(0, 255, 136, 0.3), 0 2px 8px rgba(0, 255, 136, 0.2)';
                     if (innerSphereBtn) innerSphereBtn.style.display = 'none';
-                    // Hide all video control bars - videos only work on houses
                     ['A', 'B', 'C'].forEach(slot => hideVideoControlBar(slot));
                     showAlert('Switched to Classic Spheres', 'success');
+                } else if (visualMode === 'spheres') {
+                    visualMode = 'off';
+                    use3DModels = false;
+                    btn.textContent = '🚫 Visuals Off';
+                    btn.style.background = 'rgba(80, 80, 80, 0.5)';
+                    btn.style.boxShadow = 'none';
+                    if (innerSphereBtn) innerSphereBtn.style.display = 'none';
+                    ['A', 'B', 'C'].forEach(slot => hideVideoControlBar(slot));
+                    showAlert('3D Visuals turned off', 'info');
+                } else {
+                    visualMode = 'houses';
+                    use3DModels = true;
+                    btn.textContent = '🏠 3D Houses';
+                    btn.style.background = 'linear-gradient(135deg, rgba(0, 200, 100, 0.6), rgba(0, 255, 136, 0.4))';
+                    btn.style.boxShadow = 'inset 0 2px 4px rgba(0, 255, 136, 0.3), 0 2px 8px rgba(0, 255, 136, 0.2)';
+                    if (innerSphereBtn) innerSphereBtn.style.display = 'block';
+                    showAlert('Switched to 3D House Models', 'success');
                 }
 
                 // Remove existing objects
@@ -8160,27 +8173,22 @@
 
                 // Remove all connected objects
                 ['A', 'B', 'C'].forEach(slot => {
-                    // Remove crowns (FIXED: was crownObjects, should be crownSprites)
                     if (crownSprites[slot]) {
                         scene.remove(crownSprites[slot]);
                         crownSprites[slot] = null;
                     }
-                    // Remove photo rings
                     if (photoRings[slot]) {
                         photoRings[slot].forEach(photo => scene.remove(photo));
                         photoRings[slot] = [];
                     }
-                    // Remove gravity rings
                     if (gravityRings[slot]) {
                         gravityRings[slot].forEach(ring => scene.remove(ring));
                         gravityRings[slot] = [];
                     }
-                    // Remove shockwaves
                     if (shockwaveObjects[slot]) {
                         scene.remove(shockwaveObjects[slot]);
                         shockwaveObjects[slot] = null;
                     }
-                    // Remove gravity indicators
                     if (gravityIndicators[slot]) {
                         if (gravityIndicators[slot].userData.label) {
                             scene.remove(gravityIndicators[slot].userData.label);
@@ -8193,38 +8201,37 @@
                     }
                 });
 
-                // Recreate with new mode
-                create3DModels();
+                // Only recreate visuals if not in 'off' mode
+                if (visualMode !== 'off') {
+                    create3DModels();
 
-                // Reapply selections (this will make visible the ones that were selected)
-                if (propertyA) {
+                    // Reapply selections
+                    if (propertyA) selectProperty('A', propertyA.id);
+                    if (propertyB) selectProperty('B', propertyB.id);
+                    if (propertyC) selectProperty('C', propertyC.id);
 
-                    selectProperty('A', propertyA.id);
-                }
-                if (propertyB) {
-
-                    selectProperty('B', propertyB.id);
-                }
-                if (propertyC) {
-
-                    selectProperty('C', propertyC.id);
-                }
-
-                // Recreate gravity indicators if gravity is enabled
-                if (gravityEnabled) {
-                    ['A', 'B', 'C'].forEach(slot => {
-                        const sphere = slot === 'A' ? sphereA : slot === 'B' ? sphereB : sphereC;
-                        const property = slot === 'A' ? propertyA : slot === 'B' ? propertyB : propertyC;
-                        if (sphere && property) {
-                            createGravityIndicator(slot, sphere, property);
-                        }
-                    });
+                    // Recreate gravity indicators if enabled
+                    if (gravityEnabled) {
+                        ['A', 'B', 'C'].forEach(slot => {
+                            const sphere = slot === 'A' ? sphereA : slot === 'B' ? sphereB : sphereC;
+                            const property = slot === 'A' ? propertyA : slot === 'B' ? propertyB : propertyC;
+                            if (sphere && property) {
+                                createGravityIndicator(slot, sphere, property);
+                            }
+                        });
+                    }
                 }
 
                 // Save preference
+                localStorage.setItem('clues_visualMode', visualMode);
                 localStorage.setItem('clues_use3DModels', use3DModels);
 
-                announceToScreenReader(`Switched to ${use3DModels ? '3D house models' : 'classic spheres'}`);
+                announceToScreenReader(`Switched to ${visualMode === 'houses' ? '3D house models' : visualMode === 'spheres' ? 'classic spheres' : 'visuals off'}`);
+            };
+
+            // Legacy wrapper for backward compatibility
+            window.toggle3DModels = function() {
+                cycleVisualMode();
             };
 
             window.toggleGravity = function() {
@@ -8233,11 +8240,13 @@
 
                 if (gravityEnabled) {
                     btn.textContent = '🌍 Gravity: ON';
-                    btn.style.background = 'linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 212, 255, 0.3))';
+                    btn.style.background = 'linear-gradient(135deg, rgba(0, 200, 100, 0.6), rgba(0, 255, 136, 0.4))';
+                    btn.style.boxShadow = 'inset 0 2px 4px rgba(0, 255, 136, 0.3), 0 2px 8px rgba(0, 255, 136, 0.2)';
                     showAlert('Cost-of-Living Gravity enabled', 'success');
                 } else {
                     btn.textContent = '🌍 Gravity: OFF';
-                    btn.style.background = '';
+                    btn.style.background = 'rgba(80, 80, 80, 0.5)';
+                    btn.style.boxShadow = 'none';
 
                     // Reset all models to Y=0
                     if (sphereA) sphereA.position.y = 0;
@@ -8572,10 +8581,17 @@
                     showAlert('Vibration disabled', 'success');
                 }
 
-                // Update toggle button text
+                // Update toggle button text and style
                 const vibToggle = document.getElementById('vibration-toggle');
                 if (vibToggle) {
                     vibToggle.textContent = vibrationEnabled ? '📳 Vibration: ON' : '📴 Vibration: OFF';
+                    if (vibrationEnabled) {
+                        vibToggle.style.background = 'linear-gradient(135deg, rgba(0, 200, 100, 0.6), rgba(0, 255, 136, 0.4))';
+                        vibToggle.style.boxShadow = 'inset 0 2px 4px rgba(0, 255, 136, 0.3), 0 2px 8px rgba(0, 255, 136, 0.2)';
+                    } else {
+                        vibToggle.style.background = 'rgba(80, 80, 80, 0.5)';
+                        vibToggle.style.boxShadow = 'none';
+                    }
                 }
             };
 
@@ -10966,12 +10982,14 @@
 
                 if (voiceEnabled) {
                     voiceToggle.textContent = '🎤 Voice: ON';
-                    voiceToggle.style.background = 'linear-gradient(135deg, rgba(0, 255, 136, 0.3), rgba(0, 212, 255, 0.3))';
+                    voiceToggle.style.background = 'linear-gradient(135deg, rgba(0, 200, 100, 0.6), rgba(0, 255, 136, 0.4))';
+                    voiceToggle.style.boxShadow = 'inset 0 2px 4px rgba(0, 255, 136, 0.3), 0 2px 8px rgba(0, 255, 136, 0.2)';
                     startVoiceRecognition();
                     showAlert('Voice commands activated', 'success');
                 } else {
                     voiceToggle.textContent = '🎤 Voice: OFF';
-                    voiceToggle.style.background = '';
+                    voiceToggle.style.background = 'rgba(80, 80, 80, 0.5)';
+                    voiceToggle.style.boxShadow = 'none';
                     stopVoiceRecognition();
                     showAlert('Voice commands deactivated', 'info');
                 }
@@ -11140,10 +11158,17 @@
             // ===== FEATURE #14: EXPORT TO PDF REPORT =====
             window.exportToPDF = async function() {
                 const properties = [propertyA, propertyB, propertyC].filter(p => p !== null);
+                const btn = document.getElementById('export-pdf-btn');
 
                 if (properties.length === 0) {
                     showAlert('Please select at least one property to export', 'error');
                     return;
+                }
+
+                // Flash purple while exporting
+                if (btn) {
+                    btn.style.background = 'linear-gradient(135deg, rgba(138, 43, 226, 0.6), rgba(180, 100, 255, 0.4))';
+                    btn.style.boxShadow = 'inset 0 2px 4px rgba(138, 43, 226, 0.3), 0 2px 8px rgba(138, 43, 226, 0.2)';
                 }
 
                 showAlert('Generating PDF report...', 'info');
@@ -11308,12 +11333,26 @@
                     showAlert('PDF report downloaded successfully!', 'success');
                     vibrate('success');
 
+                    // Reset button to gray after export
+                    if (btn) {
+                        setTimeout(() => {
+                            btn.style.background = 'rgba(80, 80, 80, 0.5)';
+                            btn.style.boxShadow = 'none';
+                        }, 1500);
+                    }
+
                 } catch (error) {
                     console.error('PDF generation error:', error);
                     console.error('Error details:', error.message);
                     console.error('jsPDF available?', typeof window.jspdf, typeof window.jsPDF);
                     showAlert(`Failed to generate PDF: ${error.message}`, 'error');
                     vibrate('error');
+
+                    // Reset button to gray on error too
+                    if (btn) {
+                        btn.style.background = 'rgba(80, 80, 80, 0.5)';
+                        btn.style.boxShadow = 'none';
+                    }
                 }
             };
 
@@ -11465,10 +11504,18 @@
 
             window.toggleHistoryPanel = function() {
                 const panel = document.getElementById('history-panel');
+                const btn = document.getElementById('history-toggle');
                 const isVisible = panel.style.display === 'block';
                 panel.style.display = isVisible ? 'none' : 'block';
                 if (!isVisible) {
                     renderHistoryTimeline();
+                    // ON: purple/cyan gradient with depth
+                    btn.style.background = 'linear-gradient(135deg, rgba(138, 43, 226, 0.6), rgba(0, 212, 255, 0.4))';
+                    btn.style.boxShadow = 'inset 0 2px 4px rgba(138, 43, 226, 0.3), 0 2px 8px rgba(138, 43, 226, 0.2)';
+                } else {
+                    // OFF: gray
+                    btn.style.background = 'rgba(80, 80, 80, 0.5)';
+                    btn.style.boxShadow = 'none';
                 }
                 vibrate('tap');
             };
@@ -11673,10 +11720,18 @@
 
             window.toggleBadgesPanel = function() {
                 const panel = document.getElementById('badges-panel');
+                const btn = document.getElementById('badges-toggle');
                 const isVisible = panel.style.display === 'block';
                 panel.style.display = isVisible ? 'none' : 'block';
                 if (!isVisible) {
                     renderBadges();
+                    // ON: gold/orange gradient with depth
+                    btn.style.background = 'linear-gradient(135deg, rgba(255, 215, 0, 0.6), rgba(255, 136, 0, 0.4))';
+                    btn.style.boxShadow = 'inset 0 2px 4px rgba(255, 215, 0, 0.3), 0 2px 8px rgba(255, 215, 0, 0.2)';
+                } else {
+                    // OFF: gray
+                    btn.style.background = 'rgba(80, 80, 80, 0.5)';
+                    btn.style.boxShadow = 'none';
                 }
                 vibrate('tap');
             };
@@ -11727,8 +11782,18 @@
 
             window.toggleSocialPanel = function() {
                 const panel = document.getElementById('social-panel');
+                const btn = document.getElementById('social-share-toggle');
                 const isVisible = panel.style.display === 'block';
                 panel.style.display = isVisible ? 'none' : 'block';
+                if (!isVisible) {
+                    // ON: orange gradient with depth
+                    btn.style.background = 'linear-gradient(135deg, rgba(255, 136, 0, 0.6), rgba(255, 100, 0, 0.4))';
+                    btn.style.boxShadow = 'inset 0 2px 4px rgba(255, 136, 0, 0.3), 0 2px 8px rgba(255, 136, 0, 0.2)';
+                } else {
+                    // OFF: gray
+                    btn.style.background = 'rgba(80, 80, 80, 0.5)';
+                    btn.style.boxShadow = 'none';
+                }
                 vibrate('tap');
             };
 
@@ -11820,6 +11885,15 @@
                 const btn = document.getElementById('sidebyside-toggle');
                 if (btn) {
                     btn.textContent = sideBySideMode ? '⬛⬛ Side-by-Side: ON' : '⬛⬛ Side-by-Side: OFF';
+                    if (sideBySideMode) {
+                        // ON: lavender gradient with depth
+                        btn.style.background = 'linear-gradient(135deg, rgba(180, 150, 220, 0.6), rgba(200, 180, 240, 0.4))';
+                        btn.style.boxShadow = 'inset 0 2px 4px rgba(180, 150, 220, 0.3), 0 2px 8px rgba(180, 150, 220, 0.2)';
+                    } else {
+                        // OFF: gray
+                        btn.style.background = 'rgba(80, 80, 80, 0.5)';
+                        btn.style.boxShadow = 'none';
+                    }
                 }
 
                 const container = document.getElementById('canvas-container');
