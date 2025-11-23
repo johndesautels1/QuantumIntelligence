@@ -9181,38 +9181,32 @@
             };
 
             // ===== RESULTS VIEW TOGGLE - "See Results" / "Toggle on Display" =====
+            // Configuration: UI elements to hide in results view mode
+            const RESULTS_VIEW_SELECTORS = [
+                '#import-properties-btn',
+                '#photo-upload-master-btn',
+                '#video-upload-master-btn',
+                '#qr-code-btn',
+                '#tools-master-btn',
+                '.property-selector',
+                '.panel-toggle-buttons',
+                '.controls',
+                '#mobile-import-properties-btn',
+                '#mobile-upload-photos-btn',
+                '#mobile-upload-videos-btn'
+            ];
+
             let resultsViewActive = false;
 
             window.toggleResultsMode = function() {
                 resultsViewActive = !resultsViewActive;
                 const btn = document.getElementById('resultsToggleBtn');
                 
-                // List of selectors to hide/show
-                const selectorsToHide = [
-                    '#import-properties-btn',
-                    '#photo-upload-master-btn',
-                    '#video-upload-master-btn',
-                    '#qr-code-btn',
-                    '#tools-master-btn',
-                    '.property-selector',
-                    '.panel-toggle-buttons',
-                    '.controls',
-                    '#mobile-import-properties-btn',
-                    '#mobile-upload-photos-btn',
-                    '#mobile-upload-videos-btn'
-                ];
-
-                // Toggle hidden class on all elements
-                selectorsToHide.forEach(selector => {
+                // Toggle hidden class on all elements (optimized with classList.toggle)
+                RESULTS_VIEW_SELECTORS.forEach(selector => {
                     const elements = document.querySelectorAll(selector);
                     if (elements.length > 0) {
-                        elements.forEach(el => {
-                            if (resultsViewActive) {
-                                el.classList.add('hidden');
-                            } else {
-                                el.classList.remove('hidden');
-                            }
-                        });
+                        elements.forEach(el => el.classList.toggle('hidden', resultsViewActive));
                     } else {
                         // Fallback: log warning but continue
                         console.warn(`Results toggle: Selector "${selector}" not found, skipping.`);
@@ -9220,13 +9214,8 @@
                 });
 
                 // Update button text and styling
-                if (resultsViewActive) {
-                    btn.textContent = 'Toggle on Display';
-                    btn.classList.add('active-results');
-                } else {
-                    btn.textContent = 'See Results';
-                    btn.classList.remove('active-results');
-                }
+                btn.textContent = resultsViewActive ? 'Toggle on Display' : 'See Results';
+                btn.classList.toggle('active-results', resultsViewActive);
 
                 // Dispatch custom event
                 const event = new CustomEvent('resultsView:Toggled', {
