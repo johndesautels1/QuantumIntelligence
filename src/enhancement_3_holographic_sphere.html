@@ -670,15 +670,30 @@
             }
 
             .controls {
-                position: relative;
-                bottom: auto;
-                left: auto;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
                 transform: none;
                 max-width: 100%;
                 width: 100%;
-                border-radius: 0;
+                border-radius: 15px 15px 0 0;
                 padding: 15px 10px;
-                margin-top: 20px;
+                margin-top: 0;
+                z-index: 600;
+            }
+
+            .controls.collapsed {
+                transform: translateY(calc(100% - 45px));
+            }
+
+            .controls-toggle-btn {
+                position: absolute;
+                top: 8px;
+                left: 50%;
+                transform: translateX(-50%);
+                right: auto;
+                z-index: 10;
             }
 
             .controls h3 {
