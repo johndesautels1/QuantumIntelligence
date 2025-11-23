@@ -660,7 +660,7 @@
                 flex-direction: column;
                 align-items: center;
                 margin: 0 !important;
-                margin-top: 380px !important; /* Below Upload Videos button */
+                margin-top: 400px !important; /* Below Upload Videos button - moved down 20px */
                 padding: 0 10px 10px 10px;
             }
 
@@ -1334,7 +1334,7 @@
             backdrop-filter: blur(20px);
             z-index: 1150;
             flex-direction: column;
-            padding: 80px 20px 20px 20px;
+            padding: 50px 20px 20px 20px; /* Reduced top padding from 80px to 50px - moves menu higher */
             overflow-y: auto;
         }
 
@@ -2227,6 +2227,32 @@
             /* Fix: Center the tools-dropdown container itself on mobile */
             #tools-dropdown {
                 transform-origin: center center !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                right: auto !important;
+            }
+
+            /* Hide Side-by-Side button on mobile (Issue 13) */
+            #sidebyside-toggle {
+                display: none !important;
+            }
+
+            /* Hide Side-by-Side in tools-settings-panel on mobile too */
+            #tools-settings-panel #sidebyside-toggle,
+            #tools-settings-panel button[onclick="toggleSideBySide()"] {
+                display: none !important;
+            }
+
+            /* Fix close button positioning in Analytics Dashboard (Issue 6) */
+            .data-modal-footer {
+                padding-bottom: 30px !important; /* Move up from bottom by adding padding */
+            }
+
+            #close-modal-btn {
+                margin-bottom: 20px !important; /* Additional spacing to ensure it's fully visible */
+                height: 30px !important; /* Make it larger and more tappable on mobile */
+                font-size: 0.9em !important; /* Larger text */
+                padding: 5px 10px !important;
             }
 
             .comparison-panel {
@@ -2965,10 +2991,8 @@
 
                 <button class="menu-item" onclick="mobileMenuAction('tools')">🛠️ Tools & Settings</button>
                 <button class="menu-item" onclick="mobileMenuAction('qr')">📱 QR Code</button>
-                <button class="menu-item" onclick="mobileMenuAction('import')">📥 Import Properties</button>
-                <button class="menu-item" onclick="mobileMenuAction('photos')">📸 Upload Photos</button>
-                <button class="menu-item" onclick="mobileMenuAction('videos')">🎬 Upload Videos</button>
-                <button class="menu-item" onclick="mobileMenuAction('analytics')">📊 Analytics Dashboard</button>
+                <!-- Removed: Import Properties, Upload Photos, Upload Videos (already on home page) -->
+                <!-- Removed: Analytics Dashboard (already on home page) -->
                 <button class="menu-item" onclick="mobileMenuAction('history')">📜 History Timeline</button>
                 <button class="menu-item" onclick="mobileMenuAction('achievements')">🏆 Achievements</button>
                 <button class="menu-item" onclick="mobileMenuAction('social')">📱 Social Share</button>
@@ -4265,6 +4289,10 @@
             let autoRotating = false;
             let activeMetricGroup = 'all';
             let currentPersona = 'balanced';
+            
+            // Issue 3: Mobile workflow - prevent rendering until See Results clicked
+            let seeResultsClicked = false;
+            let pendingProperties = { A: null, B: null, C: null };
 
             // Feature #15: Deal-Breaker Rules (More lenient for testing)
             let dealBreakerRules = {
@@ -7995,7 +8023,31 @@
                     property.dimensions.marketValue = 50; // Default to middle if no data
                 }
 
-                // Assign property and SHOW 3D object
+                // Issue 3: On mobile, store selections but don't render until See Results clicked
+                const isMobile = window.innerWidth <= 768;
+                if (isMobile && !seeResultsClicked) {
+                    // Store the pending selection
+                    pendingProperties[slot] = property;
+                    
+                    // Assign property data but keep sphere hidden
+                    if (slot === 'A') {
+                        propertyA = property;
+                        if (sphereA) sphereA.visible = false;
+                    }
+                    if (slot === 'B') {
+                        propertyB = property;
+                        if (sphereB) sphereB.visible = false;
+                    }
+                    if (slot === 'C') {
+                        propertyC = property;
+                        if (sphereC) sphereC.visible = false;
+                    }
+                    
+                    showAlert(`${property.name} selected (${Object.values(pendingProperties).filter(p => p !== null).length}/3)`, 'info');
+                    return;
+                }
+
+                // Assign property and SHOW 3D object (desktop or after See Results on mobile)
                 if (slot === 'A') {
                     propertyA = property;
                     if (sphereA) {
