@@ -1667,95 +1667,6 @@
             transform: translateY(-2px);
         }
 
-        /* See Results Button - Green button to trigger results view */
-        #seeResultsBtn {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, rgba(0, 255, 136, 0.7), rgba(0, 200, 100, 0.6));
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(0, 255, 136, 0.8);
-            border-radius: 10px;
-            padding: 12px 20px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 0.95em;
-            z-index: 1100;
-            transition: all 0.3s ease;
-            pointer-events: all;
-            min-width: 160px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
-        }
-
-        #seeResultsBtn:hover {
-            transform: translateX(-50%) translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.5);
-        }
-
-        /* Results view button container - shown after See Results clicked */
-        .results-buttons-container {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: none;
-            gap: 10px;
-            z-index: 1100;
-            pointer-events: all;
-        }
-
-        /* Toggle Display Button - Blue button to toggle UI on/off */
-        #toggleDisplayBtn {
-            background: linear-gradient(135deg, rgba(0, 150, 255, 0.7), rgba(0, 100, 200, 0.6));
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(0, 150, 255, 0.8);
-            border-radius: 10px;
-            padding: 12px 20px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 0.95em;
-            transition: all 0.3s ease;
-            min-width: 160px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0, 150, 255, 0.3);
-        }
-
-        #toggleDisplayBtn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 150, 255, 0.5);
-        }
-
-        /* Open Analytics Button - Opens analytics dashboard */
-        #openAnalyticsBtn {
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.7), rgba(255, 165, 0, 0.6));
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 215, 0, 0.8);
-            border-radius: 10px;
-            padding: 12px 20px;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 0.95em;
-            transition: all 0.3s ease;
-            min-width: 160px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-        }
-
-        #openAnalyticsBtn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.5);
-        }
-
-        /* Utility class to hide elements */
-        .hidden {
-            display: none !important;
-        }
-
         /* Time Travel Control */
         .time-travel-control {
             margin-top: 20px;
@@ -3134,24 +3045,6 @@
                 <button class="panel-toggle-btn" id="toggle-data-panels" onclick="openDataPanelsModal()"
                         aria-label="Open Analytics Dashboard modal with analysis tabs">
                     📊 Analytics Dashboard
-                </button>
-            </div>
-
-            <!-- See Results Button - Green button shown initially -->
-            <button id="seeResultsBtn" onclick="showResults()"
-                    aria-label="See results - hide UI controls to view 3D spheres/houses">
-                See Results
-            </button>
-
-            <!-- Results View Buttons Container - shown after See Results clicked, above See Results button -->
-            <div class="results-buttons-container" id="resultsButtonsContainer">
-                <button id="toggleDisplayBtn" onclick="toggleDisplay()"
-                        aria-label="Toggle display controls on/off">
-                    Toggle Off Display
-                </button>
-                <button id="openAnalyticsBtn" onclick="openAnalyticsDashboard()"
-                        aria-label="Open Analytics Dashboard">
-                    Open Analytics
                 </button>
             </div>
 
@@ -8102,12 +7995,11 @@
                     property.dimensions.marketValue = 50; // Default to middle if no data
                 }
 
-                // Assign property but KEEP 3D object hidden until See Results is clicked
+                // Assign property and SHOW 3D object
                 if (slot === 'A') {
                     propertyA = property;
                     if (sphereA) {
-                        // Keep hidden until results view is active
-                        sphereA.visible = window.resultsViewActive || false;
+                        sphereA.visible = true; // SHOW 3D object when selected
                         updateSphereColor(sphereA, propertyA); // Update color based on Smart Score
 
                     }
@@ -8115,8 +8007,7 @@
                 if (slot === 'B') {
                     propertyB = property;
                     if (sphereB) {
-                        // Keep hidden until results view is active
-                        sphereB.visible = window.resultsViewActive || false;
+                        sphereB.visible = true; // SHOW 3D object when selected
                         updateSphereColor(sphereB, propertyB); // Update color based on Smart Score
 
                     }
@@ -8124,8 +8015,7 @@
                 if (slot === 'C') {
                     propertyC = property;
                     if (sphereC) {
-                        // Keep hidden until results view is active
-                        sphereC.visible = window.resultsViewActive || false;
+                        sphereC.visible = true; // SHOW 3D object when selected
                         updateSphereColor(sphereC, propertyC); // Update color based on Smart Score
 
                     }
@@ -9240,144 +9130,6 @@
                 // Announce to screen reader
                 const status = controlsPanelCollapsed ? 'collapsed' : 'expanded';
                 announceToScreenReader(`Controls panel ${status}`);
-            };
-
-            // ===== RESULTS VIEW - "See Results" / "Toggle Display" / "Open Analytics" =====
-            // Configuration: UI elements to hide in results view mode (all except Analytics Dashboard)
-            const RESULTS_VIEW_SELECTORS = [
-                '#import-properties-btn',
-                '#photo-upload-master-btn',
-                '#video-upload-master-btn',
-                '#qr-code-btn',
-                '#tools-master-btn',
-                '.property-selector',
-                '.controls',
-                '#mobile-import-properties-btn',
-                '#mobile-upload-photos-btn',
-                '#mobile-upload-videos-btn',
-                '.search-widget',
-                '.header .back-btn',
-                '.micro-toggle'
-            ];
-
-            // Track results view state globally so selectProperty can check it
-            window.resultsViewActive = false;
-            let displayToggledOff = false;
-
-            // Show results view - hide UI controls, show spheres/houses, show toggle buttons
-            window.showResults = function() {
-                window.resultsViewActive = true;
-                const seeResultsBtn = document.getElementById('seeResultsBtn');
-                const resultsButtonsContainer = document.getElementById('resultsButtonsContainer');
-                
-                // Hide all UI elements except Analytics Dashboard
-                RESULTS_VIEW_SELECTORS.forEach(selector => {
-                    const elements = document.querySelectorAll(selector);
-                    if (elements.length > 0) {
-                        elements.forEach(el => el.classList.add('hidden'));
-                    } else {
-                        console.warn(`Results view: Selector "${selector}" not found, skipping.`);
-                    }
-                });
-
-                // Show spheres/houses if properties are selected
-                if (propertyA && sphereA) sphereA.visible = true;
-                if (propertyB && sphereB) sphereB.visible = true;
-                if (propertyC && sphereC) sphereC.visible = true;
-
-                // Hide See Results button, show results buttons container (above See Results position)
-                seeResultsBtn.style.display = 'none';
-                resultsButtonsContainer.style.display = 'flex';
-
-                // Dispatch custom event
-                const event = new CustomEvent('resultsView:Toggled', {
-                    detail: { active: true }
-                });
-                window.dispatchEvent(event);
-
-                // Feature #18: Vibration feedback
-                vibrate('toggle');
-
-                // Announce to screen reader
-                announceToScreenReader('Results view enabled - UI controls hidden, spheres/houses visible');
-            };
-
-            // Toggle display - hide/show ALL buttons including itself
-            window.toggleDisplay = function() {
-                displayToggledOff = !displayToggledOff;
-                const resultsButtonsContainer = document.getElementById('resultsButtonsContainer');
-                const seeResultsBtn = document.getElementById('seeResultsBtn');
-                const toggleBtn = document.getElementById('toggleDisplayBtn');
-                
-                if (displayToggledOff) {
-                    // Hide ALL buttons including the toggle buttons and See Results
-                    resultsButtonsContainer.style.display = 'none';
-                    seeResultsBtn.style.display = 'none';
-                    toggleBtn.textContent = 'Toggle On Display';
-                    announceToScreenReader('All controls hidden');
-                } else {
-                    // Show the toggle buttons container again
-                    resultsButtonsContainer.style.display = 'flex';
-                    toggleBtn.textContent = 'Toggle Off Display';
-                    announceToScreenReader('Controls visible');
-                }
-
-                // Feature #18: Vibration feedback
-                vibrate('toggle');
-            };
-
-            // Open Analytics Dashboard
-            window.openAnalyticsDashboard = function() {
-                // Call existing function to open Analytics Dashboard modal
-                if (typeof openDataPanelsModal === 'function') {
-                    openDataPanelsModal();
-                } else {
-                    console.error('openDataPanelsModal function not found');
-                }
-                
-                // Feature #18: Vibration feedback
-                vibrate('select');
-                
-                // Announce to screen reader
-                announceToScreenReader('Opening Analytics Dashboard');
-            };
-
-            // Exit results view - restore UI controls, hide spheres/houses, show See Results button
-            window.exitResultsView = function() {
-                window.resultsViewActive = false;
-                displayToggledOff = false;
-                const seeResultsBtn = document.getElementById('seeResultsBtn');
-                const resultsButtonsContainer = document.getElementById('resultsButtonsContainer');
-                
-                // Show all UI elements
-                RESULTS_VIEW_SELECTORS.forEach(selector => {
-                    const elements = document.querySelectorAll(selector);
-                    if (elements.length > 0) {
-                        elements.forEach(el => el.classList.remove('hidden'));
-                    }
-                });
-
-                // Hide spheres/houses
-                if (sphereA) sphereA.visible = false;
-                if (sphereB) sphereB.visible = false;
-                if (sphereC) sphereC.visible = false;
-
-                // Show See Results button, hide results buttons container
-                seeResultsBtn.style.display = 'block';
-                resultsButtonsContainer.style.display = 'none';
-                document.getElementById('toggleDisplayBtn').textContent = 'Toggle Off Display';
-
-                // Dispatch custom event
-                const event = new CustomEvent('resultsView:Toggled', {
-                    detail: { active: false }
-                });
-                window.dispatchEvent(event);
-
-                // Feature #18: Vibration feedback
-                vibrate('toggle');
-
-                // Announce to screen reader
-                announceToScreenReader('Results view disabled - UI controls visible');
             };
 
             // ===== FEATURE #24: PERSONAL NOTES & EMOJI REACTIONS =====
