@@ -1671,7 +1671,8 @@
         #resultsToggleBtn {
             position: fixed;
             bottom: 20px;
-            left: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             background: linear-gradient(135deg, rgba(0, 255, 136, 0.7), rgba(0, 200, 100, 0.6));
             backdrop-filter: blur(10px);
             border: 2px solid rgba(0, 255, 136, 0.8);
@@ -9213,7 +9214,7 @@
                     }
                 });
 
-                // Update button text and styling
+                // Update button text and styling (button stays visible and centered)
                 btn.textContent = resultsViewActive ? 'Toggle on Display' : 'See Results';
                 btn.classList.toggle('active-results', resultsViewActive);
 
