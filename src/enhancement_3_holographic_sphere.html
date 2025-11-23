@@ -1072,25 +1072,25 @@
                 z-index: 1 !important; /* Below header and selectors */
             }
 
-            /* ===== HOME SEARCH BUTTON - SWIRL GRADIENT + POSITIONED ABOVE PROPERTY SELECTORS ===== */
+            /* ===== HOME SEARCH BUTTON - FIXED BELOW HEADER ===== */
             .search-widget {
-                position: relative !important;
+                position: fixed !important;
+                top: 110px !important; /* Right below header */
+                left: 0 !important;
+                right: 0 !important;
                 bottom: auto !important;
-                left: auto !important;
                 transform: none !important;
                 width: 100% !important;
                 margin: 0 !important;
-                margin-top: 110px !important; /* Same as property-selector - below header */
-                padding: 0 10px 10px 10px !important;
+                padding: 0 10px !important;
                 display: flex !important;
                 justify-content: center !important;
-                order: -1 !important; /* Place BEFORE property selectors in flex column */
+                z-index: 999 !important; /* Above content but below modals */
             }
 
-            /* Move property-selector below search-widget */
+            /* Adjust property-selector to account for search widget */
             .property-selector {
-                margin-top: 0 !important; /* Remove top margin since search-widget now has it */
-                order: 0 !important;
+                margin-top: 160px !important; /* Push down below search widget */
             }
 
             .search-toggle-btn {
