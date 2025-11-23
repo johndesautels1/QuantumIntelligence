@@ -1093,7 +1093,10 @@
                 transform: none !important;
                 font-size: 0.9em !important;
                 border-radius: 10px !important;
-                background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%) !important;
+                /* Match Inner Sphere toggle green gradient */
+                background: linear-gradient(135deg, rgba(0, 200, 100, 0.6), rgba(0, 255, 136, 0.4)) !important;
+                border: 2px solid rgba(0, 255, 136, 0.8) !important;
+                box-shadow: inset 0 2px 4px rgba(0, 255, 136, 0.3), 0 2px 8px rgba(0, 255, 136, 0.2) !important;
             }
 
             /* ===== HIDE TIME TRAVEL FROM MAIN VIEW (moved to modal) ===== */
@@ -2995,11 +2998,21 @@
 
             <!-- Toggle Tools Button (hidden until property selected) -->
             <button id="toggle-tools-btn" onclick="toggleMobileToolsVisibility()"
-                    style="display: none; position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%);
+                    style="display: none; position: fixed; bottom: 10px; left: 20%; transform: translateX(-50%);
                            background: linear-gradient(135deg, rgba(100, 100, 100, 0.8), rgba(60, 60, 60, 0.8));
                            color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 20px;
                            padding: 8px 20px; font-size: 0.8em; font-weight: bold; cursor: pointer; z-index: 1000;">
-                🛠️ Toggle Tools
+                🛠️ Show Tools
+            </button>
+
+            <!-- Toggle Display Button - Show/Hide 3D spheres/houses on mobile -->
+            <button id="toggle-display-btn" onclick="toggleMobileDisplayVisibility()"
+                    style="display: none; position: fixed; bottom: 10px; left: 80%; transform: translateX(-50%);
+                           background: linear-gradient(135deg, rgba(0, 200, 100, 0.6), rgba(0, 255, 136, 0.4));
+                           color: white; border: 2px solid rgba(0, 255, 136, 0.8); border-radius: 20px;
+                           padding: 8px 20px; font-size: 0.8em; font-weight: bold; cursor: pointer; z-index: 1000;
+                           box-shadow: inset 0 2px 4px rgba(0, 255, 136, 0.3), 0 2px 8px rgba(0, 255, 136, 0.2);">
+                👁️ Toggle Display
             </button>
 
             <!-- Mobile Action Buttons Container -->
