@@ -699,11 +699,29 @@
                 z-index: 1001 !important;
             }
 
-            /* Upload Photos button - positioned below Home Search on mobile */
+            
+            /* Import Properties button - positioned below Home Search on mobile */
+            #mobile-import-properties-btn {
+                display: block !important;
+                position: fixed !important;
+                top: 220px !important;
+                left: 50% !important;
+                right: auto !important;
+                transform: translateX(-50%) !important;
+                width: calc(100% - 80px) !important;
+                max-width: calc(100% - 80px) !important;
+                min-width: unset !important;
+                padding: 10px 10px !important;
+                background: linear-gradient(135deg, rgba(138, 43, 226, 0.6), rgba(0, 212, 255, 0.5), rgba(255, 180, 100, 0.3), rgba(0, 212, 255, 0.5), rgba(138, 43, 226, 0.6)) !important;
+                border: 2px solid rgba(0, 212, 255, 0.8) !important;
+                z-index: 999 !important;
+            }
+
+/* Upload Photos button - positioned below Import Properties on mobile */
             #mobile-upload-photos-btn {
                 display: block !important;
                 position: fixed !important;
-                top: 220px !important; /* Below Home Search */
+                top: 270px !important; /* Below Home Search */
                 left: 50% !important;
                 right: auto !important;
                 transform: translateX(-50%) !important;
@@ -720,7 +738,7 @@
             #mobile-upload-videos-btn {
                 display: block !important;
                 position: fixed !important;
-                top: 270px !important;
+                top: 320px !important;
                 left: 50% !important;
                 right: auto !important;
                 transform: translateX(-50%) !important;
@@ -3052,6 +3070,13 @@
                     aria-label="Show header and property selectors"
                     style="display: none; left: 20px; right: auto; min-width: 220px; background: linear-gradient(135deg, rgba(0, 255, 136, 0.7), rgba(0, 200, 100, 0.6), rgba(0, 180, 80, 0.7)); font-weight: bold; border: 2px solid rgba(0, 255, 136, 0.8); z-index: 1001;">
                 👁️ See Results
+            </button>
+
+            <!-- Mobile Import Properties Button (outside hidden container) -->
+            <button class="mode-toggle" id="mobile-import-properties-btn" onclick="openImportModal()"
+                    aria-label="Import saved properties"
+                    style="display: none;">
+                📥 IMPORT PROPERTIES
             </button>
 
             <!-- Mobile Upload Photos Button (outside hidden container) -->
