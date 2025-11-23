@@ -1072,7 +1072,7 @@
                 z-index: 1 !important; /* Below header and selectors */
             }
 
-            /* ===== HOME SEARCH BUTTON - MATCH OTHER BUTTONS ===== */
+            /* ===== HOME SEARCH BUTTON - SWIRL GRADIENT + POSITIONED ABOVE PROPERTY SELECTORS ===== */
             .search-widget {
                 position: relative !important;
                 bottom: auto !important;
@@ -1080,8 +1080,17 @@
                 transform: none !important;
                 width: 100% !important;
                 margin: 0 !important;
+                margin-top: 110px !important; /* Same as property-selector - below header */
+                padding: 0 10px 10px 10px !important;
                 display: flex !important;
                 justify-content: center !important;
+                order: -1 !important; /* Place BEFORE property selectors in flex column */
+            }
+
+            /* Move property-selector below search-widget */
+            .property-selector {
+                margin-top: 0 !important; /* Remove top margin since search-widget now has it */
+                order: 0 !important;
             }
 
             .search-toggle-btn {
@@ -1093,10 +1102,18 @@
                 transform: none !important;
                 font-size: 0.9em !important;
                 border-radius: 10px !important;
-                /* Match Inner Sphere toggle green gradient */
-                background: linear-gradient(135deg, rgba(0, 200, 100, 0.6), rgba(0, 255, 136, 0.4)) !important;
-                border: 2px solid rgba(0, 255, 136, 0.8) !important;
-                box-shadow: inset 0 2px 4px rgba(0, 255, 136, 0.3), 0 2px 8px rgba(0, 255, 136, 0.2) !important;
+                /* Swirl gradient matching app theme - purple/cyan blend with dark background hints */
+                background: linear-gradient(135deg,
+                    rgba(138, 43, 226, 0.7) 0%,
+                    rgba(0, 212, 255, 0.6) 25%,
+                    rgba(26, 40, 71, 0.5) 50%,
+                    rgba(0, 212, 255, 0.6) 75%,
+                    rgba(138, 43, 226, 0.7) 100%) !important;
+                border: 2px solid rgba(0, 212, 255, 0.8) !important;
+                box-shadow: inset 0 2px 4px rgba(138, 43, 226, 0.3), 0 4px 20px rgba(0, 212, 255, 0.4) !important;
+                color: #FFFFFF !important;
+                font-weight: bold !important;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important;
             }
 
             /* ===== HIDE TIME TRAVEL FROM MAIN VIEW (moved to modal) ===== */
