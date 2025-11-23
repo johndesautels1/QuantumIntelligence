@@ -1072,13 +1072,13 @@
                 z-index: 1 !important; /* Below header and selectors */
             }
 
-            /* ===== HOME SEARCH BUTTON - FIXED BELOW HEADER ===== */
+            /* ===== HOME SEARCH BUTTON - FIXED AT BOTTOM ===== */
             .search-widget {
                 position: fixed !important;
-                top: 110px !important; /* Right below header */
+                top: auto !important;
                 left: 0 !important;
                 right: 0 !important;
-                bottom: auto !important;
+                bottom: 25px !important; /* 25px from bottom of screen */
                 transform: none !important;
                 width: 100% !important;
                 margin: 0 !important;
@@ -1088,9 +1088,9 @@
                 z-index: 999 !important; /* Above content but below modals */
             }
 
-            /* Adjust property-selector to account for search widget */
+            /* Property selector back to normal positioning */
             .property-selector {
-                margin-top: 160px !important; /* Push down below search widget */
+                margin-top: 0 !important;
             }
 
             .search-toggle-btn {
