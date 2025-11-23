@@ -613,7 +613,7 @@
                 min-height: 100vh;
                 display: flex;
                 flex-direction: column;
-                padding-bottom: 60px; /* Space for fixed controls at bottom */
+                padding-bottom: 80px; /* Space for fixed controls at bottom */
             }
 
             #canvas-container {
@@ -632,26 +632,32 @@
                 left: 0;
                 top: 0 !important;
                 margin-top: 0 !important;
-                z-index: 100;
+                z-index: 1000;
+                padding: 12px 15px;
             }
 
             .header h1 {
-                font-size: 1.5em;
+                font-size: 1.3em;
+                margin: 0;
             }
 
             .header .subtitle {
-                font-size: 0.85em;
+                font-size: 0.8em;
+                margin-top: 4px;
             }
 
             .header .back-btn {
                 position: relative;
                 top: auto;
                 left: auto;
-                margin-bottom: 10px;
+                margin-bottom: 8px;
                 width: 100%;
                 text-align: center;
+                padding: 8px 12px;
+                font-size: 0.85em;
             }
 
+            /* Mobile button stack - relative positioning for natural flow */
             .property-selector {
                 position: relative;
                 top: 0 !important;
@@ -659,20 +665,28 @@
                 right: auto;
                 flex-direction: column;
                 align-items: center;
-                margin: 0 !important;
-                margin-top: 380px !important; /* Below Upload Videos button */
-                padding: 0 10px 10px 10px;
+                margin: 0 auto !important;
+                margin-top: 15px !important;
+                padding: 0 10px;
+                gap: 10px;
             }
 
             .selector-column {
                 min-width: unset;
-                width: calc(100% - 60px) !important; /* Match button widths - 280px on 360px screen */
-                max-width: calc(100% - 60px) !important;
-                margin: 0 auto 10px auto !important; /* Center horizontally */
+                width: calc(100% - 40px) !important;
+                max-width: calc(100% - 40px) !important;
+                margin: 0 auto 8px auto !important;
+                padding: 10px !important;
             }
 
             .selector-column h3 {
-                font-size: 1em;
+                font-size: 0.9em;
+                margin-bottom: 6px;
+            }
+
+            .selector-column select {
+                padding: 8px !important;
+                font-size: 0.9em !important;
             }
 
             .controls {
@@ -687,68 +701,72 @@
             #header-toggle-btn {
                 display: block !important;
                 position: fixed !important;
-                bottom: 12px !important; /* Lowered 8px */
+                bottom: 15px !important;
                 left: 50% !important;
                 right: auto !important;
                 transform: translateX(-50%) !important;
-                width: calc(100% - 80px) !important;
-                max-width: calc(100% - 80px) !important;
+                width: calc(100% - 40px) !important;
+                max-width: calc(100% - 40px) !important;
                 min-width: unset !important;
-                padding: 10px 10px !important;
+                padding: 12px 15px !important;
                 background: linear-gradient(135deg, rgba(0, 255, 136, 0.7), rgba(200, 255, 150, 0.5), rgba(0, 200, 100, 0.6), rgba(255, 255, 180, 0.4), rgba(0, 180, 80, 0.7)) !important;
                 z-index: 1001 !important;
+                font-size: 0.95em !important;
             }
 
             
-            /* Import Properties button - positioned below Home Search on mobile */
+            /* Import Properties button - natural flow positioning */
             #mobile-import-properties-btn {
                 display: block !important;
-                position: fixed !important;
-                top: 220px !important;
-                left: 50% !important;
+                position: relative !important;
+                top: auto !important;
+                left: auto !important;
                 right: auto !important;
-                transform: translateX(-50%) !important;
-                width: calc(100% - 80px) !important;
-                max-width: calc(100% - 80px) !important;
+                transform: none !important;
+                width: calc(100% - 40px) !important;
+                max-width: calc(100% - 40px) !important;
                 min-width: unset !important;
-                padding: 10px 10px !important;
+                padding: 12px 15px !important;
+                margin: 8px auto !important;
                 background: linear-gradient(135deg, rgba(138, 43, 226, 0.6), rgba(0, 212, 255, 0.5), rgba(255, 180, 100, 0.3), rgba(0, 212, 255, 0.5), rgba(138, 43, 226, 0.6)) !important;
                 border: 2px solid rgba(0, 212, 255, 0.8) !important;
-                z-index: 999 !important;
+                z-index: 10 !important;
             }
 
-/* Upload Photos button - positioned below Import Properties on mobile */
+            /* Upload Photos button - natural flow positioning */
             #mobile-upload-photos-btn {
                 display: block !important;
-                position: fixed !important;
-                top: 270px !important; /* Below Home Search */
-                left: 50% !important;
+                position: relative !important;
+                top: auto !important;
+                left: auto !important;
                 right: auto !important;
-                transform: translateX(-50%) !important;
-                width: calc(100% - 80px) !important;
-                max-width: calc(100% - 80px) !important;
+                transform: none !important;
+                width: calc(100% - 40px) !important;
+                max-width: calc(100% - 40px) !important;
                 min-width: unset !important;
-                padding: 10px 10px !important;
-                /* Match Home Search style with slight orange hues */
+                padding: 12px 15px !important;
+                margin: 8px auto !important;
                 background: linear-gradient(135deg, rgba(138, 43, 226, 0.6), rgba(0, 212, 255, 0.5), rgba(255, 180, 100, 0.3), rgba(0, 212, 255, 0.5), rgba(138, 43, 226, 0.6)) !important;
                 border: 2px solid rgba(0, 212, 255, 0.8) !important;
-                z-index: 999 !important;
+                z-index: 10 !important;
             }
-            /* Upload Videos button - positioned below Upload Photos on mobile */
+
+            /* Upload Videos button - natural flow positioning */
             #mobile-upload-videos-btn {
                 display: block !important;
-                position: fixed !important;
-                top: 320px !important;
-                left: 50% !important;
+                position: relative !important;
+                top: auto !important;
+                left: auto !important;
                 right: auto !important;
-                transform: translateX(-50%) !important;
-                width: calc(100% - 80px) !important;
-                max-width: calc(100% - 80px) !important;
+                transform: none !important;
+                width: calc(100% - 40px) !important;
+                max-width: calc(100% - 40px) !important;
                 min-width: unset !important;
-                padding: 10px 10px !important;
+                padding: 12px 15px !important;
+                margin: 8px auto !important;
                 background: linear-gradient(135deg, rgba(138, 43, 226, 0.6), rgba(0, 212, 255, 0.5), rgba(255, 180, 100, 0.3), rgba(0, 212, 255, 0.5), rgba(138, 43, 226, 0.6)) !important;
                 border: 2px solid rgba(0, 212, 255, 0.8) !important;
-                z-index: 999 !important;
+                z-index: 10 !important;
             }
 
             .controls-toggle-btn {
@@ -821,15 +839,16 @@
                 top: auto !important;
                 left: auto !important;
                 right: auto !important;
-                width: calc(100% - 16px) !important; /* Match property select dropdown - 4px wider */
-                margin: 15px auto !important; /* Same padding as header to Home Search */
+                width: 100% !important;
+                margin: 15px 0 !important;
                 transform: none !important;
-                flex-direction: row;
-                gap: 6px;
-                padding: 0 10px;
-                flex-wrap: wrap;
+                flex-direction: column;
+                gap: 10px;
+                padding: 0 20px;
+                flex-wrap: nowrap;
                 justify-content: center;
-                z-index: 99 !important;
+                align-items: center;
+                z-index: 10 !important;
                 background: transparent;
                 border: none;
                 border-radius: 0;
@@ -837,19 +856,20 @@
                 box-shadow: none;
             }
 
-            /* Height matches Upload Photos: padding 10px 15px, font-size 0.9em */
+            /* Panel toggle buttons - natural flow with consistent styling */
             .panel-toggle-buttons .panel-toggle-btn {
-                position: fixed !important;
-                left: 50% !important;
-                transform: translateX(-50%) !important;
-                width: calc(100% - 80px) !important; /* 280px on 360px screen */
+                position: relative !important;
+                left: auto !important;
+                transform: none !important;
+                width: calc(100% - 40px) !important;
                 color: #FFFFFF !important;
                 font-weight: bold !important;
                 font-size: 0.9em !important;
                 text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
                 min-width: unset !important;
-                max-width: calc(100% - 80px) !important;
-                padding: 10px 10px !important;
+                max-width: calc(100% - 40px) !important;
+                padding: 12px 15px !important;
+                margin: 0 auto !important;
                 flex: none !important;
                 background: linear-gradient(135deg, rgba(0, 212, 255, 0.85), rgba(138, 43, 226, 0.85)) !important;
                 border: 2px solid rgba(0, 212, 255, 0.9) !important;
@@ -859,11 +879,12 @@
 
             .panel-toggle-btn {
                 font-size: 0.9em;
-                padding: 10px 15px;
+                padding: 12px 15px;
                 flex: none;
-                width: 100%;
+                width: calc(100% - 40px);
                 min-width: unset;
                 text-align: center;
+                margin: 0 auto;
             }
 
             /* Mode Toggle Buttons - Mobile */
@@ -966,15 +987,15 @@
             }
 
             /* ===== MOBILE BUTTON LAYOUT FIX ===== */
-            /* Mobile action buttons container - stacks buttons vertically */
+            /* Mobile action buttons container - stacks buttons vertically with consistent spacing */
             .mobile-action-buttons {
                 display: flex;
                 flex-direction: column;
-                gap: 8px;
-                padding: 10px;
-                background: rgba(0, 0, 0, 0.3);
-                border-radius: 10px;
-                margin: 10px;
+                gap: 10px;
+                padding: 0 20px;
+                background: transparent;
+                border-radius: 0;
+                margin: 15px 0;
             }
 
             /* Override inline styles for left-side action buttons */
@@ -986,11 +1007,13 @@
                 top: auto !important;
                 left: auto !important;
                 right: auto !important;
-                width: 100% !important;
-                max-width: calc(100% - 80px) !important;
+                width: calc(100% - 40px) !important;
+                max-width: calc(100% - 40px) !important;
                 min-width: unset !important;
-                margin: 0 !important;
+                margin: 0 auto !important;
+                padding: 12px 15px !important;
                 display: block !important;
+                font-size: 0.9em !important;
             }
 
             /* Tools button - full width on mobile */
@@ -999,19 +1022,21 @@
                 top: auto !important;
                 left: auto !important;
                 right: auto !important;
-                width: 100% !important;
-                max-width: calc(100% - 80px) !important;
+                width: calc(100% - 40px) !important;
+                max-width: calc(100% - 40px) !important;
                 min-width: unset !important;
-                margin: 0 !important;
+                margin: 0 auto !important;
+                padding: 12px 15px !important;
+                font-size: 0.9em !important;
             }
 
             /* Tools dropdown - mobile positioning */
             #tools-dropdown {
                 position: fixed !important;
                 top: auto !important;
-                bottom: 80px !important;
-                left: 10px !important;
-                right: 10px !important;
+                bottom: 90px !important;
+                left: 20px !important;
+                right: 20px !important;
                 width: auto !important;
                 max-height: 60vh !important;
                 overflow-y: auto !important;
@@ -1026,6 +1051,7 @@
                 pointer-events: none;
                 height: auto !important;
                 width: 100% !important;
+                padding-top: 110px; /* Space for fixed header */
             }
 
             .ui-overlay > * {
@@ -1035,139 +1061,114 @@
             /* QR Modal - mobile friendly */
             #qr-modal {
                 width: 90% !important;
-                max-width: 320px !important;
+                max-width: 90vw !important;
                 padding: 20px !important;
+                margin: 10px !important;
             }
 
             /* History panel - mobile */
             #history-panel {
-                left: 10px !important;
-                right: 10px !important;
+                left: 20px !important;
+                right: 20px !important;
                 width: auto !important;
-                bottom: 10px !important;
+                bottom: 90px !important;
                 max-height: 50vh !important;
             }
 
             /* ===== DATA PANELS MODAL - MOBILE FIXES ===== */
             .data-modal-container {
-                width: 98% !important;
-                max-width: 98vw !important;
-                max-height: 95vh !important;
-                border-radius: 4px !important;
+                width: 95% !important;
+                max-width: 95vw !important;
+                max-height: 90vh !important;
+                border-radius: 8px !important;
                 margin: auto !important;
-                padding: 0 !important;
+                padding: 8px !important;
             }
 
             .data-modal-header {
-                padding: 4px 8px 2px 8px !important;
-                min-height: 200px !important;
+                padding: 8px 10px !important;
+                min-height: auto !important;
             }
 
-            /* Tabs - 3 rows viewable */
+            /* Tabs - Better spacing and readability */
             .data-modal-tabs {
                 display: grid !important;
-                grid-template-columns: repeat(5, 1fr) !important;
-                gap: 2px !important;
-                padding: 4px !important;
+                grid-template-columns: repeat(4, 1fr) !important;
+                gap: 4px !important;
+                padding: 6px !important;
                 overflow-x: hidden !important;
                 flex-wrap: wrap !important;
-                min-height: 84px !important;
+                min-height: auto !important;
             }
 
             .data-tab {
-                padding: 4px 2px !important;
-                font-size: 0.5em !important;
+                padding: 8px 4px !important;
+                font-size: 0.65em !important;
                 min-width: unset !important;
                 max-width: unset !important;
                 white-space: normal !important;
                 text-align: center !important;
-                line-height: 1.1 !important;
+                line-height: 1.2 !important;
                 word-break: break-word !important;
             }
 
             .data-modal-content {
-                padding: 2px !important;
+                padding: 10px !important;
                 min-height: auto !important;
-                max-height: calc(95vh - 135px) !important;
+                max-height: calc(90vh - 180px) !important;
+                overflow-y: auto !important;
             }
 
             /* Fix "Select properties" placeholder text - scale and crisp white */
             .data-modal-content p {
                 color: #FFFFFF !important;
                 text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
-                font-size: 0.85em !important;
+                font-size: 0.9em !important;
                 word-wrap: break-word !important;
                 overflow-wrap: break-word !important;
-                max-width: calc(100% - 80px) !important;
+                max-width: 100% !important;
                 padding: 0 10px !important;
-            }
-
-            /* ===== PROPERTY SELECTORS - SMALLER ON MOBILE ===== */
-            .property-selector {
-                margin: 10px 0 !important;
-                padding: 0 5px !important;
-                gap: 8px !important;
-            }
-
-            .selector-column {
-                padding: 8px !important;
-                border-radius: 10px !important;
-            }
-
-            .selector-column h3 {
-                font-size: 0.85em !important;
-                margin-bottom: 4px !important;
-            }
-
-            .selector-column select {
-                padding: 6px !important;
-                font-size: 0.85em !important;
+                text-align: center !important;
             }
 
             /* ===== CANVAS/SPHERE POSITIONING - FLOW NATURALLY ===== */
             #canvas-container {
                 position: relative !important;
                 top: auto !important;
-                margin-top: 10px !important; /* Small gap after Analytics button */
+                margin-top: 15px !important;
+                margin-bottom: 15px !important;
                 height: 45vh !important;
-                min-height: 280px !important;
-                z-index: 1 !important; /* Below header and selectors */
+                min-height: 300px !important;
+                z-index: 1 !important;
             }
 
-            /* ===== HOME SEARCH BUTTON - FIXED AT BOTTOM ===== */
+            /* ===== HOME SEARCH BUTTON - RELATIVE FLOW ===== */
             .search-widget {
-                position: fixed !important;
-                top: 168px !important; /* Below header */
-                left: 0 !important;
-                right: 0 !important;
+                position: relative !important;
+                top: auto !important;
+                left: auto !important;
+                right: auto !important;
                 bottom: auto !important;
                 transform: none !important;
                 width: 100% !important;
-                margin: 0 !important;
-                padding: 0 10px !important;
+                margin: 15px 0 !important;
+                padding: 0 20px !important;
                 display: flex !important;
                 justify-content: center !important;
-                z-index: 999 !important; /* Above content but below modals */
-            }
-
-            /* Property selector - positioned below fixed buttons */
-            .property-selector {
-                margin-top: 380px !important;
-                top: 0 !important;
+                z-index: 10 !important;
             }
 
             .search-toggle-btn {
-                position: fixed !important;
-                left: 50% !important;
-                transform: translateX(-50%) !important;
-                width: calc(100% - 80px) !important; /* Match other mobile buttons - 280px on 360px screen */
-                max-width: calc(100% - 80px) !important;
+                position: relative !important;
+                left: auto !important;
+                transform: none !important;
+                width: calc(100% - 40px) !important;
+                max-width: calc(100% - 40px) !important;
                 min-width: unset !important;
-                padding: 10px 10px !important;
-                margin: 0 !important;
-                font-size: 0.9em !important;
+                padding: 12px 15px !important;
+                margin: 0 auto !important;
+                font-size: 0.95em !important;
                 border-radius: 10px !important;
-                /* Swirl gradient matching app theme - purple/cyan blend with dark background hints */
                 background: linear-gradient(135deg,
                     rgba(138, 43, 226, 0.7) 0%,
                     rgba(0, 212, 255, 0.6) 25%,
@@ -1189,8 +1190,12 @@
 
         /* Mobile Small (≤480px) */
         @media (max-width: 480px) {
+            .header {
+                padding: 10px 12px;
+            }
+
             .header h1 {
-                font-size: 1.2em;
+                font-size: 1.1em;
             }
 
             .header .subtitle {
@@ -1198,15 +1203,15 @@
             }
 
             .persona-btn {
-                font-size: 0.7em;
-                padding: 6px 8px;
-                min-width: 55px;
+                font-size: 0.75em;
+                padding: 8px 10px;
+                min-width: 60px;
             }
 
             .metric-group-tab {
-                font-size: 0.7em;
-                padding: 5px 6px;
-                min-width: 50px;
+                font-size: 0.75em;
+                padding: 6px 8px;
+                min-width: 55px;
             }
 
             #canvas-container {
@@ -1216,22 +1221,43 @@
 
             /* Panel Toggle Buttons - Extra Small Mobile */
             .panel-toggle-btn {
-                font-size: 0.7em;
-                padding: 7px 10px;
-                flex: 1 1 100%;
-                min-width: 100px;
+                font-size: 0.85em !important;
+                padding: 10px 12px !important;
+                width: calc(100% - 30px) !important;
+                max-width: calc(100% - 30px) !important;
+            }
+
+            /* All mobile buttons - smaller on extra small screens */
+            #mobile-import-properties-btn,
+            #mobile-upload-photos-btn,
+            #mobile-upload-videos-btn,
+            .search-toggle-btn,
+            #import-properties-btn,
+            #photo-upload-master-btn,
+            #video-upload-master-btn,
+            #qr-code-btn,
+            #tools-master-btn {
+                width: calc(100% - 30px) !important;
+                max-width: calc(100% - 30px) !important;
+                padding: 10px 12px !important;
+                font-size: 0.85em !important;
+            }
+
+            .selector-column {
+                width: calc(100% - 30px) !important;
+                max-width: calc(100% - 30px) !important;
             }
 
             /* Mode Toggle Buttons - Extra Small Mobile */
             .mode-toggle {
-                font-size: 0.75em;
-                padding: 8px 12px;
-                min-width: 120px;
+                font-size: 0.8em;
+                padding: 10px 12px;
+                min-width: 110px;
             }
 
             /* Comparison table - Extra Small Mobile */
             .comparison-table {
-                font-size: 0.65em;
+                font-size: 0.7em;
             }
 
             .comparison-table th,
@@ -1249,6 +1275,11 @@
             .crime-item {
                 font-size: 0.8em;
                 padding: 8px;
+            }
+
+            /* Data modal tabs - 3 columns on small screens */
+            .data-modal-tabs {
+                grid-template-columns: repeat(3, 1fr) !important;
             }
         }
 
