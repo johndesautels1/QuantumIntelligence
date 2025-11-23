@@ -613,7 +613,7 @@
                 min-height: 100vh;
                 display: flex;
                 flex-direction: column;
-                padding-bottom: 80px; /* Space for footer button */
+                padding-bottom: 60px; /* Space for fixed controls at bottom */
             }
 
             #canvas-container {
@@ -632,32 +632,26 @@
                 left: 0;
                 top: 0 !important;
                 margin-top: 0 !important;
-                z-index: 100; /* Header stays on top, below modals */
-                padding: 12px 15px;
+                z-index: 100;
             }
 
             .header h1 {
-                font-size: 1.3em;
-                margin: 0;
+                font-size: 1.5em;
             }
 
             .header .subtitle {
-                font-size: 0.8em;
-                margin-top: 4px;
+                font-size: 0.85em;
             }
 
             .header .back-btn {
                 position: relative;
                 top: auto;
                 left: auto;
-                margin-bottom: 8px;
+                margin-bottom: 10px;
                 width: 100%;
                 text-align: center;
-                padding: 8px 12px;
-                font-size: 0.85em;
             }
 
-            /* Mobile button stack - relative positioning for natural flow */
             .property-selector {
                 position: relative;
                 top: 0 !important;
@@ -665,28 +659,20 @@
                 right: auto;
                 flex-direction: column;
                 align-items: center;
-                margin: 0 auto !important;
-                margin-top: 15px !important;
-                padding: 0 10px;
-                gap: 10px;
+                margin: 0 !important;
+                margin-top: 350px !important; /* Below Upload Videos button (285px + 45px + 20px gap) */
+                padding: 0 10px 10px 10px;
             }
 
             .selector-column {
                 min-width: unset;
-                width: calc(100% - 40px) !important;
-                max-width: calc(100% - 40px) !important;
-                margin: 0 auto 8px auto !important;
-                padding: 10px !important;
+                width: calc(100% - 60px) !important; /* Match button widths - 280px on 360px screen */
+                max-width: calc(100% - 60px) !important;
+                margin: 0 auto 10px auto !important; /* Center horizontally */
             }
 
             .selector-column h3 {
-                font-size: 0.9em;
-                margin-bottom: 6px;
-            }
-
-            .selector-column select {
-                padding: 8px !important;
-                font-size: 0.9em !important;
+                font-size: 1em;
             }
 
             .controls {
@@ -701,72 +687,69 @@
             #header-toggle-btn {
                 display: block !important;
                 position: fixed !important;
-                bottom: 15px !important;
+                bottom: 12px !important; /* Lowered 8px */
                 left: 50% !important;
                 right: auto !important;
                 transform: translateX(-50%) !important;
-                width: calc(100% - 40px) !important;
-                max-width: calc(100% - 40px) !important;
+                width: calc(100% - 80px) !important;
+                max-width: calc(100% - 80px) !important;
                 min-width: unset !important;
-                padding: 12px 15px !important;
+                padding: 10px 10px !important;
                 background: linear-gradient(135deg, rgba(0, 255, 136, 0.7), rgba(200, 255, 150, 0.5), rgba(0, 200, 100, 0.6), rgba(255, 255, 180, 0.4), rgba(0, 180, 80, 0.7)) !important;
-                z-index: 150 !important; /* Above main content, below modals */
-                font-size: 0.95em !important;
+                z-index: 1001 !important;
             }
 
             
-            /* Import Properties button - natural flow positioning */
+            /* Import Properties button - positioned below Home Search on mobile */
             #mobile-import-properties-btn {
                 display: block !important;
-                position: relative !important;
-                top: auto !important;
-                left: auto !important;
+                position: fixed !important;
+                top: 175px !important; /* 120px (Home Search) + 45px (button height) + 10px gap */
+                left: 50% !important;
                 right: auto !important;
-                transform: none !important;
-                width: calc(100% - 40px) !important;
-                max-width: calc(100% - 40px) !important;
+                transform: translateX(-50%) !important;
+                width: calc(100% - 80px) !important;
+                max-width: calc(100% - 80px) !important;
                 min-width: unset !important;
-                padding: 12px 15px !important;
-                margin: 8px auto !important;
+                padding: 10px 10px !important;
                 background: linear-gradient(135deg, rgba(138, 43, 226, 0.6), rgba(0, 212, 255, 0.5), rgba(255, 180, 100, 0.3), rgba(0, 212, 255, 0.5), rgba(138, 43, 226, 0.6)) !important;
                 border: 2px solid rgba(0, 212, 255, 0.8) !important;
-                z-index: 1 !important; /* Normal flow, no special stacking needed */
+                z-index: 999 !important;
             }
 
-            /* Upload Photos button - natural flow positioning */
+            /* Upload Photos button - positioned below Import Properties on mobile */
             #mobile-upload-photos-btn {
                 display: block !important;
-                position: relative !important;
-                top: auto !important;
-                left: auto !important;
+                position: fixed !important;
+                top: 230px !important; /* 175px + 45px + 10px gap */
+                left: 50% !important;
                 right: auto !important;
-                transform: none !important;
-                width: calc(100% - 40px) !important;
-                max-width: calc(100% - 40px) !important;
+                transform: translateX(-50%) !important;
+                width: calc(100% - 80px) !important;
+                max-width: calc(100% - 80px) !important;
                 min-width: unset !important;
-                padding: 12px 15px !important;
-                margin: 8px auto !important;
+                padding: 10px 10px !important;
+                /* Match Home Search style with slight orange hues */
                 background: linear-gradient(135deg, rgba(138, 43, 226, 0.6), rgba(0, 212, 255, 0.5), rgba(255, 180, 100, 0.3), rgba(0, 212, 255, 0.5), rgba(138, 43, 226, 0.6)) !important;
                 border: 2px solid rgba(0, 212, 255, 0.8) !important;
-                z-index: 1 !important; /* Normal flow, no special stacking needed */
+                z-index: 999 !important;
             }
 
-            /* Upload Videos button - natural flow positioning */
+            /* Upload Videos button - positioned below Upload Photos on mobile */
             #mobile-upload-videos-btn {
                 display: block !important;
-                position: relative !important;
-                top: auto !important;
-                left: auto !important;
+                position: fixed !important;
+                top: 285px !important; /* 230px + 45px + 10px gap */
+                left: 50% !important;
                 right: auto !important;
-                transform: none !important;
-                width: calc(100% - 40px) !important;
-                max-width: calc(100% - 40px) !important;
+                transform: translateX(-50%) !important;
+                width: calc(100% - 80px) !important;
+                max-width: calc(100% - 80px) !important;
                 min-width: unset !important;
-                padding: 12px 15px !important;
-                margin: 8px auto !important;
+                padding: 10px 10px !important;
                 background: linear-gradient(135deg, rgba(138, 43, 226, 0.6), rgba(0, 212, 255, 0.5), rgba(255, 180, 100, 0.3), rgba(0, 212, 255, 0.5), rgba(138, 43, 226, 0.6)) !important;
                 border: 2px solid rgba(0, 212, 255, 0.8) !important;
-                z-index: 1 !important; /* Normal flow, no special stacking needed */
+                z-index: 999 !important;
             }
 
             .controls-toggle-btn {
@@ -839,16 +822,15 @@
                 top: auto !important;
                 left: auto !important;
                 right: auto !important;
-                width: 100% !important;
-                margin: 15px 0 !important;
+                width: calc(100% - 16px) !important; /* Match property select dropdown - 4px wider */
+                margin: 15px auto !important; /* Same padding as header to Home Search */
                 transform: none !important;
-                flex-direction: column;
-                gap: 10px;
-                padding: 0 20px;
-                flex-wrap: nowrap;
+                flex-direction: row;
+                gap: 6px;
+                padding: 0 10px;
+                flex-wrap: wrap;
                 justify-content: center;
-                align-items: center;
-                z-index: 1 !important; /* Normal flow, no special stacking needed */
+                z-index: 99 !important;
                 background: transparent;
                 border: none;
                 border-radius: 0;
@@ -856,19 +838,19 @@
                 box-shadow: none;
             }
 
-            /* Panel toggle buttons - natural flow with consistent styling */
+            /* Analytics Dashboard button - flows after property selectors */
             .panel-toggle-buttons .panel-toggle-btn {
                 position: relative !important;
                 left: auto !important;
                 transform: none !important;
-                width: calc(100% - 40px) !important;
+                width: calc(100% - 80px) !important; /* 280px on 360px screen */
                 color: #FFFFFF !important;
                 font-weight: bold !important;
                 font-size: 0.9em !important;
                 text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
                 min-width: unset !important;
-                max-width: calc(100% - 40px) !important;
-                padding: 12px 15px !important;
+                max-width: calc(100% - 80px) !important;
+                padding: 10px 10px !important;
                 margin: 0 auto !important;
                 flex: none !important;
                 background: linear-gradient(135deg, rgba(0, 212, 255, 0.85), rgba(138, 43, 226, 0.85)) !important;
@@ -879,12 +861,11 @@
 
             .panel-toggle-btn {
                 font-size: 0.9em;
-                padding: 12px 15px;
+                padding: 10px 15px;
                 flex: none;
-                width: calc(100% - 40px);
+                width: 100%;
                 min-width: unset;
                 text-align: center;
-                margin: 0 auto;
             }
 
             /* Mode Toggle Buttons - Mobile */
@@ -987,15 +968,15 @@
             }
 
             /* ===== MOBILE BUTTON LAYOUT FIX ===== */
-            /* Mobile action buttons container - stacks buttons vertically with consistent spacing */
+            /* Mobile action buttons container - stacks buttons vertically */
             .mobile-action-buttons {
                 display: flex;
                 flex-direction: column;
-                gap: 10px;
-                padding: 0 20px;
-                background: transparent;
-                border-radius: 0;
-                margin: 15px 0;
+                gap: 8px;
+                padding: 10px;
+                background: rgba(0, 0, 0, 0.3);
+                border-radius: 10px;
+                margin: 10px;
             }
 
             /* Override inline styles for left-side action buttons */
@@ -1007,13 +988,11 @@
                 top: auto !important;
                 left: auto !important;
                 right: auto !important;
-                width: calc(100% - 40px) !important;
-                max-width: calc(100% - 40px) !important;
+                width: 100% !important;
+                max-width: calc(100% - 80px) !important;
                 min-width: unset !important;
-                margin: 0 auto !important;
-                padding: 12px 15px !important;
+                margin: 0 !important;
                 display: block !important;
-                font-size: 0.9em !important;
             }
 
             /* Tools button - full width on mobile */
@@ -1022,21 +1001,19 @@
                 top: auto !important;
                 left: auto !important;
                 right: auto !important;
-                width: calc(100% - 40px) !important;
-                max-width: calc(100% - 40px) !important;
+                width: 100% !important;
+                max-width: calc(100% - 80px) !important;
                 min-width: unset !important;
-                margin: 0 auto !important;
-                padding: 12px 15px !important;
-                font-size: 0.9em !important;
+                margin: 0 !important;
             }
 
             /* Tools dropdown - mobile positioning */
             #tools-dropdown {
                 position: fixed !important;
                 top: auto !important;
-                bottom: 90px !important;
-                left: 20px !important;
-                right: 20px !important;
+                bottom: 80px !important;
+                left: 10px !important;
+                right: 10px !important;
                 width: auto !important;
                 max-height: 60vh !important;
                 overflow-y: auto !important;
@@ -1051,7 +1028,6 @@
                 pointer-events: none;
                 height: auto !important;
                 width: 100% !important;
-                padding-top: 110px; /* Space for fixed header - matches header height + margin */
             }
 
             .ui-overlay > * {
@@ -1061,114 +1037,139 @@
             /* QR Modal - mobile friendly */
             #qr-modal {
                 width: 90% !important;
-                max-width: 90vw !important;
+                max-width: 320px !important;
                 padding: 20px !important;
-                margin: 10px !important;
             }
 
             /* History panel - mobile */
             #history-panel {
-                left: 20px !important;
-                right: 20px !important;
+                left: 10px !important;
+                right: 10px !important;
                 width: auto !important;
-                bottom: 90px !important;
+                bottom: 10px !important;
                 max-height: 50vh !important;
             }
 
             /* ===== DATA PANELS MODAL - MOBILE FIXES ===== */
             .data-modal-container {
-                width: 95% !important;
-                max-width: 95vw !important;
-                max-height: 90vh !important;
-                border-radius: 8px !important;
+                width: 98% !important;
+                max-width: 98vw !important;
+                max-height: 95vh !important;
+                border-radius: 4px !important;
                 margin: auto !important;
-                padding: 8px !important;
+                padding: 0 !important;
             }
 
             .data-modal-header {
-                padding: 8px 10px !important;
-                min-height: auto !important;
+                padding: 4px 8px 2px 8px !important;
+                min-height: 200px !important;
             }
 
-            /* Tabs - Better spacing and readability */
+            /* Tabs - 3 rows viewable */
             .data-modal-tabs {
                 display: grid !important;
-                grid-template-columns: repeat(4, 1fr) !important;
-                gap: 4px !important;
-                padding: 6px !important;
+                grid-template-columns: repeat(5, 1fr) !important;
+                gap: 2px !important;
+                padding: 4px !important;
                 overflow-x: hidden !important;
                 flex-wrap: wrap !important;
-                min-height: auto !important;
+                min-height: 84px !important;
             }
 
             .data-tab {
-                padding: 8px 4px !important;
-                font-size: 0.65em !important;
+                padding: 4px 2px !important;
+                font-size: 0.5em !important;
                 min-width: unset !important;
                 max-width: unset !important;
                 white-space: normal !important;
                 text-align: center !important;
-                line-height: 1.2 !important;
+                line-height: 1.1 !important;
                 word-break: break-word !important;
             }
 
             .data-modal-content {
-                padding: 10px !important;
+                padding: 2px !important;
                 min-height: auto !important;
-                max-height: calc(90vh - 180px) !important;
-                overflow-y: auto !important;
+                max-height: calc(95vh - 135px) !important;
             }
 
             /* Fix "Select properties" placeholder text - scale and crisp white */
             .data-modal-content p {
                 color: #FFFFFF !important;
                 text-shadow: 0 1px 2px rgba(0,0,0,0.5) !important;
-                font-size: 0.9em !important;
+                font-size: 0.85em !important;
                 word-wrap: break-word !important;
                 overflow-wrap: break-word !important;
-                max-width: 100% !important;
+                max-width: calc(100% - 80px) !important;
                 padding: 0 10px !important;
-                text-align: center !important;
+            }
+
+            /* ===== PROPERTY SELECTORS - SMALLER ON MOBILE ===== */
+            .property-selector {
+                margin: 10px 0 !important;
+                padding: 0 5px !important;
+                gap: 8px !important;
+            }
+
+            .selector-column {
+                padding: 8px !important;
+                border-radius: 10px !important;
+            }
+
+            .selector-column h3 {
+                font-size: 0.85em !important;
+                margin-bottom: 4px !important;
+            }
+
+            .selector-column select {
+                padding: 6px !important;
+                font-size: 0.85em !important;
             }
 
             /* ===== CANVAS/SPHERE POSITIONING - FLOW NATURALLY ===== */
             #canvas-container {
                 position: relative !important;
                 top: auto !important;
-                margin-top: 15px !important;
-                margin-bottom: 15px !important;
+                margin-top: 10px !important; /* Small gap after Analytics button */
                 height: 45vh !important;
-                min-height: 300px !important;
-                z-index: 1 !important;
+                min-height: 280px !important;
+                z-index: 1 !important; /* Below header and selectors */
             }
 
-            /* ===== HOME SEARCH BUTTON - RELATIVE FLOW ===== */
+            /* ===== HOME SEARCH BUTTON - FIXED BELOW HEADER ===== */
             .search-widget {
-                position: relative !important;
-                top: auto !important;
-                left: auto !important;
-                right: auto !important;
+                position: fixed !important;
+                top: 120px !important; /* Below header (header ~100px + 20px gap) */
+                left: 0 !important;
+                right: 0 !important;
                 bottom: auto !important;
                 transform: none !important;
                 width: 100% !important;
-                margin: 15px 0 !important;
-                padding: 0 20px !important;
+                margin: 0 !important;
+                padding: 0 10px !important;
                 display: flex !important;
                 justify-content: center !important;
-                z-index: 1 !important; /* Normal flow, no special stacking needed */
+                z-index: 999 !important; /* Above content but below modals */
+            }
+
+            /* Property selector - positioned below fixed buttons */
+            .property-selector {
+                margin-top: 340px !important; /* Adjusted for new button spacing */
+                top: 0 !important;
             }
 
             .search-toggle-btn {
-                position: relative !important;
-                left: auto !important;
-                transform: none !important;
-                width: calc(100% - 40px) !important;
-                max-width: calc(100% - 40px) !important;
+                position: fixed !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                width: calc(100% - 80px) !important; /* Match other mobile buttons - 280px on 360px screen */
+                max-width: calc(100% - 80px) !important;
                 min-width: unset !important;
-                padding: 12px 15px !important;
-                margin: 0 auto !important;
-                font-size: 0.95em !important;
+                padding: 10px 10px !important;
+                margin: 0 !important;
+                font-size: 0.9em !important;
                 border-radius: 10px !important;
+                /* Swirl gradient matching app theme - purple/cyan blend with dark background hints */
                 background: linear-gradient(135deg,
                     rgba(138, 43, 226, 0.7) 0%,
                     rgba(0, 212, 255, 0.6) 25%,
@@ -1190,12 +1191,8 @@
 
         /* Mobile Small (≤480px) */
         @media (max-width: 480px) {
-            .header {
-                padding: 10px 12px;
-            }
-
             .header h1 {
-                font-size: 1.1em;
+                font-size: 1.2em;
             }
 
             .header .subtitle {
@@ -1203,15 +1200,15 @@
             }
 
             .persona-btn {
-                font-size: 0.75em;
-                padding: 8px 10px;
-                min-width: 60px;
+                font-size: 0.7em;
+                padding: 6px 8px;
+                min-width: 55px;
             }
 
             .metric-group-tab {
-                font-size: 0.75em;
-                padding: 6px 8px;
-                min-width: 55px;
+                font-size: 0.7em;
+                padding: 5px 6px;
+                min-width: 50px;
             }
 
             #canvas-container {
@@ -1221,43 +1218,22 @@
 
             /* Panel Toggle Buttons - Extra Small Mobile */
             .panel-toggle-btn {
-                font-size: 0.85em !important;
-                padding: 10px 12px !important;
-                width: calc(100% - 30px) !important;
-                max-width: calc(100% - 30px) !important;
-            }
-
-            /* All mobile buttons - smaller on extra small screens */
-            #mobile-import-properties-btn,
-            #mobile-upload-photos-btn,
-            #mobile-upload-videos-btn,
-            .search-toggle-btn,
-            #import-properties-btn,
-            #photo-upload-master-btn,
-            #video-upload-master-btn,
-            #qr-code-btn,
-            #tools-master-btn {
-                width: calc(100% - 30px) !important;
-                max-width: calc(100% - 30px) !important;
-                padding: 10px 12px !important;
-                font-size: 0.85em !important;
-            }
-
-            .selector-column {
-                width: calc(100% - 30px) !important;
-                max-width: calc(100% - 30px) !important;
+                font-size: 0.7em;
+                padding: 7px 10px;
+                flex: 1 1 100%;
+                min-width: 100px;
             }
 
             /* Mode Toggle Buttons - Extra Small Mobile */
             .mode-toggle {
-                font-size: 0.8em;
-                padding: 10px 12px;
-                min-width: 110px;
+                font-size: 0.75em;
+                padding: 8px 12px;
+                min-width: 120px;
             }
 
             /* Comparison table - Extra Small Mobile */
             .comparison-table {
-                font-size: 0.7em;
+                font-size: 0.65em;
             }
 
             .comparison-table th,
@@ -1275,11 +1251,6 @@
             .crime-item {
                 font-size: 0.8em;
                 padding: 8px;
-            }
-
-            /* Data modal tabs - 3 columns on small screens */
-            .data-modal-tabs {
-                grid-template-columns: repeat(3, 1fr) !important;
             }
         }
 
