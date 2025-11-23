@@ -383,6 +383,7 @@
         }
 
         .controls.collapsed {
+                display: none !important;
             transform: translateX(-50%) scale(0.67) translateY(calc(100% - 40px));
         }
 
@@ -675,21 +676,23 @@
             }
 
             .controls {
-                position: fixed;
-                bottom: 96px; /* Raised 1 inch */
-                left: 0;
-                right: 0;
-                transform: none;
-                max-width: 100%;
-                width: 100%;
-                border-radius: 15px 15px 0 0;
-                padding: 15px 10px;
-                margin-top: 0;
-                z-index: 600;
+                display: none !important; /* Hidden on mobile */
             }
 
             .controls.collapsed {
-                transform: translateY(0); /* Temporarily visible for debugging */
+                display: none !important;
+            }
+
+            /* Green header toggle button - positioned in center footer on mobile */
+            #header-toggle-btn {
+                display: block !important;
+                position: fixed !important;
+                bottom: 20px !important;
+                left: 50% !important;
+                right: auto !important;
+                transform: translateX(-50%) !important;
+                min-width: 220px !important;
+                z-index: 1001 !important;
             }
 
             .controls-toggle-btn {
