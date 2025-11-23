@@ -1667,6 +1667,48 @@
             transform: translateY(-2px);
         }
 
+        /* Results Toggle Button - "See Results" / "Toggle on Display" */
+        #resultsToggleBtn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.7), rgba(0, 200, 100, 0.6));
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(0, 255, 136, 0.8);
+            border-radius: 10px;
+            padding: 12px 20px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.95em;
+            z-index: 1100;
+            transition: all 0.3s ease;
+            pointer-events: all;
+            min-width: 160px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+        }
+
+        #resultsToggleBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 255, 136, 0.5);
+        }
+
+        #resultsToggleBtn.active-results {
+            background: linear-gradient(135deg, rgba(0, 150, 255, 0.7), rgba(0, 100, 200, 0.6));
+            border-color: rgba(0, 150, 255, 0.8);
+            box-shadow: 0 4px 15px rgba(0, 150, 255, 0.3);
+        }
+
+        #resultsToggleBtn.active-results:hover {
+            box-shadow: 0 6px 20px rgba(0, 150, 255, 0.5);
+        }
+
+        /* Utility class to hide elements */
+        .hidden {
+            display: none !important;
+        }
+
         /* Time Travel Control */
         .time-travel-control {
             margin-top: 20px;
@@ -3070,6 +3112,12 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Results Toggle Button - See Results / Toggle on Display -->
+            <button id="resultsToggleBtn" onclick="toggleResultsMode()"
+                    aria-label="Toggle results view mode - hide/show UI controls">
+                See Results
+            </button>
 
             <!-- Green Toggle Button to show/hide header and selectors -->
             <button class="mode-toggle" id="header-toggle-btn" onclick="toggleHeaderVisibility()"
@@ -9130,6 +9178,68 @@
                 // Announce to screen reader
                 const status = controlsPanelCollapsed ? 'collapsed' : 'expanded';
                 announceToScreenReader(`Controls panel ${status}`);
+            };
+
+            // ===== RESULTS VIEW TOGGLE - "See Results" / "Toggle on Display" =====
+            let resultsViewActive = false;
+
+            window.toggleResultsMode = function() {
+                resultsViewActive = !resultsViewActive;
+                const btn = document.getElementById('resultsToggleBtn');
+                
+                // List of selectors to hide/show
+                const selectorsToHide = [
+                    '#import-properties-btn',
+                    '#photo-upload-master-btn',
+                    '#video-upload-master-btn',
+                    '#qr-code-btn',
+                    '#tools-master-btn',
+                    '.property-selector',
+                    '.panel-toggle-buttons',
+                    '.controls',
+                    '#mobile-import-properties-btn',
+                    '#mobile-upload-photos-btn',
+                    '#mobile-upload-videos-btn'
+                ];
+
+                // Toggle hidden class on all elements
+                selectorsToHide.forEach(selector => {
+                    const elements = document.querySelectorAll(selector);
+                    if (elements.length > 0) {
+                        elements.forEach(el => {
+                            if (resultsViewActive) {
+                                el.classList.add('hidden');
+                            } else {
+                                el.classList.remove('hidden');
+                            }
+                        });
+                    } else {
+                        // Fallback: log warning but continue
+                        console.warn(`Results toggle: Selector "${selector}" not found, skipping.`);
+                    }
+                });
+
+                // Update button text and styling
+                if (resultsViewActive) {
+                    btn.textContent = 'Toggle on Display';
+                    btn.classList.add('active-results');
+                } else {
+                    btn.textContent = 'See Results';
+                    btn.classList.remove('active-results');
+                }
+
+                // Dispatch custom event
+                const event = new CustomEvent('resultsView:Toggled', {
+                    detail: { active: resultsViewActive }
+                });
+                window.dispatchEvent(event);
+
+                // Feature #18: Vibration feedback
+                vibrate('toggle');
+
+                // Announce to screen reader
+                const status = resultsViewActive ? 'Results view enabled - UI controls hidden' : 'Results view disabled - UI controls visible';
+                announceToScreenReader(status);
             };
 
             // ===== FEATURE #24: PERSONAL NOTES & EMOJI REACTIONS =====
