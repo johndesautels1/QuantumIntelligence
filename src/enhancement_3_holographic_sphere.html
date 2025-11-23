@@ -839,7 +839,10 @@
 
             /* Height matches Upload Photos: padding 10px 15px, font-size 0.9em */
             .panel-toggle-buttons .panel-toggle-btn {
-                width: calc(100% - 80px) !important;
+                position: fixed !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                width: calc(100% - 80px) !important; /* 280px on 360px screen */
                 color: #FFFFFF !important;
                 font-weight: bold !important;
                 font-size: 0.9em !important;
@@ -1153,12 +1156,14 @@
             }
 
             .search-toggle-btn {
-                width: calc(100% - 80px) !important; /* Match other mobile buttons */
+                position: fixed !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                width: calc(100% - 80px) !important; /* Match other mobile buttons - 280px on 360px screen */
                 max-width: calc(100% - 80px) !important;
                 min-width: unset !important;
                 padding: 10px 10px !important;
-                margin: 0 10px !important;
-                transform: none !important;
+                margin: 0 !important;
                 font-size: 0.9em !important;
                 border-radius: 10px !important;
                 /* Swirl gradient matching app theme - purple/cyan blend with dark background hints */
