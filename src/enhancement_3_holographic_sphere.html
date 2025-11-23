@@ -610,12 +610,16 @@
             .container {
                 height: auto;
                 min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                padding-bottom: 60px; /* Space for fixed controls at bottom */
             }
 
             #canvas-container {
                 position: relative;
                 height: 50vh;
                 min-height: 300px;
+                flex-shrink: 0;
             }
 
             .header {
@@ -654,8 +658,9 @@
                 right: auto;
                 flex-direction: column;
                 align-items: center;
-                margin: 5px 0 10px 0 !important;
-                padding: 0 10px;
+                margin: 0 !important;
+                margin-top: 110px !important; /* Space for fixed header (~100px) + 10px gap */
+                padding: 0 10px 10px 10px;
             }
 
             .selector-column {
@@ -751,18 +756,18 @@
                 transform: translateY(-100%) !important;
             }
 
-            /* Panel Toggle Buttons - Mobile: Below Home Search + 1/8 inch (12px) additional
-               Layout: 173px + 12px = 185px */
+            /* Panel Toggle Buttons - Mobile: Relative flow below property selectors */
             .panel-toggle-buttons {
-                position: fixed !important;
-                top: 185px !important;
-                left: 10px !important;
-                right: 10px !important;
+                position: relative !important;
+                top: auto !important;
+                left: auto !important;
+                right: auto !important;
                 width: calc(100% - 20px) !important;
+                margin: 10px auto !important;
                 transform: none !important;
                 flex-direction: row;
                 gap: 6px;
-                padding: 0;
+                padding: 0 10px;
                 flex-wrap: wrap;
                 justify-content: center;
                 z-index: 99 !important;
@@ -951,11 +956,14 @@
                 transform: none !important;
             }
 
-            /* Mobile button container - stack all action buttons */
+            /* Mobile UI overlay - relative positioning for proper flow */
             .ui-overlay {
+                position: relative !important;
                 display: flex;
                 flex-direction: column;
                 pointer-events: none;
+                height: auto !important;
+                width: 100% !important;
             }
 
             .ui-overlay > * {
@@ -1054,11 +1062,13 @@
                 font-size: 0.85em !important;
             }
 
-            /* ===== CANVAS/SPHERE POSITIONING - MOVE DOWN ===== */
+            /* ===== CANVAS/SPHERE POSITIONING - FLOW NATURALLY ===== */
             #canvas-container {
-                top: 0 !important;
-                margin-top: 220px !important; /* Push spheres down further - 1.25 inches below header/selectors */
-                height: calc(50vh - 120px) !important;
+                position: relative !important;
+                top: auto !important;
+                margin-top: 10px !important; /* Small gap after Analytics button */
+                height: 45vh !important;
+                min-height: 280px !important;
                 z-index: 1 !important; /* Below header and selectors */
             }
 
@@ -1201,7 +1211,7 @@
         .mobile-menu-btn {
             display: none;
             position: fixed;
-            top: 70px;
+            top: 120px; /* Below fixed header (~100px) + 20px gap */
             left: 10px;
             width: 50px;
             height: 50px;
