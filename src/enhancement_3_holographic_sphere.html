@@ -1667,8 +1667,8 @@
             transform: translateY(-2px);
         }
 
-        /* Results Toggle Button - "See Results" / "Toggle on Display" */
-        #resultsToggleBtn {
+        /* See Results Button - Green button to trigger results view */
+        #seeResultsBtn {
             position: fixed;
             bottom: 20px;
             left: 50%;
@@ -1690,18 +1690,37 @@
             box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
         }
 
-        #resultsToggleBtn:hover {
-            transform: translateY(-2px);
+        #seeResultsBtn:hover {
+            transform: translateX(-50%) translateY(-2px);
             box-shadow: 0 6px 20px rgba(0, 255, 136, 0.5);
         }
 
-        #resultsToggleBtn.active-results {
+        /* Toggle on Display Button - Blue button shown after See Results clicked */
+        #toggleDisplayBtn {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             background: linear-gradient(135deg, rgba(0, 150, 255, 0.7), rgba(0, 100, 200, 0.6));
-            border-color: rgba(0, 150, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(0, 150, 255, 0.8);
+            border-radius: 10px;
+            padding: 12px 20px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.95em;
+            z-index: 1100;
+            transition: all 0.3s ease;
+            pointer-events: all;
+            min-width: 160px;
+            text-align: center;
             box-shadow: 0 4px 15px rgba(0, 150, 255, 0.3);
+            display: none;
         }
 
-        #resultsToggleBtn.active-results:hover {
+        #toggleDisplayBtn:hover {
+            transform: translateX(-50%) translateY(-2px);
             box-shadow: 0 6px 20px rgba(0, 150, 255, 0.5);
         }
 
@@ -3091,6 +3110,18 @@
                 </button>
             </div>
 
+            <!-- See Results Button - Green button shown initially -->
+            <button id="seeResultsBtn" onclick="showResults()"
+                    aria-label="See results - hide UI controls to view 3D spheres/houses">
+                See Results
+            </button>
+
+            <!-- Toggle on Display Button - Blue button shown after See Results clicked -->
+            <button id="toggleDisplayBtn" onclick="toggleDisplay()"
+                    aria-label="Toggle display controls back on">
+                Toggle on Display
+            </button>
+
             <!-- Controls Panel -->
             <div class="controls collapsed" id="controls-panel" role="region" aria-label="Comparison controls">
                 <button class="controls-toggle-btn" onclick="toggleControlsPanel()" aria-label="Toggle controls panel">
@@ -3113,12 +3144,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Results Toggle Button - See Results / Toggle on Display -->
-            <button id="resultsToggleBtn" onclick="toggleResultsMode()"
-                    aria-label="Toggle results view mode - hide/show UI controls">
-                See Results
-            </button>
 
             <!-- Green Toggle Button to show/hide header and selectors -->
             <button class="mode-toggle" id="header-toggle-btn" onclick="toggleHeaderVisibility()"
@@ -9181,8 +9206,8 @@
                 announceToScreenReader(`Controls panel ${status}`);
             };
 
-            // ===== RESULTS VIEW TOGGLE - "See Results" / "Toggle on Display" =====
-            // Configuration: UI elements to hide in results view mode
+            // ===== RESULTS VIEW - "See Results" / "Toggle on Display" =====
+            // Configuration: UI elements to hide in results view mode (all except Analytics Dashboard)
             const RESULTS_VIEW_SELECTORS = [
                 '#import-properties-btn',
                 '#photo-upload-master-btn',
@@ -9190,37 +9215,37 @@
                 '#qr-code-btn',
                 '#tools-master-btn',
                 '.property-selector',
-                '.panel-toggle-buttons',
                 '.controls',
                 '#mobile-import-properties-btn',
                 '#mobile-upload-photos-btn',
-                '#mobile-upload-videos-btn'
+                '#mobile-upload-videos-btn',
+                '.search-widget',
+                '.header .back-btn',
+                '.micro-toggle'
             ];
 
-            let resultsViewActive = false;
-
-            window.toggleResultsMode = function() {
-                resultsViewActive = !resultsViewActive;
-                const btn = document.getElementById('resultsToggleBtn');
+            // Show results view - hide UI controls, show Toggle on Display button
+            window.showResults = function() {
+                const seeResultsBtn = document.getElementById('seeResultsBtn');
+                const toggleDisplayBtn = document.getElementById('toggleDisplayBtn');
                 
-                // Toggle hidden class on all elements (optimized with classList.toggle)
+                // Hide all UI elements except Analytics Dashboard
                 RESULTS_VIEW_SELECTORS.forEach(selector => {
                     const elements = document.querySelectorAll(selector);
                     if (elements.length > 0) {
-                        elements.forEach(el => el.classList.toggle('hidden', resultsViewActive));
+                        elements.forEach(el => el.classList.add('hidden'));
                     } else {
-                        // Fallback: log warning but continue
-                        console.warn(`Results toggle: Selector "${selector}" not found, skipping.`);
+                        console.warn(`Results view: Selector "${selector}" not found, skipping.`);
                     }
                 });
 
-                // Update button text and styling (button stays visible and centered)
-                btn.textContent = resultsViewActive ? 'Toggle on Display' : 'See Results';
-                btn.classList.toggle('active-results', resultsViewActive);
+                // Hide See Results button, show Toggle on Display button
+                seeResultsBtn.style.display = 'none';
+                toggleDisplayBtn.style.display = 'block';
 
                 // Dispatch custom event
                 const event = new CustomEvent('resultsView:Toggled', {
-                    detail: { active: resultsViewActive }
+                    detail: { active: true }
                 });
                 window.dispatchEvent(event);
 
@@ -9228,8 +9253,37 @@
                 vibrate('toggle');
 
                 // Announce to screen reader
-                const status = resultsViewActive ? 'Results view enabled - UI controls hidden' : 'Results view disabled - UI controls visible';
-                announceToScreenReader(status);
+                announceToScreenReader('Results view enabled - UI controls hidden, spheres/houses visible');
+            };
+
+            // Toggle display - restore UI controls, hide Toggle on Display button
+            window.toggleDisplay = function() {
+                const seeResultsBtn = document.getElementById('seeResultsBtn');
+                const toggleDisplayBtn = document.getElementById('toggleDisplayBtn');
+                
+                // Show all UI elements
+                RESULTS_VIEW_SELECTORS.forEach(selector => {
+                    const elements = document.querySelectorAll(selector);
+                    if (elements.length > 0) {
+                        elements.forEach(el => el.classList.remove('hidden'));
+                    }
+                });
+
+                // Show See Results button, hide Toggle on Display button
+                seeResultsBtn.style.display = 'block';
+                toggleDisplayBtn.style.display = 'none';
+
+                // Dispatch custom event
+                const event = new CustomEvent('resultsView:Toggled', {
+                    detail: { active: false }
+                });
+                window.dispatchEvent(event);
+
+                // Feature #18: Vibration feedback
+                vibrate('toggle');
+
+                // Announce to screen reader
+                announceToScreenReader('Results view disabled - UI controls visible');
             };
 
             // ===== FEATURE #24: PERSONAL NOTES & EMOJI REACTIONS =====
