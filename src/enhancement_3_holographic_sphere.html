@@ -3012,8 +3012,8 @@
             <!-- Green Toggle Button to show/hide header and selectors -->
             <button class="mode-toggle" id="header-toggle-btn" onclick="toggleHeaderVisibility()"
                     aria-label="Show header and property selectors"
-                    style="display: none; left: 20px; right: auto; min-width: 220px; background: linear-gradient(135deg, rgba(0, 255, 136, 0.6), rgba(0, 200, 100, 0.6)); font-weight: bold; border: 2px solid rgba(0, 255, 136, 0.8); z-index: 1001;">
-                ▼ Show Header & Selectors
+                    style="display: none; left: 20px; right: auto; min-width: 220px; background: linear-gradient(135deg, rgba(0, 255, 136, 0.7), rgba(0, 200, 100, 0.6), rgba(0, 180, 80, 0.7)); font-weight: bold; border: 2px solid rgba(0, 255, 136, 0.8); z-index: 1001;">
+                👁️ See Results
             </button>
 
             <!-- Toggle Tools Button (hidden until property selected) -->
@@ -5320,7 +5320,7 @@
                     if (propertySelector) propertySelector.style.display = 'none';
                     if (toggleBtn) {
                         toggleBtn.style.display = 'block';
-                        toggleBtn.innerHTML = '▼ Show Header & Selectors';
+                        toggleBtn.innerHTML = '👁️ See Results';
                     }
                     headerVisible = false;
                 } else {
