@@ -700,7 +700,7 @@
             }
 
             /* Upload Photos button - positioned below Home Search on mobile */
-            #photo-upload-master-btn {
+            #mobile-upload-photos-btn {
                 display: block !important;
                 position: fixed !important;
                 top: 220px !important; /* Below Home Search */
@@ -3036,6 +3036,13 @@
                     aria-label="Show header and property selectors"
                     style="display: none; left: 20px; right: auto; min-width: 220px; background: linear-gradient(135deg, rgba(0, 255, 136, 0.7), rgba(0, 200, 100, 0.6), rgba(0, 180, 80, 0.7)); font-weight: bold; border: 2px solid rgba(0, 255, 136, 0.8); z-index: 1001;">
                 👁️ See Results
+            </button>
+
+            <!-- Mobile Upload Photos Button (outside hidden container) -->
+            <button class="mode-toggle" id="mobile-upload-photos-btn" onclick="togglePhotoUpload()"
+                    aria-label="Upload property photos"
+                    style="display: none;">
+                📸 UPLOAD PHOTOS
             </button>
 
             <!-- Toggle Tools Button (hidden until property selected) -->
