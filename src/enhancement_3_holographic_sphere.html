@@ -633,23 +633,30 @@
                 top: 0 !important;
                 margin-top: 0 !important;
                 z-index: 100;
+                padding: 12px 15px;
             }
 
             .header h1 {
-                font-size: 1.5em;
+                font-size: 1.3em;
+                margin-bottom: 4px;
             }
 
             .header .subtitle {
-                font-size: 0.85em;
+                font-size: 0.8em;
             }
 
             .header .back-btn {
                 position: relative;
                 top: auto;
                 left: auto;
-                margin-bottom: 10px;
+                margin-bottom: 8px;
                 width: 100%;
                 text-align: center;
+                padding: 10px 16px;
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             .property-selector {
@@ -660,19 +667,27 @@
                 flex-direction: column;
                 align-items: center;
                 margin: 0 !important;
-                margin-top: 380px !important; /* Below Upload Videos button */
+                margin-top: 345px !important; /* Below Upload Videos button with 14px gap */
                 padding: 0 10px 10px 10px;
             }
 
             .selector-column {
                 min-width: unset;
-                width: calc(100% - 60px) !important; /* Match button widths - 280px on 360px screen */
-                max-width: calc(100% - 60px) !important;
-                margin: 0 auto 10px auto !important; /* Center horizontally */
+                width: calc(100% - 80px) !important; /* Match button widths */
+                max-width: calc(100% - 80px) !important;
+                margin: 0 auto 8px auto !important; /* Center horizontally with reduced gap */
+                padding: 10px !important;
             }
 
             .selector-column h3 {
-                font-size: 1em;
+                font-size: 0.95em;
+                margin-bottom: 6px;
+            }
+            
+            .selector-column select {
+                padding: 8px !important;
+                font-size: 0.9em !important;
+                min-height: 44px !important;
             }
 
             .controls {
@@ -687,16 +702,21 @@
             #header-toggle-btn {
                 display: block !important;
                 position: fixed !important;
-                bottom: 12px !important; /* Lowered 8px */
+                bottom: 12px !important;
                 left: 50% !important;
                 right: auto !important;
                 transform: translateX(-50%) !important;
                 width: calc(100% - 80px) !important;
                 max-width: calc(100% - 80px) !important;
                 min-width: unset !important;
-                padding: 10px 10px !important;
+                padding: 12px 10px !important;
+                min-height: 44px !important;
                 background: linear-gradient(135deg, rgba(0, 255, 136, 0.7), rgba(200, 255, 150, 0.5), rgba(0, 200, 100, 0.6), rgba(255, 255, 180, 0.4), rgba(0, 180, 80, 0.7)) !important;
                 z-index: 1001 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 0.9em !important;
             }
 
             
@@ -704,51 +724,63 @@
             #mobile-import-properties-btn {
                 display: block !important;
                 position: fixed !important;
-                top: 220px !important;
+                top: 169px !important;
                 left: 50% !important;
                 right: auto !important;
                 transform: translateX(-50%) !important;
                 width: calc(100% - 80px) !important;
                 max-width: calc(100% - 80px) !important;
                 min-width: unset !important;
-                padding: 10px 10px !important;
+                padding: 12px 10px !important;
+                min-height: 44px !important;
                 background: linear-gradient(135deg, rgba(138, 43, 226, 0.6), rgba(0, 212, 255, 0.5), rgba(255, 180, 100, 0.3), rgba(0, 212, 255, 0.5), rgba(138, 43, 226, 0.6)) !important;
                 border: 2px solid rgba(0, 212, 255, 0.8) !important;
                 z-index: 999 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
             }
 
 /* Upload Photos button - positioned below Import Properties on mobile */
             #mobile-upload-photos-btn {
                 display: block !important;
                 position: fixed !important;
-                top: 270px !important; /* Below Home Search */
+                top: 223px !important; /* 10px gap */
                 left: 50% !important;
                 right: auto !important;
                 transform: translateX(-50%) !important;
                 width: calc(100% - 80px) !important;
                 max-width: calc(100% - 80px) !important;
                 min-width: unset !important;
-                padding: 10px 10px !important;
+                padding: 12px 10px !important;
+                min-height: 44px !important;
                 /* Match Home Search style with slight orange hues */
                 background: linear-gradient(135deg, rgba(138, 43, 226, 0.6), rgba(0, 212, 255, 0.5), rgba(255, 180, 100, 0.3), rgba(0, 212, 255, 0.5), rgba(138, 43, 226, 0.6)) !important;
                 border: 2px solid rgba(0, 212, 255, 0.8) !important;
                 z-index: 999 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
             }
             /* Upload Videos button - positioned below Upload Photos on mobile */
             #mobile-upload-videos-btn {
                 display: block !important;
                 position: fixed !important;
-                top: 320px !important;
+                top: 277px !important; /* 10px gap */
                 left: 50% !important;
                 right: auto !important;
                 transform: translateX(-50%) !important;
                 width: calc(100% - 80px) !important;
                 max-width: calc(100% - 80px) !important;
                 min-width: unset !important;
-                padding: 10px 10px !important;
+                padding: 12px 10px !important;
+                min-height: 44px !important;
                 background: linear-gradient(135deg, rgba(138, 43, 226, 0.6), rgba(0, 212, 255, 0.5), rgba(255, 180, 100, 0.3), rgba(0, 212, 255, 0.5), rgba(138, 43, 226, 0.6)) !important;
                 border: 2px solid rgba(0, 212, 255, 0.8) !important;
                 z-index: 999 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
             }
 
             .controls-toggle-btn {
@@ -837,33 +869,42 @@
                 box-shadow: none;
             }
 
-            /* Height matches Upload Photos: padding 10px 15px, font-size 0.9em */
+            /* Analytics Dashboard button positioning on mobile */
             .panel-toggle-buttons .panel-toggle-btn {
-                position: fixed !important;
-                left: 50% !important;
-                transform: translateX(-50%) !important;
-                width: calc(100% - 80px) !important; /* 280px on 360px screen */
+                position: relative !important;
+                left: auto !important;
+                transform: none !important;
+                width: calc(100% - 80px) !important;
                 color: #FFFFFF !important;
                 font-weight: bold !important;
                 font-size: 0.9em !important;
                 text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
                 min-width: unset !important;
                 max-width: calc(100% - 80px) !important;
-                padding: 10px 10px !important;
+                padding: 12px 10px !important;
+                min-height: 44px !important;
                 flex: none !important;
                 background: linear-gradient(135deg, rgba(0, 212, 255, 0.85), rgba(138, 43, 226, 0.85)) !important;
                 border: 2px solid rgba(0, 212, 255, 0.9) !important;
                 border-radius: 10px !important;
                 box-shadow: 0 4px 20px rgba(0, 212, 255, 0.6) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                margin: 0 auto !important;
             }
 
             .panel-toggle-btn {
                 font-size: 0.9em;
-                padding: 10px 15px;
+                padding: 12px 15px;
+                min-height: 44px;
                 flex: none;
                 width: 100%;
                 min-width: unset;
                 text-align: center;
+                display: flex;
+                align-items: center;
+                justify-content: center;
             }
 
             /* Mode Toggle Buttons - Mobile */
@@ -1128,16 +1169,17 @@
             #canvas-container {
                 position: relative !important;
                 top: auto !important;
-                margin-top: 10px !important; /* Small gap after Analytics button */
-                height: 45vh !important;
-                min-height: 280px !important;
+                margin-top: 10px !important; /* Small gap after property selectors */
+                height: 50vh !important;
+                min-height: 320px !important;
+                max-height: 500px !important;
                 z-index: 1 !important; /* Below header and selectors */
             }
 
             /* ===== HOME SEARCH BUTTON - FIXED AT BOTTOM ===== */
             .search-widget {
                 position: fixed !important;
-                top: 168px !important; /* Below header */
+                top: 115px !important; /* Closer to header */
                 left: 0 !important;
                 right: 0 !important;
                 bottom: auto !important;
@@ -1152,7 +1194,7 @@
 
             /* Property selector - positioned below fixed buttons */
             .property-selector {
-                margin-top: 420px !important;
+                margin-top: 310px !important;
                 top: 0 !important;
             }
 
@@ -1163,7 +1205,8 @@
                 width: calc(100% - 80px) !important; /* Match other mobile buttons - 280px on 360px screen */
                 max-width: calc(100% - 80px) !important;
                 min-width: unset !important;
-                padding: 10px 10px !important;
+                padding: 12px 10px !important;
+                min-height: 44px !important;
                 margin: 0 !important;
                 font-size: 0.9em !important;
                 border-radius: 10px !important;
@@ -1179,6 +1222,9 @@
                 color: #FFFFFF !important;
                 font-weight: bold !important;
                 text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
             }
 
             /* ===== HIDE TIME TRAVEL FROM MAIN VIEW (moved to modal) ===== */
@@ -1190,7 +1236,7 @@
         /* Mobile Small (≤480px) */
         @media (max-width: 480px) {
             .header h1 {
-                font-size: 1.2em;
+                font-size: 1.15em;
             }
 
             .header .subtitle {
@@ -1210,16 +1256,65 @@
             }
 
             #canvas-container {
-                height: 40vh;
-                min-height: 250px;
+                height: 45vh !important;
+                min-height: 280px !important;
             }
 
             /* Panel Toggle Buttons - Extra Small Mobile */
             .panel-toggle-btn {
-                font-size: 0.7em;
-                padding: 7px 10px;
+                font-size: 0.85em;
+                padding: 12px 10px;
+                min-height: 44px;
                 flex: 1 1 100%;
                 min-width: 100px;
+            }
+        }
+        
+        /* Extra Small Screens (≤375px) - iPhone SE, small Android */
+        @media (max-width: 375px) {
+            .header {
+                padding: 10px 12px;
+            }
+            
+            .header h1 {
+                font-size: 1.1em;
+            }
+            
+            .header .subtitle {
+                font-size: 0.7em;
+            }
+            
+            /* Ensure all buttons maintain touch targets */
+            .search-toggle-btn,
+            #mobile-import-properties-btn,
+            #mobile-upload-photos-btn,
+            #mobile-upload-videos-btn,
+            .panel-toggle-btn,
+            #header-toggle-btn {
+                padding: 12px 8px !important;
+                font-size: 0.85em !important;
+                min-height: 44px !important;
+            }
+        }
+        
+        /* Very Small Screens (≤360px) - Common Android size */
+        @media (max-width: 360px) {
+            .header h1 {
+                font-size: 1.05em;
+            }
+            
+            .header .subtitle {
+                font-size: 0.65em;
+            }
+            
+            /* Maintain button sizing for touch targets */
+            .search-toggle-btn,
+            #mobile-import-properties-btn,
+            #mobile-upload-photos-btn,
+            #mobile-upload-videos-btn,
+            .panel-toggle-btn,
+            #header-toggle-btn {
+                font-size: 0.8em !important;
             }
 
             /* Mode Toggle Buttons - Extra Small Mobile */
