@@ -653,15 +653,16 @@
             }
 
             .property-selector {
-                position: relative;
-                top: 0 !important;
-                left: auto;
-                right: auto;
+                position: fixed;
+                top: 370px !important; /* 10px below Upload Videos button (ends at ~360px) */
+                left: 0;
+                right: 0;
                 flex-direction: column;
                 align-items: center;
                 margin: 0 !important;
-                margin-top: 380px !important; /* Below Upload Videos button */
                 padding: 0 10px 10px 10px;
+                z-index: 998 !important; /* Below fixed buttons (z-index: 999) */
+                width: 100%;
             }
 
             .selector-column {
@@ -687,10 +688,10 @@
             #header-toggle-btn {
                 display: block !important;
                 position: fixed !important;
-                bottom: 12px !important; /* Lowered 8px */
+                bottom: 6px !important; /* Lowered additional 6px to clear Property C */
                 left: 50% !important;
                 right: auto !important;
-                transform: translateX(-50%) !important;
+                transform: translateX(calc(-50% - 3px)) !important; /* Centered and shifted 3px left */
                 width: calc(100% - 80px) !important;
                 max-width: calc(100% - 80px) !important;
                 min-width: unset !important;
@@ -1150,11 +1151,7 @@
                 z-index: 999 !important; /* Above content but below modals */
             }
 
-            /* Property selector - positioned below fixed buttons */
-            .property-selector {
-                margin-top: 420px !important;
-                top: 0 !important;
-            }
+            /* Property selector - positioned below fixed buttons - REMOVED conflicting rules that override position: fixed at top: 370px */
 
             .search-toggle-btn {
                 position: fixed !important;
