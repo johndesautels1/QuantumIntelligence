@@ -653,16 +653,16 @@
             }
 
             .property-selector {
-                position: relative;
-                top: 0 !important;
-                left: auto;
-                right: auto;
+                position: fixed;
+                top: 370px !important; /* 10px below Upload Videos button (ends at ~360px) */
+                left: 0;
+                right: 0;
                 flex-direction: column;
                 align-items: center;
                 margin: 0 !important;
-                margin-top: 380px !important; /* Below Upload Videos button at 320px */
                 padding: 0 10px 10px 10px;
-                z-index: 1001 !important; /* Above fixed buttons (z-index: 999) to prevent overlap when scrolling */
+                z-index: 998 !important; /* Below fixed buttons (z-index: 999) */
+                width: 100%;
             }
 
             .selector-column {
