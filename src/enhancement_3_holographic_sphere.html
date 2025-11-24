@@ -688,10 +688,10 @@
             #header-toggle-btn {
                 display: block !important;
                 position: fixed !important;
-                bottom: 12px !important; /* Lowered 8px */
+                bottom: 6px !important; /* Lowered additional 6px to clear Property C */
                 left: 50% !important;
                 right: auto !important;
-                transform: translateX(-50%) !important;
+                transform: translateX(calc(-50% - 3px)) !important; /* Centered and shifted 3px left */
                 width: calc(100% - 80px) !important;
                 max-width: calc(100% - 80px) !important;
                 min-width: unset !important;
